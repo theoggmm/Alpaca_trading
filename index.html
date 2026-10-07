@@ -10,10 +10,10 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background: var(--bg-light); color: #2c3e50; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; padding: 16px; }
         html, body { height: 100%; }
-        .container { max-width: 400px; margin: 0 auto; height: 100%; display: flex; align-items: center; justify-content: center; }
+        .container { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
         .login-page { width: 100%; display: none; }
         .login-page.active { display: block; }
-        .login-form { background: var(--bg-light); padding: 40px 30px; border-radius: 8px; border: 1px solid var(--border-light); text-align: center; }
+        .login-form { background: var(--bg-light); padding: 60px 50px; border-radius: 8px; border: 1px solid var(--border-light); text-align: center; min-width: 500px; }
         .login-form h1 { font-size: 28px; margin-bottom: 10px; color: white; }
         .login-form p { margin-bottom: 30px; opacity: 0.8; }
         .form-group { margin-bottom: 20px; text-align: left; }
@@ -27,13 +27,13 @@
         .dashboard-page { width: 100%; display: none; height: 100%; }
         .dashboard-page.active { display: flex; }
         .dashboard-wrapper { width: 100%; height: 100%; display: flex; gap: 0; }
-        .sidebar { width: 150px; background: #2c3e50; display: flex; flex-direction: column; gap: 10px; padding: 20px 10px; border-radius: 8px 0 0 8px; }
-        .tab-btn { padding: 15px; background: #34495e; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s; }
+        .sidebar { width: 250px; background: #2c3e50; display: flex; flex-direction: column; gap: 15px; padding: 30px 20px; border-radius: 8px 0 0 8px; }
+        .tab-btn { padding: 20px; background: #34495e; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 600; transition: all 0.3s; }
         .tab-btn:hover { transform: scale(1.05); }
         .tab-btn.active { transform: scale(1.1); }
         .dashboard { flex: 1; border-radius: 0 8px 8px 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; text-align: center; }
-        .dashboard h2 { color: white; font-size: 32px; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
-        .dashboard p { color: rgba(255, 255, 255, 0.9); font-size: 18px; margin-bottom: 40px; }
+        .dashboard h2 { color: white; font-size: 48px; margin-bottom: 20px; text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); }
+        .dashboard p { color: rgba(255, 255, 255, 0.9); font-size: 24px; margin-bottom: 40px; }
         .logout-btn { padding: 12px 30px; background: rgba(255, 255, 255, 0.2); color: white; border: 2px solid white; border-radius: 6px; font-size: 16px; font-weight: 600; cursor: pointer; }
         .logout-btn:hover { background: rgba(255, 255, 255, 0.3); }
         .dashboard.red { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); }
