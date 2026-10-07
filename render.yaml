@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: alpaca-trading
+    env: python
+    buildCommand: "/Users/theodoremeyer/.local/bin/uv sync --project /Users/theodoremeyer/Documents/Alpaca_trading"
+    startCommand: "/Users/theodoremeyer/Documents/Alpaca_trading/.venv/bin/gunicorn --bind 0.0.0.0:$PORT app:app"
+    plan: free
+    envVars:
+      - key: PYTHONUNBUFFERED
+        value: true

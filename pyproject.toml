@@ -1,0 +1,11 @@
+[project]
+name = "alpaca-trading"
+version = "0.1.0"
+description = "Passage d'ordres sur Alpaca via l'API"
+requires-python = ">=3.12"
+dependencies = [
+    "alpaca-py>=0.40",
+    "python-dotenv>=1.0",
+    "flask>=3.0",
+    "gunicorn>=22.0",
+]

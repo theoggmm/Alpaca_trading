@@ -1,0 +1,51 @@
+symbol,sector,subsector
+NVDA,Semiconductors,GPU/AI Processors
+AAPL,Hardware,Consumer Electronics
+MSFT,Software,Cloud/AI
+GOOGL,Software,Search/Cloud
+AMZN,Software,Cloud/E-commerce
+TSMC,Semiconductors,Foundry
+AVGO,Semiconductors,Networking
+MU,Semiconductors,Memory
+AMD,Semiconductors,Processors
+INTC,Semiconductors,Processors
+ASML,Equipment,Semiconductor Equipment
+ADBE,Software,Creative/Enterprise
+NFLX,Software,Streaming
+META,Software,Social Media
+ORCL,Software,Database/Cloud
+QCOM,Semiconductors,Mobile Processors
+CSCO,Software,Networking
+CRM,Software,CRM
+IBM,Software,Enterprise
+INTU,Software,Financial Software
+ANET,Software,Networking
+SPOT,Software,Streaming
+UBER,Software,Mobility
+PYPL,Software,Payments
+SHOP,Software,E-commerce
+TEAM,Software,Collaboration
+DOCN,Software,Cloud Infrastructure
+ZM,Software,Collaboration
+COIN,Software,Cryptocurrency
+PLTR,Software,Data Analytics
+DDOG,Software,Monitoring
+CRWD,Software,Cybersecurity
+ZS,Software,Cybersecurity
+OKTA,Software,Identity
+SNPS,Software,Semiconductors Design
+CDNS,Software,Semiconductors Design
+FTNT,Software,Cybersecurity
+PSTG,Software,Storage
+MSTR,Software,Analytics
+NUAN,Software,AI/Speech
+AMP,Software,Analytics
+APPF,Software,Analytics
+RBLX,Software,Gaming
+ROKU,Software,Streaming
+MGNX,Software,Semiconductors Design
+SSNLF,Software,Semiconductors Design
+U,Software,Cloud/Video
+MDB,Software,Database
+SPLK,Software,Monitoring
+SNOW,Software,Data Warehouse
