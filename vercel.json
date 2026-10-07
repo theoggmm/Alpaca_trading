@@ -1,3 +1,8 @@
 {
-  "public": "public"
+  "public": "public",
+  "functions": {
+    "api/alpaca.py": {
+      "runtime": "python3.12"
+    }
+  }
 }
