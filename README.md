@@ -44,7 +44,8 @@ Coller ensuite les clés **Paper Trading** (tableau de bord Alpaca → Paper →
 
 ## Screener
 
-Lancer le run du jour (au plus tôt 1 h 15 après l'ouverture de New York) et régénérer le tableau de bord :
+Lancer le run du jour (au plus tôt 1 h 15 après l'ouverture de New York), régénérer le tableau de bord,
+puis commiter l'historique du jour et l'envoyer sur GitHub (tests verts et `git pull --ff-only` avant) :
 
 ```bash
 /Users/theodoremeyer/Documents/Alpaca_trading/run_screener.sh

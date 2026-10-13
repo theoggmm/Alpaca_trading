@@ -55,4 +55,5 @@ Modifier un seuil = nouvelle version de `criteres.json`, commitée avant le run 
 
 Chaque run écrit `research/experiments/runs/reprise_apres_baisse/r00N/results.json` (critères, sources,
 entonnoir, sélection, `git_sha` du code commité) et une ligne dans `research/experiments/registry.csv`.
-Un seul run par séance ; le run refuse de tourner si le code n'est pas commité.
+Un seul run par séance ; le run refuse de tourner si le code n'est pas commité. `run_screener.sh`
+commite ensuite ces deux fichiers (et rien d'autre) et les pousse sur GitHub.
