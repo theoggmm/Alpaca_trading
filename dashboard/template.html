@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reprise après baisse</title>
+<style>
+  /* Mise en page : une colonne de lecture large, résumé d'abord, détail ensuite. */
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --ink: #17202b;
+    --muted: #5d6877;
+    --line: #dde1e7;
+    --accent: #2b5d8c;
+    --up: #1d7a4c;
+    --down: #b23a3a;
+    --chip: #e8eef5;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+      --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+    --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+  main { max-width: 1280px; margin: 0 auto; padding: 32px 24px 64px; display: grid; gap: 28px; }
+  header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+  h1 { margin: 0; font-size: 26px; letter-spacing: -0.01em; text-wrap: balance; }
+  h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .chip { background: var(--chip); color: var(--accent); border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
+  .spacer { flex: 1; }
+  select { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  .meta { color: var(--muted); font-family: var(--font-data); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 18px; }
+  .plain { margin: 0; max-width: 70ch; }
+  section { display: grid; gap: 4px; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 9px 12px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--surface); position: sticky; top: 0; }
+  td { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+  th.text, td.text { text-align: left; font-family: var(--font-ui); }
+  td.name { color: var(--muted); max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
+  td.symbol { font-weight: 700; font-family: var(--font-data); }
+  tr:last-child td { border-bottom: none; }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .funnel { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; }
+  .step { display: grid; gap: 2px; min-width: 128px; padding: 8px 12px; border-left: 3px solid var(--line); }
+  .step b { font-family: var(--font-data); font-size: 18px; font-variant-numeric: tabular-nums; }
+  .step span { font-size: 12px; color: var(--muted); }
+  .step.last { border-left-color: var(--accent); }
+  .criteria { margin: 0; padding: 14px 18px 14px 34px; display: grid; gap: 4px; }
+  .note { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+  .empty { padding: 28px; color: var(--muted); }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Reprise après baisse</h1>
+    <span class="chip" id="status">diagnostic</span>
+    <span class="spacer"></span>
+    <label for="run">Séance</label>
+    <select id="run"></select>
+  </header>
+
+  <div class="meta" id="meta"></div>
+  <p class="plain">Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance.
+    C'est une liste, pas un conseil d'achat : la décision t'appartient.</p>
+
+  <section>
+    <h2>Sélection</h2>
+    <div class="panel" id="selection"></div>
+    <p class="note" id="selection-note"></p>
+  </section>
+
+  <section>
+    <h2>Entonnoir des critères</h2>
+    <div class="panel funnel" id="funnel"></div>
+    <p class="note">Chaque case donne le nombre de titres encore en lice après ce critère.</p>
+  </section>
+
+  <div class="grid2">
+    <section>
+      <h2>Critères de ce run</h2>
+      <ol class="panel criteria" id="criteria"></ol>
+    </section>
+    <section>
+      <h2>Titres les plus souvent retenus</h2>
+      <div class="panel" id="history"></div>
+      <p class="note">Sur tous les runs enregistrés. Un titre qui revient souvent n'est pas pour autant un meilleur titre.</p>
+    </section>
+  </div>
+</main>
+
+<script>
+const RUNS = __RUNS_JSON__;
+
+const STEP_LABELS = {
+  actifs_negociables: "Actions négociables chez Alpaca",
+  cotes_sur_une_bourse_us: "Cotées sur une bourse US",
+  hors_etf_et_titres_de_test: "Hors ETF",
+  avec_barres_quotidiennes: "Avec cours quotidiens",
+  historique_complet: "Historique complet",
+  prix_minimum: "Prix minimum",
+  volume_echange_minimum: "Volume échangé suffisant",
+  volatilite_basse: "Volatilité basse",
+  en_baisse_sur_un_mois: "En baisse sur un mois",
+  hausse_des_derniers_jours: "Hausse des 2 derniers jours",
+  hausse_premiere_heure: "Hausse 1re heure",
+  selection_diversifiee: "Sélection diversifiée",
+};
+
+const el = (tag, cls, text) => {
+  const node = document.createElement(tag);
+  if (cls) node.className = cls;
+  if (text !== undefined) node.textContent = text;
+  return node;
+};
+const pct = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(2) + " %";
+const signed = v => v > 0 ? "up" : v < 0 ? "down" : "";
+const usd = s => Number(s).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " $";
+const musd = s => (Number(s) / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " M$";
+const nyTime = iso => new Date(iso).toLocaleTimeString("fr-FR", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit" });
+
+function table(columns, rows) {
+  const t = el("table");
+  const head = t.createTHead().insertRow();
+  columns.forEach(c => head.appendChild(el("th", c.cls || "", c.label)));
+  const body = t.createTBody();
+  rows.forEach(row => {
+    const tr = body.insertRow();
+    columns.forEach(c => {
+      const td = el("td", [c.cls, c.tone ? signed(c.tone(row)) : ""].filter(Boolean).join(" "), c.value(row));
+      if (c.title) td.title = c.title(row);
+      tr.appendChild(td);
+    });
+  });
+  return t;
+}
+
+function renderRun(run) {
+  document.getElementById("status").textContent = run.status + " · non jugé";
+  const meta = document.getElementById("meta");
+  meta.replaceChildren(...[
+    `Séance du ${run.session_date}`,
+    `décision à ${nyTime(run.decision_time)} (New York)`,
+    `run ${run.run_id}`,
+    `code ${run.git_sha.slice(0, 7)}`,
+    `n = ${run.selection.length} / ${run.criteria.count}`,
+  ].map(t => el("span", "", t)));
+
+  const selection = document.getElementById("selection");
+  selection.replaceChildren(run.selection.length ? table([
+    { label: "#", value: r => r.rank },
+    { label: "Symbole", cls: "text symbol", value: r => r.symbol },
+    { label: "Société", cls: "text name", value: r => r.name, title: r => r.name },
+    { label: "1 mois", value: r => pct(r.return_month), tone: r => r.return_month },
+    { label: "J-2", value: r => pct(r.return_day_minus_2), tone: r => r.return_day_minus_2 },
+    { label: "J-1", value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
+    { label: "1re heure", value: r => pct(r.return_first_hour), tone: r => r.return_first_hour },
+    { label: "Prix à la décision", value: r => usd(r.price_at_decision) },
+    { label: "Volatilité annuelle", value: r => (r.volatility_annualized * 100).toFixed(1) + " %" },
+    { label: "Volume moyen / jour", value: r => musd(r.avg_dollar_volume) },
+  ], run.selection) : el("div", "empty", "Aucun titre ne remplissait tous les critères ce jour-là."));
+  document.getElementById("selection-note").textContent =
+    run.selection.length < run.criteria.count
+      ? `Seulement ${run.selection.length} titres sur ${run.criteria.count} : la liste n'est jamais complétée en assouplissant les critères.`
+      : "Classés du plus fort repli sur un mois au plus faible.";
+
+  const funnel = document.getElementById("funnel");
+  const steps = Object.entries(run.funnel);
+  funnel.replaceChildren(...steps.map(([key, n], i) => {
+    const step = el("div", "step" + (i === steps.length - 1 ? " last" : ""));
+    step.append(el("b", "", n.toLocaleString("fr-FR")), el("span", "", STEP_LABELS[key] || key));
+    return step;
+  }));
+
+  const c = run.criteria;
+  document.getElementById("criteria").replaceChildren(...[
+    `Actions cotées aux États-Unis, hors ETF et hors crypto (annuaire Nasdaq Trader).`,
+    `Prix d'au moins ${c.min_price_usd} $ et au moins ${Number(c.min_avg_dollar_volume_usd) / 1e6} M$ échangés par jour en moyenne sur ${c.liquidity_sessions} séances.`,
+    `Volatilité quotidienne sur ${c.volatility_sessions} séances dans la moitié la plus basse (quantile ${c.max_volatility_quantile}).`,
+    `En baisse sur les ${c.month_sessions} dernières séances (environ un mois).`,
+    `En hausse à chacune des ${c.up_days} dernières séances.`,
+    `En hausse pendant les ${c.first_hour_minutes} premières minutes de la séance.`,
+    `Classement par baisse sur un mois, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu (${c.correlation_sessions} séances).`,
+  ].map(t => el("li", "", t)));
+}
+
+function renderHistory() {
+  const seen = new Map();
+  RUNS.forEach(run => run.selection.forEach(item => {
+    const entry = seen.get(item.symbol) || { symbol: item.symbol, name: item.name, count: 0, last: "" };
+    entry.count += 1;
+    entry.last = run.session_date;
+    seen.set(item.symbol, entry);
+  }));
+  const rows = [...seen.values()].sort((a, b) => b.count - a.count || a.symbol.localeCompare(b.symbol)).slice(0, 25);
+  document.getElementById("history").replaceChildren(rows.length ? table([
+    { label: "Symbole", cls: "text symbol", value: r => r.symbol },
+    { label: "Société", cls: "text name", value: r => r.name, title: r => r.name },
+    { label: "Fois retenu", value: r => r.count },
+    { label: "Dernière fois", value: r => r.last },
+  ], rows) : el("div", "empty", "Pas encore d'historique."));
+}
+
+const picker = document.getElementById("run");
+if (!RUNS.length) {
+  document.getElementById("selection").replaceChildren(el("div", "empty",
+    "Aucun run enregistré. Le premier sera produit le prochain jour de bourse, une heure après l'ouverture."));
+  picker.disabled = true;
+} else {
+  [...RUNS].reverse().forEach((run, i) => picker.add(new Option(`${run.session_date} · ${run.run_id}`, RUNS.length - 1 - i)));
+  picker.addEventListener("change", () => renderRun(RUNS[picker.value]));
+  renderRun(RUNS[RUNS.length - 1]);
+}
+renderHistory();
+</script>
+</body>
+</html>
