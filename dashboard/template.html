@@ -223,7 +223,9 @@ function renderRun(run) {
     { label: "#", value: r => r.rank },
     { label: "Symbole", cls: "text symbol", value: r => r.symbol },
     { label: "Société", cls: "text name", value: r => r.name, title: r => r.name },
-    { label: "Domaine", cls: "text name", value: r => domainLabel(r.domain), title: r => r.sic_description || "" },
+    { label: "Domaine", cls: "text name", value: r => domainLabel(r.domain) + (r.domain_read_later ? " *" : ""),
+      title: r => [r.sic_description, r.domain_read_later ? "classement SEC lu à l'affichage, après le run" : ""]
+        .filter(Boolean).join(" · ") },
     { label: "1 mois", value: r => pct(r.return_month), tone: r => r.return_month },
     { label: "J-2", value: r => pct(r.return_day_minus_2), tone: r => r.return_day_minus_2 },
     { label: "J-1", value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
@@ -233,9 +235,11 @@ function renderRun(run) {
     { label: "Volume moyen / jour", value: r => musd(r.avg_dollar_volume) },
   ], run.selection) : el("div", "empty", "Aucun titre ne remplissait tous les critères ce jour-là."));
   document.getElementById("selection-note").textContent =
-    run.selection.length < run.criteria.count
+    (run.selection.length < run.criteria.count
       ? `Seulement ${run.selection.length} titres sur ${run.criteria.count} : la liste n'est jamais complétée en assouplissant les critères.`
-      : "Classés du plus fort repli sur un mois au plus faible.";
+      : "Classés du plus fort repli sur un mois au plus faible.")
+    + " Domaine : classement officiel de la SEC (survole pour l'activité exacte)."
+    + (run.selection.some(r => r.domain_read_later) ? " * : domaine lu après le run, qui ne l'enregistrait pas encore." : "");
 
   renderBubbles(run);
 

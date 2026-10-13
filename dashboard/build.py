@@ -8,8 +8,11 @@ Depuis la racine du dépôt :
 
 import json
 import sys
+from datetime import date
 from pathlib import Path
 
+from infra import sec
+from infra.http import FetchError
 from infra.trace import ROOT, load_runs
 
 HERE = Path(__file__).resolve().parent
@@ -22,8 +25,27 @@ def _embed(value):
     return json.dumps(value, ensure_ascii=False).replace("</", "<\\/")
 
 
+def _fill_domains(runs):
+    """
+    Runs produits avant l'ajout des domaines : le domaine SEC est lu à l'affichage (marqué
+    domain_read_later), sans modifier le fichier du run. Si la SEC ne répond pas, rien n'est ajouté.
+    """
+    items = [item for run in runs for item in run["selection"] if "domain" not in item]
+    if not items:
+        return
+    try:
+        profiles = sec.profiles(sorted({item["symbol"] for item in items}), date.today().isoformat())
+    except FetchError:
+        return
+    for item in items:
+        profile = profiles.get(item["symbol"], {})
+        item.update(domain=profile.get("domain"), sic_description=profile.get("sic_description"),
+                    domain_read_later=True)
+
+
 def build(family):
     runs = load_runs(family)
+    _fill_domains(runs)
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
     if live and live["family"] != family:
         live = None
