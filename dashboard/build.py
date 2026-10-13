@@ -17,7 +17,8 @@ from infra.trace import ROOT, load_runs
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template.html"
-OUTPUT = HERE / "index.html"
+# Une page par langue, générées depuis le même gabarit.
+OUTPUTS = {"fr": HERE / "index.html", "en": HERE / "index_en.html"}
 LIVE_FILE = ROOT / "research" / "outputs" / "live" / "latest.json"
 
 
@@ -52,12 +53,13 @@ def build(family):
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))
             .replace("__LIVE_JSON__", _embed(live)))
-    OUTPUT.write_text(page, encoding="utf-8")
-    return OUTPUT, len(runs)
+    for lang, path in OUTPUTS.items():
+        path.write_text(page.replace("__LANG__", lang), encoding="utf-8")
+    return OUTPUTS, len(runs)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("Usage : python -m dashboard.build <famille>")
-    path, n = build(sys.argv[1])
-    print(f"Tableau de bord : {path} ({n} run(s))")
+    paths, n = build(sys.argv[1])
+    print(f"Tableau de bord ({n} run(s)) : {paths['fr']} · English: {paths['en']}")

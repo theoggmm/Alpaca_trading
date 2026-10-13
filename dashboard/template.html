@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="__LANG__">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -41,6 +41,7 @@
   h2 { margin: 0 0 12px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
   .chip { background: var(--chip); color: var(--accent); border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 600; }
   .spacer { flex: 1; }
+  header a { color: var(--accent); font-weight: 600; }
   select { font: inherit; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
   .meta { color: var(--muted); font-family: var(--font-data); font-size: 13px; display: flex; flex-wrap: wrap; gap: 4px 18px; }
   .plain { margin: 0; max-width: 70ch; }
@@ -92,91 +93,188 @@
 <body>
 <main>
   <header>
-    <h1>Reprise après baisse</h1>
-    <span class="chip" id="status">diagnostic</span>
+    <h1 data-t="title"></h1>
+    <span class="chip" id="status"></span>
     <span class="spacer"></span>
-    <label for="run">Séance</label>
+    <a id="other-lang"></a>
+    <label for="run" data-t="session"></label>
     <select id="run"></select>
   </header>
 
   <section>
-    <h2>En direct : tendance par domaine</h2>
+    <h2 data-t="live_title"></h2>
     <div class="live-status" id="live-status"></div>
     <div class="panel live" id="live"></div>
     <p class="note" id="live-note"></p>
   </section>
 
   <div class="meta" id="meta"></div>
-  <p class="plain">Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance.
-    C'est une liste, pas un conseil d'achat : la décision t'appartient.</p>
+  <p class="plain" data-t="disclaimer"></p>
 
   <section>
-    <h2>Tendance sur un mois par domaine, au moment du run (clôture de la veille)</h2>
+    <h2 data-t="run_bubbles_title"></h2>
     <div class="panel bubbles" id="bubbles"></div>
     <p class="note" id="bubbles-note"></p>
   </section>
 
   <section>
-    <h2>Sélection</h2>
+    <h2 data-t="selection_title"></h2>
     <div class="panel" id="selection"></div>
     <p class="note" id="selection-note"></p>
   </section>
 
   <section>
-    <h2>Entonnoir des critères</h2>
+    <h2 data-t="funnel_title"></h2>
     <div class="panel funnel" id="funnel"></div>
-    <p class="note">Chaque case donne le nombre de titres encore en lice après ce critère.</p>
+    <p class="note" data-t="funnel_note"></p>
   </section>
 
   <div class="grid2">
     <section>
-      <h2>Critères de ce run</h2>
+      <h2 data-t="criteria_title"></h2>
       <ol class="panel criteria" id="criteria"></ol>
     </section>
     <section>
-      <h2>Titres les plus souvent retenus</h2>
+      <h2 data-t="history_title"></h2>
       <div class="panel" id="history"></div>
-      <p class="note">Sur tous les runs enregistrés. Un titre qui revient souvent n'est pas pour autant un meilleur titre.</p>
+      <p class="note" data-t="history_note"></p>
     </section>
   </div>
 </main>
 
 <script>
+const LANG = "__LANG__";
 const RUNS = __RUNS_JSON__;
 const LIVE = __LIVE_JSON__;
 // Au-delà, le suivi en direct est considéré comme arrêté.
 const LIVE_STALE_MS = 3 * 60 * 1000;
 
-const STEP_LABELS = {
-  actifs_negociables: "Actions négociables chez Alpaca",
-  cotes_sur_une_bourse_us: "Cotées sur une bourse US",
-  hors_etf_et_titres_de_test: "Hors ETF",
-  avec_barres_quotidiennes: "Avec cours quotidiens",
-  historique_complet: "Historique complet",
-  prix_minimum: "Prix minimum",
-  volume_echange_minimum: "Volume échangé suffisant",
-  volatilite_basse: "Volatilité basse",
-  en_baisse_sur_un_mois: "En baisse sur un mois",
-  hausse_des_derniers_jours: "Hausse des 2 derniers jours",
-  hausse_premiere_heure: "Hausse 1re heure",
-  selection_diversifiee: "Sélection diversifiée",
-};
-
-// Bureaux d'examen de la SEC (champ ownerOrg) ; un intitulé inconnu s'affiche tel quel.
-const DOMAIN_LABELS = {
-  "Technology": "Technologie",
-  "Finance": "Finance",
-  "Life Sciences": "Sciences de la vie",
-  "Manufacturing": "Industrie manufacturière",
-  "Energy & Transportation": "Énergie et transport",
-  "Real Estate & Construction": "Immobilier et construction",
-  "Trade & Services": "Commerce et services",
-  "Industrial Applications and Services": "Applications et services industriels",
-  "Crypto Assets": "Crypto-actifs",
-  "Structured Finance": "Finance structurée",
-  "International Corp Fin": "Sociétés étrangères",
-};
-const domainLabel = d => d ? (DOMAIN_LABELS[d] || d) : "Non classé";
+// Tous les textes de la page, en français et en anglais. Une fonction reçoit les valeurs à insérer.
+const TEXT = {
+  fr: {
+    locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
+    title: "Reprise après baisse", session: "Séance", not_judged: "non jugé",
+    live_title: "En direct : tendance par domaine",
+    disclaimer: "Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
+    run_bubbles_title: "Tendance sur un mois par domaine, au moment du run (clôture de la veille)",
+    selection_title: "Sélection", funnel_title: "Entonnoir des critères",
+    funnel_note: "Chaque case donne le nombre de titres encore en lice après ce critère.",
+    criteria_title: "Critères de ce run", history_title: "Titres les plus souvent retenus",
+    history_note: "Sur tous les runs enregistrés. Un titre qui revient souvent n'est pas pour autant un meilleur titre.",
+    unclassified: "Non classé",
+    live_off: "Suivi en direct non lancé",
+    live_launch: "Lance le suivi pendant la séance : /Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh",
+    live_running: "Suivi en cours", live_stopped: d => `Suivi arrêté : dernier état du ${d}`,
+    prices_until: t => `prix jusqu'à ${t} (New York)`, no_prices: "aucun prix de la séance",
+    updated_at: t => `mis à jour à ${t}`, feed: "toutes bourses, 15 min de retard",
+    col_domain: "Domaine", col_day: "Journée", col_first_hour: m => `${m} premières min`,
+    col_sessions: n => `${n} séances`, col_week: "1 semaine", col_month: "1 mois",
+    how_day: "dernier prix / clôture de la veille", how_first_hour: "prix à la fin de la première heure / ouverture",
+    how_sessions: n => `dernier prix / clôture d'il y a ${n} séances`,
+    n_stocks: n => `${n} titres`, upcoming: "à venir", dot_title: (d, l, n) => `${d}, ${l} : moyenne de ${n} titres`,
+    no_session_prices: "Pas encore de prix pour cette séance.",
+    live_note: (u, m) => `Moyenne simple, par domaine (classement SEC), des ${u} titres assez liquides. Vert : en hausse en moyenne, rouge : en baisse. « ${m} premières min » s'affiche 15 min après la fin de la première heure. Survole un en-tête pour sa définition. La page se recharge toute seule chaque minute.`,
+    meta: r => [`Séance du ${r.session_date}`, `décision à ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
+    th: { rank: "#", symbol: "Symbole", name: "Société", domain: "Domaine", month: "1 mois", d2: "J-2", d1: "J-1",
+          first_hour: "1re heure", price: "Prix à la décision", vol: "Volatilité annuelle", volume: "Volume moyen / jour",
+          times: "Fois retenu", last: "Dernière fois" },
+    read_later: "classement SEC lu à l'affichage, après le run",
+    no_selection: "Aucun titre ne remplissait tous les critères ce jour-là.",
+    fewer: (n, c) => `Seulement ${n} titres sur ${c} : la liste n'est jamais complétée en assouplissant les critères.`,
+    ranked: "Classés du plus fort repli sur un mois au plus faible.",
+    domain_note: " Domaine : classement officiel de la SEC (survole pour l'activité exacte).",
+    star_note: " * : domaine lu après le run, qui ne l'enregistrait pas encore.",
+    bubbles_error: e => "Domaines indisponibles pour ce run : " + e,
+    bubbles_missing: "Pas de tendance par domaine pour ce run (fonction ajoutée après).",
+    picked: k => ` · ${k} retenu(s)`, bubble_title: (d, n) => `${d} : moyenne de ${n} titres`,
+    bubbles_note: (m, u) => `Moyenne simple des variations sur ${m} séances des titres assez liquides de chaque domaine (classement officiel de la SEC). Vert : en hausse en moyenne, rouge : en baisse. Taille : nombre de titres. ${u} titres sans domaine connu de la SEC ne sont pas comptés.`,
+    criteria: c => [
+      "Actions cotées aux États-Unis, hors ETF et hors crypto (annuaire Nasdaq Trader).",
+      `Prix d'au moins ${c.min_price_usd} $ et au moins ${Number(c.min_avg_dollar_volume_usd) / 1e6} M$ échangés par jour en moyenne sur ${c.liquidity_sessions} séances.`,
+      `Volatilité quotidienne sur ${c.volatility_sessions} séances dans la moitié la plus basse (quantile ${c.max_volatility_quantile}).`,
+      `En baisse sur les ${c.month_sessions} dernières séances (environ un mois).`,
+      `En hausse à chacune des ${c.up_days} dernières séances.`,
+      `En hausse pendant les ${c.first_hour_minutes} premières minutes de la séance.`,
+      `Classement par baisse sur un mois, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu (${c.correlation_sessions} séances).`,
+    ],
+    no_history: "Pas encore d'historique.",
+    no_runs: "Aucun run enregistré. Le premier sera produit le prochain jour de bourse, une heure après l'ouverture.",
+    steps: {
+      actifs_negociables: "Actions négociables chez Alpaca", cotes_sur_une_bourse_us: "Cotées sur une bourse US",
+      hors_etf_et_titres_de_test: "Hors ETF", avec_barres_quotidiennes: "Avec cours quotidiens",
+      historique_complet: "Historique complet", prix_minimum: "Prix minimum", volume_echange_minimum: "Volume échangé suffisant",
+      volatilite_basse: "Volatilité basse", en_baisse_sur_un_mois: "En baisse sur un mois",
+      hausse_des_derniers_jours: "Hausse des 2 derniers jours", hausse_premiere_heure: "Hausse 1re heure",
+      selection_diversifiee: "Sélection diversifiée",
+    },
+    // Bureaux d'examen de la SEC (champ ownerOrg) ; un intitulé inconnu s'affiche tel quel.
+    domains: {
+      "Technology": "Technologie", "Finance": "Finance", "Life Sciences": "Sciences de la vie",
+      "Manufacturing": "Industrie manufacturière", "Energy & Transportation": "Énergie et transport",
+      "Real Estate & Construction": "Immobilier et construction", "Trade & Services": "Commerce et services",
+      "Industrial Applications and Services": "Applications et services industriels", "Crypto Assets": "Crypto-actifs",
+      "Structured Finance": "Finance structurée", "International Corp Fin": "Sociétés étrangères",
+    },
+  },
+  en: {
+    locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
+    title: "Rebound after decline", session: "Session", not_judged: "not judged",
+    live_title: "Live: trend by sector",
+    disclaimer: "These stocks meet, one hour after the open, criteria set in advance. This is a list, not buy advice: the decision is yours.",
+    run_bubbles_title: "One-month trend by sector at run time (previous close)",
+    selection_title: "Selection", funnel_title: "Criteria funnel",
+    funnel_note: "Each box gives the number of stocks still in the running after that criterion.",
+    criteria_title: "Criteria for this run", history_title: "Most frequently selected stocks",
+    history_note: "Across all recorded runs. A stock that comes back often is not a better stock for it.",
+    unclassified: "Unclassified",
+    live_off: "Live tracking not started",
+    live_launch: "Start tracking during the session: /Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh",
+    live_running: "Tracking live", live_stopped: d => `Tracking stopped: last state of ${d}`,
+    prices_until: t => `prices up to ${t} (New York)`, no_prices: "no prices for this session",
+    updated_at: t => `updated at ${t}`, feed: "all exchanges, 15-min delay",
+    col_domain: "Sector", col_day: "Day", col_first_hour: m => `First ${m} min`,
+    col_sessions: n => `${n} sessions`, col_week: "1 week", col_month: "1 month",
+    how_day: "last price / previous close", how_first_hour: "price at the end of the first hour / open",
+    how_sessions: n => `last price / close ${n} sessions ago`,
+    n_stocks: n => `${n} stocks`, upcoming: "pending", dot_title: (d, l, n) => `${d}, ${l}: average of ${n} stocks`,
+    no_session_prices: "No prices for this session yet.",
+    live_note: (u, m) => `Simple average, by sector (SEC classification), of the ${u} sufficiently liquid stocks. Green: up on average, red: down. "First ${m} min" appears 15 min after the first hour ends. Hover a header for its definition. The page reloads itself every minute.`,
+    meta: r => [`Session of ${r.session_date}`, `decision at ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
+    th: { rank: "#", symbol: "Symbol", name: "Company", domain: "Sector", month: "1 month", d2: "D-2", d1: "D-1",
+          first_hour: "First hour", price: "Price at decision", vol: "Annual volatility", volume: "Avg volume / day",
+          times: "Times selected", last: "Last time" },
+    read_later: "SEC classification read at display time, after the run",
+    no_selection: "No stock met all the criteria that day.",
+    fewer: (n, c) => `Only ${n} stocks out of ${c}: the list is never filled up by loosening the criteria.`,
+    ranked: "Ranked from the largest one-month decline to the smallest.",
+    domain_note: " Sector: official SEC classification (hover for the exact business).",
+    star_note: " *: sector read after the run, which did not record it yet.",
+    bubbles_error: e => "Sectors unavailable for this run: " + e,
+    bubbles_missing: "No sector trend for this run (feature added later).",
+    picked: k => ` · ${k} selected`, bubble_title: (d, n) => `${d}: average of ${n} stocks`,
+    bubbles_note: (m, u) => `Simple average of the ${m}-session changes of each sector's sufficiently liquid stocks (official SEC classification). Green: up on average, red: down. Size: number of stocks. ${u} stocks with no sector known to the SEC are not counted.`,
+    criteria: c => [
+      "Stocks listed in the United States, excluding ETFs and crypto (Nasdaq Trader directory).",
+      `Price of at least $${c.min_price_usd} and at least $${Number(c.min_avg_dollar_volume_usd) / 1e6}M traded per day on average over ${c.liquidity_sessions} sessions.`,
+      `Daily volatility over ${c.volatility_sessions} sessions in the lower half (quantile ${c.max_volatility_quantile}).`,
+      `Down over the last ${c.month_sessions} sessions (about one month).`,
+      `Up in each of the last ${c.up_days} sessions.`,
+      `Up during the first ${c.first_hour_minutes} minutes of the session.`,
+      `Ranked by one-month decline, then at most ${c.max_pairwise_correlation} correlation with each stock already selected (${c.correlation_sessions} sessions).`,
+    ],
+    no_history: "No history yet.",
+    no_runs: "No run recorded. The first one will be produced on the next trading day, one hour after the open.",
+    steps: {
+      actifs_negociables: "Tradable at Alpaca", cotes_sur_une_bourse_us: "Listed on a US exchange",
+      hors_etf_et_titres_de_test: "Excluding ETFs", avec_barres_quotidiennes: "With daily prices",
+      historique_complet: "Full history", prix_minimum: "Minimum price", volume_echange_minimum: "Enough traded volume",
+      volatilite_basse: "Low volatility", en_baisse_sur_un_mois: "Down over a month",
+      hausse_des_derniers_jours: "Up the last 2 days", hausse_premiere_heure: "Up in the first hour",
+      selection_diversifiee: "Diversified selection",
+    },
+    domains: {},
+  },
+}[LANG];
 
 const el = (tag, cls, text) => {
   const node = document.createElement(tag);
@@ -184,12 +282,13 @@ const el = (tag, cls, text) => {
   if (text !== undefined) node.textContent = text;
   return node;
 };
-const pct = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(2) + " %";
+const domainLabel = d => d ? (TEXT.domains[d] || d) : TEXT.unclassified;
+const pct = v => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "always" }).format(v);
 const signed = v => v > 0 ? "up" : v < 0 ? "down" : "";
 const tone = v => v > 0 ? "up" : v < 0 ? "down" : "flat";
-const usd = s => Number(s).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " $";
-const musd = s => (Number(s) / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " M$";
-const nyTime = iso => new Date(iso).toLocaleTimeString("fr-FR", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit" });
+const usd = s => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(Number(s));
+const musd = s => TEXT.millions(new Intl.NumberFormat(TEXT.locale, { maximumFractionDigits: 1 }).format(Number(s) / 1e6));
+const nyTime = iso => new Date(iso).toLocaleTimeString(TEXT.locale, { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit" });
 
 function table(columns, rows) {
   const t = el("table");
@@ -208,59 +307,38 @@ function table(columns, rows) {
 }
 
 function renderRun(run) {
-  document.getElementById("status").textContent = run.status + " · non jugé";
-  const meta = document.getElementById("meta");
-  meta.replaceChildren(...[
-    `Séance du ${run.session_date}`,
-    `décision à ${nyTime(run.decision_time)} (New York)`,
-    `run ${run.run_id}`,
-    `code ${run.git_sha.slice(0, 7)}`,
-    `n = ${run.selection.length} / ${run.criteria.count}`,
-  ].map(t => el("span", "", t)));
+  document.getElementById("status").textContent = `${run.status} · ${TEXT.not_judged}`;
+  document.getElementById("meta").replaceChildren(...TEXT.meta(run).map(t => el("span", "", t)));
 
-  const selection = document.getElementById("selection");
-  selection.replaceChildren(run.selection.length ? table([
-    { label: "#", value: r => r.rank },
-    { label: "Symbole", cls: "text symbol", value: r => r.symbol },
-    { label: "Société", cls: "text name", value: r => r.name, title: r => r.name },
-    { label: "Domaine", cls: "text name", value: r => domainLabel(r.domain) + (r.domain_read_later ? " *" : ""),
-      title: r => [r.sic_description, r.domain_read_later ? "classement SEC lu à l'affichage, après le run" : ""]
-        .filter(Boolean).join(" · ") },
-    { label: "1 mois", value: r => pct(r.return_month), tone: r => r.return_month },
-    { label: "J-2", value: r => pct(r.return_day_minus_2), tone: r => r.return_day_minus_2 },
-    { label: "J-1", value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
-    { label: "1re heure", value: r => pct(r.return_first_hour), tone: r => r.return_first_hour },
-    { label: "Prix à la décision", value: r => usd(r.price_at_decision) },
-    { label: "Volatilité annuelle", value: r => (r.volatility_annualized * 100).toFixed(1) + " %" },
-    { label: "Volume moyen / jour", value: r => musd(r.avg_dollar_volume) },
-  ], run.selection) : el("div", "empty", "Aucun titre ne remplissait tous les critères ce jour-là."));
+  const th = TEXT.th;
+  document.getElementById("selection").replaceChildren(run.selection.length ? table([
+    { label: th.rank, value: r => r.rank },
+    { label: th.symbol, cls: "text symbol", value: r => r.symbol },
+    { label: th.name, cls: "text name", value: r => r.name, title: r => r.name },
+    { label: th.domain, cls: "text name", value: r => domainLabel(r.domain) + (r.domain_read_later ? " *" : ""),
+      title: r => [r.sic_description, r.domain_read_later ? TEXT.read_later : ""].filter(Boolean).join(" · ") },
+    { label: th.month, value: r => pct(r.return_month), tone: r => r.return_month },
+    { label: th.d2, value: r => pct(r.return_day_minus_2), tone: r => r.return_day_minus_2 },
+    { label: th.d1, value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
+    { label: th.first_hour, value: r => pct(r.return_first_hour), tone: r => r.return_first_hour },
+    { label: th.price, value: r => usd(r.price_at_decision) },
+    { label: th.vol, value: r => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(r.volatility_annualized) },
+    { label: th.volume, value: r => musd(r.avg_dollar_volume) },
+  ], run.selection) : el("div", "empty", TEXT.no_selection));
   document.getElementById("selection-note").textContent =
-    (run.selection.length < run.criteria.count
-      ? `Seulement ${run.selection.length} titres sur ${run.criteria.count} : la liste n'est jamais complétée en assouplissant les critères.`
-      : "Classés du plus fort repli sur un mois au plus faible.")
-    + " Domaine : classement officiel de la SEC (survole pour l'activité exacte)."
-    + (run.selection.some(r => r.domain_read_later) ? " * : domaine lu après le run, qui ne l'enregistrait pas encore." : "");
+    (run.selection.length < run.criteria.count ? TEXT.fewer(run.selection.length, run.criteria.count) : TEXT.ranked)
+    + TEXT.domain_note + (run.selection.some(r => r.domain_read_later) ? TEXT.star_note : "");
 
   renderBubbles(run);
 
-  const funnel = document.getElementById("funnel");
   const steps = Object.entries(run.funnel);
-  funnel.replaceChildren(...steps.map(([key, n], i) => {
+  document.getElementById("funnel").replaceChildren(...steps.map(([key, n], i) => {
     const step = el("div", "step" + (i === steps.length - 1 ? " last" : ""));
-    step.append(el("b", "", n.toLocaleString("fr-FR")), el("span", "", STEP_LABELS[key] || key));
+    step.append(el("b", "", n.toLocaleString(TEXT.locale)), el("span", "", TEXT.steps[key] || key));
     return step;
   }));
 
-  const c = run.criteria;
-  document.getElementById("criteria").replaceChildren(...[
-    `Actions cotées aux États-Unis, hors ETF et hors crypto (annuaire Nasdaq Trader).`,
-    `Prix d'au moins ${c.min_price_usd} $ et au moins ${Number(c.min_avg_dollar_volume_usd) / 1e6} M$ échangés par jour en moyenne sur ${c.liquidity_sessions} séances.`,
-    `Volatilité quotidienne sur ${c.volatility_sessions} séances dans la moitié la plus basse (quantile ${c.max_volatility_quantile}).`,
-    `En baisse sur les ${c.month_sessions} dernières séances (environ un mois).`,
-    `En hausse à chacune des ${c.up_days} dernières séances.`,
-    `En hausse pendant les ${c.first_hour_minutes} premières minutes de la séance.`,
-    `Classement par baisse sur un mois, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu (${c.correlation_sessions} séances).`,
-  ].map(t => el("li", "", t)));
+  document.getElementById("criteria").replaceChildren(...TEXT.criteria(run.criteria).map(t => el("li", "", t)));
 }
 
 function renderBubbles(run) {
@@ -268,9 +346,7 @@ function renderBubbles(run) {
   const note = document.getElementById("bubbles-note");
   const domains = run.domains;
   if (!domains || domains.error) {
-    box.replaceChildren(el("div", "empty", domains
-      ? "Domaines indisponibles pour ce run : " + domains.error
-      : "Pas de tendance par domaine pour ce run (fonction ajoutée après)."));
+    box.replaceChildren(el("div", "empty", domains ? TEXT.bubbles_error(domains.error) : TEXT.bubbles_missing));
     note.textContent = "";
     return;
   }
@@ -278,45 +354,39 @@ function renderBubbles(run) {
   run.selection.forEach(item => picked.set(item.domain, (picked.get(item.domain) || 0) + 1));
   const maxN = Math.max(...domains.bubbles.map(b => b.n));
   box.replaceChildren(...domains.bubbles.map(b => {
-    const size = Math.round(120 + 120 * Math.sqrt(b.n / maxN));
     const bubble = el("div", "bubble " + tone(b.mean_return));
-    bubble.style.width = size + "px";
-    bubble.title = `${domainLabel(b.domain)} : moyenne de ${b.n} titres`;
-    const count = `${b.n} titres` + (picked.get(b.domain) ? ` · ${picked.get(b.domain)} retenu(s)` : "");
+    bubble.style.width = Math.round(120 + 120 * Math.sqrt(b.n / maxN)) + "px";
+    bubble.title = TEXT.bubble_title(domainLabel(b.domain), b.n);
     bubble.append(el("span", "domain", domainLabel(b.domain)), el("span", "mean", pct(b.mean_return)),
-                  el("span", "count", count));
+                  el("span", "count", TEXT.n_stocks(b.n) + (picked.get(b.domain) ? TEXT.picked(picked.get(b.domain)) : "")));
     return bubble;
   }));
-  note.textContent = `Moyenne simple des variations sur ${run.criteria.month_sessions} séances des titres assez liquides `
-    + `de chaque domaine (classement officiel de la SEC). Vert : en hausse en moyenne, rouge : en baisse. `
-    + `Taille : nombre de titres. ${domains.unclassified} titres sans domaine connu de la SEC ne sont pas comptés.`;
+  note.textContent = TEXT.bubbles_note(run.criteria.month_sessions, domains.unclassified);
 }
 
 function renderLive() {
   const status = document.getElementById("live-status");
   const box = document.getElementById("live");
-  const note = document.getElementById("live-note");
   if (!LIVE) {
-    status.replaceChildren(el("span", "pulse off"), el("span", "", "Suivi en direct non lancé"));
-    box.replaceChildren(el("div", "empty", "Lance le suivi pendant la séance : "
-      + "/Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh"));
+    status.replaceChildren(el("span", "pulse off"), el("span", "", TEXT.live_off));
+    box.replaceChildren(el("div", "empty", TEXT.live_launch));
     return;
   }
   const running = Date.now() - new Date(LIVE.observed_at).getTime() < LIVE_STALE_MS;
   status.replaceChildren(
     el("span", "pulse" + (running ? "" : " off")),
-    el("span", "", running ? "Suivi en cours" : `Suivi arrêté : dernier état du ${LIVE.session_date}`),
-    el("span", "", LIVE.prices_until ? `prix jusqu'à ${nyTime(LIVE.prices_until)} (New York)` : "aucun prix de la séance"),
-    el("span", "", `mis à jour à ${nyTime(LIVE.observed_at)}`),
-    el("span", "", "toutes bourses, 15 min de retard"));
+    el("span", "", running ? TEXT.live_running : TEXT.live_stopped(LIVE.session_date)),
+    el("span", "", LIVE.prices_until ? TEXT.prices_until(nyTime(LIVE.prices_until)) : TEXT.no_prices),
+    el("span", "", TEXT.updated_at(nyTime(LIVE.observed_at))),
+    el("span", "", TEXT.feed));
 
   const s = LIVE.sessions;
   const columns = [
-    ["day", "Journée", "dernier prix / clôture de la veille"],
-    ["first_hour", `${LIVE.first_hour_minutes} premières min`, "prix à la fin de la première heure / ouverture"],
-    ["two_days", `${s.two_days} séances`, `dernier prix / clôture d'il y a ${s.two_days} séances`],
-    ["week", "1 semaine", `dernier prix / clôture d'il y a ${s.week} séances`],
-    ["month", "1 mois", `dernier prix / clôture d'il y a ${s.month} séances`],
+    ["day", TEXT.col_day, TEXT.how_day],
+    ["first_hour", TEXT.col_first_hour(LIVE.first_hour_minutes), TEXT.how_first_hour],
+    ["two_days", TEXT.col_sessions(s.two_days), TEXT.how_sessions(s.two_days)],
+    ["week", TEXT.col_week, TEXT.how_sessions(s.week)],
+    ["month", TEXT.col_month, TEXT.how_sessions(s.month)],
   ];
   const cells = Object.fromEntries(columns.map(([key]) =>
     [key, new Map(LIVE.measures[key].bubbles.map(b => [b.domain, b]))]));
@@ -325,30 +395,27 @@ function renderLive() {
 
   const t = el("table");
   const head = t.createTHead().insertRow();
-  head.appendChild(el("th", "text", "Domaine"));
+  head.appendChild(el("th", "text", TEXT.col_domain));
   columns.forEach(([, label, how]) => { const th = el("th", "", label); th.title = how; head.appendChild(th); });
   const body = t.createTBody();
   order.forEach(domain => {
     const tr = body.insertRow();
     const name = el("td", "text", domainLabel(domain));
     const n = cells.day.get(domain)?.n ?? cells.month.get(domain)?.n;
-    if (n) name.appendChild(el("small", "", `${n} titres`));
+    if (n) name.appendChild(el("small", "", TEXT.n_stocks(n)));
     tr.appendChild(name);
     columns.forEach(([key, label]) => {
       const td = el("td");
       const b = cells[key].get(domain);
       const dot = b ? el("span", "dot " + tone(b.mean_return), pct(b.mean_return))
-                    : el("span", "dot none", LIVE.measures[key].available ? "—" : "à venir");
-      if (b) dot.title = `${domainLabel(domain)}, ${label} : moyenne de ${b.n} titres`;
+                    : el("span", "dot none", LIVE.measures[key].available ? "—" : TEXT.upcoming);
+      if (b) dot.title = TEXT.dot_title(domainLabel(domain), label, b.n);
       td.appendChild(dot);
       tr.appendChild(td);
     });
   });
-  box.replaceChildren(order.length ? t : el("div", "empty", "Pas encore de prix pour cette séance."));
-  note.textContent = `Moyenne simple, par domaine (classement SEC), des ${LIVE.universe} titres assez liquides. `
-    + `Vert : en hausse en moyenne, rouge : en baisse. « ${LIVE.first_hour_minutes} premières min » `
-    + `s'affiche 15 min après la fin de la première heure. Survole un en-tête pour sa définition. `
-    + `La page se recharge toute seule chaque minute.`;
+  box.replaceChildren(order.length ? t : el("div", "empty", TEXT.no_session_prices));
+  document.getElementById("live-note").textContent = TEXT.live_note(LIVE.universe, LIVE.first_hour_minutes);
 }
 
 function renderHistory() {
@@ -360,18 +427,24 @@ function renderHistory() {
     seen.set(item.symbol, entry);
   }));
   const rows = [...seen.values()].sort((a, b) => b.count - a.count || a.symbol.localeCompare(b.symbol)).slice(0, 25);
+  const th = TEXT.th;
   document.getElementById("history").replaceChildren(rows.length ? table([
-    { label: "Symbole", cls: "text symbol", value: r => r.symbol },
-    { label: "Société", cls: "text name", value: r => r.name, title: r => r.name },
-    { label: "Fois retenu", value: r => r.count },
-    { label: "Dernière fois", value: r => r.last },
-  ], rows) : el("div", "empty", "Pas encore d'historique."));
+    { label: th.symbol, cls: "text symbol", value: r => r.symbol },
+    { label: th.name, cls: "text name", value: r => r.name, title: r => r.name },
+    { label: th.times, value: r => r.count },
+    { label: th.last, value: r => r.last },
+  ], rows) : el("div", "empty", TEXT.no_history));
 }
+
+document.title = TEXT.title;
+document.querySelectorAll("[data-t]").forEach(node => { node.textContent = TEXT[node.dataset.t]; });
+const other = document.getElementById("other-lang");
+other.textContent = TEXT.other;
+other.href = TEXT.other_href;
 
 const picker = document.getElementById("run");
 if (!RUNS.length) {
-  document.getElementById("selection").replaceChildren(el("div", "empty",
-    "Aucun run enregistré. Le premier sera produit le prochain jour de bourse, une heure après l'ouverture."));
+  document.getElementById("selection").replaceChildren(el("div", "empty", TEXT.no_runs));
   picker.disabled = true;
 } else {
   // Le run choisi est gardé dans l'adresse (#r001) pour survivre au rechargement automatique.

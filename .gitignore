@@ -4,3 +4,4 @@ __pycache__/
 .pytest_cache/
 research/outputs/
 dashboard/index.html
+dashboard/index_en.html

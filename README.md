@@ -52,10 +52,15 @@ puis commiter l'historique du jour et l'envoyer sur GitHub (tests verts et `git 
 /Users/theodoremeyer/Documents/Alpaca_trading/run_screener.sh
 ```
 
-Ouvrir le tableau de bord dans Chrome :
+Ouvrir le tableau de bord dans Chrome (français, puis version anglaise ; un lien en haut de page
+passe de l'une à l'autre) :
 
 ```bash
 open -a "Google Chrome" /Users/theodoremeyer/Documents/Alpaca_trading/dashboard/index.html
+```
+
+```bash
+open -a "Google Chrome" /Users/theodoremeyer/Documents/Alpaca_trading/dashboard/index_en.html
 ```
 
 ## Bulles en direct
