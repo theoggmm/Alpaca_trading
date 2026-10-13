@@ -6,7 +6,7 @@ Les montants sont lus en Decimal directement depuis le JSON (aucun passage par f
 """
 
 import json
-from datetime import datetime, time
+from datetime import date, datetime, time
 from decimal import Decimal
 
 import pandas as pd
@@ -41,13 +41,17 @@ class AlpacaReader:
         self._reader = Reader(MIN_INTERVAL_S, {"APCA-API-KEY-ID": api_key, "APCA-API-SECRET-KEY": secret_key})
         self.trading_url = TRADING_URL[self.paper]
 
+    def sessions(self, start, end):
+        """Séances entre deux dates incluses : [(date, ouverture, clôture)], heures de New York."""
+        days = _json(self._reader.get(f"{self.trading_url}/v2/calendar",
+                                      {"start": start.isoformat(), "end": end.isoformat()}))
+        return [(date.fromisoformat(d["date"]), time.fromisoformat(d["open"]), time.fromisoformat(d["close"]))
+                for d in days]
+
     def session(self, day):
         """(ouverture, clôture) de la séance du jour donné, heure de New York ; None si marché fermé."""
-        days = _json(self._reader.get(f"{self.trading_url}/v2/calendar",
-                                      {"start": day.isoformat(), "end": day.isoformat()}))
-        if not days or days[0]["date"] != day.isoformat():
-            return None
-        return time.fromisoformat(days[0]["open"]), time.fromisoformat(days[0]["close"])
+        found = [(o, c) for d, o, c in self.sessions(day, day) if d == day]
+        return found[0] if found else None
 
     def assets(self):
         """Actifs actions US actifs : symbol, name, class, status, tradable, exchange."""

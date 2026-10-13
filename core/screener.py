@@ -146,6 +146,17 @@ def first_hour_prices(minute, market_open):
             for symbol, bars in session.groupby("symbol", sort=True)}
 
 
+def last_session_prices(minute, market_close):
+    """
+    Dernier échange de la séance régulière, reconstitué depuis les barres minute :
+    symbole -> (fin de la dernière barre terminée à la clôture, dernier prix de cette barre).
+    """
+    minute = usable_bars(minute, MINUTE, market_close)
+
+    last = minute.sort_values("timestamp").groupby("symbol", sort=True).tail(1)
+    return {row.symbol: ((row.timestamp + MINUTE).to_pydatetime(), row.close) for row in last.itertuples()}
+
+
 def changes_since_open(opens, last_trades, market_open, market_close, now):
     """
     Variation depuis l'ouverture de la séance : dernier prix / premier prix de la séance - 1.

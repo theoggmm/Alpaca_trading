@@ -1,6 +1,7 @@
 """
-Génère dashboard/index.html à partir de l'historique des runs d'une famille et du dernier état
-du suivi en direct (research/outputs/live/latest.json, volatil), s'il existe.
+Génère dashboard/index.html (et index_en.html) à partir de l'historique des runs d'une famille,
+des états de fin de séance (research/experiments/final/) et du dernier état du suivi en direct
+(research/outputs/live/latest.json, volatil), s'il existe.
 
 Depuis la racine du dépôt :
     .venv/bin/python -m dashboard.build reprise_apres_baisse
@@ -20,6 +21,8 @@ TEMPLATE = HERE / "template.html"
 # Une page par langue, générées depuis le même gabarit.
 OUTPUTS = {"fr": HERE / "index.html", "en": HERE / "index_en.html"}
 LIVE_FILE = ROOT / "research" / "outputs" / "live" / "latest.json"
+# États de fin de séance, durables (commités avec l'historique) : <famille>/<date>.json.
+FINALS_DIR = ROOT / "research" / "experiments" / "final"
 
 
 def _embed(value):
@@ -50,9 +53,12 @@ def build(family):
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
     if live and live["family"] != family:
         live = None
+    finals = {path.stem: json.loads(path.read_text(encoding="utf-8"))
+              for path in sorted((FINALS_DIR / family).glob("*.json"))}
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))
-            .replace("__LIVE_JSON__", _embed(live)))
+            .replace("__LIVE_JSON__", _embed(live))
+            .replace("__FINALS_JSON__", _embed(finals)))
     for lang, path in OUTPUTS.items():
         path.write_text(page.replace("__LANG__", lang), encoding="utf-8")
     return OUTPUTS, len(runs)

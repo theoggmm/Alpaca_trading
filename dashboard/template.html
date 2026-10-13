@@ -146,6 +146,7 @@
 const LANG = "__LANG__";
 const RUNS = __RUNS_JSON__;
 const LIVE = __LIVE_JSON__;
+const FINALS = __FINALS_JSON__;
 // Au-delà, le suivi en direct est considéré comme arrêté.
 const LIVE_STALE_MS = 3 * 60 * 1000;
 
@@ -179,6 +180,11 @@ const TEXT = {
           first_hour: "1re heure", live: "Depuis l'ouverture (direct)", price: "Prix à la décision",
           vol: "Volatilité annuelle", volume: "Volume moyen / jour", times: "Fois retenu", last: "Dernière fois" },
     live_cell: (p, t) => `dernier prix ${p} à ${t} (New York), 15 min de retard`,
+    open_to_close: "Ouverture → clôture",
+    final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t} (New York)`,
+    final_col_note: " « Ouverture → clôture » : dernier échange avant 16 h 00 / premier prix de la séance, reconstitué depuis l'historique minute d'Alpaca.",
+    final_state: d => `Fin de séance du ${d}`,
+    final_source: "dernier échange avant 16 h 00 (New York), historique minute toutes bourses",
     no_live_price: "pas encore d'échange connu dans la séance",
     live_col_note: " « Depuis l'ouverture » : dernier prix / premier prix de la séance, mis à jour chaque minute par le suivi en direct ; après la clôture, la variation de l'ouverture à la clôture.",
     read_later: "classement SEC lu à l'affichage, après le run",
@@ -247,6 +253,11 @@ const TEXT = {
           first_hour: "First hour", live: "Since open (live)", price: "Price at decision",
           vol: "Annual volatility", volume: "Avg volume / day", times: "Times selected", last: "Last time" },
     live_cell: (p, t) => `last price ${p} at ${t} (New York), 15-min delay`,
+    open_to_close: "Open → close",
+    final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t} (New York)`,
+    final_col_note: " \"Open → close\": last trade before 4:00 PM / first price of the session, rebuilt from Alpaca's minute history.",
+    final_state: d => `End of session ${d}`,
+    final_source: "last trade before 4:00 PM (New York), all-exchange minute history",
     no_live_price: "no trade known in the session yet",
     live_col_note: " \"Since open\": last price / first price of the session, updated every minute by live tracking; after the close, the change from open to close.",
     read_later: "SEC classification read at display time, after the run",
@@ -317,12 +328,15 @@ function renderRun(run) {
   document.getElementById("meta").replaceChildren(...TEXT.meta(run).map(t => el("span", "", t)));
 
   const th = TEXT.th;
-  // Colonne en direct : seulement pour le run de la séance suivie par le suivi en direct.
-  const live = LIVE?.selection?.run_id === run.run_id ? LIVE.selection.changes : null;
+  // Variation depuis l'ouverture : en direct pendant la séance suivie, sinon l'état de fin de séance.
+  const inSession = LIVE?.selection?.run_id === run.run_id && !LIVE.final ? LIVE.selection.changes : null;
+  const final = FINALS[run.session_date]?.selection?.changes;
+  const live = inSession || final;
   const liveColumn = live && {
-    label: th.live, value: r => live[r.symbol] ? pct(live[r.symbol].change) : "—",
+    label: inSession ? th.live : TEXT.open_to_close, value: r => live[r.symbol] ? pct(live[r.symbol].change) : "—",
     tone: r => live[r.symbol]?.change ?? 0,
-    title: r => live[r.symbol] ? TEXT.live_cell(usd(live[r.symbol].price), nyTime(live[r.symbol].at)) : TEXT.no_live_price,
+    title: r => !live[r.symbol] ? TEXT.no_live_price
+      : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(live[r.symbol].price), nyTime(live[r.symbol].at)),
   };
   document.getElementById("selection").replaceChildren(run.selection.length ? table([
     { label: th.rank, value: r => r.rank },
@@ -342,7 +356,7 @@ function renderRun(run) {
   document.getElementById("selection-note").textContent =
     (run.selection.length < run.criteria.count ? TEXT.fewer(run.selection.length, run.criteria.count) : TEXT.ranked)
     + TEXT.domain_note + (run.selection.some(r => r.domain_read_later) ? TEXT.star_note : "")
-    + (live ? TEXT.live_col_note : "");
+    + (inSession ? TEXT.live_col_note : final ? TEXT.final_col_note : "");
 
   renderBubbles(run);
 
@@ -387,13 +401,18 @@ function renderLive() {
     box.replaceChildren(el("div", "empty", TEXT.live_launch));
     return;
   }
-  const running = Date.now() - new Date(LIVE.observed_at).getTime() < LIVE_STALE_MS;
-  status.replaceChildren(
+  const running = !LIVE.final && Date.now() - new Date(LIVE.observed_at).getTime() < LIVE_STALE_MS;
+  status.replaceChildren(...(LIVE.final ? [
+    el("span", "pulse off"),
+    el("span", "", TEXT.final_state(LIVE.session_date)),
+    el("span", "", TEXT.final_source),
+  ] : [
     el("span", "pulse" + (running ? "" : " off")),
     el("span", "", running ? TEXT.live_running : TEXT.live_stopped(LIVE.session_date)),
     el("span", "", LIVE.prices_until ? TEXT.prices_until(nyTime(LIVE.prices_until)) : TEXT.no_prices),
     el("span", "", TEXT.updated_at(nyTime(LIVE.observed_at))),
-    el("span", "", TEXT.feed));
+    el("span", "", TEXT.feed),
+  ]));
 
   const s = LIVE.sessions;
   const columns = [

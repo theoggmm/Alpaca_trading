@@ -80,7 +80,18 @@ fin des 60 premières minutes / premier prix de la séance − 1, affichée 15 m
 première heure. Dans le tableau de la sélection du jour, la colonne « Depuis l'ouverture » donne pour
 chaque titre : dernier prix / premier prix de la séance − 1. Dernier prix = dernier échange de la séance régulière (ni pré-ouverture, ni après
 16 h 00 : l'enchère de clôture n'est pas comptée). Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
-état est gardé (`research/outputs/live/latest.json`, non suivi par git).
+état en direct est gardé (`research/outputs/live/latest.json`, non suivi par git).
+
+**Fin de séance, même Mac fermé pendant la clôture.** L'état de fin de séance (bulles et colonne
+« Ouverture → clôture ») est reconstitué depuis l'historique minute d'Alpaca : dernier échange de
+chaque titre avant 16 h 00 (New York), sans l'enchère de clôture. Il est produit par le suivi en
+direct après la clôture (ou à son réveil), et rattrapé pour toute séance manquée par `run_screener.sh`
+ou à la main. Il est gardé dans `research/experiments/final/<famille>/<date>.json` et poussé sur GitHub
+avec l'historique :
+
+```bash
+/Users/theodoremeyer/Documents/Alpaca_trading/.venv/bin/python -m dashboard.final reprise_apres_baisse
+```
 
 Lancer les tests :
 
