@@ -176,8 +176,11 @@ const TEXT = {
     live_note: (u, m) => `Moyenne simple, par domaine (classement SEC), des ${u} titres assez liquides. Vert : en hausse en moyenne, rouge : en baisse. « ${m} premières min » s'affiche 15 min après la fin de la première heure. Survole un en-tête pour sa définition. La page se recharge toute seule chaque minute.`,
     meta: r => [`Séance du ${r.session_date}`, `décision à ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
     th: { rank: "#", symbol: "Symbole", name: "Société", domain: "Domaine", month: "1 mois", d2: "J-2", d1: "J-1",
-          first_hour: "1re heure", price: "Prix à la décision", vol: "Volatilité annuelle", volume: "Volume moyen / jour",
-          times: "Fois retenu", last: "Dernière fois" },
+          first_hour: "1re heure", live: "Depuis l'ouverture (direct)", price: "Prix à la décision",
+          vol: "Volatilité annuelle", volume: "Volume moyen / jour", times: "Fois retenu", last: "Dernière fois" },
+    live_cell: (p, t) => `dernier prix ${p} à ${t} (New York), 15 min de retard`,
+    no_live_price: "pas encore d'échange connu dans la séance",
+    live_col_note: " « Depuis l'ouverture » : dernier prix / premier prix de la séance, mis à jour chaque minute par le suivi en direct ; après la clôture, la variation de l'ouverture à la clôture.",
     read_later: "classement SEC lu à l'affichage, après le run",
     no_selection: "Aucun titre ne remplissait tous les critères ce jour-là.",
     fewer: (n, c) => `Seulement ${n} titres sur ${c} : la liste n'est jamais complétée en assouplissant les critères.`,
@@ -241,8 +244,11 @@ const TEXT = {
     live_note: (u, m) => `Simple average, by sector (SEC classification), of the ${u} sufficiently liquid stocks. Green: up on average, red: down. "First ${m} min" appears 15 min after the first hour ends. Hover a header for its definition. The page reloads itself every minute.`,
     meta: r => [`Session of ${r.session_date}`, `decision at ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
     th: { rank: "#", symbol: "Symbol", name: "Company", domain: "Sector", month: "1 month", d2: "D-2", d1: "D-1",
-          first_hour: "First hour", price: "Price at decision", vol: "Annual volatility", volume: "Avg volume / day",
-          times: "Times selected", last: "Last time" },
+          first_hour: "First hour", live: "Since open (live)", price: "Price at decision",
+          vol: "Annual volatility", volume: "Avg volume / day", times: "Times selected", last: "Last time" },
+    live_cell: (p, t) => `last price ${p} at ${t} (New York), 15-min delay`,
+    no_live_price: "no trade known in the session yet",
+    live_col_note: " \"Since open\": last price / first price of the session, updated every minute by live tracking; after the close, the change from open to close.",
     read_later: "SEC classification read at display time, after the run",
     no_selection: "No stock met all the criteria that day.",
     fewer: (n, c) => `Only ${n} stocks out of ${c}: the list is never filled up by loosening the criteria.`,
@@ -311,6 +317,13 @@ function renderRun(run) {
   document.getElementById("meta").replaceChildren(...TEXT.meta(run).map(t => el("span", "", t)));
 
   const th = TEXT.th;
+  // Colonne en direct : seulement pour le run de la séance suivie par le suivi en direct.
+  const live = LIVE?.selection?.run_id === run.run_id ? LIVE.selection.changes : null;
+  const liveColumn = live && {
+    label: th.live, value: r => live[r.symbol] ? pct(live[r.symbol].change) : "—",
+    tone: r => live[r.symbol]?.change ?? 0,
+    title: r => live[r.symbol] ? TEXT.live_cell(usd(live[r.symbol].price), nyTime(live[r.symbol].at)) : TEXT.no_live_price,
+  };
   document.getElementById("selection").replaceChildren(run.selection.length ? table([
     { label: th.rank, value: r => r.rank },
     { label: th.symbol, cls: "text symbol", value: r => r.symbol },
@@ -321,13 +334,15 @@ function renderRun(run) {
     { label: th.d2, value: r => pct(r.return_day_minus_2), tone: r => r.return_day_minus_2 },
     { label: th.d1, value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
     { label: th.first_hour, value: r => pct(r.return_first_hour), tone: r => r.return_first_hour },
+    ...(liveColumn ? [liveColumn] : []),
     { label: th.price, value: r => usd(r.price_at_decision) },
     { label: th.vol, value: r => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(r.volatility_annualized) },
     { label: th.volume, value: r => musd(r.avg_dollar_volume) },
   ], run.selection) : el("div", "empty", TEXT.no_selection));
   document.getElementById("selection-note").textContent =
     (run.selection.length < run.criteria.count ? TEXT.fewer(run.selection.length, run.criteria.count) : TEXT.ranked)
-    + TEXT.domain_note + (run.selection.some(r => r.domain_read_later) ? TEXT.star_note : "");
+    + TEXT.domain_note + (run.selection.some(r => r.domain_read_later) ? TEXT.star_note : "")
+    + (live ? TEXT.live_col_note : "");
 
   renderBubbles(run);
 

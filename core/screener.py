@@ -146,6 +146,21 @@ def first_hour_prices(minute, market_open):
             for symbol, bars in session.groupby("symbol", sort=True)}
 
 
+def changes_since_open(opens, last_trades, market_open, market_close, now):
+    """
+    Variation depuis l'ouverture de la séance : dernier prix / premier prix de la séance - 1.
+    opens       : symbole -> premier prix de la séance (Decimal).
+    last_trades : symbole -> (horodatage, prix) ; seuls les échanges de la séance régulière
+                  antérieurs à now servent.
+    Retourne symbole -> {"change", "price", "at"}.
+    """
+    last_trades = {s: (ts, p) for s, (ts, p) in last_trades.items() if market_open <= ts <= min(now, market_close)}
+
+    return {symbol: {"change": float(last_trades[symbol][1] / day_open - 1),
+                     "price": str(last_trades[symbol][1]), "at": last_trades[symbol][0].isoformat()}
+            for symbol, day_open in opens.items() if symbol in last_trades}
+
+
 def _correlation(a, b):
     """Corrélation des rendements quotidiens aux dates communes ; None si non calculable."""
     returns_b = dict(b)

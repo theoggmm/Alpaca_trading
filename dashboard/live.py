@@ -2,8 +2,8 @@
 Suivi en direct des bulles par domaine pendant la séance de New York.
 
 Toutes les minutes : derniers prix (toutes bourses, 15 min de retard), moyenne par domaine pour
-la journée, la première heure, 2 séances, 1 semaine et 1 mois, puis régénération du tableau de bord
-(qui se recharge seul). S'arrête seul après la clôture. Ctrl+C pour arrêter avant.
+la journée, la première heure, 2 séances, 1 semaine et 1 mois, variation depuis l'ouverture de
+chaque titre de la sélection du jour, puis régénération du tableau de bord (qui se recharge seul). S'arrête seul après la clôture. Ctrl+C pour arrêter avant.
 
 Depuis la racine du dépôt :
     .venv/bin/python -m dashboard.live reprise_apres_baisse
@@ -13,19 +13,20 @@ import json
 import sys
 import time
 from datetime import datetime, timedelta, timezone
+from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import pandas as pd
 
 from core.domains import WEEK_SESSIONS, live_domain_trends
-from core.screener import Criteria, liquid_universe
+from core.screener import Criteria, changes_since_open, liquid_universe
 from core.universe import eligible_symbols
 from dashboard.build import LIVE_FILE, build
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
-from infra.trace import ROOT
+from infra.trace import ROOT, load_runs
 
 NEW_YORK = ZoneInfo("America/New_York")
 FEED = "delayed_sip"
@@ -81,11 +82,14 @@ def run(family):
             print(f"En attente des premiers prix (à {(market_open + FEED_DELAY).astimezone(NEW_YORK):%H:%M}, New York).")
             time.sleep(REFRESH_S)
             continue
+        # La sélection du jour existe une fois le run du screener produit (après 10 h 45, New York).
+        today_run = next((r for r in load_runs(family) if r["session_date"] == key), None)
+        opens = {item["symbol"]: Decimal(item["open_today"]) for item in (today_run or {}).get("selection", [])}
         try:
             if minute.empty and now >= first_hour_end + FEED_DELAY:
                 minute = cached(f"{key}/live_first_hour_bars",
                                 lambda: alpaca.bars(symbols, "1Min", market_open, first_hour_end))
-            trades = alpaca.latest_trades(symbols, FEED)
+            trades = alpaca.latest_trades(sorted(set(symbols) | set(opens)), FEED)
         except FetchError as e:
             print(f"{now.astimezone(NEW_YORK):%H:%M} — lecture impossible, nouvel essai dans {REFRESH_S} s : {e}")
             time.sleep(REFRESH_S)
@@ -105,6 +109,10 @@ def run(family):
             "first_hour_minutes": criteria.first_hour_minutes,
             "sessions": {"two_days": criteria.up_days, "week": WEEK_SESSIONS, "month": criteria.month_sessions},
             "measures": measures,
+            "selection": today_run and {
+                "run_id": today_run["run_id"],
+                "changes": changes_since_open(opens, trades, market_open, market_close, now),
+            },
         }, ensure_ascii=False), encoding="utf-8")
         build(family)
         day = measures["day"]["bubbles"]
