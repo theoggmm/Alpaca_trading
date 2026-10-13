@@ -54,3 +54,24 @@ bulles dès le prochain run.
 **En attente** : le propriétaire doit ajouter `SEC_USER_AGENT` (nom et e-mail) dans `.env`. Sans
 cette ligne, la liste est produite mais les bulles affichent « Domaines indisponibles ».
 `r001` n'a pas de bulles : il a été produit avant cette fonction et un run passé ne se réécrit pas.
+
+## 2026-10-14 — Bulles en direct
+
+**Question posée** : des bulles pour la semaine, les deux derniers jours, la première heure et la
+journée en direct, mises à jour automatiquement.
+
+**Fait** :
+- Domaines SEC vérifiés sur la séance du 13 octobre : 2 098 des 2 099 titres liquides connus de la
+  SEC, 15 sans domaine. Contact SEC ajouté par le propriétaire dans `.env`.
+- Choix du propriétaire : prix toutes bourses avec 15 min de retard (le temps réel consolidé est
+  payant), périodes jusqu'au prix du moment, suivi lancé à la main (`live_bubbles.sh`).
+- `dashboard/live.py` : toutes les minutes pendant la séance, moyenne par domaine pour la journée,
+  la première heure, 2 séances, 1 semaine et 1 mois ; page qui se recharge seule. Seuls les échanges
+  de la séance régulière comptent. 19 tests verts, dont la datation du direct.
+- État de fin de séance du 13 octobre produit avec les vraies données pour montrer la page.
+
+Autrement dit : pendant la séance, la page montre minute par minute quels domaines montent et
+lesquels baissent, avec 15 minutes de retard.
+
+**Point à noter** : la SEC a un domaine « Crypto Assets » : ce sont des actions de sociétés liées
+aux cryptos (pas des cryptos), elles restent dans l'univers.
