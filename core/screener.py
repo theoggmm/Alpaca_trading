@@ -67,6 +67,7 @@ class DailyStats:
     volatility: float          # écart-type des rendements quotidiens
     return_month: float
     returns: tuple             # ((timestamp, rendement quotidien), ...) du plus ancien au plus récent
+    closes: tuple              # clôtures (Decimal) du plus ancien au plus récent
 
 
 def _daily_stats(symbol, bars, criteria):
@@ -83,6 +84,7 @@ def _daily_stats(symbol, bars, criteria):
         volatility=statistics.stdev(r for _, r in returns[-criteria.volatility_sessions:]),
         return_month=float(closes[-1] / closes[-1 - criteria.month_sessions] - 1),
         returns=returns,
+        closes=tuple(closes),
     )
 
 
@@ -137,8 +139,8 @@ def daily_candidates(daily, decision_time, criteria):
     return stats, funnel
 
 
-def _first_hour(minute, market_open):
-    """symbole -> (prix d'ouverture de la séance, dernier prix connu)."""
+def first_hour_prices(minute, market_open):
+    """symbole -> (prix d'ouverture de la séance, dernier prix des barres fournies)."""
     session = minute[minute["timestamp"] >= market_open].sort_values("timestamp")
     return {symbol: (bars["open"].iloc[0], bars["close"].iloc[-1])
             for symbol, bars in session.groupby("symbol", sort=True)}
@@ -167,7 +169,7 @@ def screen(daily, minute, market_open, decision_time, criteria):
         raise ValueError("decision_time doit valoir market_open + first_hour_minutes")
 
     candidates, funnel = daily_candidates(daily, decision_time, criteria)
-    first_hour = _first_hour(minute, market_open)
+    first_hour = first_hour_prices(minute, market_open)
 
     rising = [(s, *first_hour[s.symbol]) for s in candidates
               if s.symbol in first_hour and first_hour[s.symbol][1] > first_hour[s.symbol][0]]

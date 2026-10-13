@@ -18,11 +18,11 @@ def test_moyenne_par_domaine_et_titres_non_classes():
     for bubble in bubbles:
         returns = [s.return_month for s in liquid if DOMAINS.get(s.symbol) == bubble["domain"]]
         assert bubble["n"] == len(returns)
-        assert bubble["mean_return_month"] == statistics.fmean(returns)
+        assert bubble["mean_return"] == statistics.fmean(returns)
     assert unclassified == sum(1 for s in liquid if s.symbol not in DOMAINS)  # TWINB
     assert unclassified == 1
-    assert {b["domain"]: b["mean_return_month"] < 0 for b in bubbles}["Baisse"]
-    assert [b["mean_return_month"] for b in bubbles] == sorted((b["mean_return_month"] for b in bubbles), reverse=True)
+    assert {b["domain"]: b["mean_return"] < 0 for b in bubbles}["Baisse"]
+    assert [b["mean_return"] for b in bubbles] == sorted((b["mean_return"] for b in bubbles), reverse=True)
 
 
 def test_donnees_futures_sans_effet_sur_les_domaines():

@@ -20,7 +20,8 @@ Les règles du dépôt sont dans [`CLAUDE.md`](CLAUDE.md) ; le journal de bord d
 | `research/experiments/registry.csv` | Registre des runs |
 | `dashboard/` | Gabarit et génération du tableau de bord (`index.html`, généré) |
 | `tests/` | Datation, critères, frontières du code, secrets |
-| `run_screener.sh` | Run du jour puis régénération du tableau de bord |
+| `run_screener.sh` | Run du jour, régénération du tableau de bord, historique poussé sur GitHub |
+| `live_bubbles.sh` | Suivi en direct des bulles par domaine pendant la séance |
 
 ## Environnement
 
@@ -56,6 +57,23 @@ Ouvrir le tableau de bord dans Chrome :
 ```bash
 open -a "Google Chrome" /Users/theodoremeyer/Documents/Alpaca_trading/dashboard/index.html
 ```
+
+## Bulles en direct
+
+Pendant la séance de New York, suivre la tendance moyenne de chaque domaine (classement SEC) :
+journée, première heure, 2 séances, 1 semaine, 1 mois. Prix toutes bourses avec 15 minutes de retard
+(offre gratuite Alpaca). Le tableau de bord est régénéré chaque minute et se recharge seul ; le suivi
+s'arrête seul après la clôture (Ctrl+C pour l'arrêter avant) :
+
+```bash
+/Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh
+```
+
+Les mesures, séance en cours comprise : dernier prix / clôture d'il y a N séances − 1
+(journée : N = 1 ; 2 séances : N = 2 ; 1 semaine : N = 5 ; 1 mois : N = 21). Première heure : prix à la
+fin des 60 premières minutes / premier prix de la séance − 1, affichée 15 minutes après la fin de la
+première heure. Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
+état est gardé (`research/outputs/live/latest.json`, non suivi par git).
 
 Lancer les tests :
 

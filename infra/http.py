@@ -31,8 +31,10 @@ class Reader:
             response = self._session.get(url, params=params, timeout=TIMEOUT_S)
         except requests.RequestException as e:
             raise FetchError(f"Requête impossible vers {url} : {e}") from e
-        if response.status_code in (401, 403):
-            raise FetchError(f"{url} a répondu {response.status_code} : accès refusé, identifiants invalides ou révoqués")
+        if response.status_code == 401:
+            raise FetchError(f"{url} a répondu 401 : identifiants invalides ou révoqués")
+        if response.status_code == 403:
+            raise FetchError(f"{url} a répondu 403 : accès refusé (abonnement insuffisant ou identifiants)")
         if response.status_code != 200:
             raise FetchError(f"{url} a répondu {response.status_code} : {response.text[:200]}")
         return response

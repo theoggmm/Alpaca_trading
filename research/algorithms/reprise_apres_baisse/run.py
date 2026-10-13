@@ -118,7 +118,7 @@ def run():
         print(f"Tendance sur {criteria.month_sessions} séances par domaine (SEC), "
               f"{domains['unclassified']} titres non classés :")
         for bubble in domains["bubbles"]:
-            print(f"     {bubble['domain']:<40} {_pct(bubble['mean_return_month'])}  n = {bubble['n']}")
+            print(f"     {bubble['domain']:<40} {_pct(bubble['mean_return'])}  n = {bubble['n']}")
     print(f"Résultats : {path}")
     return 0
 

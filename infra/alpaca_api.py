@@ -55,6 +55,19 @@ class AlpacaReader:
                                         {"status": "active", "asset_class": "us_equity"}))
         return [{k: a[k] for k in ("symbol", "name", "class", "status", "tradable", "exchange")} for a in assets]
 
+    def latest_trades(self, symbols, feed):
+        """
+        symbole -> (horodatage UTC, prix Decimal) du dernier échange connu.
+        feed "delayed_sip" : toutes bourses, 15 minutes de retard (offre gratuite).
+        """
+        trades = {}
+        for i in range(0, len(symbols), SYMBOLS_PER_REQUEST):
+            page = _json(self._reader.get(f"{DATA_URL}/v2/stocks/trades/latest",
+                                          {"symbols": ",".join(symbols[i:i + SYMBOLS_PER_REQUEST]), "feed": feed}))
+            trades.update({symbol: (pd.Timestamp(t["t"]).to_pydatetime(warn=False), Decimal(str(t["p"])))
+                           for symbol, t in (page.get("trades") or {}).items()})
+        return trades
+
     def bars(self, symbols, timeframe, start, end):
         """
         Barres consolidées (feed SIP), ajustées des splits et dividendes, entre start et end (UTC).

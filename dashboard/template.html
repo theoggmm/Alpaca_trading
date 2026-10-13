@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- La page est régénérée chaque minute par le suivi en direct : elle se recharge seule. -->
+<meta http-equiv="refresh" content="60">
 <title>Reprise après baisse</title>
 <style>
   /* Mise en page : une colonne de lecture large, résumé d'abord, détail ensuite. */
@@ -70,6 +72,21 @@
   .bubble .domain { font-size: 13px; font-weight: 600; line-height: 1.25; text-wrap: balance; }
   .bubble .mean { font-family: var(--font-data); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
   .bubble .count { font-size: 12px; opacity: 0.9; }
+  .live-status { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; font-size: 13px; color: var(--muted); }
+  .pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--up); display: inline-block; }
+  .pulse.off { background: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    .pulse:not(.off) { animation: pulse 2s ease-in-out infinite; }
+    @keyframes pulse { 50% { opacity: 0.3; } }
+  }
+  .live td, .live th { text-align: center; padding: 8px 10px; }
+  .live th.text, .live td.text { text-align: left; }
+  .live td.text small { display: block; color: var(--muted); font-size: 12px; }
+  .dot { width: 70px; height: 70px; border-radius: 50%; display: inline-grid; place-content: center;
+         color: #ffffff; font-family: var(--font-data); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .dot.up { background: var(--up-fill); } .dot.down { background: var(--down-fill); }
+  .dot.flat { background: var(--muted); }
+  .dot.none { background: none; border: 1px dashed var(--line); color: var(--muted); font-weight: 400; font-size: 11px; }
 </style>
 </head>
 <body>
@@ -82,12 +99,19 @@
     <select id="run"></select>
   </header>
 
+  <section>
+    <h2>En direct : tendance par domaine</h2>
+    <div class="live-status" id="live-status"></div>
+    <div class="panel live" id="live"></div>
+    <p class="note" id="live-note"></p>
+  </section>
+
   <div class="meta" id="meta"></div>
   <p class="plain">Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance.
     C'est une liste, pas un conseil d'achat : la décision t'appartient.</p>
 
   <section>
-    <h2>Tendance sur un mois par domaine</h2>
+    <h2>Tendance sur un mois par domaine, au moment du run (clôture de la veille)</h2>
     <div class="panel bubbles" id="bubbles"></div>
     <p class="note" id="bubbles-note"></p>
   </section>
@@ -119,6 +143,9 @@
 
 <script>
 const RUNS = __RUNS_JSON__;
+const LIVE = __LIVE_JSON__;
+// Au-delà, le suivi en direct est considéré comme arrêté.
+const LIVE_STALE_MS = 3 * 60 * 1000;
 
 const STEP_LABELS = {
   actifs_negociables: "Actions négociables chez Alpaca",
@@ -159,6 +186,7 @@ const el = (tag, cls, text) => {
 };
 const pct = v => (v >= 0 ? "+" : "") + (v * 100).toFixed(2) + " %";
 const signed = v => v > 0 ? "up" : v < 0 ? "down" : "";
+const tone = v => v > 0 ? "up" : v < 0 ? "down" : "flat";
 const usd = s => Number(s).toLocaleString("fr-FR", { maximumFractionDigits: 2 }) + " $";
 const musd = s => (Number(s) / 1e6).toLocaleString("fr-FR", { maximumFractionDigits: 1 }) + " M$";
 const nyTime = iso => new Date(iso).toLocaleTimeString("fr-FR", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit" });
@@ -247,17 +275,76 @@ function renderBubbles(run) {
   const maxN = Math.max(...domains.bubbles.map(b => b.n));
   box.replaceChildren(...domains.bubbles.map(b => {
     const size = Math.round(120 + 120 * Math.sqrt(b.n / maxN));
-    const bubble = el("div", "bubble " + (b.mean_return_month > 0 ? "up" : b.mean_return_month < 0 ? "down" : "flat"));
+    const bubble = el("div", "bubble " + tone(b.mean_return));
     bubble.style.width = size + "px";
     bubble.title = `${domainLabel(b.domain)} : moyenne de ${b.n} titres`;
     const count = `${b.n} titres` + (picked.get(b.domain) ? ` · ${picked.get(b.domain)} retenu(s)` : "");
-    bubble.append(el("span", "domain", domainLabel(b.domain)), el("span", "mean", pct(b.mean_return_month)),
+    bubble.append(el("span", "domain", domainLabel(b.domain)), el("span", "mean", pct(b.mean_return)),
                   el("span", "count", count));
     return bubble;
   }));
   note.textContent = `Moyenne simple des variations sur ${run.criteria.month_sessions} séances des titres assez liquides `
     + `de chaque domaine (classement officiel de la SEC). Vert : en hausse en moyenne, rouge : en baisse. `
     + `Taille : nombre de titres. ${domains.unclassified} titres sans domaine connu de la SEC ne sont pas comptés.`;
+}
+
+function renderLive() {
+  const status = document.getElementById("live-status");
+  const box = document.getElementById("live");
+  const note = document.getElementById("live-note");
+  if (!LIVE) {
+    status.replaceChildren(el("span", "pulse off"), el("span", "", "Suivi en direct non lancé"));
+    box.replaceChildren(el("div", "empty", "Lance le suivi pendant la séance : "
+      + "/Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh"));
+    return;
+  }
+  const running = Date.now() - new Date(LIVE.observed_at).getTime() < LIVE_STALE_MS;
+  status.replaceChildren(
+    el("span", "pulse" + (running ? "" : " off")),
+    el("span", "", running ? "Suivi en cours" : `Suivi arrêté : dernier état du ${LIVE.session_date}`),
+    el("span", "", LIVE.prices_until ? `prix jusqu'à ${nyTime(LIVE.prices_until)} (New York)` : "aucun prix de la séance"),
+    el("span", "", `mis à jour à ${nyTime(LIVE.observed_at)}`),
+    el("span", "", "toutes bourses, 15 min de retard"));
+
+  const s = LIVE.sessions;
+  const columns = [
+    ["day", "Journée", "dernier prix / clôture de la veille"],
+    ["first_hour", `${LIVE.first_hour_minutes} premières min`, "prix à la fin de la première heure / ouverture"],
+    ["two_days", `${s.two_days} séances`, `dernier prix / clôture d'il y a ${s.two_days} séances`],
+    ["week", "1 semaine", `dernier prix / clôture d'il y a ${s.week} séances`],
+    ["month", "1 mois", `dernier prix / clôture d'il y a ${s.month} séances`],
+  ];
+  const cells = Object.fromEntries(columns.map(([key]) =>
+    [key, new Map(LIVE.measures[key].bubbles.map(b => [b.domain, b]))]));
+  const order = [...new Set(columns.flatMap(([key]) => LIVE.measures[key].bubbles.map(b => b.domain)))];
+  order.sort((a, b) => (cells.day.get(b)?.mean_return ?? -Infinity) - (cells.day.get(a)?.mean_return ?? -Infinity));
+
+  const t = el("table");
+  const head = t.createTHead().insertRow();
+  head.appendChild(el("th", "text", "Domaine"));
+  columns.forEach(([, label, how]) => { const th = el("th", "", label); th.title = how; head.appendChild(th); });
+  const body = t.createTBody();
+  order.forEach(domain => {
+    const tr = body.insertRow();
+    const name = el("td", "text", domainLabel(domain));
+    const n = cells.day.get(domain)?.n ?? cells.month.get(domain)?.n;
+    if (n) name.appendChild(el("small", "", `${n} titres`));
+    tr.appendChild(name);
+    columns.forEach(([key, label]) => {
+      const td = el("td");
+      const b = cells[key].get(domain);
+      const dot = b ? el("span", "dot " + tone(b.mean_return), pct(b.mean_return))
+                    : el("span", "dot none", LIVE.measures[key].available ? "—" : "à venir");
+      if (b) dot.title = `${domainLabel(domain)}, ${label} : moyenne de ${b.n} titres`;
+      td.appendChild(dot);
+      tr.appendChild(td);
+    });
+  });
+  box.replaceChildren(order.length ? t : el("div", "empty", "Pas encore de prix pour cette séance."));
+  note.textContent = `Moyenne simple, par domaine (classement SEC), des ${LIVE.universe} titres assez liquides. `
+    + `Vert : en hausse en moyenne, rouge : en baisse. « ${LIVE.first_hour_minutes} premières min » `
+    + `s'affiche 15 min après la fin de la première heure. Survole un en-tête pour sa définition. `
+    + `La page se recharge toute seule chaque minute.`;
 }
 
 function renderHistory() {
@@ -283,10 +370,17 @@ if (!RUNS.length) {
     "Aucun run enregistré. Le premier sera produit le prochain jour de bourse, une heure après l'ouverture."));
   picker.disabled = true;
 } else {
-  [...RUNS].reverse().forEach((run, i) => picker.add(new Option(`${run.session_date} · ${run.run_id}`, RUNS.length - 1 - i)));
-  picker.addEventListener("change", () => renderRun(RUNS[picker.value]));
-  renderRun(RUNS[RUNS.length - 1]);
+  // Le run choisi est gardé dans l'adresse (#r001) pour survivre au rechargement automatique.
+  [...RUNS].reverse().forEach(run => picker.add(new Option(`${run.session_date} · ${run.run_id}`, run.run_id)));
+  const chosen = RUNS.find(run => "#" + run.run_id === location.hash) || RUNS[RUNS.length - 1];
+  picker.value = chosen.run_id;
+  picker.addEventListener("change", () => {
+    location.hash = picker.value;
+    renderRun(RUNS.find(run => run.run_id === picker.value));
+  });
+  renderRun(chosen);
 }
+renderLive();
 renderHistory();
 </script>
 </body>
