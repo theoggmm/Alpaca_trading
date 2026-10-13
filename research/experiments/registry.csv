@@ -1,0 +1,2 @@
+run_id,family,session_date,decision_time,git_sha,status,n_selected
+r001,reprise_apres_baisse,2026-10-13,2026-10-13T14:30:00+00:00,72cf9925d0f0be61571986a0decf545bbab8e35e,diagnostic,20
