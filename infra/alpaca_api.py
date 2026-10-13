@@ -6,18 +6,13 @@ Les montants sont lus en Decimal directement depuis le JSON (aucun passage par f
 """
 
 import json
-import os
 from datetime import datetime, time
 from decimal import Decimal
-from pathlib import Path
 
 import pandas as pd
-from dotenv import load_dotenv
 
-from infra.http import FetchError, Reader
-
-ROOT = Path(__file__).resolve().parents[1]
-ENV_FILE = ROOT / ".env"
+from infra import env
+from infra.http import Reader
 
 TRADING_URL = {True: "https://paper-api.alpaca.markets", False: "https://api.alpaca.markets"}
 DATA_URL = "https://data.alpaca.markets"
@@ -30,12 +25,9 @@ BAR_COLUMNS = ["symbol", "timestamp", "open", "close", "volume"]
 
 def load_credentials():
     """(clé, secret, paper) ; paper vaut True sauf si ALPACA_PAPER=false est écrit explicitement."""
-    load_dotenv(ENV_FILE)
-    api_key = os.getenv("ALPACA_API_KEY")
-    secret_key = os.getenv("ALPACA_SECRET_KEY")
-    if not api_key or not secret_key:
-        raise FetchError(f"ALPACA_API_KEY et ALPACA_SECRET_KEY doivent être définis dans {ENV_FILE}")
-    paper = os.getenv("ALPACA_PAPER", "true").strip().lower() != "false"
+    api_key = env.require("ALPACA_API_KEY", "clé API Alpaca")
+    secret_key = env.require("ALPACA_SECRET_KEY", "clé secrète Alpaca")
+    paper = env.optional("ALPACA_PAPER", "true").strip().lower() != "false"
     return api_key, secret_key, paper
 
 

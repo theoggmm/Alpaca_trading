@@ -33,6 +33,19 @@ en compte moins, et l'entonnoir (nombre de titres après chaque critère) l'indi
 
 Modifier un seuil = nouvelle version de `criteres.json`, commitée avant le run qui l'utilise.
 
+## Tendance par domaine (bulles du tableau de bord)
+
+Complément de lecture, **pas un critère de sélection**. Pour chaque domaine d'activité, moyenne simple
+des variations sur 21 séances de tous les titres de l'univers liquide (critères 2 à 4 : historique
+complet, prix minimum, volume échangé). Une bulle par domaine : verte si la moyenne est positive,
+rouge si elle est négative, de taille proportionnelle au nombre de titres. Le nombre de titres du
+jour retenus dans le domaine est indiqué dans la bulle.
+
+Domaine = bureau d'examen de la SEC qui suit la société (champ `ownerOrg` d'EDGAR, par exemple
+« 06 Technology »). Un titre inconnu de la SEC (fonds, certaines sociétés étrangères) n'est pas
+classé et le nombre de ces titres est affiché. Si la SEC ne répond pas, la liste du jour est quand
+même produite et l'erreur est enregistrée dans le run.
+
 ## Sources
 
 - **Cours** : Alpaca, données consolidées (feed `sip`), ajustées des splits et dividendes. Offre gratuite :
@@ -40,12 +53,15 @@ Modifier un seuil = nouvelle version de `criteres.json`, commitée avant le run 
 - **Calendrier des séances** : Alpaca (`/v2/calendar`).
 - **Indicateur ETF** : annuaire officiel de Nasdaq Trader (`nasdaqlisted.txt`, `otherlisted.txt`) ;
   l'horodatage de création des fichiers est enregistré dans chaque run.
+- **Domaines** : SEC, `https://www.sec.gov/files/company_tickers.json` (symbole → CIK) et
+  `https://data.sec.gov/submissions/CIK##########.json` (`ownerOrg`, `sic`, `sicDescription`).
+  La SEC exige un User-Agent avec nom et e-mail de contact : variable `SEC_USER_AGENT` du `.env`.
+  Profils mis en cache 30 jours.
 
 ## Limites connues
 
-- **« Domaines » différents** : Alpaca ne fournit pas de secteur d'activité. La diversification se
-  fait donc sur la corrélation des cours, qui est le but recherché (limiter les titres qui bougent
-  ensemble). Un secteur officiel (code SIC de la SEC) demanderait un contact déclaré auprès de la SEC.
+- **Diversification de la sélection** : elle se fait sur la corrélation des cours (le but recherché :
+  limiter les titres qui bougent ensemble), pas sur le domaine SEC, qui sert seulement aux bulles.
 - **Non testé sur le passé** : aucun backtest. L'historique des runs, produit au jour le jour, est la
   seule observation ; il pourra servir de juge sur le futur si une hypothèse est pré-enregistrée.
 - **Volatilité relative** : « basse » veut dire « dans la moitié la moins volatile ce jour-là », pas

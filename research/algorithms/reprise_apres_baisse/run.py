@@ -10,9 +10,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from core.screener import Criteria, daily_candidates, screen
+from core.domains import domain_trends
+from core.screener import Criteria, daily_candidates, liquid_universe, screen
 from core.universe import eligible_symbols
-from infra import nasdaq_symbols
+from infra import nasdaq_symbols, sec
 from infra.alpaca_api import DATA_URL, AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
@@ -67,6 +68,18 @@ def run():
                     lambda: alpaca.bars([c.symbol for c in candidates], "1Min", market_open, decision_time))
     selection, funnel = screen(daily, minute, market_open, decision_time, criteria)
 
+    # Domaines : complément de lecture, pas un critère. Une panne SEC n'empêche pas la liste, elle est enregistrée.
+    liquid, _ = liquid_universe(daily, decision_time, criteria)
+    try:
+        profiles = sec.profiles([s.symbol for s in liquid], key)
+        bubbles, unclassified = domain_trends(
+            daily, decision_time, criteria, {symbol: p["domain"] for symbol, p in profiles.items()})
+        domains = {"bubbles": bubbles, "unclassified": unclassified,
+                   "measure": f"moyenne simple des variations sur {criteria.month_sessions} séances",
+                   "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"}
+    except FetchError as e:
+        profiles, domains = {}, {"error": str(e)}
+
     payload = {
         "run_id": next_run_id(FAMILY),
         "family": FAMILY,
@@ -80,9 +93,14 @@ def run():
         "sources": {
             "alpaca": {"trading_api": alpaca.trading_url, "data_api": DATA_URL, "feed": "sip", "adjustment": "all"},
             "nasdaq_trader": listings_created,
+            "sec": {"tickers": sec.TICKERS_URL, "profiles": "data.sec.gov/submissions (ownerOrg, sic)"},
         },
         "funnel": {**universe_funnel, **funnel},
-        "selection": [{**item, "name": listings[item["symbol"]]["name"]} for item in selection],
+        "domains": domains,
+        "selection": [{**item, "name": listings[item["symbol"]]["name"],
+                       "domain": profiles.get(item["symbol"], {}).get("domain"),
+                       "sic_description": profiles.get(item["symbol"], {}).get("sic_description")}
+                      for item in selection],
     }
     path = save_run(FAMILY, payload)
 
@@ -94,6 +112,13 @@ def run():
         print(f"{item['rank']:>3}. {item['symbol']:<6} {item['name'][:40]:<40} "
               f"mois {_pct(item['return_month'])}  J-2 {_pct(item['return_day_minus_2'])}  "
               f"J-1 {_pct(item['return_day_minus_1'])}  1re heure {_pct(item['return_first_hour'])}")
+    if "error" in domains:
+        print(f"Domaines indisponibles : {domains['error']}")
+    else:
+        print(f"Tendance sur {criteria.month_sessions} séances par domaine (SEC), "
+              f"{domains['unclassified']} titres non classés :")
+        for bubble in domains["bubbles"]:
+            print(f"     {bubble['domain']:<40} {_pct(bubble['mean_return_month'])}  n = {bubble['n']}")
     print(f"Résultats : {path}")
     return 0
 

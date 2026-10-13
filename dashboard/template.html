@@ -16,6 +16,8 @@
     --up: #1d7a4c;
     --down: #b23a3a;
     --chip: #e8eef5;
+    --up-fill: #1f7f4f;
+    --down-fill: #b33b3b;
     --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   }
@@ -60,6 +62,14 @@
   .note { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
   .empty { padding: 28px; color: var(--muted); }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
+  .bubbles { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; padding: 20px; }
+  .bubble { border-radius: 50%; display: grid; place-content: center; text-align: center; gap: 2px;
+            color: #ffffff; padding: 10px; max-width: 100%; aspect-ratio: 1 / 1; }
+  .bubble.up { background: var(--up-fill); } .bubble.down { background: var(--down-fill); }
+  .bubble.flat { background: var(--muted); }
+  .bubble .domain { font-size: 13px; font-weight: 600; line-height: 1.25; text-wrap: balance; }
+  .bubble .mean { font-family: var(--font-data); font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .bubble .count { font-size: 12px; opacity: 0.9; }
 </style>
 </head>
 <body>
@@ -75,6 +85,12 @@
   <div class="meta" id="meta"></div>
   <p class="plain">Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance.
     C'est une liste, pas un conseil d'achat : la décision t'appartient.</p>
+
+  <section>
+    <h2>Tendance sur un mois par domaine</h2>
+    <div class="panel bubbles" id="bubbles"></div>
+    <p class="note" id="bubbles-note"></p>
+  </section>
 
   <section>
     <h2>Sélection</h2>
@@ -118,6 +134,22 @@ const STEP_LABELS = {
   hausse_premiere_heure: "Hausse 1re heure",
   selection_diversifiee: "Sélection diversifiée",
 };
+
+// Bureaux d'examen de la SEC (champ ownerOrg) ; un intitulé inconnu s'affiche tel quel.
+const DOMAIN_LABELS = {
+  "Technology": "Technologie",
+  "Finance": "Finance",
+  "Life Sciences": "Sciences de la vie",
+  "Manufacturing": "Industrie manufacturière",
+  "Energy & Transportation": "Énergie et transport",
+  "Real Estate & Construction": "Immobilier et construction",
+  "Trade & Services": "Commerce et services",
+  "Industrial Applications and Services": "Applications et services industriels",
+  "Crypto Assets": "Crypto-actifs",
+  "Structured Finance": "Finance structurée",
+  "International Corp Fin": "Sociétés étrangères",
+};
+const domainLabel = d => d ? (DOMAIN_LABELS[d] || d) : "Non classé";
 
 const el = (tag, cls, text) => {
   const node = document.createElement(tag);
@@ -163,6 +195,7 @@ function renderRun(run) {
     { label: "#", value: r => r.rank },
     { label: "Symbole", cls: "text symbol", value: r => r.symbol },
     { label: "Société", cls: "text name", value: r => r.name, title: r => r.name },
+    { label: "Domaine", cls: "text name", value: r => domainLabel(r.domain), title: r => r.sic_description || "" },
     { label: "1 mois", value: r => pct(r.return_month), tone: r => r.return_month },
     { label: "J-2", value: r => pct(r.return_day_minus_2), tone: r => r.return_day_minus_2 },
     { label: "J-1", value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
@@ -175,6 +208,8 @@ function renderRun(run) {
     run.selection.length < run.criteria.count
       ? `Seulement ${run.selection.length} titres sur ${run.criteria.count} : la liste n'est jamais complétée en assouplissant les critères.`
       : "Classés du plus fort repli sur un mois au plus faible.";
+
+  renderBubbles(run);
 
   const funnel = document.getElementById("funnel");
   const steps = Object.entries(run.funnel);
@@ -194,6 +229,35 @@ function renderRun(run) {
     `En hausse pendant les ${c.first_hour_minutes} premières minutes de la séance.`,
     `Classement par baisse sur un mois, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu (${c.correlation_sessions} séances).`,
   ].map(t => el("li", "", t)));
+}
+
+function renderBubbles(run) {
+  const box = document.getElementById("bubbles");
+  const note = document.getElementById("bubbles-note");
+  const domains = run.domains;
+  if (!domains || domains.error) {
+    box.replaceChildren(el("div", "empty", domains
+      ? "Domaines indisponibles pour ce run : " + domains.error
+      : "Pas de tendance par domaine pour ce run (fonction ajoutée après)."));
+    note.textContent = "";
+    return;
+  }
+  const picked = new Map();
+  run.selection.forEach(item => picked.set(item.domain, (picked.get(item.domain) || 0) + 1));
+  const maxN = Math.max(...domains.bubbles.map(b => b.n));
+  box.replaceChildren(...domains.bubbles.map(b => {
+    const size = Math.round(120 + 120 * Math.sqrt(b.n / maxN));
+    const bubble = el("div", "bubble " + (b.mean_return_month > 0 ? "up" : b.mean_return_month < 0 ? "down" : "flat"));
+    bubble.style.width = size + "px";
+    bubble.title = `${domainLabel(b.domain)} : moyenne de ${b.n} titres`;
+    const count = `${b.n} titres` + (picked.get(b.domain) ? ` · ${picked.get(b.domain)} retenu(s)` : "");
+    bubble.append(el("span", "domain", domainLabel(b.domain)), el("span", "mean", pct(b.mean_return_month)),
+                  el("span", "count", count));
+    return bubble;
+  }));
+  note.textContent = `Moyenne simple des variations sur ${run.criteria.month_sessions} séances des titres assez liquides `
+    + `de chaque domaine (classement officiel de la SEC). Vert : en hausse en moyenne, rouge : en baisse. `
+    + `Taille : nombre de titres. ${domains.unclassified} titres sans domaine connu de la SEC ne sont pas comptés.`;
 }
 
 function renderHistory() {

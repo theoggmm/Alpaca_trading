@@ -86,10 +86,10 @@ def _daily_stats(symbol, bars, criteria):
     )
 
 
-def daily_candidates(daily, decision_time, criteria):
+def liquid_universe(daily, decision_time, criteria):
     """
-    Applique les critères quotidiens, dans l'ordre. Retourne (candidats, entonnoir).
-    Candidats triés du plus fort repli sur un mois au plus faible.
+    Titres à l'historique complet, au prix et au volume échangé suffisants (critères 2 à 4).
+    Retourne (statistiques par titre, entonnoir).
     """
     daily = usable_bars(daily, DAY, decision_time)
 
@@ -111,7 +111,17 @@ def daily_candidates(daily, decision_time, criteria):
 
     stats = [s for s in stats if s.avg_dollar_volume >= criteria.min_avg_dollar_volume_usd]
     funnel["volume_echange_minimum"] = len(stats)
+    return stats, funnel
 
+
+def daily_candidates(daily, decision_time, criteria):
+    """
+    Applique les critères quotidiens, dans l'ordre. Retourne (candidats, entonnoir).
+    Candidats triés du plus fort repli sur un mois au plus faible.
+    """
+    daily = usable_bars(daily, DAY, decision_time)
+
+    stats, funnel = liquid_universe(daily, decision_time, criteria)
     if stats:
         ceiling = np.quantile([s.volatility for s in stats], criteria.max_volatility_quantile)
         stats = [s for s in stats if s.volatility <= ceiling]
