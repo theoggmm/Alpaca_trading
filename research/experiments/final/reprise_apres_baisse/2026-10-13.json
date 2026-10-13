@@ -1,0 +1,380 @@
+{
+ "family": "reprise_apres_baisse",
+ "session_date": "2026-10-13",
+ "observed_at": "2026-10-13T20:00:00+00:00",
+ "prices_until": "2026-10-13T20:00:00+00:00",
+ "feed": "delayed_sip",
+ "universe": 2099,
+ "first_hour_minutes": 60,
+ "sessions": {
+  "two_days": 2,
+  "week": 5,
+  "month": 21
+ },
+ "measures": {
+  "day": {
+   "available": true,
+   "bubbles": [
+    {
+     "domain": "Trade & Services",
+     "n": 272,
+     "mean_return": 0.005906605201735102
+    },
+    {
+     "domain": "Energy & Transportation",
+     "n": 306,
+     "mean_return": 0.002077253302007586
+    },
+    {
+     "domain": "Real Estate & Construction",
+     "n": 170,
+     "mean_return": -0.0001631080895642871
+    },
+    {
+     "domain": "Manufacturing",
+     "n": 359,
+     "mean_return": -0.001296779234349844
+    },
+    {
+     "domain": "Technology",
+     "n": 309,
+     "mean_return": -0.001561965635506673
+    },
+    {
+     "domain": "Industrial Applications and Services",
+     "n": 196,
+     "mean_return": -0.0022008138289546027
+    },
+    {
+     "domain": "Finance",
+     "n": 253,
+     "mean_return": -0.004734253090627159
+    },
+    {
+     "domain": "Crypto Assets",
+     "n": 42,
+     "mean_return": -0.010344181925331961
+    },
+    {
+     "domain": "Life Sciences",
+     "n": 177,
+     "mean_return": -0.031010549112855428
+    }
+   ],
+   "unclassified": 15
+  },
+  "two_days": {
+   "available": true,
+   "bubbles": [
+    {
+     "domain": "Trade & Services",
+     "n": 272,
+     "mean_return": 0.006162172937733818
+    },
+    {
+     "domain": "Energy & Transportation",
+     "n": 306,
+     "mean_return": 0.003497861954565839
+    },
+    {
+     "domain": "Real Estate & Construction",
+     "n": 170,
+     "mean_return": -0.00039462774017349497
+    },
+    {
+     "domain": "Finance",
+     "n": 253,
+     "mean_return": -0.0011896728551461953
+    },
+    {
+     "domain": "Industrial Applications and Services",
+     "n": 196,
+     "mean_return": -0.0013169566894243093
+    },
+    {
+     "domain": "Technology",
+     "n": 309,
+     "mean_return": -0.010933508389319337
+    },
+    {
+     "domain": "Manufacturing",
+     "n": 359,
+     "mean_return": -0.014110067050493029
+    },
+    {
+     "domain": "Crypto Assets",
+     "n": 42,
+     "mean_return": -0.023868583303338083
+    },
+    {
+     "domain": "Life Sciences",
+     "n": 177,
+     "mean_return": -0.041288816351612134
+    }
+   ],
+   "unclassified": 15
+  },
+  "week": {
+   "available": true,
+   "bubbles": [
+    {
+     "domain": "Trade & Services",
+     "n": 272,
+     "mean_return": 0.01609212165917002
+    },
+    {
+     "domain": "Energy & Transportation",
+     "n": 306,
+     "mean_return": 0.005614468166747419
+    },
+    {
+     "domain": "Finance",
+     "n": 253,
+     "mean_return": -0.0043271888969391515
+    },
+    {
+     "domain": "Industrial Applications and Services",
+     "n": 196,
+     "mean_return": -0.008834279083014993
+    },
+    {
+     "domain": "Real Estate & Construction",
+     "n": 170,
+     "mean_return": -0.009493321056865714
+    },
+    {
+     "domain": "Technology",
+     "n": 309,
+     "mean_return": -0.010813552495467352
+    },
+    {
+     "domain": "Life Sciences",
+     "n": 177,
+     "mean_return": -0.026939698816151113
+    },
+    {
+     "domain": "Manufacturing",
+     "n": 359,
+     "mean_return": -0.03486828331449573
+    },
+    {
+     "domain": "Crypto Assets",
+     "n": 42,
+     "mean_return": -0.06728073734421389
+    }
+   ],
+   "unclassified": 15
+  },
+  "month": {
+   "available": true,
+   "bubbles": [
+    {
+     "domain": "Industrial Applications and Services",
+     "n": 196,
+     "mean_return": 0.01766441611116269
+    },
+    {
+     "domain": "Technology",
+     "n": 309,
+     "mean_return": -1.0023777687658151e-05
+    },
+    {
+     "domain": "Manufacturing",
+     "n": 359,
+     "mean_return": -0.0005738069966756548
+    },
+    {
+     "domain": "Energy & Transportation",
+     "n": 306,
+     "mean_return": -0.011447395602395109
+    },
+    {
+     "domain": "Trade & Services",
+     "n": 272,
+     "mean_return": -0.01801028414775167
+    },
+    {
+     "domain": "Real Estate & Construction",
+     "n": 170,
+     "mean_return": -0.038133788848736694
+    },
+    {
+     "domain": "Crypto Assets",
+     "n": 42,
+     "mean_return": -0.04304735601727673
+    },
+    {
+     "domain": "Life Sciences",
+     "n": 177,
+     "mean_return": -0.05267345114628723
+    },
+    {
+     "domain": "Finance",
+     "n": 253,
+     "mean_return": -0.05949391392721581
+    }
+   ],
+   "unclassified": 15
+  },
+  "first_hour": {
+   "available": true,
+   "bubbles": [
+    {
+     "domain": "Technology",
+     "n": 309,
+     "mean_return": 0.005406561823335246
+    },
+    {
+     "domain": "Crypto Assets",
+     "n": 42,
+     "mean_return": 0.0027794878570218
+    },
+    {
+     "domain": "Trade & Services",
+     "n": 272,
+     "mean_return": -0.0015127998115902822
+    },
+    {
+     "domain": "Manufacturing",
+     "n": 359,
+     "mean_return": -0.004132257884775456
+    },
+    {
+     "domain": "Energy & Transportation",
+     "n": 306,
+     "mean_return": -0.0053342558121623855
+    },
+    {
+     "domain": "Finance",
+     "n": 253,
+     "mean_return": -0.008333064313788947
+    },
+    {
+     "domain": "Industrial Applications and Services",
+     "n": 196,
+     "mean_return": -0.008719017981819954
+    },
+    {
+     "domain": "Real Estate & Construction",
+     "n": 170,
+     "mean_return": -0.01052869197291991
+    },
+    {
+     "domain": "Life Sciences",
+     "n": 177,
+     "mean_return": -0.012552423354394134
+    }
+   ],
+   "unclassified": 15
+  }
+ },
+ "selection": {
+  "run_id": "r001",
+  "changes": {
+   "LAZ": {
+    "change": -0.01775147928994083,
+    "price": "36.52",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "MWA": {
+    "change": 0.02403393025447691,
+    "price": "21.73",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "JKHY": {
+    "change": 0.013637868255544522,
+    "price": "153.11",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "YPF": {
+    "change": -0.004424778761061947,
+    "price": "51.75",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "BMO": {
+    "change": 0.014918042851003744,
+    "price": "165.32",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "GOLF": {
+    "change": 0.0069332673022161695,
+    "price": "81.33",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "WBI": {
+    "change": 0.018169805087545423,
+    "price": "30.82",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "FANG": {
+    "change": 0.009575714358478073,
+    "price": "198.21",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "EMBJ": {
+    "change": 0.005179171332586786,
+    "price": "71.81",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "PAGP": {
+    "change": 0.007815407517677708,
+    "price": "27.08",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "CNX": {
+    "change": 0.018438490348602708,
+    "price": "35.35",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "SNA": {
+    "change": -0.000796834643073034,
+    "price": "363.65",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "HDB": {
+    "change": -0.002412280701754386,
+    "price": "22.745",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "NUE": {
+    "change": 0.007140873566866346,
+    "price": "253.87",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "PDI": {
+    "change": -0.004231311706629055,
+    "price": "14.12",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "TOST": {
+    "change": -0.014044047239067986,
+    "price": "30.89",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "OMC": {
+    "change": 0.010427394438722965,
+    "price": "78.49",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "SJM": {
+    "change": -0.0009058716956271103,
+    "price": "121.32",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "PSMT": {
+    "change": 0.006975789905621666,
+    "price": "171.78",
+    "at": "2026-10-13T20:00:00+00:00"
+   },
+   "FERG": {
+    "change": 0.007960199004975124,
+    "price": "222.86",
+    "at": "2026-10-13T20:00:00+00:00"
+   }
+  }
+ },
+ "final": true,
+ "computed_at": "2026-10-13T22:49:14.350393+00:00",
+ "git_sha": "4d334840e2d581523afd99d3823885ba7b226449",
+ "source": "historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture"
+}
