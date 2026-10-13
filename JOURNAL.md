@@ -34,3 +34,23 @@ ou révoquées. Le propriétaire doit en créer de nouvelles (compte paper) et l
 
 Autrement dit : rien de tout cela n'empêche le screener de fonctionner, mais ce sont des points à
 décider par le propriétaire.
+
+## 2026-10-13 (suite) — Historique sur GitHub et bulles par domaine
+
+**Question posée** : faire apparaître l'historique sur GitHub chaque jour, et ajouter des bulles
+qui montrent la tendance moyenne de chaque domaine, en vert si elle est positive, en rouge sinon.
+
+**Fait** :
+- Premier vrai run `r001` (séance du 2026-10-13) : 20 titres sur 20, entonnoir 13 499 → 20.
+- `run_screener.sh` commite uniquement l'historique (runs et registre) et le pousse sur GitHub,
+  après des tests verts et un `git pull --ff-only`. `r001` est sur GitHub.
+- Bulles par domaine (choix du propriétaire : domaines officiels de la SEC, variation sur un mois
+  de tout le domaine). Domaine = bureau d'examen de la SEC (`ownerOrg`). Complément de lecture,
+  pas un critère. 16 tests verts.
+
+Autrement dit : l'historique est sauvegardé en ligne chaque jour et le tableau de bord aura ses
+bulles dès le prochain run.
+
+**En attente** : le propriétaire doit ajouter `SEC_USER_AGENT` (nom et e-mail) dans `.env`. Sans
+cette ligne, la liste est produite mais les bulles affichent « Domaines indisponibles ».
+`r001` n'a pas de bulles : il a été produit avant cette fonction et un run passé ne se réécrit pas.
