@@ -6,11 +6,9 @@ est écrit explicitement dans le fichier .env situé à côté de ce script.
 """
 
 import argparse
-import os
 import sys
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
-from pathlib import Path
 
 from alpaca.common.exceptions import APIError
 from alpaca.data.historical import StockHistoricalDataClient
@@ -24,9 +22,9 @@ from alpaca.trading.requests import (
     StopLimitOrderRequest,
     StopOrderRequest,
 )
-from dotenv import load_dotenv
 
-ENV_FILE = Path(__file__).resolve().parent / ".env"
+from infra.alpaca_api import load_credentials
+from infra.http import FetchError
 
 PRICE_FIELDS = ("limit_price", "stop_price")
 
@@ -47,12 +45,10 @@ class Context:
 
 
 def build_context():
-    load_dotenv(ENV_FILE)
-    api_key = os.getenv("ALPACA_API_KEY")
-    secret_key = os.getenv("ALPACA_SECRET_KEY")
-    if not api_key or not secret_key:
-        sys.exit(f"Erreur : ALPACA_API_KEY et ALPACA_SECRET_KEY doivent être définis dans {ENV_FILE}")
-    paper = os.getenv("ALPACA_PAPER", "true").strip().lower() != "false"
+    try:
+        api_key, secret_key, paper = load_credentials()
+    except FetchError as e:
+        sys.exit(f"Erreur : {e}")
     return Context(
         trading=TradingClient(api_key, secret_key, paper=paper),
         data=StockHistoricalDataClient(api_key, secret_key),
