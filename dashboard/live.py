@@ -62,7 +62,8 @@ def run(family):
     market_open = datetime.combine(session_date, session[0], NEW_YORK).astimezone(timezone.utc)
     market_close = datetime.combine(session_date, session[1], NEW_YORK).astimezone(timezone.utc)
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
-    stop_at = market_close + FEED_DELAY + timedelta(minutes=1)
+    # Avec 15 min de retard, les derniers échanges de la séance arrivent jusqu'à clôture + 15 min.
+    stop_at = market_close + FEED_DELAY
 
     if datetime.now(timezone.utc) >= stop_at:
         print(f"Séance du {key} terminée : rien à suivre.")
@@ -90,8 +91,9 @@ def run(family):
             time.sleep(REFRESH_S)
             continue
 
-        measures, universe = live_domain_trends(daily, trades, minute, market_open, now, criteria, domains)
-        used = [ts for ts, _ in trades.values() if market_open <= ts <= now]
+        measures, universe = live_domain_trends(daily, trades, minute, market_open, market_close, now,
+                                                criteria, domains)
+        used = [ts for ts, _ in trades.values() if market_open <= ts <= min(now, market_close)]
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps({
             "family": family,

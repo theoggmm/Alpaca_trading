@@ -72,7 +72,8 @@ s'arrête seul après la clôture (Ctrl+C pour l'arrêter avant) :
 Les mesures, séance en cours comprise : dernier prix / clôture d'il y a N séances − 1
 (journée : N = 1 ; 2 séances : N = 2 ; 1 semaine : N = 5 ; 1 mois : N = 21). Première heure : prix à la
 fin des 60 premières minutes / premier prix de la séance − 1, affichée 15 minutes après la fin de la
-première heure. Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
+première heure. Dernier prix = dernier échange de la séance régulière (ni pré-ouverture, ni après
+16 h 00 : l'enchère de clôture n'est pas comptée). Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
 état est gardé (`research/outputs/live/latest.json`, non suivi par git).
 
 Lancer les tests :

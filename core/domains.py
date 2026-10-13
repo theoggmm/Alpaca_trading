@@ -39,13 +39,13 @@ def domain_trends(daily, decision_time, criteria, domains):
     return aggregate_by_domain({s.symbol: s.return_month for s in stats}, domains)
 
 
-def live_domain_trends(daily, last_trades, minute, market_open, now, criteria, domains):
+def live_domain_trends(daily, last_trades, minute, market_open, market_close, now, criteria, domains):
     """
-    Bulles en direct pendant la séance ouverte à market_open, observées à now.
+    Bulles en direct pendant la séance [market_open, market_close], observées à now.
 
     daily       : barres quotidiennes ; seules les séances terminées avant l'ouverture servent.
-    last_trades : symbole -> (horodatage, prix) du dernier échange connu ; seuls ceux de la séance
-                  en cours et antérieurs à now servent.
+    last_trades : symbole -> (horodatage, prix) du dernier échange connu ; seuls ceux faits pendant
+                  la séance régulière et avant now servent (hors pré-ouverture et après-clôture).
     minute      : barres minute de la séance ; seules celles terminées à la fin de la première heure servent.
 
     Variations « N séances, séance en cours comprise » : dernier prix / clôture d'il y a N séances - 1.
@@ -54,7 +54,7 @@ def live_domain_trends(daily, last_trades, minute, market_open, now, criteria, d
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
     daily = usable_bars(daily, DAY, market_open)
     minute = usable_bars(minute, MINUTE, min(now, first_hour_end))
-    last_trades = {s: price for s, (ts, price) in last_trades.items() if market_open <= ts <= now}
+    last_trades = {s: price for s, (ts, price) in last_trades.items() if market_open <= ts <= min(now, market_close)}
 
     stats, _ = liquid_universe(daily, market_open, criteria)
     sessions = {"day": 1, "two_days": criteria.up_days, "week": WEEK_SESSIONS, "month": criteria.month_sessions}
