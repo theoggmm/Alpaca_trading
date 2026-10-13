@@ -75,3 +75,21 @@ lesquels baissent, avec 15 minutes de retard.
 
 **Point à noter** : la SEC a un domaine « Crypto Assets » : ce sont des actions de sociétés liées
 aux cryptos (pas des cryptos), elles restent dans l'univers.
+
+## 2026-10-14 (suite) — Version anglaise, colonne « depuis l'ouverture », fin de séance
+
+**Question posée** : une version anglaise du tableau de bord, la variation en direct de chaque titre
+depuis l'ouverture, et les chiffres de fin de séance même si le Mac est fermé à la clôture.
+
+**Fait** :
+- `dashboard/index_en.html`, même gabarit que la page française (textes FR/EN, formats de nombres).
+- Colonne « Depuis l'ouverture » : dernier prix / premier prix de la séance, mise à jour par le suivi.
+- Option A choisie par le propriétaire : l'état de fin de séance est reconstitué depuis l'historique
+  minute (dernier échange avant 16 h 00), au réveil du suivi ou par `run_screener.sh`, et gardé dans
+  `research/experiments/final/`. Séance du 13 octobre rattrapée et poussée sur GitHub. 22 tests verts.
+
+Autrement dit : les chiffres de l'ouverture à la clôture ne se perdent plus, quelle que soit l'heure
+à laquelle le Mac se rouvre.
+
+**Signalé au propriétaire** : le projet Vercel de l'ancien site est encore relié au dépôt et échoue
+à chaque push (sans conséquence) ; à déconnecter ou supprimer depuis son compte Vercel.

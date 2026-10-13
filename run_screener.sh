@@ -18,9 +18,9 @@ cd "$ROOT"
 if [ -n "$(git status --porcelain -- $HISTORY)" ]; then
   "$PY" -m pytest -q
   git pull --ff-only -q
-  RUN="$(tail -n 1 research/experiments/registry.csv | cut -d, -f1,3 | sed 's/,/, séance du /')"
   git add -- $HISTORY
-  git commit -q -m "Historique $FAMILY : $RUN" -- $HISTORY
+  CHANGED="$(git diff --cached --name-only -- $HISTORY | sed -n 's#.*/\(r[0-9]*\)/results.json#run \1#p; s#.*/final/.*/\(.*\)\.json#fin de séance \1#p' | paste -sd, - | sed 's/,/, /g')"
+  git commit -q -m "Historique $FAMILY : $CHANGED" -- $HISTORY
   git push -q
-  echo "Historique envoyé sur GitHub : $RUN"
+  echo "Historique envoyé sur GitHub : $CHANGED"
 fi
