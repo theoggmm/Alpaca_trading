@@ -6,6 +6,7 @@ Depuis la racine du dépôt :
 """
 
 import sys
+import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -24,6 +25,8 @@ CRITERIA_FILE = Path(__file__).resolve().parent / "criteres.json"
 NEW_YORK = ZoneInfo("America/New_York")
 # Offre gratuite Alpaca : les barres consolidées (SIP) des 15 dernières minutes ne sont pas servies.
 SIP_DELAY = timedelta(minutes=15)
+# Lancé un peu avant que les données soient disponibles, le run attend au plus ce délai au lieu d'abandonner.
+MAX_WAIT = timedelta(minutes=20)
 # Couvre largement les 61 séances nécessaires aux critères (jours fériés compris).
 DAILY_HISTORY = timedelta(days=130)
 
@@ -105,6 +108,11 @@ def run():
 
     market_open = datetime.combine(session_date, session[0], NEW_YORK).astimezone(timezone.utc)
     ready_at = market_open + timedelta(minutes=criteria.first_hour_minutes) + SIP_DELAY
+    if ready_at - MAX_WAIT <= now < ready_at:
+        print(f"Données de la première heure disponibles à {ready_at.astimezone(NEW_YORK):%H:%M:%S} (New York) : "
+              f"attente de {(ready_at - now).total_seconds():.0f} s.")
+        time.sleep((ready_at - now).total_seconds())
+        now = datetime.now(timezone.utc)
     if now < ready_at:
         print(f"Trop tôt : les données de la première heure seront disponibles à "
               f"{ready_at.astimezone(NEW_YORK):%H:%M} (New York).")
