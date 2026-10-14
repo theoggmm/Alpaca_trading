@@ -100,6 +100,11 @@ direct. Les clôtures de tout l'univers sont écrites une fois par séance dans 
 (non suivi par git). Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
 état en direct est gardé (`research/outputs/live/latest.json`, non suivi par git).
 
+**Menu « Séance ».** Une entrée par jour de bourse. La séance du jour apparaît avec les premiers prix
+et bouge en direct ; à la clôture elle est figée (provisoire le soir, définitive le lendemain avec les
+corrections d'Alpaca, puis plus jamais modifiée). Une séance passée est chargée à la demande depuis
+`dashboard/sessions/<date>.js` (régénéré depuis `research/experiments/final/`, non suivi par git).
+
 **Fin de séance, même Mac fermé pendant la clôture.** L'état de fin de séance (bulles et colonne
 « Ouverture → clôture ») est reconstitué depuis l'historique minute d'Alpaca : dernier échange de
 chaque titre avant 16 h 00 (New York), sans l'enchère de clôture. Il est produit par le suivi en

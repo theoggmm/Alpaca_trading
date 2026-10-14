@@ -132,3 +132,19 @@ sur 29. Service de démarrage chargé, verrou vérifié, tâche de 17 h active. 
 
 Autrement dit : tout ce qui peut être testé avant l'ouverture l'a été sur de vraies données ; la
 première séance en direct reste à observer.
+
+## 2026-10-14 (suite) — Premières minutes en direct, liste à 16 h 45, séances figées
+
+**Question posée** : vérifier les premières minutes en direct ; avancer la liste à 16 h 45 ; une
+séance par jour dans le menu, en direct pendant la journée puis figée à la clôture.
+
+**Fait** :
+- Premières minutes en direct vérifiées : mise à jour chaque minute, retard de 15 min, 2 084 titres
+  sur 2 093 cotés à 9 h 46 (New York) ; journée, semaine et mois recalculés indépendamment pour 5 titres :
+  identiques à 4 décimales.
+- Tâche quotidienne avancée (déclenchement 16 h 44 min 56 s, Paris) ; le run attend au plus 20 min
+  les données de la première heure au lieu d'abandonner.
+- Menu « Séance » par jour : séance du jour en direct, séances passées figées (corrigées une fois le
+  lendemain, choix du propriétaire), chargées à la demande.
+
+Autrement dit : chaque jour de bourse a sa page, vivante pendant la séance puis figée pour de bon.
