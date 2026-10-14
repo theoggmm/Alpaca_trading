@@ -225,6 +225,8 @@ const TEXT = {
     final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t} (New York)`,
     final_col_note: " « Ouverture → clôture » : dernier échange avant 16 h 00 / premier prix de la séance, reconstitué depuis l'historique minute d'Alpaca.",
     final_state: d => `Fin de séance du ${d}`,
+    final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
+    final_definitive: "définitive",
     final_source: "dernier échange avant 16 h 00 (New York), historique minute toutes bourses",
     no_live_price: "pas encore d'échange connu dans la séance",
     live_col_note: " « Depuis l'ouverture » : dernier prix / premier prix de la séance, mis à jour chaque minute par le suivi en direct ; après la clôture, la variation de l'ouverture à la clôture.",
@@ -309,6 +311,8 @@ const TEXT = {
     final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t} (New York)`,
     final_col_note: " \"Open → close\": last trade before 4:00 PM / first price of the session, rebuilt from Alpaca's minute history.",
     final_state: d => `End of session ${d}`,
+    final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
+    final_definitive: "final",
     final_source: "last trade before 4:00 PM (New York), all-exchange minute history",
     no_live_price: "no trade known in the session yet",
     live_col_note: " \"Since open\": last price / first price of the session, updated every minute by live tracking; after the close, the change from open to close.",
@@ -637,6 +641,7 @@ function renderLive() {
   status.replaceChildren(...(LIVE.final ? [
     el("span", "pulse off"),
     el("span", "", TEXT.final_state(LIVE.session_date)),
+    el("span", "", LIVE.provisional ? TEXT.final_provisional : TEXT.final_definitive),
     el("span", "", TEXT.final_source),
   ] : [
     el("span", "pulse" + (running ? "" : " off")),

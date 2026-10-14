@@ -42,6 +42,10 @@ REFRESH_S = 60
 DAILY_HISTORY = timedelta(days=130)
 # Fenêtre lue pour retrouver le dernier échange de chaque titre avant la clôture.
 CLOSING_WINDOW = timedelta(minutes=30)
+# Les données minute d'Alpaca sont corrigées après coup (échanges annulés ou rectifiés) : un état de
+# fin de séance calculé le soir même est provisoire ; il devient définitif, relu à neuf, 12 h après la clôture.
+DEFINITIVE_AFTER = timedelta(hours=12)
+SUPERSEDED_DIR = ROOT / "research" / "outputs" / "final_superseded"
 EMPTY_BARS = pd.DataFrame(columns=["symbol", "timestamp", "open", "close", "volume"])
 
 
@@ -121,30 +125,43 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
     }
 
 
+def is_definitive(now, market_close):
+    """Un état de fin de séance n'est définitif que calculé au moins DEFINITIVE_AFTER après la clôture."""
+    return now >= market_close + DEFINITIVE_AFTER
+
+
 def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     """
     État de fin de séance reconstitué depuis l'historique minute : dernier échange de chaque titre
     avant la clôture (l'enchère de clôture n'est pas comptée). Écrit research/experiments/final/.
+    Provisoire s'il est calculé moins de DEFINITIVE_AFTER après la clôture ; l'état définitif relit
+    les barres minute à neuf (cache distinct), pour intégrer les corrections d'Alpaca.
     """
     key = session_date.isoformat()
     market_open, market_close = _times(session_date, open_time, close_time)
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
     git_sha = committed_git_sha()
+    now = datetime.now(timezone.utc)
+    stage = "definitive" if is_definitive(now, market_close) else "provisional"
 
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
     run, opens = _selection(family, key)
     tracked = sorted(set(symbols) | set(opens))
-    minute = cached(f"{key}/live_first_hour_bars", lambda: alpaca.bars(symbols, "1Min", market_open, first_hour_end))
-    closing = cached(f"{key}/final_closing_bars",
+    minute = cached(f"{key}/{stage}_first_hour_bars", lambda: alpaca.bars(symbols, "1Min", market_open, first_hour_end))
+    closing = cached(f"{key}/{stage}_closing_bars",
                      lambda: alpaca.bars(tracked, "1Min", market_close - CLOSING_WINDOW, market_close))
     trades = last_session_prices(closing, market_close)
 
     state = _state(family, criteria, key, market_open, market_close, market_close,
                    daily, domains, names, trades, minute, run, opens)
-    state.update(final=True, computed_at=datetime.now(timezone.utc).isoformat(), git_sha=git_sha,
+    state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists():  # archive avant remplacement
+        previous = SUPERSEDED_DIR / family / f"{key}_{json.loads(path.read_text(encoding='utf-8'))['computed_at']}.json"
+        previous.parent.mkdir(parents=True, exist_ok=True)
+        path.rename(previous)
     path.write_text(json.dumps(state, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     # Le dernier état affiché devient l'état final s'il porte sur cette séance ou une plus ancienne.
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
@@ -156,7 +173,10 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
 
 
 def catch_up(family):
-    """Produit l'état de fin de séance de chaque séance terminée sans état, depuis le premier run."""
+    """
+    Produit l'état de fin de séance de chaque séance terminée qui n'en a pas, et remplace par l'état
+    définitif tout état provisoire dès que DEFINITIVE_AFTER est passé. Depuis le premier run.
+    """
     runs = load_runs(family)
     if not runs:
         return []
@@ -167,7 +187,10 @@ def catch_up(family):
     done = []
     for session_date, open_time, close_time in alpaca.sessions(first, now.astimezone(NEW_YORK).date()):
         _, market_close = _times(session_date, open_time, close_time)
-        if now >= market_close + FEED_DELAY and not (FINALS_DIR / family / f"{session_date}.json").exists():
+        path = FINALS_DIR / family / f"{session_date}.json"
+        missing = now >= market_close + FEED_DELAY and not path.exists()
+        provisional = path.exists() and json.loads(path.read_text(encoding="utf-8")).get("provisional", True)
+        if missing or (provisional and is_definitive(now, market_close)):
             done.append(finalize(family, alpaca, criteria, session_date, open_time, close_time))
     if done:
         build(family)
