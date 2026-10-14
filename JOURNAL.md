@@ -148,3 +148,20 @@ séance par jour dans le menu, en direct pendant la journée puis figée à la c
   lendemain, choix du propriétaire), chargées à la demande.
 
 Autrement dit : chaque jour de bourse a sa page, vivante pendant la séance puis figée pour de bon.
+
+## 2026-10-14 (suite) — Critère PER < 12 adopté (version 2)
+
+**Question posée** : ajouter un PER inférieur à 12, le tester sur la séance du jour, puis l'adopter.
+
+**Fait** :
+- PER sur 12 mois glissants, bénéfice dilué par action déposé à la SEC (US GAAP, en dollars), seules
+  les déclarations déposées avant le jour de décision servent. Variante commitée avant le test.
+- Diagnostic sur le 14 octobre : 4 titres au lieu de 20 (PRI, WTRG, PRU, SIGI) ; 29 exclus pour PER ≥ 12,
+  9 faute de bénéfice exploitable, 2 par la diversification.
+- Décision du propriétaire : version 2 devient le critère quotidien à partir du 15 octobre ; moins de
+  20 titres accepté. r001 et r002 restent tels quels (version 1). 33 tests verts.
+
+Autrement dit : dès demain, la liste ne contient que des titres au PER inférieur à 12, souvent peu nombreux.
+
+**Points signalés** : le PER suit les bénéfices officiels, éléments exceptionnels compris (WTRG : 7,2) ;
+les titres sans bénéfice US GAAP déposé (étrangers, certaines banques) sont exclus.

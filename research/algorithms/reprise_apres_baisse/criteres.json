@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "count": 20,
   "month_sessions": 21,
   "up_days": 2,
@@ -10,5 +10,6 @@
   "volatility_sessions": 60,
   "max_volatility_quantile": 0.5,
   "correlation_sessions": 60,
-  "max_pairwise_correlation": 0.6
+  "max_pairwise_correlation": 0.6,
+  "max_pe": "12"
 }

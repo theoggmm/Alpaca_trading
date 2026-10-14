@@ -11,7 +11,7 @@ Des actions calmes et très échangées qui ont baissé sur le dernier mois, pui
 séances et pendant la première heure de la séance du jour. L'idée du propriétaire : repérer une
 reprise en cours après une baisse.
 
-## Critères (`criteres.json`, version 1)
+## Critères (`criteres.json`, version 2 depuis le 15 octobre 2026)
 
 Appliqués dans cet ordre, à l'instant de décision = ouverture de la séance + 60 minutes (New York) :
 
@@ -25,6 +25,7 @@ Appliqués dans cet ordre, à l'instant de décision = ouverture de la séance +
 | 6 | En baisse sur un mois | Rendement sur 21 séances < 0 |
 | 7 | Hausse des derniers jours | Rendement > 0 à chacune des 2 dernières séances |
 | 8 | Hausse première heure | Dernier cours connu à la décision > premier cours de la séance |
+| 8 bis | PER (version 2) | Prix à la décision / bénéfice dilué par action des 12 derniers mois < 12. Bénéfice US GAAP en dollars déclaré à la SEC, déposé avant le jour de décision ; bénéfice nul, négatif ou non disponible = titre exclu |
 | 9 | Classement | Du plus fort repli sur 21 séances au plus faible (égalité : ordre alphabétique) |
 | 10 | Diversification | Un titre n'est retenu que si sa corrélation (rendements quotidiens, 60 séances) avec chaque titre déjà retenu est ≤ 0,6 ; arrêt à 20 titres |
 
@@ -47,6 +48,8 @@ classé et le nombre de ces titres est affiché. Si la SEC ne répond pas, la li
 même produite et l'erreur est enregistrée dans le run.
 
 ## Sources
+
+- **Bénéfices (PER)** : SEC, `https://data.sec.gov/api/xbrl/companyconcept/CIK##########/us-gaap/EarningsPerShareDiluted.json`. 12 mois glissants = dernier exercice, ou exercice précédent + cumul de l'exercice en cours − même cumul un an plus tôt. Les sociétés qui ne déposent pas ce poste en US GAAP (sociétés étrangères, certaines banques, fonds) sont exclues.
 
 - **Cours** : Alpaca, données consolidées (feed `sip`), ajustées des splits et dividendes. Offre gratuite :
   les 15 dernières minutes ne sont pas servies, d'où un run au plus tôt à 10 h 45 (New York).
@@ -73,3 +76,11 @@ Chaque run écrit `research/experiments/runs/reprise_apres_baisse/r00N/results.j
 entonnoir, sélection, `git_sha` du code commité) et une ligne dans `research/experiments/registry.csv`.
 Un seul run par séance ; le run refuse de tourner si le code n'est pas commité. `run_screener.sh`
 commite ensuite ces deux fichiers (et rien d'autre) et les pousse sur GitHub.
+
+## Historique des versions
+
+- **Version 1** (13–14 octobre 2026, runs r001 et r002) : critères 1 à 10 sans PER.
+- **Version 2** (à partir du 15 octobre 2026, décision du propriétaire) : + PER sur 12 mois glissants < 12.
+  Diagnostic sur la séance du 14 octobre (déjà regardée, donc sans valeur de preuve) : 44 titres en hausse
+  sur la première heure, 6 avec un PER < 12, 4 après diversification (PRI, WTRG, PRU, SIGI). La liste peut
+  compter bien moins de 20 titres ; elle n'est jamais complétée.

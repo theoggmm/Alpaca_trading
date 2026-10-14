@@ -1,6 +1,7 @@
 """Les critères de la famille reprise_apres_baisse sont appliqués tels qu'écrits."""
 
 from dataclasses import replace
+from decimal import Decimal
 from pathlib import Path
 
 from core.screener import Criteria, screen
@@ -11,7 +12,8 @@ CRITERIA_FILE = Path(__file__).resolve().parents[1] / "research" / "algorithms" 
 
 
 def test_fichier_de_criteres_lisible():
-    assert Criteria.from_file(CRITERIA_FILE) == CRITERIA
+    # Version 2 = critères de la version 1 + PER sur 12 mois glissants < 12.
+    assert Criteria.from_file(CRITERIA_FILE) == replace(CRITERIA, version=2, max_pe=Decimal("12"))
 
 
 def test_seuls_les_titres_en_baisse_puis_en_hausse_sont_retenus():
@@ -57,3 +59,22 @@ def test_etf_et_titres_de_test_exclus():
     symbols, funnel = eligible_symbols(assets, listings)
     assert symbols == ["AAPL"]
     assert funnel == {"actifs_negociables": 4, "cotes_sur_une_bourse_us": 3, "hors_etf_et_titres_de_test": 1}
+
+
+def test_per_maximum_exclut_les_titres_sans_benefice_ou_trop_chers():
+    daily, minute = market()
+    eps = {"filed": "2026-10-01", "start": "2025-10-01", "end": "2026-09-30"}  # exercice récent, déposé avant
+    asked = []
+
+    def earnings_for(symbols):
+        asked.extend(symbols)
+        # DOWN0..DOWN9 : bénéfice élevé (PER bas) ; DOWN10..DOWN19 : bénéfice faible (PER haut) ; autres : rien.
+        return {s: [{**eps, "val": Decimal("10") if int(s[4:]) < 10 else Decimal("0.5")}]
+                for s in symbols if s.startswith("DOWN")}
+
+    selection, funnel = screen(daily, minute, MARKET_OPEN, DECISION_TIME, replace(CRITERIA, max_pe=Decimal("12")),
+                               earnings_for=earnings_for)
+    assert asked, "les bénéfices ne sont demandés que pour les titres en hausse sur la première heure"
+    assert funnel["per_maximum"] <= funnel["hausse_premiere_heure"]
+    assert selection and all(item["symbol"].startswith("DOWN") and int(item["symbol"][4:]) < 10 for item in selection)
+    assert all(Decimal(item["pe_ttm"]) < 12 for item in selection)
