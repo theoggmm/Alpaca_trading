@@ -88,6 +88,15 @@
   .dot.up { background: var(--up-fill); } .dot.down { background: var(--down-fill); }
   .dot.flat { background: var(--muted); }
   .dot.none { background: none; border: 1px dashed var(--line); color: var(--muted); font-weight: 400; font-size: 11px; }
+  .live button.sector { font: inherit; font-weight: 600; color: var(--ink); background: none; border: 0; padding: 0;
+                        cursor: pointer; text-align: left; }
+  .live button.sector:hover { color: var(--accent); }
+  .live button.sector:focus-visible, .live th.sortable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .live tr.detail > td { padding: 0 0 14px; background: var(--bg); }
+  .live table.stocks th, .live table.stocks td { padding: 6px 10px; font-size: 13px; text-align: right; }
+  .live table.stocks .text { text-align: left; }
+  .live table.stocks th.sortable { cursor: pointer; }
+  .live table.stocks th.sortable:hover { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -174,7 +183,10 @@ const TEXT = {
     how_sessions: n => `dernier prix / clôture d'il y a ${n} séances`,
     n_stocks: n => `${n} titres`, upcoming: "à venir", dot_title: (d, l, n) => `${d}, ${l} : moyenne de ${n} titres`,
     no_session_prices: "Pas encore de prix pour cette séance.",
-    live_note: (u, m) => `Moyenne simple, par domaine (classement SEC), des ${u} titres assez liquides. Vert : en hausse en moyenne, rouge : en baisse. « ${m} premières min » s'affiche 15 min après la fin de la première heure. Survole un en-tête pour sa définition. La page se recharge toute seule chaque minute.`,
+    live_note: (u, m) => `Moyenne simple, par domaine (classement SEC), des ${u} titres assez liquides. Vert : en hausse en moyenne, rouge : en baisse. Clique sur un domaine pour voir tous ses titres, classés du meilleur au moins bon ; ★ = dans la sélection du jour. « ${m} premières min » s'affiche 15 min après la fin de la première heure. Survole un en-tête pour sa définition. La page se recharge toute seule chaque minute.`,
+    sector_hint: "Clique pour voir la liste des titres de ce domaine",
+    sort_hint: "clique pour trier",
+    in_selection: "dans la sélection du jour",
     meta: r => [`Séance du ${r.session_date}`, `décision à ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
     th: { rank: "#", symbol: "Symbole", name: "Société", domain: "Domaine", month: "1 mois", d2: "J-2", d1: "J-1",
           first_hour: "1re heure", live: "Depuis l'ouverture (direct)", price: "Prix à la décision",
@@ -247,7 +259,10 @@ const TEXT = {
     how_sessions: n => `last price / close ${n} sessions ago`,
     n_stocks: n => `${n} stocks`, upcoming: "pending", dot_title: (d, l, n) => `${d}, ${l}: average of ${n} stocks`,
     no_session_prices: "No prices for this session yet.",
-    live_note: (u, m) => `Simple average, by sector (SEC classification), of the ${u} sufficiently liquid stocks. Green: up on average, red: down. "First ${m} min" appears 15 min after the first hour ends. Hover a header for its definition. The page reloads itself every minute.`,
+    live_note: (u, m) => `Simple average, by sector (SEC classification), of the ${u} sufficiently liquid stocks. Green: up on average, red: down. Click a sector to see all its stocks, ranked from best to worst; ★ = in today's selection. "First ${m} min" appears 15 min after the first hour ends. Hover a header for its definition. The page reloads itself every minute.`,
+    sector_hint: "Click to list this sector's stocks",
+    sort_hint: "click to sort",
+    in_selection: "in today's selection",
     meta: r => [`Session of ${r.session_date}`, `decision at ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
     th: { rank: "#", symbol: "Symbol", name: "Company", domain: "Sector", month: "1 month", d2: "D-2", d1: "D-1",
           first_hour: "First hour", live: "Since open (live)", price: "Price at decision",
@@ -393,6 +408,50 @@ function renderBubbles(run) {
   note.textContent = TEXT.bubbles_note(run.criteria.month_sessions, domains.unclassified);
 }
 
+// Domaine ouvert et tri choisis : gardés pour la session de l'onglet, pour survivre au rechargement
+// automatique de la page (en mémoire seulement si le navigateur refuse le stockage).
+const VIEW_KEY = "alpaca_live_view";
+let VIEW = (() => { try { return JSON.parse(sessionStorage.getItem(VIEW_KEY)) || {}; } catch { return {}; } })();
+function saveView(view) {
+  VIEW = view;
+  try { sessionStorage.setItem(VIEW_KEY, JSON.stringify(view)); } catch { /* mémoire seulement */ }
+}
+
+// Liste des titres d'un domaine, classée du meilleur au moins bon sur la colonne choisie (Journée par défaut).
+function sectorTable(list, columns, picked) {
+  const key = VIEW.sortKey || "day";
+  const dir = VIEW.sortDir || "desc";
+  const sorted = [...list].sort((a, b) => {
+    if (a[key] == null || b[key] == null) return (a[key] == null) - (b[key] == null) || a.symbol.localeCompare(b.symbol);
+    return dir === "desc" ? b[key] - a[key] : a[key] - b[key];
+  });
+  const t = el("table", "stocks");
+  const head = t.createTHead().insertRow();
+  head.append(el("th", "", TEXT.th.rank), el("th", "text", TEXT.th.symbol), el("th", "text", TEXT.th.name));
+  columns.forEach(([k, label, how]) => {
+    const th = el("th", "sortable", label + (k === key ? (dir === "desc" ? " ▾" : " ▴") : ""));
+    th.title = `${how} · ${TEXT.sort_hint}`;
+    th.tabIndex = 0;
+    th.setAttribute("role", "button");
+    const sort = () => { saveView({ ...VIEW, sortKey: k, sortDir: k === key && dir === "desc" ? "asc" : "desc" }); renderLive(); };
+    th.addEventListener("click", sort);
+    th.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); sort(); } });
+    head.appendChild(th);
+  });
+  const body = t.createTBody();
+  sorted.forEach((st, i) => {
+    const tr = body.insertRow();
+    tr.appendChild(el("td", "", i + 1));
+    const symbol = el("td", "text symbol", st.symbol + (picked.has(st.symbol) ? " ★" : ""));
+    if (picked.has(st.symbol)) symbol.title = TEXT.in_selection;
+    const name = el("td", "text name", st.name);
+    name.title = st.name;
+    tr.append(symbol, name);
+    columns.forEach(([k]) => tr.appendChild(el("td", st[k] == null ? "" : signed(st[k]), st[k] == null ? "—" : pct(st[k]))));
+  });
+  return t;
+}
+
 function renderLive() {
   const status = document.getElementById("live-status");
   const box = document.getElementById("live");
@@ -427,15 +486,39 @@ function renderLive() {
   const order = [...new Set(columns.flatMap(([key]) => LIVE.measures[key].bubbles.map(b => b.domain)))];
   order.sort((a, b) => (cells.day.get(b)?.mean_return ?? -Infinity) - (cells.day.get(a)?.mean_return ?? -Infinity));
 
+  // Titres de l'univers regroupés par domaine ("" = sans domaine connu de la SEC).
+  const stocks = LIVE.stocks
+    ? LIVE.stocks.rows.map(row => Object.fromEntries(LIVE.stocks.columns.map((c, i) => [c, row[i]]))) : [];
+  const bySector = new Map();
+  stocks.forEach(st => {
+    const key = st.domain ?? "";
+    if (!bySector.has(key)) bySector.set(key, []);
+    bySector.get(key).push(st);
+  });
+  if (bySector.has("")) order.push("");
+  const picked = new Set((RUNS.find(r => r.run_id === LIVE.selection?.run_id)?.selection || []).map(i => i.symbol));
+
   const t = el("table");
   const head = t.createTHead().insertRow();
   head.appendChild(el("th", "text", TEXT.col_domain));
   columns.forEach(([, label, how]) => { const th = el("th", "", label); th.title = how; head.appendChild(th); });
   const body = t.createTBody();
   order.forEach(domain => {
+    const list = bySector.get(domain) || [];
+    const open = list.length > 0 && VIEW.sector === domain;
     const tr = body.insertRow();
-    const name = el("td", "text", domainLabel(domain));
-    const n = cells.day.get(domain)?.n ?? cells.month.get(domain)?.n;
+    const name = el("td", "text");
+    const label = domainLabel(domain || null);
+    if (list.length) {
+      const toggle = el("button", "sector", (open ? "▾ " : "▸ ") + label);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.title = TEXT.sector_hint;
+      toggle.addEventListener("click", () => { saveView({ ...VIEW, sector: open ? null : domain }); renderLive(); });
+      name.appendChild(toggle);
+    } else {
+      name.append(label);
+    }
+    const n = list.length || cells.day.get(domain)?.n || cells.month.get(domain)?.n;
     if (n) name.appendChild(el("small", "", TEXT.n_stocks(n)));
     tr.appendChild(name);
     columns.forEach(([key, label]) => {
@@ -447,6 +530,14 @@ function renderLive() {
       td.appendChild(dot);
       tr.appendChild(td);
     });
+    if (open) {
+      const detail = body.insertRow();
+      detail.className = "detail";
+      const td = el("td");
+      td.colSpan = columns.length + 1;
+      td.appendChild(sectorTable(list, columns, picked));
+      detail.appendChild(td);
+    }
   });
   box.replaceChildren(order.length ? t : el("div", "empty", TEXT.no_session_prices));
   document.getElementById("live-note").textContent = TEXT.live_note(LIVE.universe, LIVE.first_hour_minutes);

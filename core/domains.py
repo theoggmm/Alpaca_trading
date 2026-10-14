@@ -11,6 +11,8 @@ from core.datation import usable_bars
 from core.screener import DAY, MINUTE, first_hour_prices, liquid_universe
 
 WEEK_SESSIONS = 5
+# Mesures en direct, dans l'ordre d'affichage.
+LIVE_MEASURES = ("day", "first_hour", "two_days", "week", "month")
 
 
 def aggregate_by_domain(values, domains):
@@ -49,7 +51,10 @@ def live_domain_trends(daily, last_trades, minute, market_open, market_close, no
     minute      : barres minute de la séance ; seules celles terminées à la fin de la première heure servent.
 
     Variations « N séances, séance en cours comprise » : dernier prix / clôture d'il y a N séances - 1.
-    Retourne {mesure: {"available", "bubbles", "unclassified"}} et le nombre de titres de l'univers.
+    Retourne :
+      - {mesure: {"available", "bubbles", "unclassified"}} ;
+      - les symboles de l'univers liquide ;
+      - {mesure: {symbole: variation}}, la variation de chaque titre (absente si non calculable).
     """
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
     daily = usable_bars(daily, DAY, market_open)
@@ -57,17 +62,19 @@ def live_domain_trends(daily, last_trades, minute, market_open, market_close, no
     last_trades = {s: price for s, (ts, price) in last_trades.items() if market_open <= ts <= min(now, market_close)}
 
     stats, _ = liquid_universe(daily, market_open, criteria)
+    liquid = [s.symbol for s in stats]
     sessions = {"day": 1, "two_days": criteria.up_days, "week": WEEK_SESSIONS, "month": criteria.month_sessions}
-    measures = {}
-    for key, n in sessions.items():
-        values = {s.symbol: float(last_trades[s.symbol] / s.closes[-n] - 1) for s in stats if s.symbol in last_trades}
-        bubbles, unclassified = aggregate_by_domain(values, domains)
-        measures[key] = {"available": bool(values), "bubbles": bubbles, "unclassified": unclassified}
+    values = {key: {s.symbol: float(last_trades[s.symbol] / s.closes[-n] - 1) for s in stats if s.symbol in last_trades}
+              for key, n in sessions.items()}
 
     complete = now >= first_hour_end and not minute.empty
     prices = first_hour_prices(minute, market_open) if complete else {}
-    liquid = {s.symbol for s in stats}
-    values = {symbol: float(last / first - 1) for symbol, (first, last) in prices.items() if symbol in liquid}
-    bubbles, unclassified = aggregate_by_domain(values, domains)
-    measures["first_hour"] = {"available": complete, "bubbles": bubbles, "unclassified": unclassified}
-    return measures, len(stats)
+    values["first_hour"] = {symbol: float(last / first - 1) for symbol, (first, last) in prices.items()
+                            if symbol in set(liquid)}
+
+    measures = {}
+    for key, by_symbol in values.items():
+        bubbles, unclassified = aggregate_by_domain(by_symbol, domains)
+        measures[key] = {"available": complete if key == "first_hour" else bool(by_symbol),
+                         "bubbles": bubbles, "unclassified": unclassified}
+    return measures, liquid, values

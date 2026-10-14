@@ -22,7 +22,7 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from core.domains import WEEK_SESSIONS, live_domain_trends
+from core.domains import LIVE_MEASURES, WEEK_SESSIONS, live_domain_trends
 from core.screener import Criteria, changes_since_open, last_session_prices, liquid_universe
 from core.universe import eligible_symbols
 from dashboard.build import FINALS_DIR, LIVE_FILE, build
@@ -61,7 +61,8 @@ def _prepare(alpaca, criteria, key, market_open):
                    lambda: alpaca.bars(symbols, "1Day", market_open - DAILY_HISTORY, market_open))
     liquid, _ = liquid_universe(daily, market_open, criteria)
     profiles = sec.profiles([s.symbol for s in liquid], key)
-    return daily, [s.symbol for s in liquid], {s: p["domain"] for s, p in profiles.items()}
+    names = {s.symbol: listings[s.symbol]["name"] for s in liquid}
+    return daily, [s.symbol for s in liquid], {s: p["domain"] for s, p in profiles.items()}, names
 
 
 def _selection(family, key):
@@ -70,9 +71,10 @@ def _selection(family, key):
     return run, {item["symbol"]: Decimal(item["open_today"]) for item in (run or {}).get("selection", [])}
 
 
-def _state(family, criteria, key, market_open, market_close, now, daily, domains, trades, minute, run, opens):
+def _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, run, opens):
     """État affiché par le tableau de bord, calculé avec les seules données connues à now."""
-    measures, universe = live_domain_trends(daily, trades, minute, market_open, market_close, now, criteria, domains)
+    measures, liquid, values = live_domain_trends(daily, trades, minute, market_open, market_close, now,
+                                                  criteria, domains)
     used = [ts for ts, _ in trades.values() if market_open <= ts <= min(now, market_close)]
     return {
         "family": family,
@@ -80,7 +82,14 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
         "observed_at": now.isoformat(),
         "prices_until": max(used).isoformat() if used else None,
         "feed": FEED,
-        "universe": universe,
+        "universe": len(liquid),
+        # Une ligne par titre de l'univers ; variation absente (None) si non calculable.
+        "stocks": {
+            "columns": ["symbol", "name", "domain", *LIVE_MEASURES],
+            "rows": [[s, names.get(s, ""), domains.get(s),
+                      *(None if s not in values[m] else round(values[m][s], 6) for m in LIVE_MEASURES)]
+                     for s in liquid],
+        },
         "first_hour_minutes": criteria.first_hour_minutes,
         "sessions": {"two_days": criteria.up_days, "week": WEEK_SESSIONS, "month": criteria.month_sessions},
         "measures": measures,
@@ -99,7 +108,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
     git_sha = committed_git_sha()
 
-    daily, symbols, domains = _prepare(alpaca, criteria, key, market_open)
+    daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
     run, opens = _selection(family, key)
     tracked = sorted(set(symbols) | set(opens))
     minute = cached(f"{key}/live_first_hour_bars", lambda: alpaca.bars(symbols, "1Min", market_open, first_hour_end))
@@ -108,7 +117,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     trades = last_session_prices(closing, market_close)
 
     state = _state(family, criteria, key, market_open, market_close, market_close,
-                   daily, domains, trades, minute, run, opens)
+                   daily, domains, names, trades, minute, run, opens)
     state.update(final=True, computed_at=datetime.now(timezone.utc).isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
@@ -156,7 +165,7 @@ def run(family):
     stop_at = market_close + FEED_DELAY
 
     print("Préparation : univers liquide et domaines (quelques minutes la première fois)…")
-    daily, symbols, domains = _prepare(alpaca, criteria, key, market_open)
+    daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
     minute = EMPTY_BARS
 
     while True:
@@ -183,7 +192,7 @@ def run(family):
             continue
 
         state = _state(family, criteria, key, market_open, market_close, now,
-                       daily, domains, trades, minute, today_run, opens)
+                       daily, domains, names, trades, minute, today_run, opens)
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)
