@@ -13,6 +13,7 @@ Depuis la racine du dépôt :
     .venv/bin/python -m dashboard.live reprise_apres_baisse
 """
 
+import fcntl
 import json
 import sys
 import time
@@ -150,7 +151,23 @@ def catch_up(family):
     return done
 
 
+def _single_instance():
+    """Verrou tenu tant que le processus vit : un seul suivi à la fois. None si un autre tourne déjà."""
+    LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    lock = open(LIVE_FILE.parent / "tracker.lock", "w")
+    try:
+        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        lock.close()
+        return None
+    return lock
+
+
 def run(family):
+    lock = _single_instance()
+    if lock is None:
+        print("Le suivi en direct tourne déjà : rien à faire.")
+        return 0
     criteria = _criteria(family)
     alpaca = AlpacaReader()
     session_date = datetime.now(timezone.utc).astimezone(NEW_YORK).date()
