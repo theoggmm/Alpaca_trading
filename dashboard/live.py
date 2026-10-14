@@ -74,8 +74,8 @@ def _write_chart_data(daily, market_open, symbols, criteria, key):
     dashboard/charts_data.js : clôtures du dernier mois de chaque titre de l'univers, chargé une fois
     par la page (graphiques des listes par domaine). Écrit une fois par séance, pas à chaque minute.
     """
-    closes = recent_closes(daily, market_open, symbols, criteria.month_sessions + 1)
-    dates = sorted({d for series in closes.values() for d, _ in series})[-(criteria.month_sessions + 1):]
+    closes = recent_closes(daily, market_open, symbols, criteria.month_sessions)
+    dates = sorted({d for series in closes.values() for d, _ in series})[-(criteria.month_sessions):]
     rows = ",".join(
         f'"{s}":[' + ",".join(dict(series).get(d, "null") for d in dates) + "]" for s, series in closes.items())
     CHARTS_FILE.write_text(
@@ -115,8 +115,9 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
         "measures": measures,
         "selection": run and {"run_id": run["run_id"],
                               "changes": changes_since_open(opens, trades, market_open, market_close, now)},
-        # Graphiques de la sélection : clôtures du dernier mois (le prix du jour vient de "changes").
-        "charts": recent_closes(daily, market_open, opens, criteria.month_sessions + 1),
+        # Graphiques de la sélection : les month_sessions dernières clôtures ; avec le prix du jour, la
+        # variation affichée sur le graphique est exactement celle de la colonne « 1 mois ».
+        "charts": recent_closes(daily, market_open, opens, criteria.month_sessions),
     }
 
 
