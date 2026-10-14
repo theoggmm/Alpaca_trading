@@ -454,7 +454,8 @@ function priceChart(item, closes, last, isFinal) {
     .forEach(([i, label]) => box.append(svg("text", { x: x(i), y: H - 8, class: "axis", "text-anchor": "middle" }, label)));
 
   const head = el("div", "chart-head");
-  const month = (today ?? prev) / points[0].price - 1;
+  // 1 mois : même valeur que la colonne du tableau (figée au run pour la sélection, en direct sinon).
+  const month = item.return_month ?? (today ?? prev) / points[0].price - 1;
   head.append(el("b", "", `${item.symbol} · ${item.name}`),
               el("span", signed(month), `${TEXT.chart_month} ${pct(month)}`));
   if (today !== null) head.append(el("span", signed(today / prev - 1), `${TEXT.chart_vs_prev} ${pct(today / prev - 1)}`));
