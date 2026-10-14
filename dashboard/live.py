@@ -122,7 +122,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(state, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(state, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     # Le dernier état affiché devient l'état final s'il porte sur cette séance ou une plus ancienne.
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
     if live is None or live["session_date"] <= key:
