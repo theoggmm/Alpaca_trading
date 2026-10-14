@@ -24,6 +24,8 @@ OUTPUTS = {"fr": HERE / "index.html", "en": HERE / "index_en.html"}
 LIVE_FILE = ROOT / "research" / "outputs" / "live" / "latest.json"
 # Clôtures du dernier mois de tout l'univers, écrites une fois par séance par le suivi en direct.
 CHARTS_FILE = HERE / "charts_data.js"
+# États figés des séances passées, un fichier par séance, chargé par la page quand on choisit la séance.
+SESSIONS_DIR = HERE / "sessions"
 # États de fin de séance, durables (commités avec l'historique) : <famille>/<date>.json.
 FINALS_DIR = ROOT / "research" / "experiments" / "final"
 
@@ -50,6 +52,18 @@ def _fill_domains(runs):
                     domain_read_later=True)
 
 
+def _write_session_files(family):
+    """sessions/<date>.js pour chaque état de fin de séance, réécrit seulement s'il a changé."""
+    SESSIONS_DIR.mkdir(exist_ok=True)
+    for source in (FINALS_DIR / family).glob("*.json"):
+        target = SESSIONS_DIR / f"{source.stem}.js"
+        if target.exists() and target.stat().st_mtime >= source.stat().st_mtime:
+            continue
+        state = source.read_text(encoding="utf-8").strip()
+        target.write_text(f'window.SESSION_STATES=window.SESSION_STATES||{{}};'
+                          f'window.SESSION_STATES["{source.stem}"]={state.replace("</", "<\\/")};\n', encoding="utf-8")
+
+
 def build(family):
     runs = load_runs(family)
     _fill_domains(runs)
@@ -69,9 +83,11 @@ def build(family):
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))
             .replace("__LIVE_JSON__", _embed(live))
-            .replace("__FINALS_JSON__", _embed({f["session_date"]: {"selection": f.get("selection"), "charts": f.get("charts")}
+            .replace("__FINALS_JSON__", _embed({f["session_date"]: {"selection": f.get("selection"), "charts": f.get("charts"),
+                                                                    "provisional": f.get("provisional", True)}
                                                 for f in finals}))
             .replace("__HISTORY_JSON__", _embed(history)))
+    _write_session_files(family)
     for lang, path in OUTPUTS.items():
         path.write_text(page.replace("__LANG__", lang), encoding="utf-8")
     return OUTPUTS, len(runs)

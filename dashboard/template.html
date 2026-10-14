@@ -175,6 +175,8 @@
 const LANG = "__LANG__";
 const RUNS = __RUNS_JSON__;
 const LIVE = __LIVE_JSON__;
+// Séance affichée : l'état en direct pour la séance du jour, l'état figé de fin de séance sinon.
+let SHOWN = null;
 const FINALS = __FINALS_JSON__;
 const HISTORY = __HISTORY_JSON__;
 // Au-delà, le suivi en direct est considéré comme arrêté.
@@ -225,6 +227,9 @@ const TEXT = {
     final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t} (New York)`,
     final_col_note: " « Ouverture → clôture » : dernier échange avant 16 h 00 / premier prix de la séance, reconstitué depuis l'historique minute d'Alpaca.",
     final_state: d => `Fin de séance du ${d}`,
+    opt_live: "en direct", opt_provisional: "fin de séance (provisoire)", opt_final: "fin de séance",
+    session_of: d => `Séance du ${d}`,
+    no_run_yet: "La liste des 20 titres de cette séance sera produite à 16 h 45 (Paris), une heure et quart après l'ouverture.",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
     final_definitive: "définitive",
     final_source: "dernier échange avant 16 h 00 (New York), historique minute toutes bourses",
@@ -311,6 +316,9 @@ const TEXT = {
     final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t} (New York)`,
     final_col_note: " \"Open → close\": last trade before 4:00 PM / first price of the session, rebuilt from Alpaca's minute history.",
     final_state: d => `End of session ${d}`,
+    opt_live: "live", opt_provisional: "end of session (provisional)", opt_final: "end of session",
+    session_of: d => `Session of ${d}`,
+    no_run_yet: "This session's list of 20 stocks will be produced at 4:45 PM (Paris), an hour and a quarter after the open.",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
     final_definitive: "final",
     final_source: "last trade before 4:00 PM (New York), all-exchange minute history",
@@ -380,9 +388,9 @@ function table(columns, rows) {
 }
 
 // Clôtures du dernier mois de tout l'univers, pour la séance affichée en direct ; null si absentes.
-const CLOSES = window.CHART_CLOSES?.session_date === LIVE?.session_date ? window.CHART_CLOSES : null;
+const CLOSES = window.CHART_CLOSES || null;
 const chartCloses = symbol => {
-  const values = CLOSES?.closes[symbol];
+  const values = CLOSES?.session_date === SHOWN?.session_date ? CLOSES.closes[symbol] : null;
   return values ? CLOSES.dates.map((d, i) => [d, values[i]]).filter(([, c]) => c !== null) : null;
 };
 
@@ -622,7 +630,7 @@ function sectorTable(list, measures, picked) {
       const td = el("td");
       td.colSpan = columns.length + 3;
       td.appendChild(priceChart({ symbol: st.symbol, name: st.name }, closes,
-                                st.price == null ? null : { price: st.price, at: LIVE.prices_until }, !!LIVE.final));
+                                st.price == null ? null : { price: st.price, at: SHOWN.prices_until }, !!SHOWN.final));
       row.appendChild(td);
     }
   });
@@ -632,41 +640,41 @@ function sectorTable(list, measures, picked) {
 function renderLive() {
   const status = document.getElementById("live-status");
   const box = document.getElementById("live");
-  if (!LIVE) {
+  if (!SHOWN) {
     status.replaceChildren(el("span", "pulse off"), el("span", "", TEXT.live_off));
     box.replaceChildren(el("div", "empty", TEXT.live_launch));
     return;
   }
-  const running = !LIVE.final && Date.now() - new Date(LIVE.observed_at).getTime() < LIVE_STALE_MS;
-  status.replaceChildren(...(LIVE.final ? [
+  const running = !SHOWN.final && Date.now() - new Date(SHOWN.observed_at).getTime() < LIVE_STALE_MS;
+  status.replaceChildren(...(SHOWN.final ? [
     el("span", "pulse off"),
-    el("span", "", TEXT.final_state(LIVE.session_date)),
-    el("span", "", LIVE.provisional ? TEXT.final_provisional : TEXT.final_definitive),
+    el("span", "", TEXT.final_state(SHOWN.session_date)),
+    el("span", "", SHOWN.provisional ? TEXT.final_provisional : TEXT.final_definitive),
     el("span", "", TEXT.final_source),
   ] : [
     el("span", "pulse" + (running ? "" : " off")),
-    el("span", "", running ? TEXT.live_running : TEXT.live_stopped(LIVE.session_date)),
-    el("span", "", LIVE.prices_until ? TEXT.prices_until(nyTime(LIVE.prices_until)) : TEXT.no_prices),
-    el("span", "", TEXT.updated_at(nyTime(LIVE.observed_at))),
+    el("span", "", running ? TEXT.live_running : TEXT.live_stopped(SHOWN.session_date)),
+    el("span", "", SHOWN.prices_until ? TEXT.prices_until(nyTime(SHOWN.prices_until)) : TEXT.no_prices),
+    el("span", "", TEXT.updated_at(nyTime(SHOWN.observed_at))),
     el("span", "", TEXT.feed),
   ]));
 
-  const s = LIVE.sessions;
+  const s = SHOWN.sessions;
   const columns = [
     ["day", TEXT.col_day, TEXT.how_day],
-    ["first_hour", TEXT.col_first_hour(LIVE.first_hour_minutes), TEXT.how_first_hour],
+    ["first_hour", TEXT.col_first_hour(SHOWN.first_hour_minutes), TEXT.how_first_hour],
     ["two_days", TEXT.col_sessions(s.two_days), TEXT.how_sessions(s.two_days)],
     ["week", TEXT.col_week, TEXT.how_sessions(s.week)],
     ["month", TEXT.col_month, TEXT.how_sessions(s.month)],
   ];
   const cells = Object.fromEntries(columns.map(([key]) =>
-    [key, new Map(LIVE.measures[key].bubbles.map(b => [b.domain, b]))]));
-  const order = [...new Set(columns.flatMap(([key]) => LIVE.measures[key].bubbles.map(b => b.domain)))];
+    [key, new Map(SHOWN.measures[key].bubbles.map(b => [b.domain, b]))]));
+  const order = [...new Set(columns.flatMap(([key]) => SHOWN.measures[key].bubbles.map(b => b.domain)))];
   order.sort((a, b) => (cells.day.get(b)?.mean_return ?? -Infinity) - (cells.day.get(a)?.mean_return ?? -Infinity));
 
   // Titres de l'univers regroupés par domaine ("" = sans domaine connu de la SEC).
-  const stocks = LIVE.stocks
-    ? LIVE.stocks.rows.map(row => Object.fromEntries(LIVE.stocks.columns.map((c, i) => [c, row[i]]))) : [];
+  const stocks = SHOWN.stocks
+    ? SHOWN.stocks.rows.map(row => Object.fromEntries(SHOWN.stocks.columns.map((c, i) => [c, row[i]]))) : [];
   const bySector = new Map();
   stocks.forEach(st => {
     const key = st.domain ?? "";
@@ -674,7 +682,7 @@ function renderLive() {
     bySector.get(key).push(st);
   });
   if (bySector.has("")) order.push("");
-  const picked = new Set((RUNS.find(r => r.run_id === LIVE.selection?.run_id)?.selection || []).map(i => i.symbol));
+  const picked = new Set((RUNS.find(r => r.run_id === SHOWN.selection?.run_id)?.selection || []).map(i => i.symbol));
 
   const t = el("table");
   const head = t.createTHead().insertRow();
@@ -703,7 +711,7 @@ function renderLive() {
       const td = el("td");
       const b = cells[key].get(domain);
       const dot = b ? el("span", "dot " + tone(b.mean_return), pct(b.mean_return))
-                    : el("span", "dot none", LIVE.measures[key].available ? "—" : TEXT.upcoming);
+                    : el("span", "dot none", SHOWN.measures[key].available ? "—" : TEXT.upcoming);
       if (b) dot.title = TEXT.dot_title(domainLabel(domain), label, b.n);
       td.appendChild(dot);
       tr.appendChild(td);
@@ -718,7 +726,7 @@ function renderLive() {
     }
   });
   box.replaceChildren(order.length ? t : el("div", "empty", TEXT.no_session_prices));
-  document.getElementById("live-note").textContent = TEXT.live_note(LIVE.universe, LIVE.first_hour_minutes);
+  document.getElementById("live-note").textContent = TEXT.live_note(SHOWN.universe, SHOWN.first_hour_minutes);
 }
 
 function renderHistory() {
@@ -746,21 +754,58 @@ other.textContent = TEXT.other;
 other.href = TEXT.other_href;
 
 const picker = document.getElementById("run");
-if (!RUNS.length) {
+const SESSION_DATES = [...new Set([...Object.keys(FINALS), ...RUNS.map(r => r.session_date),
+                                   ...(LIVE ? [LIVE.session_date] : [])])].sort().reverse();
+window.SESSION_STATES = window.SESSION_STATES || {};
+
+// État d'une séance : en direct (embarqué), ou figé, chargé à la demande depuis sessions/<date>.js.
+function withState(date, then) {
+  if (LIVE?.session_date === date) return then(LIVE);
+  if (window.SESSION_STATES[date] || !FINALS[date]) return then(window.SESSION_STATES[date] || null);
+  const script = document.createElement("script");
+  script.src = `sessions/${date}.js`;
+  script.onload = () => then(window.SESSION_STATES[date] || null);
+  script.onerror = () => then(null);
+  document.head.appendChild(script);
+}
+
+function renderNoRun(date) {
+  document.getElementById("status").textContent = `diagnostic · ${TEXT.not_judged}`;
+  document.getElementById("meta").replaceChildren(el("span", "", TEXT.session_of(date)));
+  document.getElementById("selection").replaceChildren(el("div", "empty", TEXT.no_run_yet));
+  document.getElementById("selection-note").textContent = "";
+  ["bubbles", "funnel", "criteria"].forEach(id => document.getElementById(id).replaceChildren());
+  document.getElementById("bubbles-note").textContent = "";
+}
+
+function renderSession(date) {
+  withState(date, state => {
+    SHOWN = state;
+    renderLive();
+    const run = RUNS.find(r => r.session_date === date);
+    if (run) renderRun(run); else renderNoRun(date);
+  });
+}
+
+if (!SESSION_DATES.length) {
   document.getElementById("selection").replaceChildren(el("div", "empty", TEXT.no_runs));
   picker.disabled = true;
+  renderLive();
 } else {
-  // Le run choisi est gardé dans l'adresse (#r001) pour survivre au rechargement automatique.
-  [...RUNS].reverse().forEach(run => picker.add(new Option(`${run.session_date} · ${run.run_id}`, run.run_id)));
-  const chosen = RUNS.find(run => "#" + run.run_id === location.hash) || RUNS[RUNS.length - 1];
-  picker.value = chosen.run_id;
-  picker.addEventListener("change", () => {
-    location.hash = picker.value;
-    renderRun(RUNS.find(run => run.run_id === picker.value));
+  SESSION_DATES.forEach(date => {
+    const run = RUNS.find(r => r.session_date === date);
+    const live = LIVE?.session_date === date && !LIVE.final;
+    const tag = live ? TEXT.opt_live : FINALS[date] ? (FINALS[date].provisional ? TEXT.opt_provisional : TEXT.opt_final) : "";
+    picker.add(new Option([date, tag, run?.run_id].filter(Boolean).join(" · "), date));
   });
-  renderRun(chosen);
+  // La séance choisie est gardée dans l'adresse (#2026-10-14) pour survivre au rechargement automatique.
+  const fromHash = location.hash.slice(1);
+  const legacy = RUNS.find(r => r.run_id === fromHash)?.session_date;
+  const chosen = SESSION_DATES.includes(fromHash) ? fromHash : legacy || SESSION_DATES[0];
+  picker.value = chosen;
+  picker.addEventListener("change", () => { location.hash = picker.value; renderSession(picker.value); });
+  renderSession(chosen);
 }
-renderLive();
 renderHistory();
 </script>
 </body>
