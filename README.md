@@ -94,7 +94,10 @@ première heure. Dans le tableau de la sélection du jour, la colonne « Depuis 
 chaque titre : dernier prix / premier prix de la séance − 1. Dernier prix = dernier échange de la séance régulière (ni pré-ouverture, ni après
 16 h 00 : l'enchère de clôture n'est pas comptée). Chaque domaine se déplie en la liste de ses titres (mêmes colonnes, triables), avec deux comptages :
 « Fois dans les 20 » (jours dans la sélection du screener) et « Fois top 20 du domaine » (séances
-terminées finies parmi les 20 meilleurs de son domaine sur la journée). Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
+terminées finies parmi les 20 meilleurs de son domaine sur la journée). Chaque symbole (listes par domaine et
+sélection du jour) ouvre au clic son graphique : 21 dernières clôtures et prix du jour, mis à jour en
+direct. Les clôtures de tout l'univers sont écrites une fois par séance dans `dashboard/charts_data.js`
+(non suivi par git). Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
 état en direct est gardé (`research/outputs/live/latest.json`, non suivi par git).
 
 **Fin de séance, même Mac fermé pendant la clôture.** L'état de fin de séance (bulles et colonne
