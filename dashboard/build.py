@@ -67,7 +67,8 @@ def build(family):
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))
             .replace("__LIVE_JSON__", _embed(live))
-            .replace("__FINALS_JSON__", _embed({f["session_date"]: {"selection": f.get("selection")} for f in finals}))
+            .replace("__FINALS_JSON__", _embed({f["session_date"]: {"selection": f.get("selection"), "charts": f.get("charts")}
+                                                for f in finals}))
             .replace("__HISTORY_JSON__", _embed(history)))
     for lang, path in OUTPUTS.items():
         path.write_text(page.replace("__LANG__", lang), encoding="utf-8")

@@ -23,6 +23,7 @@ from core.datation import usable_bars
 
 DAY = timedelta(days=1)
 MINUTE = timedelta(minutes=1)
+NEW_YORK = "America/New_York"
 TRADING_DAYS_PER_YEAR = 252
 
 
@@ -144,6 +145,19 @@ def first_hour_prices(minute, market_open):
     session = minute[minute["timestamp"] >= market_open].sort_values("timestamp")
     return {symbol: (bars["open"].iloc[0], bars["close"].iloc[-1])
             for symbol, bars in session.groupby("symbol", sort=True)}
+
+
+def recent_closes(daily, market_open, symbols, sessions):
+    """
+    symbole -> [(date de la séance à New York, clôture en texte)] des `sessions` dernières séances
+    terminées avant l'ouverture, de la plus ancienne à la plus récente.
+    """
+    daily = usable_bars(daily, DAY, market_open)
+
+    wanted = daily[daily["symbol"].isin(list(symbols))].sort_values("timestamp")
+    return {symbol: [(ts.tz_convert(NEW_YORK).date().isoformat(), str(close))
+                     for ts, close in zip(bars["timestamp"].tail(sessions), bars["close"].tail(sessions))]
+            for symbol, bars in wanted.groupby("symbol", sort=True)}
 
 
 def last_session_prices(minute, market_close):

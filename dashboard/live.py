@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 from core.domains import LIVE_MEASURES, WEEK_SESSIONS, live_domain_trends
-from core.screener import Criteria, changes_since_open, last_session_prices, liquid_universe
+from core.screener import Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes
 from core.universe import eligible_symbols
 from dashboard.build import FINALS_DIR, LIVE_FILE, build
 from infra import nasdaq_symbols, sec
@@ -98,6 +98,8 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
         "measures": measures,
         "selection": run and {"run_id": run["run_id"],
                               "changes": changes_since_open(opens, trades, market_open, market_close, now)},
+        # Graphiques de la sélection : clôtures du dernier mois (le prix du jour vient de "changes").
+        "charts": recent_closes(daily, market_open, opens, criteria.month_sessions + 1),
     }
 
 
