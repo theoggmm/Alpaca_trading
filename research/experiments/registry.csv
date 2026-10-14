@@ -1,2 +1,3 @@
 run_id,family,session_date,decision_time,git_sha,status,n_selected
 r001,reprise_apres_baisse,2026-10-13,2026-10-13T14:30:00+00:00,72cf9925d0f0be61571986a0decf545bbab8e35e,diagnostic,20
+r002,reprise_apres_baisse,2026-10-14,2026-10-14T14:30:00+00:00,49ac259f2770e6b4ee991607a33cd4b274f1f92a,diagnostic,20
