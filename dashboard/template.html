@@ -740,7 +740,9 @@ function renderLive() {
 
 function renderHistory() {
   const seen = new Map();
-  RUNS.forEach(run => run.selection.forEach(item => {
+  // Une liste par séance : la plus récente (un run recalculé remplace l'ancien pour le comptage).
+  const latest = Object.values(Object.fromEntries(RUNS.map(run => [run.session_date, run])));
+  latest.forEach(run => run.selection.forEach(item => {
     const entry = seen.get(item.symbol) || { symbol: item.symbol, name: item.name, count: 0, last: "" };
     entry.count += 1;
     entry.last = run.session_date;
@@ -791,7 +793,7 @@ function renderSession(date) {
   withState(date, state => {
     SHOWN = state;
     renderLive();
-    const run = RUNS.find(r => r.session_date === date);
+    const run = RUNS.findLast(r => r.session_date === date);  // le run le plus récent de la séance
     if (run) renderRun(run); else renderNoRun(date);
   });
 }
@@ -802,7 +804,7 @@ if (!SESSION_DATES.length) {
   renderLive();
 } else {
   SESSION_DATES.forEach(date => {
-    const run = RUNS.find(r => r.session_date === date);
+    const run = RUNS.findLast(r => r.session_date === date);
     const live = LIVE?.session_date === date && !LIVE.final;
     const tag = live ? TEXT.opt_live : FINALS[date] ? (FINALS[date].provisional ? TEXT.opt_provisional : TEXT.opt_final) : "";
     picker.add(new Option([date, tag, run?.run_id].filter(Boolean).join(" · "), date));

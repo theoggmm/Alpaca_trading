@@ -91,7 +91,7 @@ def _write_chart_data(daily, market_open, symbols, criteria, key):
 
 def _selection(family, key):
     """Run du screener de la séance (None s'il n'existe pas encore) et premier prix de chaque titre."""
-    run = next((r for r in load_runs(family) if r["session_date"] == key), None)
+    run = next((r for r in reversed(load_runs(family)) if r["session_date"] == key), None)  # le plus récent
     return run, {item["symbol"]: Decimal(item["open_today"]) for item in (run or {}).get("selection", [])}
 
 

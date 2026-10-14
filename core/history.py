@@ -8,7 +8,7 @@ TOP_IN_DOMAIN = 20
 
 
 def selection_counts(runs):
-    """symbole -> nombre de runs dont la sélection le contient."""
+    """symbole -> nombre de séances dont la sélection le contient (runs : un seul par séance)."""
     return dict(Counter(item["symbol"] for run in runs for item in run["selection"]))
 
 

@@ -35,9 +35,17 @@ def committed_git_sha():
 
 
 def load_runs(family):
-    """Tous les results.json de la famille, du plus ancien au plus récent."""
+    """
+    Tous les results.json de la famille, du plus ancien au plus récent (à séance égale, par numéro de run :
+    un run recalculé pour une séance déjà produite vient après celui qu'il remplace à l'affichage).
+    """
     runs = [json.loads(p.read_text(encoding="utf-8")) for p in (RUNS_DIR / family).glob("r*/results.json")]
-    return sorted(runs, key=lambda r: r["decision_time"])
+    return sorted(runs, key=lambda r: (r["decision_time"], r["run_id"]))
+
+
+def latest_per_session(runs):
+    """Le run le plus récent de chaque séance (runs triés par load_runs), dans l'ordre des séances."""
+    return list({run["session_date"]: run for run in runs}.values())
 
 
 def next_run_id(family):
