@@ -25,7 +25,7 @@ import pandas as pd
 
 from core.domains import LIVE_MEASURES, WEEK_SESSIONS, live_domain_trends
 from core.screener import (Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes,
-                           session_trades)
+                           session_open_prices, session_trades)
 from core.universe import eligible_symbols
 from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, build
 from infra import nasdaq_symbols, sec
@@ -42,6 +42,8 @@ REFRESH_S = 60
 DAILY_HISTORY = timedelta(days=130)
 # Fenêtre lue pour retrouver le dernier échange de chaque titre avant la clôture.
 CLOSING_WINDOW = timedelta(minutes=30)
+# Fenêtre lue après l'ouverture pour connaître le premier prix de chaque titre (graphiques « depuis l'ouverture »).
+OPENING_WINDOW = timedelta(minutes=5)
 # Les données minute d'Alpaca sont corrigées après coup (échanges annulés ou rectifiés) : un état de
 # fin de séance calculé le soir même est provisoire ; il devient définitif, relu à neuf, 12 h après la clôture.
 DEFINITIVE_AFTER = timedelta(hours=12)
@@ -93,11 +95,16 @@ def _selection(family, key):
     return run, {item["symbol"]: Decimal(item["open_today"]) for item in (run or {}).get("selection", [])}
 
 
-def _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, run, opens):
-    """État affiché par le tableau de bord, calculé avec les seules données connues à now."""
+def _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, opening,
+           run, opens):
+    """
+    État affiché par le tableau de bord, calculé avec les seules données connues à now.
+    opening : barres minute du début de séance, d'où le premier prix de chaque titre.
+    """
     measures, liquid, values = live_domain_trends(daily, trades, minute, market_open, market_close, now,
                                                   criteria, domains)
     in_session = session_trades(trades, market_open, market_close, now)
+    day_opens = session_open_prices(opening, market_open, now)
     return {
         "family": family,
         "session_date": key,
@@ -106,12 +113,13 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
         "feed": FEED,
         "universe": len(liquid),
         # Une ligne par titre de l'univers ; variation absente (None) si non calculable ;
-        # price = dernier prix de la séance (texte), pour le graphique du titre.
+        # price = dernier prix de la séance, open = premier prix de la séance (texte), pour le graphique.
         "stocks": {
-            "columns": ["symbol", "name", "domain", *LIVE_MEASURES, "price"],
+            "columns": ["symbol", "name", "domain", *LIVE_MEASURES, "price", "open"],
             "rows": [[s, names.get(s, ""), domains.get(s),
                       *(None if s not in values[m] else round(values[m][s], 6) for m in LIVE_MEASURES),
-                      str(in_session[s][1]) if s in in_session else None]
+                      str(in_session[s][1]) if s in in_session else None,
+                      str(day_opens[s]) if s in day_opens else None]
                      for s in liquid],
         },
         "first_hour_minutes": criteria.first_hour_minutes,
@@ -153,7 +161,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     trades = last_session_prices(closing, market_close)
 
     state = _state(family, criteria, key, market_open, market_close, market_close,
-                   daily, domains, names, trades, minute, run, opens)
+                   daily, domains, names, trades, minute, minute, run, opens)
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
@@ -231,6 +239,7 @@ def run(family):
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
     _write_chart_data(daily, market_open, symbols, criteria, key)
     minute = EMPTY_BARS
+    opening = EMPTY_BARS
 
     while True:
         now = datetime.now(timezone.utc)
@@ -249,14 +258,18 @@ def run(family):
             if minute.empty and now >= first_hour_end + FEED_DELAY:
                 minute = cached(f"{key}/live_first_hour_bars",
                                 lambda: alpaca.bars(symbols, "1Min", market_open, first_hour_end))
+            if opening.empty and now >= market_open + OPENING_WINDOW + FEED_DELAY:
+                opening = cached(f"{key}/opening_bars",
+                                 lambda: alpaca.bars(symbols, "1Min", market_open, market_open + OPENING_WINDOW))
             trades = alpaca.latest_trades(sorted(set(symbols) | set(opens)), FEED)
         except FetchError as e:
             print(f"{now.astimezone(NEW_YORK):%H:%M} — lecture impossible, nouvel essai dans {REFRESH_S} s : {e}")
             time.sleep(REFRESH_S)
             continue
 
-        state = _state(family, criteria, key, market_open, market_close, now,
-                       daily, domains, names, trades, minute, today_run, opens)
+        # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
+        state = _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades,
+                       minute, minute if not minute.empty else opening, today_run, opens)
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)

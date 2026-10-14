@@ -29,3 +29,14 @@ def test_echanges_hors_seance_ou_futurs_ignores():
     assert changes_since_open(OPENS, trades, MARKET_OPEN, CLOSE, CLOSE + timedelta(minutes=10)) == {
         "BBB": {"change": 0.6, "price": "80", "at": (NOW + timedelta(minutes=1)).isoformat()}}
     assert changes_since_open(OPENS, trades, MARKET_OPEN, CLOSE, NOW) == {}
+
+
+def test_premier_prix_de_la_seance_connu_a_l_instant_d_observation():
+    import pandas as pd
+    from core.screener import session_open_prices
+    bars = pd.DataFrame([("AAA", MARKET_OPEN, Decimal("10"), Decimal("10.2"), 100),
+                         ("AAA", MARKET_OPEN + timedelta(minutes=1), Decimal("10.3"), Decimal("10.4"), 100),
+                         ("BBB", MARKET_OPEN + timedelta(minutes=3), Decimal("20"), Decimal("20.1"), 100)],
+                        columns=["symbol", "timestamp", "open", "close", "volume"])
+    assert session_open_prices(bars, MARKET_OPEN, MARKET_OPEN + timedelta(minutes=2)) == {"AAA": Decimal("10")}
+    assert session_open_prices(bars, MARKET_OPEN, NOW) == {"AAA": Decimal("10"), "BBB": Decimal("20")}

@@ -211,7 +211,7 @@ const TEXT = {
     chart_hint: "Clique pour voir le graphique du dernier mois",
     chart_aria: s => `Cours de ${s} sur le dernier mois`,
     chart_open: "ouverture", chart_today: "aujourd'hui", chart_close: "clôture", chart_live: "direct",
-    chart_month: "1 mois :", chart_vs_prev: "aujourd'hui (vs veille) :",
+    chart_month: "1 mois :", chart_since_open: "aujourd'hui (depuis l'ouverture) :",
     col_in_selection: "Fois dans les 20",
     how_in_selection: n => `nombre de jours où le titre était dans la sélection quotidienne des 20 titres du screener (sur ${n} runs)`,
     col_top_domain: k => `Fois top ${k} du domaine`,
@@ -300,7 +300,7 @@ const TEXT = {
     chart_hint: "Click to see the past month's chart",
     chart_aria: s => `${s} price over the past month`,
     chart_open: "open", chart_today: "today", chart_close: "close", chart_live: "live",
-    chart_month: "1 month:", chart_vs_prev: "today (vs previous close):",
+    chart_month: "1 month:", chart_since_open: "today (since open):",
     col_in_selection: "Times in top 20",
     how_in_selection: n => `days the stock was in the screener's daily 20-stock selection (over ${n} runs)`,
     col_top_domain: k => `Times top ${k} of sector`,
@@ -440,13 +440,16 @@ function priceChart(item, closes, last, isFinal) {
     box.append(svg("line", { x1: x(points.length - 1), x2: x(slots - 1), y1: y(open), y2: y(open), class: "open" }),
                svg("text", { x: x(slots - 1) + 8, y: openLabelY, class: "axis" }, `${TEXT.chart_open} ${usd(open)}`));
   }
+  // Variation du jour mesurée depuis le premier prix de la séance, comme la colonne « Depuis l'ouverture ».
+  const sinceOpen = today !== null && open !== null ? today / open - 1 : null;
   if (today !== null) {
-    const change = today / prev - 1;
     box.append(svg("line", { x1: x(points.length - 1), y1: y(prev), x2: x(slots - 1), y2: y(today), class: "today" }));
-    const dot = svg("circle", { cx: x(slots - 1), cy: y(today), r: 5, class: "now " + tone(change) });
+    const dot = svg("circle", { cx: x(slots - 1), cy: y(today), r: 5,
+                                class: "now " + (sinceOpen === null ? "flat" : tone(sinceOpen)) });
     dot.append(svg("title", {}, `${usd(today)} · ${nyTime(last.at)}`));
-    box.append(dot, svg("text", { x: x(slots - 1) + 8, y: nowLabelY, class: "now-label " + signed(change) },
-                        `${usd(today)} (${pct(change)})`));
+    box.append(dot, svg("text", { x: x(slots - 1) + 8, y: nowLabelY,
+                                  class: "now-label " + (sinceOpen === null ? "" : signed(sinceOpen)) },
+                        sinceOpen === null ? usd(today) : `${usd(today)} (${pct(sinceOpen)})`));
   }
   const mid = Math.floor((points.length - 1) / 2);
   [[0, points[0].date], [mid, points[mid].date], [points.length - 1, points[points.length - 1].date],
@@ -458,7 +461,7 @@ function priceChart(item, closes, last, isFinal) {
   const month = item.return_month ?? (today ?? prev) / points[0].price - 1;
   head.append(el("b", "", `${item.symbol} · ${item.name}`),
               el("span", signed(month), `${TEXT.chart_month} ${pct(month)}`));
-  if (today !== null) head.append(el("span", signed(today / prev - 1), `${TEXT.chart_vs_prev} ${pct(today / prev - 1)}`));
+  if (sinceOpen !== null) head.append(el("span", signed(sinceOpen), `${TEXT.chart_since_open} ${pct(sinceOpen)}`));
   const wrap = el("div", "chart-box");
   wrap.append(head, box);
   return wrap;
@@ -630,7 +633,7 @@ function sectorTable(list, measures, picked) {
       row.className = "chart-row";
       const td = el("td");
       td.colSpan = columns.length + 3;
-      td.appendChild(priceChart({ symbol: st.symbol, name: st.name }, closes,
+      td.appendChild(priceChart({ symbol: st.symbol, name: st.name, open_today: st.open ?? undefined }, closes,
                                 st.price == null ? null : { price: st.price, at: SHOWN.prices_until }, !!SHOWN.final));
       row.appendChild(td);
     }

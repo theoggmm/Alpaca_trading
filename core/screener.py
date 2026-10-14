@@ -191,6 +191,13 @@ def changes_since_open(opens, last_trades, market_open, market_close, now):
             for symbol, day_open in opens.items() if symbol in last_trades}
 
 
+def session_open_prices(minute, market_open, now):
+    """symbole -> premier prix de la séance (ouverture de sa première barre minute), connu à now."""
+    minute = usable_bars(minute, MINUTE, now)
+
+    return {symbol: first for symbol, (first, _) in first_hour_prices(minute, market_open).items()}
+
+
 def _correlation(a, b):
     """Corrélation des rendements quotidiens aux dates communes ; None si non calculable."""
     returns_b = dict(b)
