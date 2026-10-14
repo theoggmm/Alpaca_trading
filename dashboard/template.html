@@ -383,7 +383,7 @@ const svg = (tag, attrs, text) => {
 };
 
 function priceChart(item, closes, last, isFinal) {
-  const W = 760, H = 250, L = 64, R = 150, T = 18, B = 30;
+  const W = 760, H = 250, L = 84, R = 150, T = 18, B = 30;
   const points = closes.map(([date, close]) => ({ date, price: Number(close) }));
   const prev = points[points.length - 1].price;
   const today = last ? Number(last.price) : null;
@@ -391,7 +391,8 @@ function priceChart(item, closes, last, isFinal) {
   const values = [...points.map(p => p.price), open, ...(today === null ? [] : [today])];
   const pad = (Math.max(...values) - Math.min(...values)) * 0.08 || 1;
   const lo = Math.min(...values) - pad, hi = Math.max(...values) + pad;
-  const slots = points.length + 1;
+  // Le point du jour est placé un peu à l'écart des clôtures (2 crans) pour que les étiquettes respirent.
+  const slots = points.length + 3;
   const x = i => L + (W - L - R) * i / (slots - 1);
   const y = v => T + (H - T - B) * (hi - v) / (hi - lo);
 
@@ -410,18 +411,22 @@ function priceChart(item, closes, last, isFinal) {
     dot.append(svg("title", {}, `${p.date} : ${usd(p.price)}`));
     box.append(dot);
   });
+  // Étiquette « ouverture » décalée si elle tomberait sur celle du prix du jour.
+  const nowLabelY = today === null ? null : y(today) - 8;
+  const openLabelY = nowLabelY !== null && Math.abs(nowLabelY - (y(open) + 4)) < 14
+    ? nowLabelY + (y(open) > y(today) ? 16 : -16) : y(open) + 4;
   box.append(svg("line", { x1: x(points.length - 1), x2: x(slots - 1), y1: y(open), y2: y(open), class: "open" }),
-             svg("text", { x: x(slots - 1) + 8, y: y(open) + 4, class: "axis" }, `${TEXT.chart_open} ${usd(open)}`));
+             svg("text", { x: x(slots - 1) + 8, y: openLabelY, class: "axis" }, `${TEXT.chart_open} ${usd(open)}`));
   if (today !== null) {
     const change = today / prev - 1;
     box.append(svg("line", { x1: x(points.length - 1), y1: y(prev), x2: x(slots - 1), y2: y(today), class: "today" }));
     const dot = svg("circle", { cx: x(slots - 1), cy: y(today), r: 5, class: "now " + tone(change) });
     dot.append(svg("title", {}, `${usd(today)} · ${nyTime(last.at)}`));
-    box.append(dot, svg("text", { x: x(slots - 1) + 8, y: y(today) - 8, class: "now-label " + signed(change) },
+    box.append(dot, svg("text", { x: x(slots - 1) + 8, y: nowLabelY, class: "now-label " + signed(change) },
                         `${usd(today)} (${pct(change)})`));
   }
-  [[0, points[0].date], [Math.floor((points.length - 1) / 2), points[Math.floor((points.length - 1) / 2)].date],
-   [points.length - 1, points[points.length - 1].date],
+  const mid = Math.floor((points.length - 1) / 2);
+  [[0, points[0].date], [mid, points[mid].date], [points.length - 1, points[points.length - 1].date],
    [slots - 1, today === null ? TEXT.chart_today : (isFinal ? TEXT.chart_close : `${TEXT.chart_live} ${nyTime(last.at)}`)]]
     .forEach(([i, label]) => box.append(svg("text", { x: x(i), y: H - 8, class: "axis", "text-anchor": "middle" }, label)));
 
