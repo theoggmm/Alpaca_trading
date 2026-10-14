@@ -92,7 +92,9 @@ Les mesures, séance en cours comprise : dernier prix / clôture d'il y a N séa
 fin des 60 premières minutes / premier prix de la séance − 1, affichée 15 minutes après la fin de la
 première heure. Dans le tableau de la sélection du jour, la colonne « Depuis l'ouverture » donne pour
 chaque titre : dernier prix / premier prix de la séance − 1. Dernier prix = dernier échange de la séance régulière (ni pré-ouverture, ni après
-16 h 00 : l'enchère de clôture n'est pas comptée). Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
+16 h 00 : l'enchère de clôture n'est pas comptée). Chaque domaine se déplie en la liste de ses titres (mêmes colonnes, triables), avec deux comptages :
+« Fois dans les 20 » (jours dans la sélection du screener) et « Fois top 20 du domaine » (séances
+terminées finies parmi les 20 meilleurs de son domaine sur la journée). Univers : titres assez liquides (critères 2 à 4 de `criteres.json`). Seul le dernier
 état en direct est gardé (`research/outputs/live/latest.json`, non suivi par git).
 
 **Fin de séance, même Mac fermé pendant la clôture.** L'état de fin de séance (bulles et colonne

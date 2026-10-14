@@ -156,6 +156,7 @@ const LANG = "__LANG__";
 const RUNS = __RUNS_JSON__;
 const LIVE = __LIVE_JSON__;
 const FINALS = __FINALS_JSON__;
+const HISTORY = __HISTORY_JSON__;
 // Au-delà, le suivi en direct est considéré comme arrêté.
 const LIVE_STALE_MS = 3 * 60 * 1000;
 
@@ -185,6 +186,10 @@ const TEXT = {
     no_session_prices: "Pas encore de prix pour cette séance.",
     live_note: (u, m) => `Moyenne simple, par domaine (classement SEC), des ${u} titres assez liquides. Vert : en hausse en moyenne, rouge : en baisse. Clique sur un domaine pour voir tous ses titres, classés du meilleur au moins bon ; ★ = dans la sélection du jour. « ${m} premières min » s'affiche 15 min après la fin de la première heure. Survole un en-tête pour sa définition. La page se recharge toute seule chaque minute.`,
     sector_hint: "Clique pour voir la liste des titres de ce domaine",
+    col_in_selection: "Fois dans les 20",
+    how_in_selection: n => `nombre de jours où le titre était dans la sélection quotidienne des 20 titres du screener (sur ${n} runs)`,
+    col_top_domain: k => `Fois top ${k} du domaine`,
+    how_top_domain: (k, n) => `nombre de séances terminées où le titre a fini parmi les ${k} meilleurs de son domaine sur la journée (sur ${n} séances)`,
     sort_hint: "clique pour trier",
     in_selection: "dans la sélection du jour",
     meta: r => [`Séance du ${r.session_date}`, `décision à ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
@@ -261,6 +266,10 @@ const TEXT = {
     no_session_prices: "No prices for this session yet.",
     live_note: (u, m) => `Simple average, by sector (SEC classification), of the ${u} sufficiently liquid stocks. Green: up on average, red: down. Click a sector to see all its stocks, ranked from best to worst; ★ = in today's selection. "First ${m} min" appears 15 min after the first hour ends. Hover a header for its definition. The page reloads itself every minute.`,
     sector_hint: "Click to list this sector's stocks",
+    col_in_selection: "Times in top 20",
+    how_in_selection: n => `days the stock was in the screener's daily 20-stock selection (over ${n} runs)`,
+    col_top_domain: k => `Times top ${k} of sector`,
+    how_top_domain: (k, n) => `completed sessions where the stock finished among its sector's ${k} best on the day (over ${n} sessions)`,
     sort_hint: "click to sort",
     in_selection: "in today's selection",
     meta: r => [`Session of ${r.session_date}`, `decision at ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
@@ -418,10 +427,18 @@ function saveView(view) {
 }
 
 // Liste des titres d'un domaine, classée du meilleur au moins bon sur la colonne choisie (Journée par défaut).
-function sectorTable(list, columns, picked) {
+function sectorTable(list, measures, picked) {
+  // Colonnes : les 5 variations (en %), puis les deux comptages sur l'historique (en nombre de fois).
+  const columns = [
+    ...measures.map(([k, label, how]) => [k, label, how, "pct"]),
+    ["in_selection", TEXT.col_in_selection, TEXT.how_in_selection(HISTORY.runs), "count"],
+    ["top_in_domain", TEXT.col_top_domain(HISTORY.top_n), TEXT.how_top_domain(HISTORY.top_n, HISTORY.finals), "count"],
+  ];
+  const rows = list.map(st => ({ ...st, in_selection: HISTORY.in_selection[st.symbol] || 0,
+                                 top_in_domain: HISTORY.top_in_domain[st.symbol] || 0 }));
   const key = VIEW.sortKey || "day";
   const dir = VIEW.sortDir || "desc";
-  const sorted = [...list].sort((a, b) => {
+  const sorted = rows.sort((a, b) => {
     if (a[key] == null || b[key] == null) return (a[key] == null) - (b[key] == null) || a.symbol.localeCompare(b.symbol);
     return dir === "desc" ? b[key] - a[key] : a[key] - b[key];
   });
@@ -447,7 +464,9 @@ function sectorTable(list, columns, picked) {
     const name = el("td", "text name", st.name);
     name.title = st.name;
     tr.append(symbol, name);
-    columns.forEach(([k]) => tr.appendChild(el("td", st[k] == null ? "" : signed(st[k]), st[k] == null ? "—" : pct(st[k]))));
+    columns.forEach(([k, , , type]) => tr.appendChild(type === "count"
+      ? el("td", "", st[k])
+      : el("td", st[k] == null ? "" : signed(st[k]), st[k] == null ? "—" : pct(st[k]))));
   });
   return t;
 }

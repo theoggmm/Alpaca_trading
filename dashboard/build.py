@@ -12,6 +12,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
+from core.history import TOP_IN_DOMAIN, selection_counts, top_in_domain_counts
 from infra import sec
 from infra.http import FetchError
 from infra.trace import ROOT, load_runs
@@ -53,12 +54,21 @@ def build(family):
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
     if live and live["family"] != family:
         live = None
-    finals = {path.stem: json.loads(path.read_text(encoding="utf-8"))
-              for path in sorted((FINALS_DIR / family).glob("*.json"))}
+    finals = [json.loads(path.read_text(encoding="utf-8")) for path in sorted((FINALS_DIR / family).glob("*.json"))]
+    # La page n'embarque que les comptages et la colonne « ouverture → clôture » de chaque séance,
+    # pas la liste complète des titres de chaque fin de séance.
+    history = {
+        "runs": len(runs),
+        "finals": sum("stocks" in f for f in finals),
+        "top_n": TOP_IN_DOMAIN,
+        "in_selection": selection_counts(runs),
+        "top_in_domain": top_in_domain_counts(finals),
+    }
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))
             .replace("__LIVE_JSON__", _embed(live))
-            .replace("__FINALS_JSON__", _embed(finals)))
+            .replace("__FINALS_JSON__", _embed({f["session_date"]: {"selection": f.get("selection")} for f in finals}))
+            .replace("__HISTORY_JSON__", _embed(history)))
     for lang, path in OUTPUTS.items():
         path.write_text(page.replace("__LANG__", lang), encoding="utf-8")
     return OUTPUTS, len(runs)
