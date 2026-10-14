@@ -171,6 +171,11 @@ def last_session_prices(minute, market_close):
     return {row.symbol: ((row.timestamp + MINUTE).to_pydatetime(), row.close) for row in last.itertuples()}
 
 
+def session_trades(last_trades, market_open, market_close, now):
+    """Échanges faits pendant la séance régulière et connus à now : symbole -> (horodatage, prix)."""
+    return {s: (ts, p) for s, (ts, p) in last_trades.items() if market_open <= ts <= min(now, market_close)}
+
+
 def changes_since_open(opens, last_trades, market_open, market_close, now):
     """
     Variation depuis l'ouverture de la séance : dernier prix / premier prix de la séance - 1.
@@ -179,7 +184,7 @@ def changes_since_open(opens, last_trades, market_open, market_close, now):
                   antérieurs à now servent.
     Retourne symbole -> {"change", "price", "at"}.
     """
-    last_trades = {s: (ts, p) for s, (ts, p) in last_trades.items() if market_open <= ts <= min(now, market_close)}
+    last_trades = session_trades(last_trades, market_open, market_close, now)
 
     return {symbol: {"change": float(last_trades[symbol][1] / day_open - 1),
                      "price": str(last_trades[symbol][1]), "at": last_trades[symbol][0].isoformat()}

@@ -22,6 +22,8 @@ TEMPLATE = HERE / "template.html"
 # Une page par langue, générées depuis le même gabarit.
 OUTPUTS = {"fr": HERE / "index.html", "en": HERE / "index_en.html"}
 LIVE_FILE = ROOT / "research" / "outputs" / "live" / "latest.json"
+# Clôtures du dernier mois de tout l'univers, écrites une fois par séance par le suivi en direct.
+CHARTS_FILE = HERE / "charts_data.js"
 # États de fin de séance, durables (commités avec l'historique) : <famille>/<date>.json.
 FINALS_DIR = ROOT / "research" / "experiments" / "final"
 

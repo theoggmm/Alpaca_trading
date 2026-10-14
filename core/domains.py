@@ -8,7 +8,7 @@ from collections import defaultdict
 from datetime import timedelta
 
 from core.datation import usable_bars
-from core.screener import DAY, MINUTE, first_hour_prices, liquid_universe
+from core.screener import DAY, MINUTE, first_hour_prices, liquid_universe, session_trades
 
 WEEK_SESSIONS = 5
 # Mesures en direct, dans l'ordre d'affichage.
@@ -59,7 +59,7 @@ def live_domain_trends(daily, last_trades, minute, market_open, market_close, no
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
     daily = usable_bars(daily, DAY, market_open)
     minute = usable_bars(minute, MINUTE, min(now, first_hour_end))
-    last_trades = {s: price for s, (ts, price) in last_trades.items() if market_open <= ts <= min(now, market_close)}
+    last_trades = {s: price for s, (_, price) in session_trades(last_trades, market_open, market_close, now).items()}
 
     stats, _ = liquid_universe(daily, market_open, criteria)
     liquid = [s.symbol for s in stats]

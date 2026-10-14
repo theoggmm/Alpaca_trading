@@ -169,6 +169,8 @@
   </div>
 </main>
 
+<!-- Clôtures du dernier mois de tout l'univers (écrit une fois par séance par le suivi en direct). -->
+<script src="charts_data.js"></script>
 <script>
 const LANG = "__LANG__";
 const RUNS = __RUNS_JSON__;
@@ -373,6 +375,13 @@ function table(columns, rows) {
   return t;
 }
 
+// Clôtures du dernier mois de tout l'univers, pour la séance affichée en direct ; null si absentes.
+const CLOSES = window.CHART_CLOSES?.session_date === LIVE?.session_date ? window.CHART_CLOSES : null;
+const chartCloses = symbol => {
+  const values = CLOSES?.closes[symbol];
+  return values ? CLOSES.dates.map((d, i) => [d, values[i]]).filter(([, c]) => c !== null) : null;
+};
+
 // Graphique du dernier mois d'un titre : clôtures quotidiennes, puis prix du jour (en direct ou à la clôture).
 const SVG_NS = "http://www.w3.org/2000/svg";
 const svg = (tag, attrs, text) => {
@@ -387,8 +396,8 @@ function priceChart(item, closes, last, isFinal) {
   const points = closes.map(([date, close]) => ({ date, price: Number(close) }));
   const prev = points[points.length - 1].price;
   const today = last ? Number(last.price) : null;
-  const open = Number(item.open_today);
-  const values = [...points.map(p => p.price), open, ...(today === null ? [] : [today])];
+  const open = item.open_today === undefined ? null : Number(item.open_today);
+  const values = [...points.map(p => p.price), ...(open === null ? [] : [open]), ...(today === null ? [] : [today])];
   const pad = (Math.max(...values) - Math.min(...values)) * 0.08 || 1;
   const lo = Math.min(...values) - pad, hi = Math.max(...values) + pad;
   // Le point du jour est placé un peu à l'écart des clôtures (2 crans) pour que les étiquettes respirent.
@@ -413,10 +422,12 @@ function priceChart(item, closes, last, isFinal) {
   });
   // Étiquette « ouverture » décalée si elle tomberait sur celle du prix du jour.
   const nowLabelY = today === null ? null : y(today) - 8;
-  const openLabelY = nowLabelY !== null && Math.abs(nowLabelY - (y(open) + 4)) < 14
-    ? nowLabelY + (y(open) > y(today) ? 16 : -16) : y(open) + 4;
-  box.append(svg("line", { x1: x(points.length - 1), x2: x(slots - 1), y1: y(open), y2: y(open), class: "open" }),
-             svg("text", { x: x(slots - 1) + 8, y: openLabelY, class: "axis" }, `${TEXT.chart_open} ${usd(open)}`));
+  if (open !== null) {
+    const openLabelY = nowLabelY !== null && Math.abs(nowLabelY - (y(open) + 4)) < 14
+      ? nowLabelY + (y(open) > y(today) ? 16 : -16) : y(open) + 4;
+    box.append(svg("line", { x1: x(points.length - 1), x2: x(slots - 1), y1: y(open), y2: y(open), class: "open" }),
+               svg("text", { x: x(slots - 1) + 8, y: openLabelY, class: "axis" }, `${TEXT.chart_open} ${usd(open)}`));
+  }
   if (today !== null) {
     const change = today / prev - 1;
     box.append(svg("line", { x1: x(points.length - 1), y1: y(prev), x2: x(slots - 1), y2: y(today), class: "today" }));
@@ -581,14 +592,35 @@ function sectorTable(list, measures, picked) {
   sorted.forEach((st, i) => {
     const tr = body.insertRow();
     tr.appendChild(el("td", "", i + 1));
-    const symbol = el("td", "text symbol", st.symbol + (picked.has(st.symbol) ? " ★" : ""));
-    if (picked.has(st.symbol)) symbol.title = TEXT.in_selection;
+    const label = st.symbol + (picked.has(st.symbol) ? " ★" : "");
+    const closes = chartCloses(st.symbol);
+    const chartOpen = closes !== null && VIEW.stockChart === st.symbol;
+    const symbol = el("td", "text symbol");
+    if (closes) {
+      const button = el("button", "sector", (chartOpen ? "▾ " : "▸ ") + label);
+      button.setAttribute("aria-expanded", String(chartOpen));
+      button.title = TEXT.chart_hint + (picked.has(st.symbol) ? ` · ${TEXT.in_selection}` : "");
+      button.addEventListener("click", () => { saveView({ ...VIEW, stockChart: chartOpen ? null : st.symbol }); renderLive(); });
+      symbol.appendChild(button);
+    } else {
+      symbol.append(label);
+      if (picked.has(st.symbol)) symbol.title = TEXT.in_selection;
+    }
     const name = el("td", "text name", st.name);
     name.title = st.name;
     tr.append(symbol, name);
     columns.forEach(([k, , , type]) => tr.appendChild(type === "count"
       ? el("td", "", st[k])
       : el("td", st[k] == null ? "" : signed(st[k]), st[k] == null ? "—" : pct(st[k]))));
+    if (chartOpen) {
+      const row = body.insertRow();
+      row.className = "chart-row";
+      const td = el("td");
+      td.colSpan = columns.length + 3;
+      td.appendChild(priceChart({ symbol: st.symbol, name: st.name }, closes,
+                                st.price == null ? null : { price: st.price, at: LIVE.prices_until }, !!LIVE.final));
+      row.appendChild(td);
+    }
   });
   return t;
 }

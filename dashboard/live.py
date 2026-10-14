@@ -24,9 +24,10 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 from core.domains import LIVE_MEASURES, WEEK_SESSIONS, live_domain_trends
-from core.screener import Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes
+from core.screener import (Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes,
+                           session_trades)
 from core.universe import eligible_symbols
-from dashboard.build import FINALS_DIR, LIVE_FILE, build
+from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, build
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
@@ -68,6 +69,20 @@ def _prepare(alpaca, criteria, key, market_open):
     return daily, [s.symbol for s in liquid], {s: p["domain"] for s, p in profiles.items()}, names
 
 
+def _write_chart_data(daily, market_open, symbols, criteria, key):
+    """
+    dashboard/charts_data.js : clôtures du dernier mois de chaque titre de l'univers, chargé une fois
+    par la page (graphiques des listes par domaine). Écrit une fois par séance, pas à chaque minute.
+    """
+    closes = recent_closes(daily, market_open, symbols, criteria.month_sessions + 1)
+    dates = sorted({d for series in closes.values() for d, _ in series})[-(criteria.month_sessions + 1):]
+    rows = ",".join(
+        f'"{s}":[' + ",".join(dict(series).get(d, "null") for d in dates) + "]" for s, series in closes.items())
+    CHARTS_FILE.write_text(
+        f'window.CHART_CLOSES={{"session_date":"{key}","dates":{json.dumps(dates)},"closes":{{{rows}}}}};\n',
+        encoding="utf-8")
+
+
 def _selection(family, key):
     """Run du screener de la séance (None s'il n'existe pas encore) et premier prix de chaque titre."""
     run = next((r for r in load_runs(family) if r["session_date"] == key), None)
@@ -78,19 +93,21 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
     """État affiché par le tableau de bord, calculé avec les seules données connues à now."""
     measures, liquid, values = live_domain_trends(daily, trades, minute, market_open, market_close, now,
                                                   criteria, domains)
-    used = [ts for ts, _ in trades.values() if market_open <= ts <= min(now, market_close)]
+    in_session = session_trades(trades, market_open, market_close, now)
     return {
         "family": family,
         "session_date": key,
         "observed_at": now.isoformat(),
-        "prices_until": max(used).isoformat() if used else None,
+        "prices_until": max(ts for ts, _ in in_session.values()).isoformat() if in_session else None,
         "feed": FEED,
         "universe": len(liquid),
-        # Une ligne par titre de l'univers ; variation absente (None) si non calculable.
+        # Une ligne par titre de l'univers ; variation absente (None) si non calculable ;
+        # price = dernier prix de la séance (texte), pour le graphique du titre.
         "stocks": {
-            "columns": ["symbol", "name", "domain", *LIVE_MEASURES],
+            "columns": ["symbol", "name", "domain", *LIVE_MEASURES, "price"],
             "rows": [[s, names.get(s, ""), domains.get(s),
-                      *(None if s not in values[m] else round(values[m][s], 6) for m in LIVE_MEASURES)]
+                      *(None if s not in values[m] else round(values[m][s], 6) for m in LIVE_MEASURES),
+                      str(in_session[s][1]) if s in in_session else None]
                      for s in liquid],
         },
         "first_hour_minutes": criteria.first_hour_minutes,
@@ -131,6 +148,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     # Le dernier état affiché devient l'état final s'il porte sur cette séance ou une plus ancienne.
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
     if live is None or live["session_date"] <= key:
+        _write_chart_data(daily, market_open, symbols, criteria, key)
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
     return path
@@ -187,6 +205,7 @@ def run(family):
 
     print("Préparation : univers liquide et domaines (quelques minutes la première fois)…")
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
+    _write_chart_data(daily, market_open, symbols, criteria, key)
     minute = EMPTY_BARS
 
     while True:
