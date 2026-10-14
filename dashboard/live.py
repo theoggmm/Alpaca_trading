@@ -58,8 +58,10 @@ def _prepare(alpaca, criteria, key, market_open):
     listings, _ = cached(f"{key}/nasdaq_listings", nasdaq_symbols.listings)
     assets = cached(f"{key}/alpaca_assets", alpaca.assets)
     symbols, _ = eligible_symbols(assets, listings)
-    daily = cached(f"{key}/live_daily_bars",
-                   lambda: alpaca.bars(symbols, "1Day", market_open - DAILY_HISTORY, market_open))
+    # Seules les séances terminées avant l'ouverture servent ; avant l'ouverture, ne rien demander
+    # de plus récent que maintenant - 15 min (au-delà, l'offre gratuite refuse la requête).
+    end = min(market_open, datetime.now(timezone.utc) - FEED_DELAY)
+    daily = cached(f"{key}/live_daily_bars", lambda: alpaca.bars(symbols, "1Day", market_open - DAILY_HISTORY, end))
     liquid, _ = liquid_universe(daily, market_open, criteria)
     profiles = sec.profiles([s.symbol for s in liquid], key)
     names = {s.symbol: listings[s.symbol]["name"] for s in liquid}
