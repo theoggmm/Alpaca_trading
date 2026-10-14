@@ -112,3 +112,23 @@ Autrement dit : chaque jour de bourse, le suivi démarre seul et les listes boug
 
 **Écart signalé** : l'heure du service est en heure de Paris (launchd ne connaît que l'heure locale) ;
 14 h 15 précède l'ouverture de New York toute l'année et le suivi attend lui-même l'ouverture.
+
+## 2026-10-14 (suite) — Répétition générale avant l'ouverture
+
+**Question posée** : vérifier que tout fonctionne et fonctionnera à l'ouverture du jour.
+
+**Fait** : répétition sur la séance réelle du 13 octobre, hors des fichiers du tableau de bord
+(accès Alpaca et SEC, code commité, run de 17 h rejoué à blanc avec la même sélection que r001,
+séance rejouée à 10 h 00, 11 h 00 et 16 h 00, pages FR et EN affichées par Chrome) : 29 vérifications
+sur 29. Service de démarrage chargé, verrou vérifié, tâche de 17 h active. 26 tests verts.
+
+**Trouvé et corrigé** :
+- Les barres minute d'Alpaca sont corrigées après coup : lues la nuit même, 10 titres sur 2 099
+  avaient un dernier prix différent (SKYD 9,27 au lieu de 7,07, la clôture officielle). La fin de
+  séance du soir est désormais provisoire et recalculée à neuf 12 h après la clôture ; celle du
+  13 octobre est remplacée par sa version définitive (l'ancienne est archivée).
+- Une coupure réseau faisait échouer tout un calcul : jusqu'à 3 essais par requête.
+- Les graphiques comptaient une séance de trop pour « 1 mois » : alignés sur la colonne.
+
+Autrement dit : tout ce qui peut être testé avant l'ouverture l'a été sur de vraies données ; la
+première séance en direct reste à observer.
