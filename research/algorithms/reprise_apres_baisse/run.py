@@ -32,32 +32,13 @@ def _pct(value):
     return f"{value * 100:+.2f} %"
 
 
-def run():
-    criteria = Criteria.from_file(CRITERIA_FILE)
-    now = datetime.now(timezone.utc)
-    session_date = now.astimezone(NEW_YORK).date()
+def produce(alpaca, criteria, session_date, market_open, now, git_sha):
+    """
+    Calcule le run d'une séance (sans l'enregistrer) : sélection, entonnoir, domaines, sources.
+    Toutes les données sont tronquées à l'instant de décision (ouverture + première heure).
+    """
     key = session_date.isoformat()
-
-    done = [r for r in load_runs(FAMILY) if r["session_date"] == key]
-    if done:
-        print(f"Run déjà produit pour la séance du {key} : {done[0]['run_id']}.")
-        return 0
-
-    git_sha = committed_git_sha()
-    alpaca = AlpacaReader()
-    session = alpaca.session(session_date)
-    if session is None:
-        print(f"Marché fermé le {key} (calendrier Alpaca) : aucun run.")
-        return 0
-
-    market_open = datetime.combine(session_date, session[0], NEW_YORK).astimezone(timezone.utc)
     decision_time = market_open + timedelta(minutes=criteria.first_hour_minutes)
-    ready_at = decision_time + SIP_DELAY
-    if now < ready_at:
-        print(f"Trop tôt : les données de la première heure seront disponibles à "
-              f"{ready_at.astimezone(NEW_YORK):%H:%M} (New York).")
-        return 1
-
     listings, listings_created = cached(f"{key}/nasdaq_listings", nasdaq_symbols.listings)
     assets = cached(f"{key}/alpaca_assets", alpaca.assets)
     symbols, universe_funnel = eligible_symbols(assets, listings)
@@ -81,7 +62,6 @@ def run():
         profiles, domains = {}, {"error": str(e)}
 
     payload = {
-        "run_id": next_run_id(FAMILY),
         "family": FAMILY,
         "status": "diagnostic",
         "session_date": key,
@@ -102,7 +82,39 @@ def run():
                        "sic_description": profiles.get(item["symbol"], {}).get("sic_description")}
                       for item in selection],
     }
+    return payload
+
+
+def run():
+    criteria = Criteria.from_file(CRITERIA_FILE)
+    now = datetime.now(timezone.utc)
+    session_date = now.astimezone(NEW_YORK).date()
+    key = session_date.isoformat()
+
+    done = [r for r in load_runs(FAMILY) if r["session_date"] == key]
+    if done:
+        print(f"Run déjà produit pour la séance du {key} : {done[0]['run_id']}.")
+        return 0
+
+    git_sha = committed_git_sha()
+    alpaca = AlpacaReader()
+    session = alpaca.session(session_date)
+    if session is None:
+        print(f"Marché fermé le {key} (calendrier Alpaca) : aucun run.")
+        return 0
+
+    market_open = datetime.combine(session_date, session[0], NEW_YORK).astimezone(timezone.utc)
+    ready_at = market_open + timedelta(minutes=criteria.first_hour_minutes) + SIP_DELAY
+    if now < ready_at:
+        print(f"Trop tôt : les données de la première heure seront disponibles à "
+              f"{ready_at.astimezone(NEW_YORK):%H:%M} (New York).")
+        return 1
+
+    payload = {"run_id": next_run_id(FAMILY), **produce(alpaca, criteria, session_date, market_open, now, git_sha)}
     path = save_run(FAMILY, payload)
+    selection = payload["selection"]
+    decision_time = datetime.fromisoformat(payload["decision_time"])
+    domains = payload["domains"]
 
     print(f"Séance du {key}, décision à {decision_time.astimezone(NEW_YORK):%H:%M} (New York) — "
           f"run {payload['run_id']}, statut diagnostic, code {git_sha[:7]}")
