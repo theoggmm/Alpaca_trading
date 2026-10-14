@@ -50,7 +50,8 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     candidates, _ = daily_candidates(daily, decision_time, criteria)
     minute = cached(f"{key}/minute_bars",
                     lambda: alpaca.bars([c.symbol for c in candidates], "1Min", market_open, decision_time))
-    selection, funnel = screen(daily, minute, market_open, decision_time, criteria)
+    selection, funnel = screen(daily, minute, market_open, decision_time, criteria,
+                               earnings_for=lambda symbols: sec.eps(symbols, key))
 
     # Domaines : complément de lecture, pas un critère. Une panne SEC n'empêche pas la liste, elle est enregistrée.
     liquid, _ = liquid_universe(daily, decision_time, criteria)

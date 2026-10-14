@@ -24,8 +24,8 @@ class Reader:
         self._min_interval_s = min_interval_s
         self._last_request = 0.0
 
-    def get(self, url, params=None):
-        """Retourne la réponse (statut 200 exigé) ; lève FetchError sinon."""
+    def get(self, url, params=None, missing_ok=False):
+        """Retourne la réponse (statut 200 exigé) ; None si 404 et missing_ok ; lève FetchError sinon."""
         for attempt in range(1, ATTEMPTS + 1):
             wait = self._min_interval_s - (time.monotonic() - self._last_request)
             if wait > 0:
@@ -38,6 +38,8 @@ class Reader:
                 if attempt == ATTEMPTS:
                     raise FetchError(f"Requête impossible vers {url} ({ATTEMPTS} essais) : {e}") from e
                 time.sleep(RETRY_PAUSE_S * attempt)
+        if response.status_code == 404 and missing_ok:
+            return None
         if response.status_code == 401:
             raise FetchError(f"{url} a répondu 401 : identifiants invalides ou révoqués")
         if response.status_code == 403:

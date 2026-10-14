@@ -12,14 +12,16 @@ barre, UTC), open, close (Decimal), volume (int).
 import json
 import math
 import statistics
-from dataclasses import asdict, dataclass, fields
+from dataclasses import MISSING, asdict, dataclass, fields
 from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 import numpy as np
 
 from core.datation import usable_bars
+from core.fundamentals import price_to_earnings, ttm_eps
 
 DAY = timedelta(days=1)
 MINUTE = timedelta(minutes=1)
@@ -41,14 +43,18 @@ class Criteria:
     max_volatility_quantile: float
     correlation_sessions: int
     max_pairwise_correlation: float
+    # Optionnel (variante) : PER sur 12 mois glissants strictement inférieur à ce seuil ; absent = pas de filtre.
+    max_pe: Decimal = None
 
     @classmethod
     def from_file(cls, path):
         raw = json.loads(Path(path).read_text(encoding="utf-8"))
-        expected = {f.name for f in fields(cls)}
-        if set(raw) != expected:
-            raise ValueError(f"Clés attendues dans {path} : {sorted(expected)}, reçues : {sorted(raw)}")
-        return cls(**{f.name: f.type(raw[f.name]) for f in fields(cls)})
+        required = {f.name for f in fields(cls) if f.default is MISSING}
+        allowed = {f.name for f in fields(cls)}
+        if not required <= set(raw) <= allowed:
+            raise ValueError(f"Clés attendues dans {path} : {sorted(required)} (+ facultatives "
+                             f"{sorted(allowed - required)}), reçues : {sorted(raw)}")
+        return cls(**{name: next(f.type for f in fields(cls) if f.name == name)(value) for name, value in raw.items()})
 
     @property
     def required_sessions(self):
@@ -208,9 +214,11 @@ def _correlation(a, b):
     return None if math.isnan(value) else float(value)
 
 
-def screen(daily, minute, market_open, decision_time, criteria):
+def screen(daily, minute, market_open, decision_time, criteria, earnings_for=None):
     """
     Liste les titres qui remplissent tous les critères à decision_time.
+    earnings_for(symboles) -> {symbole: déclarations de bénéfice par action} : requis seulement si
+    criteria.max_pe est défini ; seules les déclarations déposées avant le jour de décision servent.
     Retourne (sélection, entonnoir). La sélection peut compter moins de criteria.count titres :
     elle n'est jamais complétée en assouplissant les critères.
     """
@@ -226,6 +234,15 @@ def screen(daily, minute, market_open, decision_time, criteria):
     rising = [(s, *first_hour[s.symbol]) for s in candidates
               if s.symbol in first_hour and first_hour[s.symbol][1] > first_hour[s.symbol][0]]
     funnel["hausse_premiere_heure"] = len(rising)
+
+    pe = {}
+    if criteria.max_pe is not None:
+        decision_date = decision_time.astimezone(ZoneInfo(NEW_YORK)).date()
+        earnings = earnings_for([s.symbol for s, _, _ in rising])
+        pe = {s.symbol: price_to_earnings(price, ttm_eps(earnings.get(s.symbol, []), decision_date))
+              for s, _, price in rising}
+        rising = [r for r in rising if pe[r[0].symbol] is not None and pe[r[0].symbol] < criteria.max_pe]
+        funnel["per_maximum"] = len(rising)
 
     window = criteria.correlation_sessions
     selection = []
@@ -254,6 +271,7 @@ def screen(daily, minute, market_open, decision_time, criteria):
             "volatility_annualized": item["stats"].volatility * math.sqrt(TRADING_DAYS_PER_YEAR),
             "avg_dollar_volume": str(item["stats"].avg_dollar_volume.quantize(Decimal("1"))),
             "max_correlation_with_previous": item["max_correlation"],
+            "pe_ttm": None if pe.get(item["stats"].symbol) is None else str(pe[item["stats"].symbol].quantize(Decimal("0.01"))),
         }
         for rank, item in enumerate(selection, start=1)
     ], funnel
