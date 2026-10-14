@@ -32,7 +32,7 @@ from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
-from infra.trace import ROOT, committed_git_sha, load_runs
+from infra.trace import ROOT, committed_git_sha, latest_per_session, load_runs
 
 NEW_YORK = ZoneInfo("America/New_York")
 FEED = "delayed_sip"
@@ -52,7 +52,8 @@ EMPTY_BARS = pd.DataFrame(columns=["symbol", "timestamp", "open", "close", "volu
 
 
 def _criteria(family):
-    return Criteria.from_file(ROOT / "research" / "algorithms" / family / "criteres.json")
+    # Univers liquide (critères 2 à 4) : identique dans les deux versions.
+    return Criteria.from_file(ROOT / "research" / "algorithms" / family / "criteres_sans_per.json")
 
 
 def _times(session_date, open_time, close_time):
@@ -90,13 +91,16 @@ def _write_chart_data(daily, market_open, symbols, criteria, key):
 
 
 def _selection(family, key):
-    """Run du screener de la séance (None s'il n'existe pas encore) et premier prix de chaque titre."""
-    run = next((r for r in reversed(load_runs(family)) if r["session_date"] == key), None)  # le plus récent
-    return run, {item["symbol"]: Decimal(item["open_today"]) for item in (run or {}).get("selection", [])}
+    """
+    Listes de la séance (la plus récente de chaque version ; vide avant 16 h 45) et premier prix de
+    chaque titre de ces listes.
+    """
+    runs = [r for r in latest_per_session(load_runs(family)) if r["session_date"] == key]
+    return runs, {item["symbol"]: Decimal(item["open_today"]) for r in runs for item in r["selection"]}
 
 
 def _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, opening,
-           run, opens):
+           runs, opens):
     """
     État affiché par le tableau de bord, calculé avec les seules données connues à now.
     opening : barres minute du début de séance, d'où le premier prix de chaque titre.
@@ -125,8 +129,8 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
         "first_hour_minutes": criteria.first_hour_minutes,
         "sessions": {"two_days": criteria.up_days, "week": WEEK_SESSIONS, "month": criteria.month_sessions},
         "measures": measures,
-        "selection": run and {"run_id": run["run_id"],
-                              "changes": changes_since_open(opens, trades, market_open, market_close, now)},
+        "selection": {"run_ids": [r["run_id"] for r in runs],
+                      "changes": changes_since_open(opens, trades, market_open, market_close, now)},
         # Graphiques de la sélection : les month_sessions dernières clôtures ; avec le prix du jour, la
         # variation affichée sur le graphique est exactement celle de la colonne « 1 mois ».
         "charts": recent_closes(daily, market_open, opens, criteria.month_sessions),
@@ -153,7 +157,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     stage = "definitive" if is_definitive(now, market_close) else "provisional"
 
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
-    run, opens = _selection(family, key)
+    runs, opens = _selection(family, key)
     tracked = sorted(set(symbols) | set(opens))
     minute = cached(f"{key}/{stage}_first_hour_bars", lambda: alpaca.bars(symbols, "1Min", market_open, first_hour_end))
     closing = cached(f"{key}/{stage}_closing_bars",
@@ -161,7 +165,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     trades = last_session_prices(closing, market_close)
 
     state = _state(family, criteria, key, market_open, market_close, market_close,
-                   daily, domains, names, trades, minute, minute, run, opens)
+                   daily, domains, names, trades, minute, minute, runs, opens)
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
@@ -253,7 +257,7 @@ def run(family):
             time.sleep(REFRESH_S)
             continue
         # La sélection du jour existe une fois le run du screener produit (après 10 h 45, New York).
-        today_run, opens = _selection(family, key)
+        today_runs, opens = _selection(family, key)
         try:
             if minute.empty and now >= first_hour_end + FEED_DELAY:
                 minute = cached(f"{key}/live_first_hour_bars",
@@ -269,7 +273,7 @@ def run(family):
 
         # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
         state = _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades,
-                       minute, minute if not minute.empty else opening, today_run, opens)
+                       minute, minute if not minute.empty else opening, today_runs, opens)
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)

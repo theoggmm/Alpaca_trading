@@ -8,12 +8,13 @@ from core.screener import Criteria, screen
 from core.universe import eligible_symbols
 from tests.synthetic import CRITERIA, DECISION_TIME, MARKET_OPEN, market
 
-CRITERIA_FILE = Path(__file__).resolve().parents[1] / "research" / "algorithms" / "reprise_apres_baisse" / "criteres.json"
+FAMILY_DIR = Path(__file__).resolve().parents[1] / "research" / "algorithms" / "reprise_apres_baisse"
 
 
-def test_fichier_de_criteres_lisible():
+def test_fichiers_de_criteres_des_deux_versions():
+    assert Criteria.from_file(FAMILY_DIR / "criteres_sans_per.json") == CRITERIA
     # Version 2 = critères de la version 1 + PER sur 12 mois glissants < 12.
-    assert Criteria.from_file(CRITERIA_FILE) == replace(CRITERIA, version=2, max_pe=Decimal("12"))
+    assert Criteria.from_file(FAMILY_DIR / "criteres_per12.json") == replace(CRITERIA, version=2, max_pe=Decimal("12"))
 
 
 def test_seuls_les_titres_en_baisse_puis_en_hausse_sont_retenus():

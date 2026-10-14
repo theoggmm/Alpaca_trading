@@ -165,3 +165,16 @@ Autrement dit : dès demain, la liste ne contient que des titres au PER inférie
 
 **Points signalés** : le PER suit les bénéfices officiels, éléments exceptionnels compris (WTRG : 7,2) ;
 les titres sans bénéfice US GAAP déposé (étrangers, certaines banques) sont exclus.
+
+## 2026-10-14 (suite) — Deux versions de la liste chaque jour
+
+**Question posée** : produire chaque jour deux listes, l'une avec les critères d'origine, l'autre avec
+le PER < 12 en plus.
+
+**Fait** : `criteres_sans_per.json` (version 1) et `criteres_per12.json` (version 2) ; le run quotidien
+produit un run par version (champ `variant`). Tableau de bord : sélecteur « Version » à côté de « Séance » ;
+le suivi en direct, les graphiques et « Depuis l'ouverture » couvrent les titres des deux listes ;
+« Fois dans les 20 » est compté par version. Le 14 octobre : r002 (sans PER, 20 titres) et r003
+(PER < 12, 4 titres). 34 tests verts.
+
+Autrement dit : chaque jour, tu peux comparer la liste d'origine et la liste filtrée par le PER.

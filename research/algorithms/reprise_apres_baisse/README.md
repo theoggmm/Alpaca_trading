@@ -11,7 +11,15 @@ Des actions calmes et très échangées qui ont baissé sur le dernier mois, pui
 séances et pendant la première heure de la séance du jour. L'idée du propriétaire : repérer une
 reprise en cours après une baisse.
 
-## Critères (`criteres.json`, version 2 depuis le 15 octobre 2026)
+## Critères : deux versions produites à chaque séance
+
+- **Sans PER** : `criteres_sans_per.json` (version 1), critères 1 à 10 ci-dessous sauf 8 bis.
+- **PER < 12** : `criteres_per12.json` (version 2), critères 1 à 10 avec 8 bis.
+
+Chaque séance produit un run par version (champ `variant` : `sans_per`, `per12`). Les runs r001 et r002
+sont la version sans PER, r003 la version PER < 12 du 14 octobre (recalculée après lecture : diagnostic).
+
+### Détail des critères
 
 Appliqués dans cet ordre, à l'instant de décision = ouverture de la séance + 60 minutes (New York) :
 
@@ -32,7 +40,7 @@ Appliqués dans cet ordre, à l'instant de décision = ouverture de la séance +
 La liste n'est **jamais complétée** en assouplissant un critère : si moins de 20 titres passent, elle
 en compte moins, et l'entonnoir (nombre de titres après chaque critère) l'indique.
 
-Modifier un seuil = nouvelle version de `criteres.json`, commitée avant le run qui l'utilise.
+Modifier un seuil = nouvelle version du fichier de critères concerné, commitée avant le run qui l'utilise.
 
 ## Tendance par domaine (bulles du tableau de bord)
 

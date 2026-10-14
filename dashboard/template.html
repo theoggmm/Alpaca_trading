@@ -126,6 +126,8 @@
     <a id="other-lang"></a>
     <label for="run" data-t="session"></label>
     <select id="run"></select>
+    <label for="variant" data-t="version"></label>
+    <select id="variant"></select>
   </header>
 
   <section>
@@ -186,7 +188,8 @@ const LIVE_STALE_MS = 3 * 60 * 1000;
 const TEXT = {
   fr: {
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
-    title: "Reprise après baisse", session: "Séance", not_judged: "non jugé",
+    title: "Reprise après baisse", session: "Séance", version: "Version",
+    variants: { per12: "PER < 12", sans_per: "Sans PER" }, not_judged: "non jugé",
     live_title: "En direct : tendance par domaine",
     disclaimer: "Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
     run_bubbles_title: "Tendance sur un mois par domaine, au moment du run (clôture de la veille)",
@@ -229,6 +232,7 @@ const TEXT = {
     final_state: d => `Fin de séance du ${d}`,
     opt_live: "en direct", opt_provisional: "fin de séance (provisoire)", opt_final: "fin de séance",
     session_of: d => `Séance du ${d}`,
+    no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
     no_run_yet: "La liste des 20 titres de cette séance sera produite à 16 h 45 (Paris), une heure et quart après l'ouverture.",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
     final_definitive: "définitive",
@@ -277,7 +281,8 @@ const TEXT = {
   },
   en: {
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
-    title: "Rebound after decline", session: "Session", not_judged: "not judged",
+    title: "Rebound after decline", session: "Session", version: "Version",
+    variants: { per12: "P/E < 12", sans_per: "Without P/E" }, not_judged: "not judged",
     live_title: "Live: trend by sector",
     disclaimer: "These stocks meet, one hour after the open, criteria set in advance. This is a list, not buy advice: the decision is yours.",
     run_bubbles_title: "One-month trend by sector at run time (previous close)",
@@ -320,6 +325,7 @@ const TEXT = {
     final_state: d => `End of session ${d}`,
     opt_live: "live", opt_provisional: "end of session (provisional)", opt_final: "end of session",
     session_of: d => `Session of ${d}`,
+    no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
     no_run_yet: "This session's list of 20 stocks will be produced at 4:45 PM (Paris), an hour and a quarter after the open.",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
     final_definitive: "final",
@@ -504,7 +510,7 @@ function renderRun(run) {
 
   const th = TEXT.th;
   // Variation depuis l'ouverture : en direct pendant la séance suivie, sinon l'état de fin de séance.
-  const inSession = LIVE?.selection?.run_id === run.run_id && !LIVE.final ? LIVE.selection.changes : null;
+  const inSession = LIVE?.session_date === run.session_date && !LIVE.final ? LIVE.selection?.changes : null;
   const final = FINALS[run.session_date]?.selection?.changes;
   const live = inSession || final;
   const liveColumn = live && {
@@ -588,7 +594,7 @@ function sectorTable(list, measures, picked) {
     ["in_selection", TEXT.col_in_selection, TEXT.how_in_selection(HISTORY.runs), "count"],
     ["top_in_domain", TEXT.col_top_domain(HISTORY.top_n), TEXT.how_top_domain(HISTORY.top_n, HISTORY.finals), "count"],
   ];
-  const rows = list.map(st => ({ ...st, in_selection: HISTORY.in_selection[st.symbol] || 0,
+  const rows = list.map(st => ({ ...st, in_selection: HISTORY.in_selection[VARIANT]?.[st.symbol] || 0,
                                  top_in_domain: HISTORY.top_in_domain[st.symbol] || 0 }));
   const key = VIEW.sortKey || "day";
   const dir = VIEW.sortDir || "desc";
@@ -691,7 +697,7 @@ function renderLive() {
     bySector.get(key).push(st);
   });
   if (bySector.has("")) order.push("");
-  const picked = new Set((RUNS.find(r => r.run_id === SHOWN.selection?.run_id)?.selection || []).map(i => i.symbol));
+  const picked = new Set((runFor(SHOWN.session_date)?.selection || []).map(i => i.symbol));
 
   const t = el("table");
   const head = t.createTHead().insertRow();
@@ -741,7 +747,7 @@ function renderLive() {
 function renderHistory() {
   const seen = new Map();
   // Une liste par séance : la plus récente (un run recalculé remplace l'ancien pour le comptage).
-  const latest = Object.values(Object.fromEntries(RUNS.map(run => [run.session_date, run])));
+  const latest = [...new Set(RUNS.map(run => run.session_date))].map(date => runFor(date)).filter(Boolean);
   latest.forEach(run => run.selection.forEach(item => {
     const entry = seen.get(item.symbol) || { symbol: item.symbol, name: item.name, count: 0, last: "" };
     entry.count += 1;
@@ -765,6 +771,21 @@ other.textContent = TEXT.other;
 other.href = TEXT.other_href;
 
 const picker = document.getElementById("run");
+// Deux versions de la liste chaque séance : critères d'origine, et critères + PER < 12.
+const VARIANTS = ["per12", "sans_per"];
+const variantOf = run => run.variant || (run.criteria.max_pe ? "per12" : "sans_per");
+let VARIANT = VARIANTS.includes(VIEW.variant) ? VIEW.variant : VARIANTS[0];
+// Liste la plus récente d'une séance pour une version (celle choisie par défaut).
+const runFor = (date, variant = VARIANT) => RUNS.findLast(r => r.session_date === date && variantOf(r) === variant);
+const variantPicker = document.getElementById("variant");
+VARIANTS.forEach(v => variantPicker.add(new Option(TEXT.variants[v], v)));
+variantPicker.value = VARIANT;
+variantPicker.addEventListener("change", () => {
+  VARIANT = variantPicker.value;
+  saveView({ ...VIEW, variant: VARIANT });
+  renderSession(picker.value);
+  renderHistory();
+});
 const SESSION_DATES = [...new Set([...Object.keys(FINALS), ...RUNS.map(r => r.session_date),
                                    ...(LIVE ? [LIVE.session_date] : [])])].sort().reverse();
 window.SESSION_STATES = window.SESSION_STATES || {};
@@ -780,10 +801,10 @@ function withState(date, then) {
   document.head.appendChild(script);
 }
 
-function renderNoRun(date) {
+function renderNoRun(date, message) {
   document.getElementById("status").textContent = `diagnostic · ${TEXT.not_judged}`;
   document.getElementById("meta").replaceChildren(el("span", "", TEXT.session_of(date)));
-  document.getElementById("selection").replaceChildren(el("div", "empty", TEXT.no_run_yet));
+  document.getElementById("selection").replaceChildren(el("div", "empty", message));
   document.getElementById("selection-note").textContent = "";
   ["bubbles", "funnel", "criteria"].forEach(id => document.getElementById(id).replaceChildren());
   document.getElementById("bubbles-note").textContent = "";
@@ -793,8 +814,9 @@ function renderSession(date) {
   withState(date, state => {
     SHOWN = state;
     renderLive();
-    const run = RUNS.findLast(r => r.session_date === date);  // le run le plus récent de la séance
-    if (run) renderRun(run); else renderNoRun(date);
+    const run = runFor(date);
+    if (run) renderRun(run);
+    else renderNoRun(date, RUNS.some(r => r.session_date === date) ? TEXT.no_run_variant(TEXT.variants[VARIANT]) : TEXT.no_run_yet);
   });
 }
 
@@ -804,10 +826,10 @@ if (!SESSION_DATES.length) {
   renderLive();
 } else {
   SESSION_DATES.forEach(date => {
-    const run = RUNS.findLast(r => r.session_date === date);
+    const runs = VARIANTS.map(v => runFor(date, v)).filter(Boolean);
     const live = LIVE?.session_date === date && !LIVE.final;
     const tag = live ? TEXT.opt_live : FINALS[date] ? (FINALS[date].provisional ? TEXT.opt_provisional : TEXT.opt_final) : "";
-    picker.add(new Option([date, tag, run?.run_id].filter(Boolean).join(" · "), date));
+    picker.add(new Option([date, tag, runs.map(r => r.run_id).join(" + ")].filter(Boolean).join(" · "), date));
   });
   // La séance choisie est gardée dans l'adresse (#2026-10-14) pour survivre au rechargement automatique.
   const fromHash = location.hash.slice(1);

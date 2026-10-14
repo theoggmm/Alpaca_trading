@@ -43,9 +43,14 @@ def load_runs(family):
     return sorted(runs, key=lambda r: (r["decision_time"], r["run_id"]))
 
 
+def variant_of(run):
+    """Version des critères d'un run ; les runs antérieurs au champ « variant » se déduisent de leurs critères."""
+    return run.get("variant") or ("per12" if run["criteria"].get("max_pe") else "sans_per")
+
+
 def latest_per_session(runs):
-    """Le run le plus récent de chaque séance (runs triés par load_runs), dans l'ordre des séances."""
-    return list({run["session_date"]: run for run in runs}.values())
+    """Le run le plus récent de chaque séance et de chaque version (runs triés par load_runs)."""
+    return list({(run["session_date"], variant_of(run)): run for run in runs}.values())
 
 
 def next_run_id(family):

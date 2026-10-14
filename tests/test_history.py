@@ -23,11 +23,12 @@ def test_top_n_par_domaine_et_par_seance():
     assert counts == {"A": 1, "B": 2, "C": 1, "D": 1}
 
 
-def test_un_seul_run_par_seance_le_plus_recent():
+def test_une_liste_par_seance_et_par_version_la_plus_recente():
     from infra.trace import latest_per_session
-    runs = [{"session_date": "2026-10-13", "run_id": "r001", "selection": [{"symbol": "A"}]},
-            {"session_date": "2026-10-14", "run_id": "r002", "selection": [{"symbol": "A"}, {"symbol": "B"}]},
-            {"session_date": "2026-10-14", "run_id": "r003", "selection": [{"symbol": "C"}]}]
+    runs = [{"session_date": "2026-10-13", "run_id": "r001", "variant": "sans_per", "selection": [{"symbol": "A"}]},
+            {"session_date": "2026-10-14", "run_id": "r002", "variant": "sans_per", "selection": [{"symbol": "A"}, {"symbol": "B"}]},
+            {"session_date": "2026-10-14", "run_id": "r003", "variant": "per12", "selection": [{"symbol": "C"}]},
+            {"session_date": "2026-10-14", "run_id": "r004", "variant": "per12", "selection": [{"symbol": "D"}]}]
     latest = latest_per_session(runs)
-    assert [r["run_id"] for r in latest] == ["r001", "r003"]
-    assert selection_counts(latest) == {"A": 1, "C": 1}
+    assert [r["run_id"] for r in latest] == ["r001", "r002", "r004"]
+    assert selection_counts([r for r in latest if r["variant"] == "sans_per"]) == {"A": 2, "B": 1}

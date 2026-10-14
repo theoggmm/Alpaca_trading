@@ -15,7 +15,7 @@ from pathlib import Path
 from core.history import TOP_IN_DOMAIN, selection_counts, top_in_domain_counts
 from infra import sec
 from infra.http import FetchError
-from infra.trace import ROOT, latest_per_session, load_runs
+from infra.trace import ROOT, latest_per_session, load_runs, variant_of
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template.html"
@@ -77,7 +77,9 @@ def build(family):
         "runs": len(runs),
         "finals": sum("stocks" in f for f in finals),
         "top_n": TOP_IN_DOMAIN,
-        "in_selection": selection_counts(latest_per_session(runs)),
+        # Une liste par séance et par version ; comptage séparé pour chaque version.
+        "in_selection": {variant: selection_counts([r for r in latest_per_session(runs) if variant_of(r) == variant])
+                         for variant in {variant_of(r) for r in runs}},
         "top_in_domain": top_in_domain_counts(finals),
     }
     page = (TEMPLATE.read_text(encoding="utf-8")

@@ -18,10 +18,12 @@ from infra import nasdaq_symbols, sec
 from infra.alpaca_api import DATA_URL, AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
-from infra.trace import TraceError, committed_git_sha, load_runs, next_run_id, save_run
+from infra.trace import TraceError, committed_git_sha, load_runs, next_run_id, save_run, variant_of
 
 FAMILY = "reprise_apres_baisse"
-CRITERIA_FILE = Path(__file__).resolve().parent / "criteres.json"
+HERE = Path(__file__).resolve().parent
+# Deux versions produites à chaque séance : variante -> fichier de critères.
+VARIANTS = {"sans_per": HERE / "criteres_sans_per.json", "per12": HERE / "criteres_per12.json"}
 NEW_YORK = ZoneInfo("America/New_York")
 # Offre gratuite Alpaca : les barres consolidées (SIP) des 15 dernières minutes ne sont pas servies.
 SIP_DELAY = timedelta(minutes=15)
@@ -89,15 +91,32 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     return payload
 
 
+def _report(payload, criteria, path):
+    selection = payload["selection"]
+    decision_time = datetime.fromisoformat(payload["decision_time"])
+    print(f"[{payload['variant']}] Séance du {payload['session_date']}, décision à "
+          f"{decision_time.astimezone(NEW_YORK):%H:%M} (New York) — run {payload['run_id']}, "
+          f"critères version {criteria.version}, statut diagnostic, code {payload['git_sha'][:7]}")
+    print("Entonnoir : " + " → ".join(f"{step} {n}" for step, n in payload["funnel"].items()))
+    print(f"n = {len(selection)} titres sur {criteria.count} au plus :")
+    for item in selection:
+        pe = f"  PER {item['pe_ttm']}" if item.get("pe_ttm") else ""
+        print(f"{item['rank']:>3}. {item['symbol']:<6} {item['name'][:40]:<40} "
+              f"mois {_pct(item['return_month'])}  J-2 {_pct(item['return_day_minus_2'])}  "
+              f"J-1 {_pct(item['return_day_minus_1'])}  1re heure {_pct(item['return_first_hour'])}{pe}")
+    print(f"Résultats : {path}")
+
+
 def run():
-    criteria = Criteria.from_file(CRITERIA_FILE)
     now = datetime.now(timezone.utc)
     session_date = now.astimezone(NEW_YORK).date()
     key = session_date.isoformat()
 
-    done = [r for r in load_runs(FAMILY) if r["session_date"] == key]
-    if done:
-        print(f"Run déjà produit pour la séance du {key} : {done[0]['run_id']}.")
+    runs = [r for r in load_runs(FAMILY) if r["session_date"] == key]
+    todo = {variant: Criteria.from_file(path) for variant, path in VARIANTS.items()
+            if not any(variant_of(r) == variant for r in runs)}
+    if not todo:
+        print(f"Runs déjà produits pour la séance du {key} : {', '.join(r['run_id'] for r in runs)}.")
         return 0
 
     git_sha = committed_git_sha()
@@ -108,7 +127,8 @@ def run():
         return 0
 
     market_open = datetime.combine(session_date, session[0], NEW_YORK).astimezone(timezone.utc)
-    ready_at = market_open + timedelta(minutes=criteria.first_hour_minutes) + SIP_DELAY
+    first_hour = max(c.first_hour_minutes for c in todo.values())
+    ready_at = market_open + timedelta(minutes=first_hour) + SIP_DELAY
     if ready_at - MAX_WAIT <= now < ready_at:
         print(f"Données de la première heure disponibles à {ready_at.astimezone(NEW_YORK):%H:%M:%S} (New York) : "
               f"attente de {(ready_at - now).total_seconds():.0f} s.")
@@ -119,20 +139,12 @@ def run():
               f"{ready_at.astimezone(NEW_YORK):%H:%M} (New York).")
         return 1
 
-    payload = {"run_id": next_run_id(FAMILY), **produce(alpaca, criteria, session_date, market_open, now, git_sha)}
-    path = save_run(FAMILY, payload)
-    selection = payload["selection"]
-    decision_time = datetime.fromisoformat(payload["decision_time"])
-    domains = payload["domains"]
+    for variant, criteria in todo.items():
+        payload = {"run_id": next_run_id(FAMILY), "variant": variant,
+                   **produce(alpaca, criteria, session_date, market_open, now, git_sha)}
+        _report(payload, criteria, save_run(FAMILY, payload))
+        domains = payload["domains"]
 
-    print(f"Séance du {key}, décision à {decision_time.astimezone(NEW_YORK):%H:%M} (New York) — "
-          f"run {payload['run_id']}, statut diagnostic, code {git_sha[:7]}")
-    print("Entonnoir : " + " → ".join(f"{step} {n}" for step, n in payload["funnel"].items()))
-    print(f"n = {len(selection)} titres sur {criteria.count} demandés :")
-    for item in payload["selection"]:
-        print(f"{item['rank']:>3}. {item['symbol']:<6} {item['name'][:40]:<40} "
-              f"mois {_pct(item['return_month'])}  J-2 {_pct(item['return_day_minus_2'])}  "
-              f"J-1 {_pct(item['return_day_minus_1'])}  1re heure {_pct(item['return_first_hour'])}")
     if "error" in domains:
         print(f"Domaines indisponibles : {domains['error']}")
     else:
@@ -140,7 +152,6 @@ def run():
               f"{domains['unclassified']} titres non classés :")
         for bubble in domains["bubbles"]:
             print(f"     {bubble['domain']:<40} {_pct(bubble['mean_return'])}  n = {bubble['n']}")
-    print(f"Résultats : {path}")
     return 0
 
 

@@ -1,6 +1,6 @@
 """
 Tendance moyenne par domaine d'activité, sur l'univers liquide du screener
-(historique complet, prix minimum, volume échangé : critères 2 à 4 de criteres.json).
+(historique complet, prix minimum, volume échangé : critères 2 à 4, identiques dans les deux versions).
 """
 
 import statistics
