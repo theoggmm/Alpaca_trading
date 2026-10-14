@@ -1,0 +1,184 @@
+{
+  "run_id": "r003",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-14",
+  "market_open": "2026-10-14T13:30:00+00:00",
+  "decision_time": "2026-10-14T14:30:00+00:00",
+  "created_at": "2026-10-14T17:32:06.238233+00:00",
+  "git_sha": "1accd9f1a0bf9d1df9c408d5a78b2c7465e84ed7",
+  "criteria": {
+    "version": 2,
+    "count": 20,
+    "month_sessions": 21,
+    "up_days": 2,
+    "first_hour_minutes": 60,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "max_pe": "12"
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1014202603:02",
+      "otherlisted": "1014202603:02"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13503,
+    "cotes_sur_une_bourse_us": 12743,
+    "hors_etf_et_titres_de_test": 6986,
+    "avec_barres_quotidiennes": 6984,
+    "historique_complet": 6816,
+    "prix_minimum": 4724,
+    "volume_echange_minimum": 2093,
+    "volatilite_basse": 1047,
+    "en_baisse_sur_un_mois": 694,
+    "hausse_des_derniers_jours": 196,
+    "hausse_premiere_heure": 44,
+    "per_maximum": 6,
+    "selection_diversifiee": 4
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 197,
+        "mean_return": 0.01755515651400822
+      },
+      {
+        "domain": "Technology",
+        "n": 307,
+        "mean_return": 0.011041092066002801
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 355,
+        "mean_return": 0.0005109422844297158
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 306,
+        "mean_return": -0.011291130957840055
+      },
+      {
+        "domain": "Trade & Services",
+        "n": 270,
+        "mean_return": -0.01807961340062524
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 171,
+        "mean_return": -0.03898467670289443
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 42,
+        "mean_return": -0.043118405667150354
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 176,
+        "mean_return": -0.05825742118605739
+      },
+      {
+        "domain": "Finance",
+        "n": 255,
+        "mean_return": -0.06011641073697326
+      }
+    ],
+    "unclassified": 14,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "PRI",
+      "prev_close": "277.37",
+      "open_today": "275.75",
+      "price_at_decision": "276.56",
+      "return_month": -0.06103588354773189,
+      "return_day_minus_2": 0.005448799447854989,
+      "return_day_minus_1": 0.002095451425268254,
+      "return_first_hour": 0.0029374433363553946,
+      "volatility_annualized": 0.1913723981005103,
+      "avg_dollar_volume": "57645418",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "11.12",
+      "name": "Primerica, Inc. Common Stock",
+      "domain": "Finance",
+      "sic_description": "Life Insurance"
+    },
+    {
+      "rank": 2,
+      "symbol": "WTRG",
+      "prev_close": "39.29",
+      "open_today": "39.21",
+      "price_at_decision": "39.23",
+      "return_month": -0.05575582792597933,
+      "return_day_minus_2": 0.004361210877373012,
+      "return_day_minus_1": 0.0035759897828863347,
+      "return_first_hour": 0.000510073960724305,
+      "volatility_annualized": 0.1849846470647372,
+      "avg_dollar_volume": "98084926",
+      "max_correlation_with_previous": 0.28074743894260135,
+      "pe_ttm": "7.21",
+      "name": "Essential Utilities, Inc. Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Water Supply"
+    },
+    {
+      "rank": 3,
+      "symbol": "PRU",
+      "prev_close": "113.41",
+      "open_today": "112.5",
+      "price_at_decision": "112.82",
+      "return_month": -0.05096234309623431,
+      "return_day_minus_2": 0.0026527544433636928,
+      "return_day_minus_1": 0.00017638239703677574,
+      "return_first_hour": 0.0028444444444444446,
+      "volatility_annualized": 0.18226337451792018,
+      "avg_dollar_volume": "183719290",
+      "max_correlation_with_previous": 0.47650952517079453,
+      "pe_ttm": "10.23",
+      "name": "Prudential Financial, Inc. Common Stock",
+      "domain": "Finance",
+      "sic_description": "Life Insurance"
+    },
+    {
+      "rank": 4,
+      "symbol": "SIGI",
+      "prev_close": "85.15",
+      "open_today": "84.89",
+      "price_at_decision": "84.99",
+      "return_month": -0.047752180720196824,
+      "return_day_minus_2": 0.008311564948943244,
+      "return_day_minus_1": 0.0027084314649081487,
+      "return_first_hour": 0.0011779950524207798,
+      "volatility_annualized": 0.19423867868551734,
+      "avg_dollar_volume": "46582766",
+      "max_correlation_with_previous": 0.2429431071138875,
+      "pe_ttm": "10.54",
+      "name": "Selective Insurance Group, Inc. - Common Stock",
+      "domain": "Finance",
+      "sic_description": "Fire, Marine & Casualty Insurance"
+    }
+  ],
+  "supersedes": "r002",
+  "note": "Séance recalculée avec les critères version 2 (PER < 12), adoptés par le propriétaire le 14 octobre après lecture de r002 ; mêmes données, tronquées à 10 h 30 (New York). r002 reste dans l'historique. Diagnostic : la séance était déjà regardée."
+}
