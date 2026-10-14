@@ -74,6 +74,19 @@ s'arrête seul après la clôture (Ctrl+C pour l'arrêter avant) :
 /Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh
 ```
 
+**Démarrage automatique** (installé) : un service macOS ouvre chaque jour de semaine à 14 h 15 (Paris)
+une fenêtre Terminal qui lance le suivi ; il attend l'ouverture, s'arrête seul après la clôture, ne
+fait rien un jour férié, et un seul suivi tourne à la fois. Mac en veille à 14 h 15 : lancé au réveil.
+Fermer la fenêtre arrête le suivi du jour. Journal : `~/Library/Logs/alpaca_trading_live.log`.
+
+```bash
+/Users/theodoremeyer/Documents/Alpaca_trading/deploy/install_live_agent.sh
+```
+
+```bash
+/Users/theodoremeyer/Documents/Alpaca_trading/deploy/uninstall_live_agent.sh
+```
+
 Les mesures, séance en cours comprise : dernier prix / clôture d'il y a N séances − 1
 (journée : N = 1 ; 2 séances : N = 2 ; 1 semaine : N = 5 ; 1 mois : N = 21). Première heure : prix à la
 fin des 60 premières minutes / premier prix de la séance − 1, affichée 15 minutes après la fin de la

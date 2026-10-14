@@ -93,3 +93,22 @@ Autrement dit : les chiffres de l'ouverture à la clôture ne se perdent plus, q
 
 **Signalé au propriétaire** : le projet Vercel de l'ancien site est encore relié au dépôt et échoue
 à chaque push (sans conséquence) ; à déconnecter ou supprimer depuis son compte Vercel.
+
+## 2026-10-14 (suite) — Listes par domaine et démarrage automatique
+
+**Question posée** : cliquer sur un domaine pour voir tous ses titres avec les mêmes colonnes, en
+direct, et que le suivi démarre tout seul chaque jour.
+
+**Fait** :
+- Chaque domaine se déplie en la liste de ses titres (journée, première heure, 2 séances, semaine,
+  mois), classée du meilleur au moins bon, triable par colonne ; ★ = sélection du jour.
+- Démarrage automatique accordé par le propriétaire : service launchd (`deploy/install_live_agent.sh`),
+  chaque jour de semaine à 14 h 15 (Paris), qui ouvre le suivi dans Terminal (macOS refuse aux services
+  d'arrière-plan l'accès à Documents). Verrou d'instance unique. Corrigé : un suivi lancé avant
+  l'ouverture demandait des cours trop récents (refus 403 de l'offre gratuite).
+- Premier lancement automatique le 14 octobre à 10 h 32 (Paris) : en attente de l'ouverture.
+
+Autrement dit : chaque jour de bourse, le suivi démarre seul et les listes bougent pendant la séance.
+
+**Écart signalé** : l'heure du service est en heure de Paris (launchd ne connaît que l'heure locale) ;
+14 h 15 précède l'ouverture de New York toute l'année et le suivi attend lui-même l'ouverture.

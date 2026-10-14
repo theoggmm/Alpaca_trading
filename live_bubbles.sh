@@ -3,4 +3,4 @@
 set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 cd "$ROOT"
-exec "$ROOT/.venv/bin/python" -m dashboard.live reprise_apres_baisse
+exec "$ROOT/.venv/bin/python" -u -m dashboard.live reprise_apres_baisse
