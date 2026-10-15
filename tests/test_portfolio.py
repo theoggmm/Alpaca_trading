@@ -88,3 +88,19 @@ def test_apres_impot_gain_impose_perte_entiere():
     kept = after_tax({"10000": "100.00", "25000": "-40.00", "50000": "0.00"})
     assert kept == {"10000": str((Decimal("100") * (1 - TAX_RATE)).quantize(Decimal("0.01"))),
                     "25000": "-40.00", "50000": "0.00"}
+
+
+def test_titre_sans_prix_de_vente_ecarte_sans_bloquer_les_autres():
+    import pandas as pd
+    from datetime import datetime, timedelta, timezone
+    from core.portfolio import simulate
+    entry_t = datetime(2026, 10, 15, 15, 0, tzinfo=timezone.utc)
+    exit_t = datetime(2026, 10, 15, 19, 30, tzinfo=timezone.utc)
+    cols = ["symbol", "timestamp", "open", "close", "volume"]
+    entry = pd.DataFrame([("AAA", entry_t, Decimal("10"), Decimal("10"), 1), ("BBB", entry_t, Decimal("20"), Decimal("20"), 1)], columns=cols)
+    # BBB n'échange qu'à 15 h 30 pile : barre postérieure à l'heure de vente, inutilisable.
+    exit_ = pd.DataFrame([("AAA", exit_t - timedelta(minutes=1), Decimal("11"), Decimal("11"), 1),
+                          ("BBB", exit_t, Decimal("30"), Decimal("30"), 1)], columns=cols)
+    result = simulate(["AAA", "BBB"], entry, exit_, {}, entry_t, exit_t, exit_t + timedelta(minutes=30))
+    assert result["status"] == "closed" and result["priced"] == 1 and result["n"] == 2
+    assert result["mean_return"] == 0.1

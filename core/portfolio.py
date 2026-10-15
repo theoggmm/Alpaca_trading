@@ -48,7 +48,9 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
     last_trades = session_trades(last_trades, entry_time, exit_time, now)
 
     entry = {s: p for s, p in _first_open(entry_bars, entry_time).items() if s in symbols}
-    if now >= exit_time and set(entry) <= set(_last_close(exit_bars)):
+    # Après l'heure de vente : prix de vente = dernier échange avant elle ; un titre sans échange dans la
+    # fenêtre de vente est écarté de la répartition (comme un titre sans échange à l'achat).
+    if now >= exit_time:
         status, current = "closed", _last_close(exit_bars)
     else:
         status, current = "live", {s: price for s, (_, price) in last_trades.items()}
