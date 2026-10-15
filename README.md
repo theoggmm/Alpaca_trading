@@ -100,6 +100,11 @@ direct. Les clôtures de tout l'univers sont écrites une fois par séance dans 
 (non suivi par git). Univers : titres assez liquides (critères 2 à 4, identiques dans les deux versions). Seul le dernier
 état en direct est gardé (`research/outputs/live/latest.json`, non suivi par git).
 
+**Simulation (bas de page).** Pour chaque version de la liste : 10 k$, 25 k$, 50 k$, 100 k$ et 1 M$
+répartis à parts égales sur ses titres, achetés au premier échange à partir de 10 h 45 (New York, liste
+disponible) et vendus au dernier échange avant 15 h 30 (30 min avant la clôture). Gain en direct entre
+les deux, figé ensuite et gardé dans l'état de fin de séance. Montants bruts, avant frais et impôts.
+
 **Menu « Séance ».** Une entrée par jour de bourse. La séance du jour apparaît avec les premiers prix
 et bouge en direct ; à la clôture elle est figée (provisoire le soir, définitive le lendemain avec les
 corrections d'Alpaca, puis plus jamais modifiée). Une séance passée est chargée à la demande depuis

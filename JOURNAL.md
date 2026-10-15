@@ -178,3 +178,15 @@ le suivi en direct, les graphiques et « Depuis l'ouverture » couvrent les titr
 (PER < 12, 4 titres). 34 tests verts.
 
 Autrement dit : chaque jour, tu peux comparer la liste d'origine et la liste filtrée par le PER.
+
+## 2026-10-15 — Simulation d'investissement
+
+**Question posée** : un tableau en bas du tableau de bord, pour les deux versions : 10 k$, 25 k$, 50 k$,
+100 k$ et 1 M$ répartis à parts égales, achetés après la première heure (liste disponible), vendus 30 min
+avant la clôture, en direct puis figé ; test sur la séance du 14 octobre.
+
+**Fait** : `core/portfolio.py` (Decimal, troncature à l'instant d'observation, 4 tests) ; suivi en direct et
+état de fin de séance. 14 octobre (définitif) : PER < 12 +0,76 % (+756,74 $ sur 100 k$), sans PER +0,38 %
+(+382,84 $) ; recalcul indépendant identique. 38 tests verts.
+
+Autrement dit : chaque jour, tu vois ce qu'aurait rapporté chaque montant, avec un achat réaliste.
