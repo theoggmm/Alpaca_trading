@@ -302,6 +302,8 @@ const TEXT = {
           vol: "Volatilité annuelle", volume: "Volume moyen / jour", times: "Fois retenu", last: "Dernière fois" },
     live_cell: (p, t) => `dernier prix ${p} à ${t} (New York), 15 min de retard`,
     open_to_close: "Ouverture → clôture",
+    since_entry: "Depuis l'achat (10 h 45)",
+    entry_col_note: " « Depuis l'achat (10 h 45) » : dernier prix / prix d'achat de la simulation (premier échange à partir de 10 h 45, New York), avant frais ; après la clôture, jusqu'au dernier échange avant 16 h 00.",
     final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t} (New York)`,
     final_col_note: " « Ouverture → clôture » : dernier échange avant 16 h 00 / premier prix de la séance, reconstitué depuis l'historique minute d'Alpaca.",
     final_state: d => `Fin de séance du ${d}`,
@@ -446,6 +448,8 @@ const TEXT = {
           vol: "Annual volatility", volume: "Avg volume / day", times: "Times selected", last: "Last time" },
     live_cell: (p, t) => `last price ${p} at ${t} (New York), 15-min delay`,
     open_to_close: "Open → close",
+    since_entry: "Since purchase (10:45)",
+    entry_col_note: " \"Since purchase (10:45)\": last price / the simulation's purchase price (first trade from 10:45 AM, New York), before costs; after the close, up to the last trade before 4:00 PM.",
     final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t} (New York)`,
     final_col_note: " \"Open → close\": last trade before 4:00 PM / first price of the session, rebuilt from Alpaca's minute history.",
     final_state: d => `End of session ${d}`,
@@ -695,6 +699,14 @@ function renderRun(run) {
     title: r => !live[r.symbol] ? TEXT.no_live_price
       : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(live[r.symbol].price), nyTime(live[r.symbol].at)),
   };
+  // Variation depuis l'achat de la simulation (premier échange à partir de 10 h 45, New York).
+  const entry = inSession ? LIVE.selection?.since_entry : FINALS[run.session_date]?.selection?.since_entry;
+  const entryColumn = entry && Object.keys(entry).length && {
+    label: TEXT.since_entry, value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
+    tone: r => entry[r.symbol]?.change ?? 0,
+    title: r => !entry[r.symbol] ? TEXT.no_live_price
+      : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(entry[r.symbol].price), nyTime(entry[r.symbol].at)),
+  };
   const selectionTable = run.selection.length ? table([
     { label: th.rank, value: r => r.rank },
     { label: th.symbol, cls: "text symbol", value: r => r.symbol },
@@ -707,6 +719,7 @@ function renderRun(run) {
     { label: th.first_hour, value: r => pct(r.return_first_hour), tone: r => r.return_first_hour },
     ...(run.criteria.max_pe ? [{ label: th.pe, value: r => r.pe_ttm == null ? "—" : Number(r.pe_ttm).toFixed(1) }] : []),
     ...(liveColumn ? [liveColumn] : []),
+    ...(entryColumn ? [entryColumn] : []),
     { label: th.price, value: r => usd(r.price_at_decision) },
     { label: th.vol, value: r => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(r.volatility_annualized) },
     { label: th.volume, value: r => musd(r.avg_dollar_volume) },
@@ -716,7 +729,8 @@ function renderRun(run) {
   document.getElementById("selection-note").textContent =
     (run.selection.length < run.criteria.count ? TEXT.fewer(run.selection.length, run.criteria.count) : TEXT.ranked)
     + TEXT.domain_note + (run.selection.some(r => r.domain_read_later) ? TEXT.star_note : "")
-    + (inSession ? TEXT.live_col_note : final ? TEXT.final_col_note : "");
+    + (inSession ? TEXT.live_col_note : final ? TEXT.final_col_note : "")
+    + (entryColumn ? TEXT.entry_col_note : "");
 
   renderBubbles(run);
 

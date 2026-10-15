@@ -139,6 +139,15 @@ def _portfolio(runs, universe, entry_bars, exit_bars, trades, entry_time, exit_t
     }
 
 
+def _since_entry(opens, entry_bars, entry_time, trades, market_open, market_close, now):
+    """
+    Variation de chaque titre des listes depuis l'achat de la simulation : dernier prix / prix d'achat - 1
+    (premier échange à partir de entry_time). Vide tant que le prix d'achat n'est pas connu.
+    """
+    prices = entry_prices(entry_bars, entry_time, now)
+    return changes_since_open({s: prices[s] for s in opens if s in prices}, trades, market_open, market_close, now)
+
+
 def _order_plan(runs, prices, basis):
     """
     Ordres à passer sur la liste PER < 12 : nombre entier d'actions et prix, pour ORDER_PLAN_AMOUNT.
@@ -231,6 +240,8 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     state["portfolio"] = _portfolio(runs, symbols, entry_bars, exit_bars, trades, entry_time, exit_time, market_close)
     state["month_trend"] = _month_trend(daily, market_open, criteria, domains)
     state["order_plan"] = _order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry")
+    state["selection"]["since_entry"] = _since_entry(opens, entry_bars, entry_time, trades, market_open, market_close,
+                                                     market_close)
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
@@ -354,6 +365,8 @@ def run(family):
         state["month_trend"] = month_trend
         last_prices = {s: price for s, (_, price) in session_trades(trades, market_open, market_close, now).items()}
         state["order_plan"] = _order_plan(today_runs, last_prices, "live")
+        state["selection"]["since_entry"] = _since_entry(opens, entry_bars, entry_time, trades, market_open, market_close,
+                                                         now)
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)
