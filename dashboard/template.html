@@ -200,6 +200,11 @@
     <div class="panel" id="results-daily"></div>
     <p class="note" id="results-note"></p>
   </section>
+
+  <section>
+    <h2 data-t="bt_title"></h2>
+    <div id="backtest" style="display: grid; gap: 4px;"></div>
+  </section>
 </main>
 
 <!-- Clôtures du dernier mois de tout l'univers (écrit une fois par séance par le suivi en direct). -->
@@ -288,6 +293,22 @@ const TEXT = {
     res_note: "Chaque séance : achat à parts égales au premier échange à partir de 10 h 45, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste PER < 12 vide : 0 %.",
     res_skipped: s => `Non comptées (simulation antérieure aux frais et aux repères) : ${s}.`,
     res_provisional: "* : séance encore provisoire, recalculée le lendemain avec les corrections d'Alpaca.",
+    bt_title: "Test sur le passé (diagnostic)",
+    bt_empty: "Le test sur le passé n'a pas encore été lancé.",
+    bt_head: (id, p) => `Test ${id} : ${p.sessions} séances, du ${p.start} au ${p.end}`,
+    bt_status: "Statut : diagnostic. Ce test sert à repérer un problème, pas à décider : seule l'expérience 001, sur les séances à venir, tranchera.",
+    bt_rules: "Mêmes règles que la simulation : listes calculées à 10 h 30 avec les seules données connues à ce moment, achat au premier échange à partir de 10 h 45, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre, liste vide = 0 %.",
+    bt_trace: sha => `Code utilisé : ${sha.slice(0, 7)}.`,
+    bt_pair: "Comparaison", bt_diff: "Écart moyen / séance", bt_t: "t apparié",
+    bt_pairs: { per12_vs_sans_per: "PER < 12 − Sans PER", per12_vs_spy: "PER < 12 − SPY", sans_per_vs_spy: "Sans PER − SPY" },
+    bt_biases: "Limites connues de ce test :",
+    bt_bias_items: [
+      "Seuls les titres encore cotés aujourd'hui sont testés : ceux qui ont disparu depuis (faillites, rachats) manquent, ce qui rend le passé plus flatteur.",
+      "La distinction action / ETF est celle d'aujourd'hui.",
+      "Le PER n'utilise que les bénéfices déclarés à la SEC avant chaque jour testé.",
+      "Pas de repère « univers liquide » sur le passé (trop de données) : seul SPY sert de repère.",
+    ],
+    bt_note: "Un t apparié d'au moins 1,7 sur beaucoup de séances suggère un écart réel ; en dessous, l'écart peut être dû au hasard. Autrement dit : ce tableau dit si la méthode semblait marcher avant, pas si elle marchera.",
     sim_amount: "Montant investi",
     sim_waiting: t => `En attente : achat au premier échange à partir de ${t} (New York)`,
     sim_live: t => `En direct : valeur au dernier prix connu (${t}, New York)`,
@@ -415,6 +436,22 @@ const TEXT = {
     res_note: "Each session: equal amounts bought at the first trade from 10:45 AM, sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty P/E < 12 list: 0%.",
     res_skipped: s => `Not counted (simulation from before costs and benchmarks): ${s}.`,
     res_provisional: "*: session still provisional, recalculated the next day with Alpaca's corrections.",
+    bt_title: "Test on past data (diagnostic)",
+    bt_empty: "The test on past data has not been run yet.",
+    bt_head: (id, p) => `Test ${id}: ${p.sessions} sessions, from ${p.start} to ${p.end}`,
+    bt_status: "Status: diagnostic. This test is meant to spot problems, not to decide: only experiment 001, on upcoming sessions, will settle it.",
+    bt_rules: "Same rules as the simulation: lists computed at 10:30 AM using only data known at that time, bought at the first trade from 10:45 AM, sold at the last trade before 3:30 PM (New York), 0.05% cost per order, empty list = 0%.",
+    bt_trace: sha => `Code used: ${sha.slice(0, 7)}.`,
+    bt_pair: "Comparison", bt_diff: "Mean gap / session", bt_t: "Paired t",
+    bt_pairs: { per12_vs_sans_per: "P/E < 12 − Without P/E", per12_vs_spy: "P/E < 12 − SPY", sans_per_vs_spy: "Without P/E − SPY" },
+    bt_biases: "Known limits of this test:",
+    bt_bias_items: [
+      "Only stocks still listed today are tested: those that disappeared since (bankruptcies, buyouts) are missing, which makes the past look better.",
+      "The stock / ETF distinction is today's.",
+      "The P/E only uses earnings filed with the SEC before each tested day.",
+      "No \"liquid universe\" benchmark on past data (too much data): only SPY is used as a benchmark.",
+    ],
+    bt_note: "A paired t of at least 1.7 over many sessions suggests a real gap; below that, the gap may be chance. In other words: this table says whether the method seemed to work before, not whether it will work.",
     sim_amount: "Amount invested",
     sim_waiting: t => `Waiting: bought at the first trade from ${t} (New York)`,
     sim_live: t => `Live: value at the latest known price (${t}, New York)`,
@@ -885,6 +922,89 @@ function renderPlan() {
   note.textContent = TEXT.plan_note;
 }
 
+// Courbe des rendements cumulés, une ligne par série (historique des résultats et test sur le passé).
+function cumulativeChart(chart, cumulativeBySeries, series) {
+  const dates = [...new Set(series.flatMap(s => (cumulativeBySeries[s] || []).map(([d]) => d)))].sort();
+  if (dates.length < 2) {
+    chart.replaceChildren(el("div", "empty", TEXT.res_chart_soon));
+    return;
+  }
+  const W = 760, H = 230, L = 64, R = 20, T = 14, B = 28;
+  const values = series.flatMap(s => (cumulativeBySeries[s] || []).map(([, v]) => v)).concat([0]);
+  const lo = Math.min(...values), hi = Math.max(...values), pad = (hi - lo) * 0.1 || 0.01;
+  const position = new Map(dates.map((d, i) => [d, i]));
+  const x = d => L + (W - L - R) * position.get(d) / (dates.length - 1);
+  const y = v => T + (H - T - B) * (hi + pad - v) / (hi - lo + 2 * pad);
+  const box = svg("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": TEXT.res_chart_aria });
+  for (let g = 0; g <= 4; g++) {
+    const v = lo - pad + (hi - lo + 2 * pad) * g / 4;
+    box.append(svg("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }),
+               svg("text", { x: L - 8, y: y(v) + 4, class: "axis", "text-anchor": "end" }, pct(v)));
+  }
+  series.forEach(s => {
+    const pts = cumulativeBySeries[s] || [];
+    if (pts.length) box.append(svg("polyline", { points: pts.map(([d, v]) => `${x(d)},${y(v)}`).join(" "),
+                                                 class: "series", style: `stroke: var(--s-${s})` }));
+  });
+  [dates[0], dates[dates.length - 1]].forEach((d, i) => box.append(svg("text", { x: x(d), y: H - 8, class: "axis",
+    "text-anchor": i ? "end" : "start" }, d)));
+  const legend = el("div", "legend");
+  series.filter(s => (cumulativeBySeries[s] || []).length).forEach(s => {
+    const item = el("span"); const swatch = el("i"); swatch.style.background = `var(--s-${s})`;
+    item.append(swatch, TEXT.series[s]); legend.appendChild(item);
+  });
+  chart.replaceChildren(legend, box);
+}
+
+// Tableau résumé d'une série de rendements (mêmes colonnes pour l'historique et le test sur le passé).
+function summaryTable(summaries, series) {
+  const fmt = v => v == null ? "—" : pct(v);
+  const rows = series.filter(s => summaries[s]?.n);
+  return rows.length ? table([
+    { label: TEXT.res_series, cls: "text", value: s => TEXT.series[s] },
+    { label: TEXT.res_n, value: s => summaries[s].n },
+    { label: TEXT.res_mean, value: s => fmt(summaries[s].mean), tone: s => summaries[s].mean },
+    { label: TEXT.res_total, value: s => fmt(summaries[s].total), tone: s => summaries[s].total },
+    { label: TEXT.res_annual, value: s => fmt(summaries[s].annualized) + (summaries[s].suspect ? " ⚠" : ""),
+      title: s => summaries[s].suspect ? TEXT.res_suspect : "" },
+    { label: TEXT.res_positive, value: s => fmt(summaries[s].positive_share) },
+    { label: TEXT.res_worst, value: s => fmt(summaries[s].worst), tone: s => summaries[s].worst },
+  ], rows) : el("div", "empty", TEXT.res_empty);
+}
+
+// Test sur le passé (diagnostic) : résumé, courbe, écarts appariés, biais connus.
+function renderBacktest() {
+  const bt = HISTORY.backtest;
+  const box = document.getElementById("backtest");
+  if (!bt) {
+    box.replaceChildren(el("div", "empty", TEXT.bt_empty));
+    return;
+  }
+  const series = ["per12", "sans_per", "spy"];
+  const head = el("div", "panel exp-box");
+  head.append(el("b", "", TEXT.bt_head(bt.id, bt.period)), el("span", "", TEXT.bt_status),
+              el("span", "", TEXT.bt_rules), el("span", "", TEXT.bt_trace(bt.git_sha)));
+  const summaryBox = el("div", "panel");
+  summaryBox.appendChild(summaryTable(bt.summaries, series));
+  const chart = el("div", "panel");
+  cumulativeChart(chart, bt.cumulative, series);
+  const diffs = Object.keys(bt.differences);
+  const diffBox = el("div", "panel");
+  diffBox.appendChild(table([
+    { label: TEXT.bt_pair, cls: "text", value: k => TEXT.bt_pairs[k] },
+    { label: TEXT.res_n, value: k => bt.differences[k].n },
+    { label: TEXT.bt_diff, value: k => bt.differences[k].mean == null ? "—" : pct(bt.differences[k].mean),
+      tone: k => bt.differences[k].mean },
+    { label: TEXT.bt_t, value: k => bt.differences[k].t == null ? "—" : bt.differences[k].t.toFixed(2) },
+  ], diffs));
+  const biases = el("div", "panel note");
+  biases.append(el("b", "", TEXT.bt_biases));
+  const list = el("ul");
+  TEXT.bt_bias_items.forEach(b => list.appendChild(el("li", "", b)));
+  biases.appendChild(list);
+  box.replaceChildren(head, summaryBox, chart, diffBox, biases, el("p", "note", TEXT.bt_note));
+}
+
 // Historique des résultats : séries quotidiennes après frais, cumul, avancement de l'expérience 001.
 function renderResults() {
   const res = HISTORY.results;
@@ -897,49 +1017,9 @@ function renderResults() {
     el("span", "", TEXT.exp_file(exp.file)));
 
   const fmt = v => v == null ? "—" : pct(v);
-  const rows = series.filter(s => res.summaries[s]?.n);
-  document.getElementById("results-summary").replaceChildren(rows.length ? table([
-    { label: TEXT.res_series, cls: "text", value: s => TEXT.series[s] },
-    { label: TEXT.res_n, value: s => res.summaries[s].n },
-    { label: TEXT.res_mean, value: s => fmt(res.summaries[s].mean), tone: s => res.summaries[s].mean },
-    { label: TEXT.res_total, value: s => fmt(res.summaries[s].total), tone: s => res.summaries[s].total },
-    { label: TEXT.res_annual, value: s => fmt(res.summaries[s].annualized) + (res.summaries[s].suspect ? " ⚠" : ""),
-      title: s => res.summaries[s].suspect ? TEXT.res_suspect : "" },
-    { label: TEXT.res_positive, value: s => fmt(res.summaries[s].positive_share) },
-    { label: TEXT.res_worst, value: s => fmt(res.summaries[s].worst), tone: s => res.summaries[s].worst },
-  ], rows) : el("div", "empty", TEXT.res_empty));
+  document.getElementById("results-summary").replaceChildren(summaryTable(res.summaries, series));
 
-  // Courbe des rendements cumulés (une ligne par série).
-  const chart = document.getElementById("results-chart");
-  const dates = [...new Set(series.flatMap(s => res.cumulative[s].map(([d]) => d)))].sort();
-  if (dates.length < 2) {
-    chart.replaceChildren(el("div", "empty", TEXT.res_chart_soon));
-  } else {
-    const W = 760, H = 230, L = 64, R = 20, T = 14, B = 28;
-    const values = series.flatMap(s => res.cumulative[s].map(([, v]) => v)).concat([0]);
-    const lo = Math.min(...values), hi = Math.max(...values), pad = (hi - lo) * 0.1 || 0.01;
-    const x = d => L + (W - L - R) * dates.indexOf(d) / (dates.length - 1);
-    const y = v => T + (H - T - B) * (hi + pad - v) / (hi - lo + 2 * pad);
-    const box = svg("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": TEXT.res_chart_aria });
-    for (let g = 0; g <= 4; g++) {
-      const v = lo - pad + (hi - lo + 2 * pad) * g / 4;
-      box.append(svg("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }),
-                 svg("text", { x: L - 8, y: y(v) + 4, class: "axis", "text-anchor": "end" }, pct(v)));
-    }
-    series.forEach(s => {
-      const pts = res.cumulative[s];
-      if (pts.length) box.append(svg("polyline", { points: pts.map(([d, v]) => `${x(d)},${y(v)}`).join(" "),
-                                                   class: "series", style: `stroke: var(--s-${s})` }));
-    });
-    [dates[0], dates[dates.length - 1]].forEach((d, i) => box.append(svg("text", { x: x(d), y: H - 8, class: "axis",
-      "text-anchor": i ? "end" : "start" }, d)));
-    const legend = el("div", "legend");
-    series.filter(s => res.cumulative[s].length).forEach(s => {
-      const item = el("span"); const swatch = el("i"); swatch.style.background = `var(--s-${s})`;
-      item.append(swatch, TEXT.series[s]); legend.appendChild(item);
-    });
-    chart.replaceChildren(legend, box);
-  }
+  cumulativeChart(document.getElementById("results-chart"), res.cumulative, series);
 
   const days = Object.keys(Object.assign({}, ...series.map(s => res.series[s]))).sort().reverse();
   document.getElementById("results-daily").replaceChildren(days.length ? table([
@@ -1103,6 +1183,7 @@ if (!SESSION_DATES.length) {
 }
 renderHistory();
 renderResults();
+renderBacktest();
 </script>
 </body>
 </html>

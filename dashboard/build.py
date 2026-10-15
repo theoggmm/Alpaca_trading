@@ -19,7 +19,7 @@ from core.screener import Criteria, liquid_universe
 from infra import sec
 from infra.cache import read_cached
 from infra.http import FetchError
-from infra.trace import ROOT, latest_per_session, load_runs, variant_of
+from infra.trace import ROOT, RUNS_DIR, latest_per_session, load_runs, variant_of
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template.html"
@@ -127,6 +127,23 @@ def _results(finals):
     }
 
 
+def _backtest(family):
+    """Dernier test sur le passé de la famille (diagnostic) : résumés, cumuls, écarts appariés. None s'il n'y en a pas."""
+    paths = sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json"))
+    if not paths:
+        return None
+    result = json.loads(paths[-1].read_text(encoding="utf-8"))
+    return {
+        "id": result["backtest_id"],
+        "git_sha": result["git_sha"],
+        "period": result["period"],
+        "summaries": result["summaries"],
+        "differences": result["differences"],
+        "cumulative": {name: cumulative({d["date"]: d[name] for d in result["days"] if d[name] is not None})
+                       for name in result["summaries"]},
+    }
+
+
 def build(family):
     runs = load_runs(family)
     _fill_domains(runs)
@@ -146,6 +163,7 @@ def build(family):
                          for variant in {variant_of(r) for r in runs}},
         "top_in_domain": top_in_domain_counts(finals),
         "results": _results(finals),
+        "backtest": _backtest(family),
     }
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))
