@@ -24,11 +24,24 @@ def _set(minute, symbol, minutes, factor):
     return minute
 
 
-def test_fichiers_des_versions_3_et_4():
-    assert Criteria.from_file(FAMILY_DIR / "criteres_per12_confirmation.json") == replace(
+def test_versions_3_et_4_archivees():
+    # Retirées le 15 octobre 2026 avant tout run (une liste par règle) ; gardées pour la trace.
+    assert Criteria.from_file(FAMILY_DIR / "archive" / "criteres_v3_per12_confirmation.json") == replace(
         PER12, version=3, confirmation_minutes=15)
-    assert Criteria.from_file(FAMILY_DIR / "criteres_per12_pas_au_sommet.json") == replace(
+    assert Criteria.from_file(FAMILY_DIR / "archive" / "criteres_v4_per12_pas_au_sommet.json") == replace(
         PER12, version=4, min_gap_below_high=Decimal("0.002"))
+
+
+def test_les_deux_regles_ensemble():
+    daily, minute = market()
+    both = replace(CRITERIA, min_gap_below_high=Decimal("0.002"), confirmation_minutes=15)
+    # DOWN1 : redescendu de son plus haut à 10 h 30 (pas au sommet), puis tenu jusqu'à 10 h 45 (confirmé).
+    minute = _set(minute, "DOWN1", [30], Decimal("1.0162"))
+    minute = _set(minute, "DOWN1", [59], Decimal("0.995"))
+    minute = _set(minute, "DOWN1", range(60, 75), Decimal("2.02"))
+    selection, funnel = screen(daily, minute, MARKET_OPEN, CONFIRM_TIME, both)
+    assert [i["symbol"] for i in selection] == ["DOWN1"]
+    assert funnel["pas_au_sommet"] == 1 and funnel["confirmation"] == 1
 
 
 def test_pas_au_sommet_exclut_le_titre_a_son_plus_haut():

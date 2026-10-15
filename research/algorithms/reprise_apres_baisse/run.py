@@ -22,11 +22,12 @@ from infra.trace import TraceError, committed_git_sha, load_runs, next_run_id, s
 
 FAMILY = "reprise_apres_baisse"
 HERE = Path(__file__).resolve().parent
-# Versions produites à chaque séance : variante -> fichier de critères. Les deux dernières (à partir du
-# 16 octobre 2026) ajoutent au PER < 12 une règle contre l'achat au sommet de la première heure.
-VARIANTS = {"sans_per": HERE / "criteres_sans_per.json", "per12": HERE / "criteres_per12.json",
-            "per12_confirmation": HERE / "criteres_per12_confirmation.json",
-            "per12_pas_au_sommet": HERE / "criteres_per12_pas_au_sommet.json"}
+# Deux versions produites à chaque séance : variante -> fichier de critères. Depuis le 16 octobre 2026,
+# les deux portent les règles « pas au sommet » et « confirmation » (décision à 10 h 45, achat à 11 h 00).
+VARIANTS = {"sans_per": HERE / "criteres_sans_per.json", "per12": HERE / "criteres_per12.json"}
+# Versions remplacées, pour la comparaison avant / après du test sur le passé.
+ARCHIVED = {"sans_per_v1": HERE / "archive" / "criteres_v1_sans_per.json",
+            "per12_v2": HERE / "archive" / "criteres_v2_per12.json"}
 NEW_YORK = ZoneInfo("America/New_York")
 # Offre gratuite Alpaca : les barres consolidées (SIP) des 15 dernières minutes ne sont pas servies.
 SIP_DELAY = timedelta(minutes=15)

@@ -2,10 +2,10 @@
 Test sur le passé (diagnostic) : rejoue chaque séance des N derniers mois avec les fonctions du screener
 quotidien et de la simulation (règle 8 : un seul module de logique).
 
-Pour chaque séance : chaque version de la liste (sans PER, PER < 12, + confirmation, + pas au sommet)
-calculée avec les seules données connues à sa décision (10 h 30, ou 10 h 45 avec confirmation ; New York),
-achat au premier échange 15 min après la décision, vente au dernier échange avant 15 h 30, 0,05 % de frais
-par ordre ; repère SPY acheté à 10 h 45 selon les mêmes règles.
+Pour chaque séance : les deux versions actuelles (sans PER, PER < 12) et les mêmes d'avant les règles contre
+l'achat au sommet (archive), chacune calculée avec les seules données connues à sa décision (10 h 45 avec
+confirmation, 10 h 30 sans ; New York), achat au premier échange 15 min après la décision, vente au dernier
+échange avant 15 h 30, 0,05 % de frais par ordre ; repère SPY acheté à l'heure d'achat des versions actuelles.
 
 Biais connus, écrits dans le résultat : univers = titres actifs aujourd'hui (les titres disparus depuis
 manquent, ce qui avantage le passé) ; indicateur ETF et domaines lus aujourd'hui.
@@ -30,12 +30,12 @@ from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
 from infra.trace import RUNS_DIR, TraceError, committed_git_sha
-from research.algorithms.reprise_apres_baisse.run import DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, VARIANTS
+from research.algorithms.reprise_apres_baisse.run import ARCHIVED, DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, VARIANTS
 
 BENCHMARK = "SPY"
 # Comparaisons rapportées (écarts quotidiens appariés) : (série, référence).
 COMPARISONS = [("per12", "sans_per"), ("per12", "spy"), ("sans_per", "spy"),
-               ("per12_confirmation", "per12"), ("per12_pas_au_sommet", "per12")]
+               ("per12", "per12_v2"), ("sans_per", "sans_per_v1")]
 TRADE_WINDOW = timedelta(minutes=5)
 EXIT_BEFORE_CLOSE = timedelta(minutes=30)
 EXIT_WINDOW = timedelta(minutes=30)
@@ -56,7 +56,8 @@ def _next_id():
 
 
 def run(months):
-    criteria = {variant: Criteria.from_file(path) for variant, path in VARIANTS.items()}
+    # Versions actuelles et versions d'avant (archive) : la comparaison montre l'effet des derniers changements.
+    criteria = {variant: Criteria.from_file(path) for variant, path in {**VARIANTS, **ARCHIVED}.items()}
     base = criteria["sans_per"]
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
@@ -95,8 +96,8 @@ def run(months):
                                  earnings_for=lambda s: sec.eps(s, "backtest"))[0]
                  for variant, c in criteria.items()}
         entries = {variant: decisions[variant] + SIP_DELAY for variant in criteria}
-        base_entry = first_hour_end + SIP_DELAY
-        entries["spy"] = base_entry
+        # SPY acheté à l'heure d'achat des versions actuelles.
+        entries["spy"] = min(entries[variant] for variant in VARIANTS)
         lists["spy"] = [{"symbol": BENCHMARK}]
         traded = sorted({i["symbol"] for items in lists.values() for i in items})
         frames = [cached(f"{day_key}/entry_bars_all_{at.astimezone(NEW_YORK):%H%M}",

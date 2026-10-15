@@ -20,7 +20,7 @@
     --chip: #e8eef5;
     --up-fill: #1f7f4f;
     --s-per12: #2b5d8c; --s-sans_per: #c0672a; --s-univers: #6b7785; --s-spy: #7a4fb0;
-    --s-per12_confirmation: #2e8b57; --s-per12_pas_au_sommet: #a07a12;
+    --s-per12_v2: #8fb3d6; --s-sans_per_v1: #e0b08a; --s-per12_confirmation: #2e8b57; --s-per12_pas_au_sommet: #a07a12;
     --down-fill: #b33b3b;
     --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -30,14 +30,14 @@
       --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
       --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
       --s-per12: #7fb0de; --s-sans_per: #f0a060; --s-univers: #93a0b0; --s-spy: #b794e6;
-      --s-per12_confirmation: #6fd3a0; --s-per12_pas_au_sommet: #e8c060;
+      --s-per12_v2: #3d6f9e; --s-sans_per_v1: #9a6a40; --s-per12_confirmation: #6fd3a0; --s-per12_pas_au_sommet: #e8c060;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
     --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
     --s-per12: #7fb0de; --s-sans_per: #f0a060; --s-univers: #93a0b0; --s-spy: #b794e6;
-      --s-per12_confirmation: #6fd3a0; --s-per12_pas_au_sommet: #e8c060;
+      --s-per12_v2: #3d6f9e; --s-sans_per_v1: #9a6a40; --s-per12_confirmation: #6fd3a0; --s-per12_pas_au_sommet: #e8c060;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
@@ -217,6 +217,7 @@
       <h2 data-t="versions_title"></h2>
       <p class="intro" data-t="intro_versions"></p>
       <div class="panel" id="versions"></div>
+      <div class="panel" id="top-rules"></div>
       <p class="note" data-t="versions_note"></p>
     </section>
 
@@ -295,9 +296,9 @@ const TEXT = {
     tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", method: "Méthodologie" },
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
-    variants: { per12: "PER < 12", per12_confirmation: "PER < 12 + confirmation", per12_pas_au_sommet: "PER < 12 + pas au sommet", sans_per: "Sans PER" }, not_judged: "non jugé",
+    variants: { per12: "PER < 12", sans_per: "Sans PER" }, not_judged: "non jugé",
     live_title: "En direct : tendance par domaine",
-    disclaimer: "Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
+    disclaimer: "Ces titres remplissent, une heure et quart après l'ouverture, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
     run_bubbles_title: "Tendance sur un mois par domaine, au moment du run (clôture de la veille)",
     selection_title: "Sélection", funnel_title: "Entonnoir des critères",
     funnel_note: "Chaque case donne le nombre de titres encore en lice après ce critère.",
@@ -333,8 +334,8 @@ const TEXT = {
           vol: "Volatilité annuelle", volume: "Volume moyen / jour", times: "Fois retenu", last: "Dernière fois" },
     live_cell: (p, t) => `dernier prix ${p} à ${t} (New York), 15 min de retard`,
     open_to_close: "Ouverture → clôture",
-    since_entry: t => `Depuis l'achat (${t})`, default_entry: "10 h 45",
-    entry_col_note: " « Depuis l'achat (10 h 45) » : dernier prix / prix d'achat de la simulation (premier échange à partir de 10 h 45, New York), avant frais ; après la clôture, jusqu'au dernier échange avant 16 h 00.",
+    since_entry: t => `Depuis l'achat (${t})`, default_entry: "11 h 00",
+    entry_col_note: " « Depuis l'achat » : dernier prix / prix d'achat de la simulation (premier échange à partir de 11 h 00, New York ; 10 h 45 jusqu'au 15 octobre), avant frais ; après la clôture, jusqu'au dernier échange avant 16 h 00.",
     final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t} (New York)`,
     final_col_note: " « Ouverture → clôture » : dernier échange avant 16 h 00 / premier prix de la séance, reconstitué depuis l'historique minute d'Alpaca.",
     final_state: d => `Fin de séance du ${d}`,
@@ -342,7 +343,7 @@ const TEXT = {
     session_of: d => `Séance du ${d}`,
     plan_title: "Ordres à passer : 10 000 $ sur la liste PER < 12",
     plan_live: t => `Prix du dernier échange connu (${t}, New York, 15 min de retard), mis à jour chaque minute`,
-    plan_entry: "Prix du premier échange à partir de 10 h 45 (New York), quand la liste était disponible",
+    plan_entry: "Prix du premier échange à l'heure d'achat (New York), quand la liste était disponible",
     plan_share: (a, n, s) => `${a} répartis entre ${n} titres : ${s} par titre`,
     plan_qty: "Actions à acheter", plan_price: "Prix à saisir", plan_cost: "Coût",
     plan_total: "Total investi", plan_left: "Reste non investi",
@@ -352,34 +353,38 @@ const TEXT = {
     sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais", sim_tax: "Après impôts : ce que tu gardes",
     sim_version: (v, n, t) => `${v} · ${n} titre(s) · achat à partir de ${t}`,
     sim_bench: s => `Repères du jour, mêmes règles, après frais : ${s}.`,
-    series: { per12: "PER < 12", per12_confirmation: "PER < 12 + confirmation", per12_pas_au_sommet: "PER < 12 + pas au sommet", sans_per: "Sans PER", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
+    series: { per12: "PER < 12", sans_per: "Sans PER", per12_v2: "PER < 12 (avant les règles)", sans_per_v1: "Sans PER (avant les règles)", per12_confirmation: "PER < 12 + confirmation seule", per12_pas_au_sommet: "PER < 12 + pas au sommet seul", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
     results_title: "Historique des résultats (simulation après frais)",
     exp_title: id => `Expérience ${id} : PER < 12 face à sans PER et à l'univers liquide`,
     exp_progress: (n, total, start, pending) => `${n} séance(s) comptée(s) sur ${total}, à partir du ${start} : une séance compte dès la clôture (tout est vendu à 15 h 30)${pending ? ` ; ${pending} encore provisoire(s), vérifiée(s) la nuit suivante avec les corrections d'Alpaca` : ""}. Le verdict n'est rendu qu'après la ${total}e séance.`,
     exp_rule: "Confirmée si l'écart quotidien moyen est positif et le t apparié ≥ 1,685 (critère fixé avant la fenêtre).",
+    exp_suspended: "Suspendue : les règles sont encore en réglage. L'expérience repartira de zéro (40 nouvelles séances) le jour où tu les figeras ; d'ici là, les résultats ci-dessous sont des observations, pas un test.",
     exp_file: f => `Pré-enregistrement : ${f}`,
     res_series: "Série", res_n: "Séances", res_mean: "Moyenne / séance", res_total: "Total cumulé",
     res_annual: "Annualisé", res_positive: "Séances positives", res_worst: "Pire séance", res_date: "Séance",
     res_suspect: "Plus de 100 % annualisé : résultat suspect (règle 6), à expliquer.",
     res_empty: "Pas encore de séance avec simulation après frais : la première sera celle du 15 octobre, ce soir.",
     res_chart_soon: "La courbe apparaît à partir de deux séances.", res_chart_aria: "Rendements cumulés par série",
-    res_note: "Chaque séance : achat à parts égales au premier échange à partir de 10 h 45, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste PER < 12 vide : 0 %.",
+    res_note: "Chaque séance : achat à parts égales au premier échange à partir de 11 h 00 (10 h 45 jusqu'au 15 octobre), vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste PER < 12 vide : 0 %.",
     res_skipped: s => `Non comptées (simulation antérieure aux frais et aux repères) : ${s}.`,
     res_provisional: "* : séance encore provisoire, recalculée le lendemain avec les corrections d'Alpaca.",
     res_recomputed: "† : séance antérieure aux frais et aux repères, simulation recalculée après coup avec les règles actuelles (diagnostic, hors expérience 001). Le 13 octobre, seule la liste sans PER existait.",
     sim_recomputed: d => `Séance antérieure aux frais : simulation recalculée le ${d} avec les règles actuelles (diagnostic).`,
     bt_title: "Test sur le passé (diagnostic)",
-    versions_title: "Les quatre versions de la liste",
-    intro_versions: "Chaque jour, le programme fait plusieurs listes avec des règles un peu différentes, pour mesurer ce que chaque règle apporte. Toutes partent des mêmes critères de base (actions calmes, en baisse sur un mois, qui remontent depuis deux jours et pendant la première heure). Le menu « Version » en haut de page choisit la liste affichée.",
-    versions_head: ["Version", "Règles en plus des critères de base", "Liste et achat (New York)", "Depuis"],
+    versions_title: "Les deux versions de la liste",
+    intro_versions: "Chaque jour, le programme fait deux listes. Elles partagent les mêmes critères de base (actions calmes, en baisse sur un mois, qui remontent depuis deux jours et pendant la première heure) et les deux règles contre l'achat au sommet ; seule la seconde ajoute le PER. Le menu « Version » en haut de page choisit la liste affichée.",
+    versions_head: ["Version", "Règles", "Liste et achat (New York)", "Depuis"],
     versions_rows: [
-      ["Sans PER (1)", "Aucune.", "10 h 45", "13 octobre 2026"],
-      ["PER < 12 (2)", "Prix / bénéfice annuel par action inférieur à 12 : des entreprises bon marché par rapport à ce qu'elles gagnent.", "10 h 45", "14 octobre 2026"],
-      ["PER < 12 + confirmation (3)", "Version 2, et 15 minutes après la première heure (à 10 h 45), le prix n'est pas redescendu sous celui de 10 h 30 : on vérifie que la hausse tient avant d'acheter.", "11 h 00", "16 octobre 2026"],
-      ["PER < 12 + pas au sommet (4)", "Version 2, et à 10 h 30 le prix est au moins 0,2 % sous le plus haut de la première heure : on n'achète pas une action à son meilleur prix de la matinée.", "10 h 45", "16 octobre 2026"],
+      ["Sans PER", "Critères de base + pas au sommet + confirmation.", "11 h 00", "16 octobre 2026 (critères de base seuls du 13 au 15 octobre, achat à 10 h 45)"],
+      ["PER < 12", "Pareil, + prix / bénéfice annuel par action inférieur à 12 : des entreprises bon marché par rapport à ce qu'elles gagnent.", "11 h 00", "16 octobre 2026 (sans les deux règles les 14 et 15 octobre, achat à 10 h 45)"],
     ],
-    versions_note: "Les versions 3 et 4 viennent de l'exemple d'AT&T le 15 octobre : retenue avec +1,52 % sur la première heure, elle a atteint son plus haut à 10 h 35 puis a baissé dès l'achat. Les deux règles sont jugées par l'expérience 002, écrite d'avance (onglet Méthodologie). Les ordres à passer restent calculés sur la version 2.",
-    intro_selection: "Voici les actions retenues aujourd'hui par le programme. Chaque ligne est une entreprise cotée en bourse aux États-Unis ; les colonnes disent comment son prix a bougé : sur un mois, les deux derniers jours, la première heure de bourse, depuis l'ouverture et depuis l'achat de 10 h 45. Clique sur un symbole pour voir son graphique.",
+    rules_head: ["Règle contre l'achat au sommet", "Ce qu'elle vérifie", "Exemple : AT&T le 15 octobre"],
+    rules_rows: [
+      ["Pas au sommet", "À 10 h 30, le prix est au moins 0,2 % sous le plus haut de la première heure : on n'achète pas une action à son meilleur prix de la matinée.", "À son plus haut à 10 h 30 (23,80 $) : exclue."],
+      ["Confirmation", "À 10 h 45, le prix n'est pas redescendu sous celui de 10 h 30 : on vérifie que la hausse tient. La liste sort donc à 11 h 00, et l'achat se fait à 11 h 00.", "23,80 $ à 10 h 30, 23,715 $ à 10 h 45 : exclue."],
+    ],
+    versions_note: "Les deux règles viennent de l'exemple d'AT&T le 15 octobre : retenue avec +1,52 % sur la première heure, elle a atteint son plus haut à 10 h 35 puis a baissé dès l'achat. Les règles sont encore en réglage : l'expérience 001 repartira de zéro quand elles seront figées.",
+    intro_selection: "Voici les actions retenues aujourd'hui par le programme. Chaque ligne est une entreprise cotée en bourse aux États-Unis ; les colonnes disent comment son prix a bougé : sur un mois, les deux derniers jours, la première heure de bourse, depuis l'ouverture et depuis l'achat de la simulation. Clique sur un symbole pour voir son graphique.",
     intro_plan: "Si tu veux acheter la liste PER < 12 avec 10 000 $, voici exactement quoi faire : pour chaque action, combien en acheter et à quel prix environ. On n'achète que des actions entières, donc il reste un peu d'argent non utilisé (ligne « Reste non investi »).",
     intro_run_bubbles: "Chaque bulle est un secteur de l'économie (technologie, finance, énergie…). Le chiffre est la variation moyenne du prix des actions de ce secteur sur le dernier mois, au moment où la liste a été faite. Vert : le secteur a monté ; rouge : il a baissé ; plus la bulle est grosse, plus le secteur compte d'actions.",
     intro_live: "Le même principe, mis à jour chaque minute pendant la séance. Chaque ligne est un secteur, chaque colonne une période : aujourd'hui, la première heure, 2 jours, 1 semaine, 1 mois. Clique sur un secteur pour voir toutes ses actions.",
@@ -387,7 +392,7 @@ const TEXT = {
     intro_funnel: "Le programme part de toutes les actions américaines et applique ses règles une par une. Chaque ligne montre combien d'actions restent après chaque étape : comme un entonnoir, on passe de plusieurs milliers d'actions à une vingtaine au plus.",
     intro_criteria: "Les règles exactes utilisées pour faire la liste de cette séance, dans l'ordre où elles sont appliquées.",
     intro_history: "Les actions qui reviennent le plus souvent dans les listes depuis le début, avec le nombre de jours où chacune a été retenue.",
-    intro_sim: "Que se serait-il passé si tu avais investi aujourd'hui ? Chaque tableau prend une liste, répartit la somme de la première colonne à parts égales entre ses actions, achète à 10 h 45 et revend à 15 h 30 (heure de New York). De gauche à droite, le résultat est de plus en plus réaliste : sans frais, avec frais, en actions entières, puis après impôts.",
+    intro_sim: "Que se serait-il passé si tu avais investi aujourd'hui ? Chaque tableau prend une liste, répartit la somme de la première colonne à parts égales entre ses actions, achète à 11 h 00 et revend à 15 h 30 (heure de New York). De gauche à droite, le résultat est de plus en plus réaliste : sans frais, avec frais, en actions entières, puis après impôts.",
     intro_results: "Le bilan jour après jour depuis le début. L'encadré suit le test officiel qui dira, après 40 séances, si le filtre PER aide vraiment.",
     intro_summary: "Le résumé de chaque liste, comparée au marché (« Univers liquide » : toutes les actions assez échangées ; « S&P 500 » : les 500 plus grandes entreprises américaines). Tout est après frais. La colonne la plus parlante est « Total cumulé » : ce qu'aurait rapporté le fait de suivre la liste chaque jour.",
     intro_chart: "Le même total cumulé, dessiné jour après jour. Chaque ligne est une liste ou un repère du marché ; plus elle finit haut, plus elle a rapporté. La ligne en pointillés est le zéro : au-dessus on gagne, en dessous on perd.",
@@ -397,10 +402,10 @@ const TEXT = {
     bt_empty: "Le test sur le passé n'a pas encore été lancé.",
     bt_head: (id, p) => `Test ${id} : ${p.sessions} séances, du ${p.start} au ${p.end}`,
     bt_status: "Statut : diagnostic. Ce test sert à repérer un problème, pas à décider : seule l'expérience 001, sur les séances à venir, tranchera.",
-    bt_rules: "Mêmes règles que la simulation : listes calculées à 10 h 30 (10 h 45 avec confirmation) avec les seules données connues à ce moment, achat au premier échange 15 minutes plus tard (10 h 45 ou 11 h 00), vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre, liste vide = 0 %.",
+    bt_rules: "Mêmes règles que la simulation : listes calculées avec les seules données connues à leur décision (10 h 45 avec les règles actuelles, 10 h 30 avant), achat au premier échange 15 minutes plus tard, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre, liste vide = 0 %.",
     bt_trace: sha => `Code utilisé : ${sha.slice(0, 7)}.`,
     bt_pair: "Comparaison", bt_diff: "Écart moyen / séance", bt_t: "t apparié",
-    bt_pairs: { per12_vs_sans_per: "PER < 12 − Sans PER", per12_vs_spy: "PER < 12 − SPY", sans_per_vs_spy: "Sans PER − SPY", per12_confirmation_vs_per12: "+ confirmation − PER < 12", per12_pas_au_sommet_vs_per12: "+ pas au sommet − PER < 12" },
+    bt_pairs: { per12_vs_sans_per: "PER < 12 − Sans PER", per12_vs_spy: "PER < 12 − SPY", sans_per_vs_spy: "Sans PER − SPY", per12_vs_per12_v2: "PER < 12 : avec les règles − avant", sans_per_vs_sans_per_v1: "Sans PER : avec les règles − avant", per12_confirmation_vs_per12: "+ confirmation − PER < 12", per12_pas_au_sommet_vs_per12: "+ pas au sommet − PER < 12" },
     bt_biases: "Limites connues de ce test :",
     bt_bias_items: [
       "Seuls les titres encore cotés aujourd'hui sont testés : ceux qui ont disparu depuis (faillites, rachats) manquent, ce qui rend le passé plus flatteur.",
@@ -417,9 +422,9 @@ const TEXT = {
     sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b} (New York)`,
     sim_no_list: "Pas encore de liste pour cette séance : la simulation commence quand elle est produite.",
     sim_missing: "Pas de simulation pour cette séance (fonction ajoutée le 15 octobre).",
-    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et quart après l'ouverture) et vendu au dernier échange 30 minutes avant la clôture. Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
+    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et demie après l'ouverture ; une heure et quart jusqu'au 15 octobre) et vendu au dernier échange 30 minutes avant la clôture. Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
-    no_run_yet: "La liste des 20 titres de cette séance sera produite à 16 h 45 (Paris), une heure et quart après l'ouverture.",
+    no_run_yet: "Les listes de cette séance seront produites vers 17 h 00 (Paris), une heure et demie après l'ouverture.",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
     final_definitive: "définitive",
     final_source: "dernier échange avant 16 h 00 (New York), historique minute toutes bourses",
@@ -473,9 +478,9 @@ const TEXT = {
     tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", method: "Methodology" },
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
-    variants: { per12: "P/E < 12", per12_confirmation: "P/E < 12 + confirmation", per12_pas_au_sommet: "P/E < 12 + not at the top", sans_per: "Without P/E" }, not_judged: "not judged",
+    variants: { per12: "P/E < 12", sans_per: "Without P/E" }, not_judged: "not judged",
     live_title: "Live: trend by sector",
-    disclaimer: "These stocks meet, one hour after the open, criteria set in advance. This is a list, not buy advice: the decision is yours.",
+    disclaimer: "These stocks meet, an hour and a quarter after the open, criteria set in advance. This is a list, not buy advice: the decision is yours.",
     run_bubbles_title: "One-month trend by sector at run time (previous close)",
     selection_title: "Selection", funnel_title: "Criteria funnel",
     funnel_note: "Each box gives the number of stocks still in the running after that criterion.",
@@ -511,8 +516,8 @@ const TEXT = {
           vol: "Annual volatility", volume: "Avg volume / day", times: "Times selected", last: "Last time" },
     live_cell: (p, t) => `last price ${p} at ${t} (New York), 15-min delay`,
     open_to_close: "Open → close",
-    since_entry: t => `Since purchase (${t})`, default_entry: "10:45 AM",
-    entry_col_note: " \"Since purchase (10:45)\": last price / the simulation's purchase price (first trade from 10:45 AM, New York), before costs; after the close, up to the last trade before 4:00 PM.",
+    since_entry: t => `Since purchase (${t})`, default_entry: "11:00 AM",
+    entry_col_note: " \"Since purchase\": last price / the simulation's purchase price (first trade from 11:00 AM, New York; 10:45 AM until October 15), before costs; after the close, up to the last trade before 4:00 PM.",
     final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t} (New York)`,
     final_col_note: " \"Open → close\": last trade before 4:00 PM / first price of the session, rebuilt from Alpaca's minute history.",
     final_state: d => `End of session ${d}`,
@@ -520,7 +525,7 @@ const TEXT = {
     session_of: d => `Session of ${d}`,
     plan_title: "Orders to place: $10,000 on the P/E < 12 list",
     plan_live: t => `Price of the latest known trade (${t}, New York, 15-min delay), updated every minute`,
-    plan_entry: "Price of the first trade from 10:45 AM (New York), when the list was available",
+    plan_entry: "Price of the first trade at buying time (New York), when the list was available",
     plan_share: (a, n, s) => `${a} split across ${n} stocks: ${s} per stock`,
     plan_qty: "Shares to buy", plan_price: "Price to enter", plan_cost: "Cost",
     plan_total: "Total invested", plan_left: "Left uninvested",
@@ -530,34 +535,38 @@ const TEXT = {
     sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs", sim_tax: "After tax: what you keep",
     sim_version: (v, n, t) => `${v} · ${n} stock(s) · bought from ${t}`,
     sim_bench: s => `Today's benchmarks, same rules, after costs: ${s}.`,
-    series: { per12: "P/E < 12", per12_confirmation: "P/E < 12 + confirmation", per12_pas_au_sommet: "P/E < 12 + not at the top", sans_per: "Without P/E", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
+    series: { per12: "P/E < 12", sans_per: "Without P/E", per12_v2: "P/E < 12 (before the rules)", sans_per_v1: "Without P/E (before the rules)", per12_confirmation: "P/E < 12 + confirmation only", per12_pas_au_sommet: "P/E < 12 + not at the top only", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
     results_title: "Results history (simulation after costs)",
     exp_title: id => `Experiment ${id}: P/E < 12 vs without P/E and the liquid universe`,
     exp_progress: (n, total, start, pending) => `${n} session(s) counted out of ${total}, from ${start}: a session counts as soon as the market closes (everything is sold at 3:30 PM)${pending ? `; ${pending} still provisional, checked the following night with Alpaca's corrections` : ""}. The verdict is only given after session ${total}.`,
     exp_rule: "Confirmed if the mean daily difference is positive and the paired t ≥ 1.685 (criterion set before the window).",
+    exp_suspended: "Suspended: the rules are still being tuned. The experiment will start over from zero (40 new sessions) on the day you freeze them; until then, the results below are observations, not a test.",
     exp_file: f => `Pre-registration: ${f}`,
     res_series: "Series", res_n: "Sessions", res_mean: "Mean / session", res_total: "Cumulative total",
     res_annual: "Annualized", res_positive: "Positive sessions", res_worst: "Worst session", res_date: "Session",
     res_suspect: "Over 100% annualized: suspicious result (rule 6), to be explained.",
     res_empty: "No session with an after-cost simulation yet: the first will be October 15, tonight.",
     res_chart_soon: "The chart appears from two sessions on.", res_chart_aria: "Cumulative returns by series",
-    res_note: "Each session: equal amounts bought at the first trade from 10:45 AM, sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty P/E < 12 list: 0%.",
+    res_note: "Each session: equal amounts bought at the first trade from 11:00 AM (10:45 AM until October 15), sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty P/E < 12 list: 0%.",
     res_skipped: s => `Not counted (simulation from before costs and benchmarks): ${s}.`,
     res_provisional: "*: session still provisional, recalculated the next day with Alpaca's corrections.",
     res_recomputed: "†: session from before costs and benchmarks; simulation recomputed afterwards with the current rules (diagnostic, outside experiment 001). On October 13, only the list without P/E existed.",
     sim_recomputed: d => `Session from before costs: simulation recomputed on ${d} with the current rules (diagnostic).`,
     bt_title: "Test on past data (diagnostic)",
-    versions_title: "The four versions of the list",
-    intro_versions: "Every day, the program makes several lists with slightly different rules, to measure what each rule adds. All start from the same base criteria (calm stocks, down over a month, rising for two days and during the first hour). The \"Version\" menu at the top of the page chooses which list is shown.",
-    versions_head: ["Version", "Rules on top of the base criteria", "List and purchase (New York)", "Since"],
+    versions_title: "The two versions of the list",
+    intro_versions: "Every day, the program makes two lists. They share the same base criteria (calm stocks, down over a month, rising for two days and during the first hour) and the two rules against buying at the top; only the second adds the P/E. The \"Version\" menu at the top of the page chooses which list is shown.",
+    versions_head: ["Version", "Rules", "List and purchase (New York)", "Since"],
     versions_rows: [
-      ["Without P/E (1)", "None.", "10:45 AM", "October 13, 2026"],
-      ["P/E < 12 (2)", "Price / yearly earnings per share below 12: companies that are cheap relative to what they earn.", "10:45 AM", "October 14, 2026"],
-      ["P/E < 12 + confirmation (3)", "Version 2, and 15 minutes after the first hour (at 10:45 AM), the price has not fallen back below its 10:30 AM price: we check that the rise holds before buying.", "11:00 AM", "October 16, 2026"],
-      ["P/E < 12 + not at the top (4)", "Version 2, and at 10:30 AM the price is at least 0.2% below the first-hour high: we do not buy a stock at its best price of the morning.", "10:45 AM", "October 16, 2026"],
+      ["Without P/E", "Base criteria + not at the top + confirmation.", "11:00 AM", "October 16, 2026 (base criteria only from October 13 to 15, bought at 10:45 AM)"],
+      ["P/E < 12", "Same, + price / yearly earnings per share below 12: companies that are cheap relative to what they earn.", "11:00 AM", "October 16, 2026 (without the two rules on October 14 and 15, bought at 10:45 AM)"],
     ],
-    versions_note: "Versions 3 and 4 come from the AT&T example on October 15: picked with +1.52% in the first hour, it peaked at 10:35 AM and fell right after the purchase. Both rules are judged by experiment 002, written in advance (Methodology tab). The orders to place are still computed on version 2.",
-    intro_selection: "These are the stocks the program picked today. Each row is a company listed on a US stock exchange; the columns show how its price moved: over a month, over the last two days, during the first hour of trading, since the open and since the 10:45 AM purchase. Click a symbol to see its chart.",
+    rules_head: ["Rule against buying at the top", "What it checks", "Example: AT&T on October 15"],
+    rules_rows: [
+      ["Not at the top", "At 10:30 AM, the price is at least 0.2% below the first-hour high: we do not buy a stock at its best price of the morning.", "At its high at 10:30 AM ($23.80): excluded."],
+      ["Confirmation", "At 10:45 AM, the price has not fallen back below its 10:30 AM price: we check that the rise holds. The list therefore comes out at 11:00 AM, and the purchase is made at 11:00 AM.", "$23.80 at 10:30 AM, $23.715 at 10:45 AM: excluded."],
+    ],
+    versions_note: "Both rules come from the AT&T example on October 15: picked with +1.52% in the first hour, it peaked at 10:35 AM and fell right after the purchase. The rules are still being tuned: experiment 001 will start over from zero once they are frozen.",
+    intro_selection: "These are the stocks the program picked today. Each row is a company listed on a US stock exchange; the columns show how its price moved: over a month, over the last two days, during the first hour of trading, since the open and since the simulation's purchase. Click a symbol to see its chart.",
     intro_plan: "If you want to buy the P/E < 12 list with $10,000, here is exactly what to do: for each stock, how many shares to buy and at roughly what price. Only whole shares can be bought, so a little money is left unused (\"Left uninvested\" row).",
     intro_run_bubbles: "Each bubble is a sector of the economy (technology, finance, energy…). The number is the average price change of that sector's stocks over the last month, at the time the list was made. Green: the sector went up; red: it went down; the bigger the bubble, the more stocks in the sector.",
     intro_live: "Same idea, updated every minute during the session. Each row is a sector, each column a period: today, the first hour, 2 days, 1 week, 1 month. Click a sector to see all its stocks.",
@@ -565,7 +574,7 @@ const TEXT = {
     intro_funnel: "The program starts from all US stocks and applies its rules one by one. Each row shows how many stocks remain after each step: like a funnel, it goes from several thousand stocks to twenty at most.",
     intro_criteria: "The exact rules used to build this session's list, in the order they are applied.",
     intro_history: "The stocks that come back most often in the lists since the start, with the number of days each one was picked.",
-    intro_sim: "What would have happened if you had invested today? Each table takes one list, splits the amount in the first column equally across its stocks, buys at 10:45 AM and sells at 3:30 PM (New York time). From left to right, the result gets more and more realistic: without costs, with costs, in whole shares, then after tax.",
+    intro_sim: "What would have happened if you had invested today? Each table takes one list, splits the amount in the first column equally across its stocks, buys at 11:00 AM and sells at 3:30 PM (New York time). From left to right, the result gets more and more realistic: without costs, with costs, in whole shares, then after tax.",
     intro_results: "The day-by-day record since the start. The box follows the official test that will say, after 40 sessions, whether the P/E filter really helps.",
     intro_summary: "A summary of each list, compared with the market (\"Liquid universe\": all sufficiently traded stocks; \"S&P 500\": the 500 largest US companies). Everything is after costs. The most telling column is \"Cumulative total\": what following the list every day would have earned.",
     intro_chart: "The same cumulative total, drawn day by day. Each line is a list or a market benchmark; the higher it ends, the more it earned. The dashed line is zero: above it you gain, below it you lose.",
@@ -575,10 +584,10 @@ const TEXT = {
     bt_empty: "The test on past data has not been run yet.",
     bt_head: (id, p) => `Test ${id}: ${p.sessions} sessions, from ${p.start} to ${p.end}`,
     bt_status: "Status: diagnostic. This test is meant to spot problems, not to decide: only experiment 001, on upcoming sessions, will settle it.",
-    bt_rules: "Same rules as the simulation: lists computed at 10:30 AM (10:45 AM with confirmation) using only data known at that time, bought at the first trade 15 minutes later (10:45 or 11:00 AM), sold at the last trade before 3:30 PM (New York), 0.05% cost per order, empty list = 0%.",
+    bt_rules: "Same rules as the simulation: lists computed using only data known at their decision time (10:45 AM with the current rules, 10:30 AM before), bought at the first trade 15 minutes later, sold at the last trade before 3:30 PM (New York), 0.05% cost per order, empty list = 0%.",
     bt_trace: sha => `Code used: ${sha.slice(0, 7)}.`,
     bt_pair: "Comparison", bt_diff: "Mean gap / session", bt_t: "Paired t",
-    bt_pairs: { per12_vs_sans_per: "P/E < 12 − Without P/E", per12_vs_spy: "P/E < 12 − SPY", sans_per_vs_spy: "Without P/E − SPY", per12_confirmation_vs_per12: "+ confirmation − P/E < 12", per12_pas_au_sommet_vs_per12: "+ not at the top − P/E < 12" },
+    bt_pairs: { per12_vs_sans_per: "P/E < 12 − Without P/E", per12_vs_spy: "P/E < 12 − SPY", sans_per_vs_spy: "Without P/E − SPY", per12_vs_per12_v2: "P/E < 12: with the rules − before", sans_per_vs_sans_per_v1: "Without P/E: with the rules − before", per12_confirmation_vs_per12: "+ confirmation − P/E < 12", per12_pas_au_sommet_vs_per12: "+ not at the top − P/E < 12" },
     bt_biases: "Known limits of this test:",
     bt_bias_items: [
       "Only stocks still listed today are tested: those that disappeared since (bankruptcies, buyouts) are missing, which makes the past look better.",
@@ -595,9 +604,9 @@ const TEXT = {
     sim_times: (a, b) => `bought from ${a}, sold before ${b} (New York)`,
     sim_no_list: "No list for this session yet: the simulation starts once it is produced.",
     sim_missing: "No simulation for this session (feature added on October 15).",
-    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a quarter after the open) and sold at the last trade 30 minutes before the close. Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
+    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a half after the open; an hour and a quarter until October 15) and sold at the last trade 30 minutes before the close. Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
-    no_run_yet: "This session's list of 20 stocks will be produced at 4:45 PM (Paris), an hour and a quarter after the open.",
+    no_run_yet: "This session's lists will be produced around 5:00 PM (Paris), an hour and a half after the open.",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
     final_definitive: "final",
     final_source: "last trade before 4:00 PM (New York), all-exchange minute history",
@@ -792,7 +801,7 @@ function renderRun(run) {
     title: r => !live[r.symbol] ? TEXT.no_live_price
       : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(live[r.symbol].price), nyTime(live[r.symbol].at)),
   };
-  // Variation depuis l'achat de la simulation (premier échange à partir de 10 h 45, New York).
+  // Variation depuis l'achat de la simulation (premier échange à l'heure d'achat de la version, New York).
   const sinceEntry = inSession ? LIVE.selection?.since_entry : FINALS[run.session_date]?.selection?.since_entry;
   // Ancien format (avant les versions avec confirmation) : une seule série pour toutes les listes.
   const flat = sinceEntry && Object.values(sinceEntry).some(v => v && v.change !== undefined);
@@ -1135,7 +1144,7 @@ function renderBacktest() {
     box.replaceChildren(el("div", "empty", TEXT.bt_empty));
     return;
   }
-  const series = [...VARIANTS, "spy"];
+  const series = Object.keys(bt.summaries);
   const head = el("div", "panel exp-box");
   head.append(el("b", "", TEXT.bt_head(bt.id, bt.period)), el("span", "", TEXT.bt_status),
               el("span", "", TEXT.bt_rules), el("span", "", TEXT.bt_trace(bt.git_sha)));
@@ -1168,7 +1177,7 @@ function renderResults() {
   const series = [...VARIANTS, "univers", "spy"];
   document.getElementById("experiment").replaceChildren(
     el("b", "", TEXT.exp_title(exp.id)),
-    el("span", "", TEXT.exp_progress(exp.observed, exp.sessions, exp.start, exp.pending)),
+    el("span", "", exp.suspended ? TEXT.exp_suspended : TEXT.exp_progress(exp.observed, exp.sessions, exp.start, exp.pending)),
     el("span", "", TEXT.exp_rule),
     el("span", "", TEXT.exp_file(exp.file)));
 
@@ -1292,7 +1301,7 @@ showTab(TEXT.tabs[VIEW.tab] ? VIEW.tab : "today");
 
 const picker = document.getElementById("run");
 // Deux versions de la liste chaque séance : critères d'origine, et critères + PER < 12.
-const VARIANTS = ["per12", "per12_confirmation", "per12_pas_au_sommet", "sans_per"];
+const VARIANTS = ["per12", "sans_per"];
 const variantOf = run => run.variant || (run.criteria.max_pe ? "per12" : "sans_per");
 let VARIANT = VARIANTS.includes(VIEW.variant) ? VIEW.variant : VARIANTS[0];
 // Liste la plus récente d'une séance pour une version (celle choisie par défaut).
@@ -1361,9 +1370,10 @@ if (!SESSION_DATES.length) {
 }
 renderHistory();
 renderResults();
-// Les quatre versions (onglet Détail de la sélection) : texte fixe, indépendant de la séance affichée.
-document.getElementById("versions").replaceChildren(table(
-  TEXT.versions_head.map((label, i) => ({ label, cls: "text wrap", value: row => row[i] })), TEXT.versions_rows));
+// Les versions de la liste (onglet Détail de la sélection) : texte fixe, indépendant de la séance affichée.
+const fixedTable = (head, rows) => table(head.map((label, i) => ({ label, cls: "text wrap", value: row => row[i] })), rows);
+document.getElementById("versions").replaceChildren(fixedTable(TEXT.versions_head, TEXT.versions_rows));
+document.getElementById("top-rules").replaceChildren(fixedTable(TEXT.rules_head, TEXT.rules_rows));
 renderBacktest();
 </script>
 </body>

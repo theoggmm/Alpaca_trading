@@ -61,3 +61,11 @@ avant l'heure d'achat (10 h 45) : aucun résultat de la séance du 15 n'a été 
 propriétaire, la fenêtre de jugement devient **les 40 séances à partir du 15 octobre 2026 inclus**.
 Rien d'autre ne change : mesure, hypothèses, seuils (moyenne > 0 et t apparié ≥ 1,685) et éléments
 figés restent ceux écrits ci-dessus. Les séances du 13 et 14 octobre restent des diagnostics.
+
+## Amendement 001.3 — suspendue le 15 octobre 2026 au soir (propriétaire)
+
+Le propriétaire règle encore les critères (règles contre l'achat au sommet ajoutées aux deux listes à
+partir du 16 octobre) : la fenêtre ne peut pas tenir ce qui est « figé » ci-dessus. L'expérience est
+**suspendue** ; aucune séance n'est comptée. Elle sera **pré-enregistrée à nouveau**, avec ses fichiers de
+critères et une nouvelle fenêtre de 40 séances, le jour où le propriétaire figera les règles (dans environ
+une semaine, selon lui). Seuils inchangés.

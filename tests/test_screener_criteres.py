@@ -12,9 +12,15 @@ FAMILY_DIR = Path(__file__).resolve().parents[1] / "research" / "algorithms" / "
 
 
 def test_fichiers_de_criteres_des_deux_versions():
-    assert Criteria.from_file(FAMILY_DIR / "criteres_sans_per.json") == CRITERIA
-    # Version 2 = critères de la version 1 + PER sur 12 mois glissants < 12.
-    assert Criteria.from_file(FAMILY_DIR / "criteres_per12.json") == replace(CRITERIA, version=2, max_pe=Decimal("12"))
+    # Versions d'avant les règles contre l'achat au sommet, archivées : 1 (sans PER) et 2 (+ PER < 12).
+    assert Criteria.from_file(FAMILY_DIR / "archive" / "criteres_v1_sans_per.json") == CRITERIA
+    assert Criteria.from_file(FAMILY_DIR / "archive" / "criteres_v2_per12.json") == replace(
+        CRITERIA, version=2, max_pe=Decimal("12"))
+    # Versions actuelles (16 octobre 2026) : les mêmes + « pas au sommet » (0,2 %) + confirmation (15 min).
+    rules = {"min_gap_below_high": Decimal("0.002"), "confirmation_minutes": 15}
+    assert Criteria.from_file(FAMILY_DIR / "criteres_sans_per.json") == replace(CRITERIA, version=5, **rules)
+    assert Criteria.from_file(FAMILY_DIR / "criteres_per12.json") == replace(
+        CRITERIA, version=6, max_pe=Decimal("12"), **rules)
 
 
 def test_seuls_les_titres_en_baisse_puis_en_hausse_sont_retenus():

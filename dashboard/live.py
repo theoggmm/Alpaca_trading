@@ -116,10 +116,14 @@ def _month_trend(daily, market_open, criteria, domains):
     return {"bubbles": bubbles, "unclassified": unclassified}
 
 
-def _trade_times(criteria, market_open, market_close):
-    """(achat, vente) : liste disponible (décision + 15 min) et 30 min avant la clôture."""
-    return (market_open + timedelta(minutes=criteria.first_hour_minutes) + FEED_DELAY,
-            market_close - EXIT_BEFORE_CLOSE)
+def _trade_times(criteria, market_open, market_close, runs=()):
+    """
+    (achat des repères, vente) : achat à l'heure d'achat la plus tôt des listes de la séance (leurs critères
+    enregistrés : 10 h 45 jusqu'au 15 octobre 2026, 11 h 00 ensuite), à défaut celle des critères actuels
+    (décision + 15 min) ; vente 30 min avant la clôture.
+    """
+    default = market_open + timedelta(minutes=criteria.decision_minutes) + FEED_DELAY
+    return (min((_entry_time(r, market_open) for r in runs), default=default), market_close - EXIT_BEFORE_CLOSE)
 
 
 def _entry_time(run, market_open):
@@ -127,11 +131,15 @@ def _entry_time(run, market_open):
     return market_open + timedelta(minutes=Criteria.from_json(run["criteria"], run["run_id"]).decision_minutes) + FEED_DELAY
 
 
-def _entry_times(family, market_open):
-    """Heures d'achat de la séance, de la plus tôt à la plus tard : une par délai de décision des fichiers de critères."""
+def _entry_times(family, market_open, runs=()):
+    """
+    Heures d'achat de la séance, de la plus tôt à la plus tard : celles des listes déjà produites (critères
+    enregistrés dans chaque run) et celles des fichiers de critères actuels (listes pas encore produites).
+    """
     minutes = {Criteria.from_file(path).decision_minutes
                for path in (ROOT / "research" / "algorithms" / family).glob("criteres_*.json")}
-    return sorted(market_open + timedelta(minutes=m) + FEED_DELAY for m in minutes)
+    return sorted({market_open + timedelta(minutes=m) + FEED_DELAY for m in minutes}
+                  | {_entry_time(r, market_open) for r in runs})
 
 
 def _entry_bars(alpaca, key, stage, traded, entry_times, now):
@@ -261,9 +269,9 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     closing = cached(f"{key}/{stage}_closing_bars",
                      lambda: alpaca.bars(tracked, "1Min", market_close - CLOSING_WINDOW, market_close))
     trades = last_session_prices(closing, market_close)
-    entry_time, exit_time = _trade_times(criteria, market_open, market_close)
+    entry_time, exit_time = _trade_times(criteria, market_open, market_close, runs)
     traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
-    entry_bars = _entry_bars(alpaca, key, stage, traded, _entry_times(family, market_open), market_close)
+    entry_bars = _entry_bars(alpaca, key, stage, traded, _entry_times(family, market_open, runs), market_close)
     exit_bars = cached(f"{key}/{stage}_exit_bars_all",
                        lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
@@ -340,9 +348,9 @@ def supplement(family):
         market_open, market_close = _times(session_date, open_time, close_time)
         daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
         runs, opens = _selection(family, key)
-        entry_time, exit_time = _trade_times(criteria, market_open, market_close)
+        entry_time, exit_time = _trade_times(criteria, market_open, market_close, runs)
         traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
-        entry_bars = _entry_bars(alpaca, key, "supplement", traded, _entry_times(family, market_open), market_close)
+        entry_bars = _entry_bars(alpaca, key, "supplement", traded, _entry_times(family, market_open, runs), market_close)
         exit_bars = cached(f"{key}/supplement_exit_bars_all",
                            lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
         closing = cached(f"{key}/supplement_closing_bars",

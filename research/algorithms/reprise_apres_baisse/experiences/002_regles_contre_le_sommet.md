@@ -53,3 +53,10 @@ et dans `core/screener.screen` les règles `min_gap_below_high` et `confirmation
 
 Ouvert par le propriétaire, explicitement, une seule fois, après la 40ᵉ séance. Verdict écrit dans
 `research/experiments/decisions.md` avec les chiffres et le `git_sha`.
+
+## Amendement 002.2 — retirée le 15 octobre 2026 au soir, avant toute donnée (propriétaire)
+
+Le propriétaire préfère deux listes (sans PER, PER < 12) portant toutes deux les deux règles, plutôt
+qu'une liste par règle. Les versions 3 et 4 n'ont produit aucun run ; leurs fichiers de critères sont
+archivés dans `../archive/`. Aucune séance n'est comptée. L'effet des règles est mesuré à titre de
+diagnostic par le test sur le passé (versions actuelles contre versions d'avant).

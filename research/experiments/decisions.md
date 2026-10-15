@@ -41,3 +41,19 @@ version 3 « PER < 12 + confirmation » (prix à 10 h 45 ≥ prix à 10 h 30, ac
 Fichier `research/algorithms/reprise_apres_baisse/experiences/002_regles_contre_le_sommet.md`, commité
 avant la première séance des versions 3 et 4 et avant leur test sur le passé. Fenêtre : 40 séances à
 partir du 16 octobre 2026.
+
+## T5 — 2026-10-15 — Deux listes, chacune avec les deux règles contre l'achat au sommet (propriétaire)
+
+Remplace T4 avant tout run des versions 3 et 4. À partir du 16 octobre : « sans PER » (version 5) et
+« PER < 12 » (version 6) = versions 1 et 2 + « pas au sommet » (à 10 h 30, au moins 0,2 % sous le plus haut
+de la première heure) + « confirmation » (à 10 h 45, prix ≥ prix de 10 h 30). Décision à 10 h 45, listes et
+achat à 11 h 00 (New York). Versions 1 à 4 archivées dans `research/algorithms/reprise_apres_baisse/archive/`.
+
+## 001.3 — 2026-10-15 — Expérience 001 suspendue
+
+Les règles sont en réglage pour environ une semaine (propriétaire) : l'expérience est suspendue et sera
+pré-enregistrée à nouveau, avec une nouvelle fenêtre, quand les règles seront figées.
+
+## 002.2 — 2026-10-15 — Expérience 002 retirée avant toute donnée
+
+Remplacée par T5 (les deux règles dans les deux listes). Aucun run des versions 3 et 4.

@@ -69,7 +69,7 @@
     <li><a href="#ordres">Les ordres à passer</a></li>
     <li><a href="#fin">Fin de séance : provisoire puis définitif</a></li>
     <li><a href="#resultats">L'historique des résultats</a></li>
-    <li><a href="#experience">Les expériences {{exp_id}} et 002</a></li>
+    <li><a href="#experience">L'expérience {{exp_id}}</a></li>
     <li><a href="#passe">Le test sur le passé</a></li>
     <li><a href="#limites">Limites connues</a></li>
     <li><a href="#trace">Traçabilité</a></li>
@@ -80,8 +80,8 @@
   <div class="panel" style="padding: 12px 16px"><div class="timeline">
     <b>9 h 30</b><span>Ouverture. Le suivi en direct démarre : bulles, cours, prix des titres.</span>
     <b>{{decision_time}}</b><span>Fin de la première heure : instant de décision. Seules les données connues à cet instant servent.</span>
-    <b>{{entry_time}}</b><span>Les prix de {{decision_time}} sont disponibles (offre gratuite : {{feed_delay}} min de retard). Trois listes sont produites (sans PER, PER &lt; {{max_pe}}, + pas au sommet) ; la simulation les « achète » au premier échange à partir de cette heure. C'est aussi l'heure de confirmation de la quatrième liste.</span>
-    <b>{{confirm_entry_time}}</b><span>Les prix de {{confirm_decision_time}} sont disponibles : la liste « + confirmation » est produite et « achetée ».</span>
+    <b>{{confirm_decision_time}}</b><span>Les prix de {{decision_time}} sont disponibles (offre gratuite : {{feed_delay}} min de retard). Règle « pas au sommet » vérifiée sur ces prix ; on attend {{confirm_decision_time}} pour la confirmation.</span>
+    <b>{{entry_time}}</b><span>Les prix de {{confirm_decision_time}} sont disponibles : règle « confirmation » vérifiée, les deux listes sont produites et la simulation les « achète » au premier échange à partir de cette heure.</span>
     <b>{{exit_time}}</b><span>La simulation « vend » au dernier échange avant cette heure ({{exit_before}} min avant la clôture).</span>
     <b>16 h 00</b><span>Clôture. L'état de fin de séance est figé, provisoire.</span>
     <b>+ {{definitive_after}} h</b><span>L'état de fin de séance est recalculé avec les corrections d'Alpaca, puis n'est plus jamais modifié.</span>
@@ -101,14 +101,9 @@
   <p class="plain">Autrement dit : les chiffres viennent du courtier et du régulateur, pas d'un site tiers.</p>
 
   <h2 id="selection"><span class="n">3</span>La sélection du jour</h2>
-  <p>Quatre listes chaque séance, qui partagent les mêmes critères de base :</p>
-  <ul>
-    <li><b>Sans PER</b> (version 1) : critères 1 à 10.</li>
-    <li><b>PER &lt; {{max_pe}}</b> (version 2) : + le critère 8 bis.</li>
-    <li><b>PER &lt; {{max_pe}} + confirmation</b> (version 3, depuis le 16 octobre 2026) : version 2 + le critère 8 quater.</li>
-    <li><b>PER &lt; {{max_pe}} + pas au sommet</b> (version 4, depuis le 16 octobre 2026) : version 2 + le critère 8 ter.</li>
-  </ul>
-  <p>Critères appliqués dans cet ordre, à {{decision_time}} ({{confirm_decision_time}} pour la version 3) :</p>
+  <p>Deux listes chaque séance, avec les mêmes critères, sauf le PER : <b>Sans PER</b> et <b>PER &lt; {{max_pe}}</b>.
+  Depuis le 16 octobre 2026, toutes deux portent les deux règles contre l'achat au sommet (8 ter et 8 quater).
+  Critères appliqués dans cet ordre ; la décision se fait en deux temps, à {{decision_time}} puis à {{confirm_decision_time}} :</p>
   <div class="panel"><table>
     <tr><th>#</th><th>Critère</th><th>Règle</th></tr>
     <tr><td>1</td><td>Univers</td><td>Actions cotées aux États-Unis, hors ETF et hors cryptomonnaies.</td></tr>
@@ -119,9 +114,9 @@
     <tr><td>6</td><td>En baisse sur un mois</td><td>Rendement sur {{month_sessions}} séances &lt; 0</td></tr>
     <tr><td>7</td><td>Reprise récente</td><td>En hausse à chacune des {{up_days}} dernières séances</td></tr>
     <tr><td>8</td><td>Hausse première heure</td><td>Dernier prix à {{decision_time}} &gt; premier prix de la séance</td></tr>
-    <tr><td>8 ter</td><td>Pas au sommet (version 4)</td><td>À {{decision_time}}, le prix est au moins {{gap_pct}} % sous le plus haut atteint pendant la première heure (plus haute clôture minute). Exemple : AT&amp;T le 15 octobre, à son plus haut à 10 h 30, aurait été exclu.</td></tr>
-    <tr><td>8 quater</td><td>Confirmation (version 3)</td><td>À {{confirm_decision_time}}, soit {{confirmation_minutes}} minutes après la première heure, le prix n'est pas redescendu sous celui de {{decision_time}}. AT&amp;T le 15 octobre (23,80 $ à 10 h 30, 23,715 $ à 10 h 45) aurait été exclu.</td></tr>
-    <tr><td>8 bis</td><td>PER (versions 2 à 4)</td><td>Prix / bénéfice par action des 12 derniers mois &lt; {{max_pe}}. Bénéfice négatif, nul, absent ou publié il y a plus de {{eps_staleness}} jours : titre exclu.</td></tr>
+    <tr><td>8 ter</td><td>Pas au sommet</td><td>À {{decision_time}}, le prix est au moins {{gap_pct}} % sous le plus haut atteint pendant la première heure (plus haute clôture minute). Exemple : AT&amp;T le 15 octobre, à son plus haut à 10 h 30, aurait été exclu.</td></tr>
+    <tr><td>8 quater</td><td>Confirmation</td><td>À {{confirm_decision_time}}, soit {{confirmation_minutes}} minutes après la première heure, le prix n'est pas redescendu sous celui de {{decision_time}}. AT&amp;T le 15 octobre (23,80 $ à 10 h 30, 23,715 $ à 10 h 45) aurait été exclu.</td></tr>
+    <tr><td>8 bis</td><td>PER (liste PER &lt; {{max_pe}} seulement)</td><td>Prix / bénéfice par action des 12 derniers mois &lt; {{max_pe}}. Bénéfice négatif, nul, absent ou publié il y a plus de {{eps_staleness}} jours : titre exclu.</td></tr>
     <tr><td>9</td><td>Classement</td><td>Du plus fort repli sur un mois au plus faible</td></tr>
     <tr><td>10</td><td>Diversification</td><td>Un titre n'entre que si sa corrélation sur {{correlation_sessions}} séances avec chaque titre déjà retenu est ≤ {{max_corr}} ; arrêt à {{count}} titres</td></tr>
   </table></div>
@@ -129,8 +124,8 @@
   L'entonnoir du tableau de bord montre combien de titres restent après chaque critère.</p>
   <p>Les règles 8 ter et 8 quater visent un même problème : acheter une action au moment exact où sa hausse du matin s'arrête.
   La 8 ter écarte l'action qui est à son plus haut quand on décide ; la 8 quater attend 15 minutes pour vérifier que la hausse tient.
-  Elles forment deux listes séparées pour mesurer l'effet de chacune.</p>
-  <p class="plain">Autrement dit : on cherche des actions solides et calmes, tombées sur le mois, qui repartent depuis deux jours et encore ce matin, sans prendre deux fois le même pari ; deux listes de plus testent comment éviter d'acheter au sommet.</p>
+  Elles s'appliquent aux deux listes. Elles sont encore en réglage : leurs seuils peuvent changer dans les prochains jours.</p>
+  <p class="plain">Autrement dit : on cherche des actions solides et calmes, tombées sur le mois, qui repartent depuis deux jours et encore ce matin, sans prendre deux fois le même pari , et sans acheter au sommet de la matinée.</p>
 
   <h2 id="datation"><span class="n">4</span>Pas de donnée du futur</h2>
   <p>Toute fonction qui calcule un critère reçoit l'instant de décision et, dès sa première ligne, retire
@@ -151,7 +146,7 @@
 
   <h2 id="simulation"><span class="n">6</span>La simulation</h2>
   <p>Pour chaque liste : {{amounts}} répartis à parts égales sur ses titres, achetés au premier échange à
-  partir de {{entry_time}} ({{confirm_entry_time}} pour la liste « + confirmation », produite 15 minutes plus tard), vendus au dernier échange avant {{exit_time}}. Gain suivi en direct, puis figé. Dans la sélection, la colonne « Depuis l'achat » donne pour chaque titre dernier prix / prix d'achat − 1.</p>
+  partir de {{entry_time}} (10 h 45 jusqu'au 15 octobre 2026), vendus au dernier échange avant {{exit_time}}. Gain suivi en direct, puis figé. Dans la sélection, la colonne « Depuis l'achat » donne pour chaque titre dernier prix / prix d'achat − 1.</p>
   <div class="panel"><table>
     <tr><th>Colonne</th><th>Calcul</th></tr>
     <tr><td>Brut</td><td>Moyenne des rendements des titres (prix de vente / prix d'achat − 1)</td></tr>
@@ -200,7 +195,7 @@
   La règle de jugement a été écrite et publiée sur GitHub <b>avant</b> les séances qui la jugent : elle ne
   peut pas être ajustée après coup pour donner la réponse voulue.</p>
   <ul>
-    <li><b>Fenêtre</b> : les {{exp_sessions}} séances à partir du {{exp_start}}.</li>
+    <li><b>Fenêtre</b> : {{exp_sessions}} séances, à partir du jour où les règles seront figées (date à fixer).</li>
     <li><b>Mesure</b> : rendement après frais de l'état définitif de chaque séance.</li>
     <li><b>Confirmée</b> si l'écart quotidien moyen est positif <b>et</b> assez régulier pour ne pas être dû au
       hasard (t apparié ≥ 1,685, seuil statistique usuel de 5 %). Sinon : non confirmée.</li>
@@ -208,16 +203,15 @@
     <li><b>Verdict</b> : ouvert par toi, une seule fois, après la dernière séance.</li>
   </ul>
   <p>Fichier : <code>{{exp_file}}</code> ; décisions datées dans <code>research/experiments/decisions.md</code>.</p>
-  <h3>Expérience 002 : éviter l'achat au sommet</h3>
-  <p>Même méthode, écrite et publiée le 15 octobre 2026 au soir, avant la première séance des versions 3 et 4 :
-  sur les 40 séances à partir du 16 octobre 2026, la liste « + confirmation » (H1) et la liste « + pas au sommet » (H2)
-  rapportent-elles plus que la liste PER &lt; {{max_pe}} ? Mêmes seuils (écart moyen positif et t apparié ≥ 1,685).
-  Fichier : <code>research/algorithms/reprise_apres_baisse/experiences/002_regles_contre_le_sommet.md</code>.</p>
-  <p class="plain">Autrement dit : dans environ deux mois, des règles écrites d'avance diront si le filtre PER aide vraiment, et si l'une des deux règles contre l'achat au sommet l'améliore.</p>
+  <p class="warn">Expérience suspendue (décision 001.3, 15 octobre 2026) : les règles sont encore en réglage.
+  Elle repartira de zéro, sur 40 nouvelles séances, le jour où le propriétaire figera les règles ; jusque-là,
+  l'historique des résultats est une observation, pas un test. L'expérience 002 (une liste par règle) a été
+  retirée avant toute donnée (décision 002.2) : les deux règles s'appliquent désormais aux deux listes.</p>
+  <p class="plain">Autrement dit : quand les règles seront figées, un test écrit d'avance dira, en environ deux mois, si le filtre PER aide vraiment.</p>
 
   <h2 id="passe"><span class="n">11</span>Le test sur le passé</h2>
   <p>Le même code rejoue les deux listes sur les derniers mois, séance par séance, avec les seules données
-  connues à {{decision_time}} chaque jour, les mêmes heures et les mêmes frais, comparées à SPY.</p>
+  connues à {{decision_time}} chaque jour, les mêmes heures et les mêmes frais, comparées à SPY. Il rejoue aussi les deux listes d'avant les règles contre l'achat au sommet : la comparaison montre ce que ces règles auraient changé.</p>
   <p class="warn">Biais connu : seuls les titres encore cotés aujourd'hui sont testés. Ceux qui ont disparu
   (faillites, rachats) manquent, ce qui rend le passé plus flatteur. Le test est donc un <b>diagnostic</b> :
   il peut révéler un problème, il ne décide rien.</p>
@@ -260,7 +254,7 @@
     <li><a href="#orders">Orders to place</a></li>
     <li><a href="#close">End of session: provisional, then final</a></li>
     <li><a href="#results">Results history</a></li>
-    <li><a href="#experiment">Experiments {{exp_id}} and 002</a></li>
+    <li><a href="#experiment">Experiment {{exp_id}}</a></li>
     <li><a href="#past">The test on past data</a></li>
     <li><a href="#limits">Known limits</a></li>
     <li><a href="#trace">Traceability</a></li>
@@ -271,8 +265,8 @@
   <div class="panel" style="padding: 12px 16px"><div class="timeline">
     <b>9:30 AM</b><span>Open. Live tracking starts: bubbles, prices.</span>
     <b>{{decision_time}}</b><span>End of the first hour: decision time. Only data known at that moment is used.</span>
-    <b>{{entry_time}}</b><span>{{decision_time}} prices become available (free plan: {{feed_delay}}-minute delay). Three lists are produced (without P/E, P/E &lt; {{max_pe}}, + not at the top); the simulation "buys" them at the first trade from this time. It is also the confirmation time of the fourth list.</span>
-    <b>{{confirm_entry_time}}</b><span>{{confirm_decision_time}} prices become available: the "+ confirmation" list is produced and "bought".</span>
+    <b>{{confirm_decision_time}}</b><span>{{decision_time}} prices become available (free plan: {{feed_delay}}-minute delay). The "not at the top" rule is checked on these prices; we wait until {{confirm_decision_time}} for the confirmation.</span>
+    <b>{{entry_time}}</b><span>{{confirm_decision_time}} prices become available: the "confirmation" rule is checked, both lists are produced and the simulation "buys" them at the first trade from this time.</span>
     <b>{{exit_time}}</b><span>The simulation "sells" at the last trade before this time ({{exit_before}} min before the close).</span>
     <b>4:00 PM</b><span>Close. The end-of-session state is frozen, provisional.</span>
     <b>+ {{definitive_after}} h</b><span>The end-of-session state is recomputed with Alpaca's corrections, then never changed again.</span>
@@ -291,14 +285,9 @@
   <p class="plain">In other words: the numbers come from the broker and the regulator, not from a third-party website.</p>
 
   <h2 id="selection"><span class="n">3</span>The daily selection</h2>
-  <p>Four lists every session, sharing the same base criteria:</p>
-  <ul>
-    <li><b>Without P/E</b> (version 1): criteria 1 to 10.</li>
-    <li><b>P/E &lt; {{max_pe}}</b> (version 2): + criterion 8b.</li>
-    <li><b>P/E &lt; {{max_pe}} + confirmation</b> (version 3, since October 16, 2026): version 2 + criterion 8d.</li>
-    <li><b>P/E &lt; {{max_pe}} + not at the top</b> (version 4, since October 16, 2026): version 2 + criterion 8c.</li>
-  </ul>
-  <p>Criteria applied in this order, at {{decision_time}} ({{confirm_decision_time}} for version 3):</p>
+  <p>Two lists every session, same criteria except P/E: <b>Without P/E</b> and <b>P/E &lt; {{max_pe}}</b>.
+  Since October 16, 2026, both carry the two rules against buying at the top (8c and 8d).
+  Criteria applied in this order; the decision is made in two steps, at {{decision_time}} then at {{confirm_decision_time}}:</p>
   <div class="panel"><table>
     <tr><th>#</th><th>Criterion</th><th>Rule</th></tr>
     <tr><td>1</td><td>Universe</td><td>US-listed stocks, excluding ETFs and crypto.</td></tr>
@@ -309,9 +298,9 @@
     <tr><td>6</td><td>Down over a month</td><td>Return over {{month_sessions}} sessions &lt; 0</td></tr>
     <tr><td>7</td><td>Recent rebound</td><td>Up in each of the last {{up_days}} sessions</td></tr>
     <tr><td>8</td><td>Up in the first hour</td><td>Last price at {{decision_time}} &gt; first price of the session</td></tr>
-    <tr><td>8c</td><td>Not at the top (version 4)</td><td>At {{decision_time}}, the price is at least {{gap_pct}}% below the highest price reached during the first hour (highest minute close). Example: AT&amp;T on October 15, at its high at 10:30 AM, would have been excluded.</td></tr>
-    <tr><td>8d</td><td>Confirmation (version 3)</td><td>At {{confirm_decision_time}}, {{confirmation_minutes}} minutes after the first hour, the price has not fallen back below its {{decision_time}} price. AT&amp;T on October 15 ($23.80 at 10:30 AM, $23.715 at 10:45 AM) would have been excluded.</td></tr>
-    <tr><td>8b</td><td>P/E (versions 2 to 4)</td><td>Price / trailing 12-month earnings per share &lt; {{max_pe}}. Negative, zero or missing earnings, or last filing older than {{eps_staleness}} days: stock excluded.</td></tr>
+    <tr><td>8c</td><td>Not at the top</td><td>At {{decision_time}}, the price is at least {{gap_pct}}% below the highest price reached during the first hour (highest minute close). Example: AT&amp;T on October 15, at its high at 10:30 AM, would have been excluded.</td></tr>
+    <tr><td>8d</td><td>Confirmation</td><td>At {{confirm_decision_time}}, {{confirmation_minutes}} minutes after the first hour, the price has not fallen back below its {{decision_time}} price. AT&amp;T on October 15 ($23.80 at 10:30 AM, $23.715 at 10:45 AM) would have been excluded.</td></tr>
+    <tr><td>8b</td><td>P/E (P/E &lt; {{max_pe}} list only)</td><td>Price / trailing 12-month earnings per share &lt; {{max_pe}}. Negative, zero or missing earnings, or last filing older than {{eps_staleness}} days: stock excluded.</td></tr>
     <tr><td>9</td><td>Ranking</td><td>From the largest one-month decline to the smallest</td></tr>
     <tr><td>10</td><td>Diversification</td><td>A stock is added only if its {{correlation_sessions}}-session correlation with every stock already selected is ≤ {{max_corr}}; stop at {{count}} stocks</td></tr>
   </table></div>
@@ -319,8 +308,8 @@
   The dashboard funnel shows how many stocks remain after each criterion.</p>
   <p>Rules 8c and 8d target the same problem: buying a stock at the exact moment its morning rise stops.
   8c leaves out a stock that is at its high when we decide; 8d waits 15 minutes to check that the rise holds.
-  They form two separate lists so that each one's effect can be measured.</p>
-  <p class="plain">In other words: we look for solid, calm stocks that fell over the month, have been rebounding for two days and again this morning, without making the same bet twice; two extra lists test how to avoid buying at the top.</p>
+  They apply to both lists. They are still being tuned: their thresholds may change in the coming days.</p>
+  <p class="plain">In other words: we look for solid, calm stocks that fell over the month, have been rebounding for two days and again this morning, without making the same bet twice, and without buying at the morning's top.</p>
 
   <h2 id="datation"><span class="n">4</span>No data from the future</h2>
   <p>Every function that computes a criterion receives the decision time and, on its very first line, drops any
@@ -340,7 +329,7 @@
 
   <h2 id="simulation"><span class="n">6</span>The simulation</h2>
   <p>For each list: {{amounts}} split equally across its stocks, bought at the first trade from {{entry_time}}
-  ({{confirm_entry_time}} for the "+ confirmation" list, produced 15 minutes later), sold at the last trade before {{exit_time}}. Gain tracked live, then frozen. In the selection, the "Since purchase" column gives each stock's last price / purchase price − 1.</p>
+  (10:45 AM until October 15, 2026), sold at the last trade before {{exit_time}}. Gain tracked live, then frozen. In the selection, the "Since purchase" column gives each stock's last price / purchase price − 1.</p>
   <div class="panel"><table>
     <tr><th>Column</th><th>Calculation</th></tr>
     <tr><td>Gross</td><td>Average of the stocks' returns (sell price / buy price − 1)</td></tr>
@@ -388,7 +377,7 @@
   The judging rule was written and published on GitHub <b>before</b> the sessions that judge it: it cannot be
   adjusted afterwards to give the desired answer.</p>
   <ul>
-    <li><b>Window</b>: the {{exp_sessions}} sessions from {{exp_start}}.</li>
+    <li><b>Window</b>: {{exp_sessions}} sessions, from the day the rules are frozen (date to be set).</li>
     <li><b>Measure</b>: after-cost return from each session's final state.</li>
     <li><b>Confirmed</b> if the mean daily gap is positive <b>and</b> steady enough not to be chance (paired t ≥ 1.685,
       the usual 5% statistical threshold). Otherwise: not confirmed.</li>
@@ -396,16 +385,15 @@
     <li><b>Verdict</b>: opened by you, once, after the last session.</li>
   </ul>
   <p>File: <code>{{exp_file}}</code>; dated decisions in <code>research/experiments/decisions.md</code>.</p>
-  <h3>Experiment 002: avoiding buying at the top</h3>
-  <p>Same method, written and published on the evening of October 15, 2026, before the first session of versions 3 and 4:
-  over the 40 sessions from October 16, 2026, do the "+ confirmation" list (H1) and the "+ not at the top" list (H2)
-  earn more than the P/E &lt; {{max_pe}} list? Same thresholds (positive mean gap and paired t ≥ 1.685).
-  File: <code>research/algorithms/reprise_apres_baisse/experiences/002_regles_contre_le_sommet.md</code>.</p>
-  <p class="plain">In other words: in about two months, rules written in advance will say whether the P/E filter really helps, and whether either rule against buying at the top improves it.</p>
+  <p class="warn">Experiment suspended (decision 001.3, October 15, 2026): the rules are still being tuned.
+  It will start over from zero, over 40 new sessions, on the day the owner freezes the rules; until then,
+  the results history is an observation, not a test. Experiment 002 (one list per rule) was withdrawn
+  before any data (decision 002.2): both rules now apply to both lists.</p>
+  <p class="plain">In other words: once the rules are frozen, a test written in advance will say, in about two months, whether the P/E filter really helps.</p>
 
   <h2 id="past"><span class="n">11</span>The test on past data</h2>
   <p>The same code replays both lists over recent months, session by session, using only data known at
-  {{decision_time}} each day, with the same times and costs, compared with SPY.</p>
+  {{decision_time}} each day, with the same times and costs, compared with SPY. It also replays the two lists from before the rules against buying at the top: the comparison shows what those rules would have changed.</p>
   <p class="warn">Known bias: only stocks still listed today are tested. Those that disappeared (bankruptcies,
   buyouts) are missing, which makes the past look better. The test is therefore a <b>diagnostic</b>: it can reveal
   a problem, it decides nothing.</p>

@@ -11,4 +11,5 @@ def test_pages_completes(tmp_path, monkeypatch):
     fr, en = (outputs[lang].read_text(encoding="utf-8") for lang in ("fr", "en"))
     assert "{{" not in fr and "{{" not in en
     assert '<article lang="en">' not in fr and '<article lang="fr">' not in en
-    assert "PER &lt; 12" in fr and "10 h 45" in fr and "Last close ≥ $5" in en and "0.05%" in en
+    assert "PER &lt; 12" in fr and "11 h 00" in fr and "Last close ≥ $5" in en and "0.05%" in en
+    assert "0,2 %" in fr and "11:00 AM" in en

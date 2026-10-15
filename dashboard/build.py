@@ -127,9 +127,10 @@ def _fill_month_trend(runs):
 
 
 # Expérience 001 (pré-enregistrée) : fenêtre de jugement.
-EXPERIMENT = {"id": "001", "start": "2026-10-15", "sessions": 40,
+# Suspendue (décision 001.3) : les règles sont en réglage ; repartira de zéro quand elles seront figées.
+EXPERIMENT = {"id": "001", "start": "2026-10-15", "sessions": 40, "suspended": True,
               "file": "research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md"}
-SERIES = ("per12", "per12_confirmation", "per12_pas_au_sommet", "sans_per", "univers", "spy")
+SERIES = ("per12", "sans_per", "univers", "spy")
 
 
 def _results(finals):

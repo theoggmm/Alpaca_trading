@@ -233,3 +233,17 @@ si l'une d'elles évite vraiment d'acheter au sommet.
 **Points signalés** : le suivi en direct s'est arrêté vers 15 h 45 (New York) faute d'avoir été relancé
 après une modification de la page ; relancé avant la clôture. WSE affiche un PER de 0,24 dans le test sur
 le passé : donnée SEC probablement erronée, à vérifier.
+
+## 2026-10-15 (nuit) — Deux listes, chacune avec les deux règles
+
+**Question posée** : le propriétaire règle encore ses critères (environ une semaine) ; il veut deux listes,
+sans PER et PER < 12, toutes deux avec les règles « pas au sommet » et « confirmation ».
+
+**Fait** : versions 5 (sans PER) et 6 (PER < 12) à partir du 16 octobre ; listes et achat à 11 h 00 (New York).
+Versions 1 à 4 archivées (`archive/`). Expérience 001 suspendue (001.3), expérience 002 retirée avant toute
+donnée (002.2), décision T5. Repères achetés à l'heure d'achat des listes du jour. Test sur le passé : listes
+actuelles contre listes d'avant les règles. Tâche planifiée : un seul lancement vers 17 h 02 (Paris).
+Travail fait dans une copie séparée du dépôt, intégré après l'état de fin de séance du 15 octobre.
+
+Autrement dit : dès demain, tes deux listes évitent d'acheter au sommet ; le test officiel attendra que tu
+aies fini tes réglages.
