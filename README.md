@@ -47,7 +47,7 @@ Coller ensuite les clés **Paper Trading** (tableau de bord Alpaca → Paper →
 
 Lancer le run du jour (au plus tôt 1 h 15 après l'ouverture de New York), régénérer le tableau de bord,
 puis commiter l'historique du jour et l'envoyer sur GitHub (tests verts et `git pull --ff-only` avant).
-Deux listes par séance (sans PER, PER < 12), avec quatre règles de prudence (« marché en bonne forme »,
+Deux listes par séance (sans PER, PER < 25), avec quatre règles de prudence (« marché en bonne forme »,
 « pas en chute », « pas au sommet », « confirmation ») :
 décision à 10 h 45 (New York), listes disponibles à 11 h 00. La tâche planifiée lance le script vers
 17 h 02 (Paris) :
@@ -116,7 +116,7 @@ les deux, figé ensuite et gardé dans l'état de fin de séance. Trois colonnes
 d'actions arrondi à l'unité inférieure, reste non investi). Repères, mêmes règles : **univers liquide**
 (tous les titres liquides du jour) et **SPY** (S&P 500). Avant impôts.
 
-**Ordres à passer.** 10 000 $ répartis sur la liste PER < 12 en actions entières : symbole, nombre
+**Ordres à passer.** 10 000 $ répartis sur la liste avec PER en actions entières : symbole, nombre
 d'actions, prix à saisir, coût, reste. En direct pendant la séance, puis figé sur le prix d'achat de 10 h 45.
 Les ordres se passent à la main (`trade.py buy-list`, ci-dessous) : aucun programme n'en passe seul.
 
@@ -125,7 +125,7 @@ l'onglet Archive (résultats, courbe, listes) et dans un groupe « Archive » du
 les comptages actuels partent du 16 octobre (`RULES_SINCE` de `dashboard/build.py`). Rien n'est effacé.
 
 **Historique des résultats.** Chaque séance, rendement après frais de chaque version et des deux repères
-(liste PER < 12 vide = 0 %) : résumé (séances, moyenne, total cumulé, annualisé — signalé ⚠ au-delà de
+(liste vide = 0 %) : résumé (séances, moyenne, total cumulé, annualisé — signalé ⚠ au-delà de
 100 %, séances positives, pire séance), courbe cumulée et tableau par séance. Calculs par
 `core/performance_metrics.py` uniquement. L'encadré suit l'**expérience 001**, pré-enregistrée
 (`research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md`) : 40 séances à partir
@@ -194,7 +194,7 @@ Toutes les commandes s'écrivent sous la forme :
 | `close AAPL` | Clôturer une position au marché |
 | `close-all` | Clôturer toutes les positions et annuler les ordres |
 
-| `buy-list --amount 100000` | Acheter la liste du jour (version PER < 12 par défaut), montant réparti à parts égales, ordres au marché en dollars, après confirmation |
+| `buy-list --amount 100000` | Acheter la liste du jour (version avec PER par défaut), montant réparti à parts égales, ordres au marché en dollars, après confirmation |
 | `buy-list --amount 100000 --variant sans_per` | Même chose avec la liste sans PER |
 | `sell-list` | Vendre au marché les positions des titres de la liste du jour (à lancer vers 15 h 30, New York), après confirmation |
 

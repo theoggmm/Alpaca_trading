@@ -64,3 +64,9 @@ Avant le premier run des versions 5 et 6 (16 octobre) : « marché en bonne form
 au-dessus de sa moyenne des 50 dernières séances ; sinon aucune liste ce jour-là) et « pas en chute » (à
 10 h 30, prix au plus 5 % sous la moyenne des 50 dernières clôtures). Choisies après examen des séances du
 13 au 15 octobre (diagnostic, 68 titres) : à vérifier par le test sur le passé.
+
+## T7 — 2026-10-15 — Seuil de PER relevé de 12 à 25 (propriétaire)
+
+Avant le premier run de la version 6 (16 octobre) : la liste avec PER retient les titres dont le PER sur
+12 mois glissants est inférieur à 25 (et non plus 12). Fichier `criteres_per12.json` (nom et variante `per12`
+gardés pour la continuité de l'historique). Les séances archivées (14 et 15 octobre) restent à 12.

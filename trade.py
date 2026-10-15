@@ -195,7 +195,7 @@ def cmd_close(ctx, args):
 
 
 # --------------------------------------------------------------------------- #
-# Ordres sur la liste du screener (une version : sans PER ou PER < 12)
+# Ordres sur la liste du screener (une version : sans PER ou avec PER)
 # --------------------------------------------------------------------------- #
 
 def _session_list(variant, session):
@@ -309,7 +309,7 @@ def build_parser():
 
     with_list = argparse.ArgumentParser(add_help=False)
     with_list.add_argument("--variant", default="per12", choices=["per12", "sans_per"],
-                           help="Version de la liste (défaut : per12, PER < 12)")
+                           help="Version de la liste (défaut : per12, la liste avec PER)")
     with_list.add_argument("--session", help="Séance AAAA-MM-JJ (défaut : aujourd'hui, heure de New York)")
     with_list.add_argument("--dry-run", action="store_true", help="Montrer le plan sans rien envoyer")
     p = sub.add_parser("buy-list", parents=[with_list, with_confirm],

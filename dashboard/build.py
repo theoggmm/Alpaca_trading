@@ -189,6 +189,7 @@ def _backtests(family):
         "id": result["backtest_id"],
         "git_sha": result["git_sha"],
         "period": result["period"],
+        "max_pe": result["criteria"].get("per12", {}).get("max_pe"),
         "summaries": result["summaries"],
         "differences": result["differences"],
         "cumulative": {name: cumulative({d["date"]: d[name] for d in result["days"] if d[name] is not None})
@@ -246,6 +247,7 @@ def _month_tests(family):
         empty_month = not computed
         spy = sum(Decimal(str(d["spy"])) for d in result["days"] if d["spy"] is not None)
         tests.append({"id": result["backtest_id"], "git_sha": result["git_sha"], "period": result["period"],
+                      "max_pe": result["criteria"].get("per12", {}).get("max_pe"),
                       "amounts": {str(a): {"lists": lists_for(result, a),
                                            "spy_net": str((a * spy).quantize(Decimal("0.01")))}
                                   for a in MONTH_TEST_AMOUNTS if empty_month or str(a) in computed}})

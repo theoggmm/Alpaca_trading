@@ -329,7 +329,7 @@ const TEXT = {
     tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", months: "Tests d'un mois", archive: "Archive", method: "Méthodologie" },
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
-    variants: { per12: "PER < 12", sans_per: "Sans PER" }, not_judged: "non jugé",
+    variants: { per12: "PER < 25", sans_per: "Sans PER" }, not_judged: "non jugé",
     live_title: "En direct : tendance par domaine",
     disclaimer: "Ces titres remplissent, une heure et quart après l'ouverture, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
     run_bubbles_title: "Tendance sur un mois par domaine, au moment du run (clôture de la veille)",
@@ -374,21 +374,21 @@ const TEXT = {
     final_state: d => `Fin de séance du ${d}`,
     opt_live: "en direct", opt_provisional: "fin de séance (provisoire)", opt_final: "fin de séance",
     session_of: d => `Séance du ${d}`,
-    plan_title: "Ordres à passer : 10 000 $ sur la liste PER < 12",
+    plan_title: "Ordres à passer : 10 000 $ sur la liste avec PER",
     plan_live: t => `Prix du dernier échange connu (${t}, New York, 15 min de retard), mis à jour chaque minute`,
     plan_entry: "Prix du premier échange à l'heure d'achat (New York), quand la liste était disponible",
     plan_share: (a, n, s) => `${a} répartis entre ${n} titres : ${s} par titre`,
     plan_qty: "Actions à acheter", plan_price: "Prix à saisir", plan_cost: "Coût",
     plan_total: "Total investi", plan_left: "Reste non investi",
-    plan_no_list: "La liste PER < 12 de cette séance n'existe pas encore : elle est produite à 16 h 45 (Paris).",
+    plan_no_list: "La liste avec PER de cette séance n'existe pas encore : elle est produite vers 17 h 00 (Paris).",
     plan_note: "Nombre entier d'actions, arrondi vers le bas pour ne jamais dépasser la part de chaque titre ; le reste n'est pas investi. Le prix à saisir est le dernier prix connu : comme limite d'un ordre à cours limité, l'ordre peut ne pas s'exécuter si le prix monte. Pour investir exactement le montant (fractions d'action), utilise buy-list.",
     sim_title: "Simulation : gain ou perte du jour selon le montant investi",
     sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais", sim_tax: "Après impôts : ce que tu gardes",
     sim_version: (v, n, t) => `${v} · ${n} titre(s) · achat à partir de ${t}`,
     sim_bench: s => `Repères du jour, mêmes règles, après frais : ${s}.`,
-    series: { per12: "PER < 12", sans_per: "Sans PER", per12_v2: "PER < 12 (avant les règles)", sans_per_v1: "Sans PER (avant les règles)", per12_confirmation: "PER < 12 + confirmation seule", per12_pas_au_sommet: "PER < 12 + pas au sommet seul", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
+    series: { per12: "PER < 25", sans_per: "Sans PER", per12_v2: "PER < 12 (avant les règles)", sans_per_v1: "Sans PER (avant les règles)", per12_confirmation: "PER < 12 + confirmation seule", per12_pas_au_sommet: "PER < 12 + pas au sommet seul", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
     results_title: "Historique des résultats (simulation après frais)",
-    exp_title: id => `Expérience ${id} : PER < 12 face à sans PER et à l'univers liquide`,
+    exp_title: id => `Expérience ${id} : liste avec PER face à sans PER et à l'univers liquide`,
     exp_progress: (n, total, start, pending) => `${n} séance(s) comptée(s) sur ${total}, à partir du ${start} : une séance compte dès la clôture (tout est vendu à 15 h 30)${pending ? ` ; ${pending} encore provisoire(s), vérifiée(s) la nuit suivante avec les corrections d'Alpaca` : ""}. Le verdict n'est rendu qu'après la ${total}e séance.`,
     exp_rule: "Confirmée si l'écart quotidien moyen est positif et le t apparié ≥ 1,685 (critère fixé avant la fenêtre).",
     exp_suspended: "Suspendue : les règles sont encore en réglage. L'expérience repartira de zéro (40 nouvelles séances) le jour où tu les figeras ; d'ici là, les résultats ci-dessous sont des observations, pas un test.",
@@ -398,7 +398,7 @@ const TEXT = {
     res_suspect: "Plus de 100 % annualisé : résultat suspect (règle 6), à expliquer.",
     res_empty: "Pas encore de séance avec les règles actuelles : la première sera celle du 16 octobre, après la clôture. Les séances précédentes sont dans l'onglet Archive.",
     res_chart_soon: "La courbe apparaît à partir de deux séances.", res_chart_aria: "Rendements cumulés par série",
-    res_note: "Chaque séance : achat à parts égales au premier échange à partir de 11 h 00 (10 h 45 jusqu'au 15 octobre), vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste PER < 12 vide : 0 %.",
+    res_note: "Chaque séance : achat à parts égales au premier échange à partir de 11 h 00 (10 h 45 jusqu'au 15 octobre), vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste vide : 0 %.",
     res_skipped: s => `Non comptées (simulation antérieure aux frais et aux repères) : ${s}.`,
     res_provisional: "* : séance encore provisoire, recalculée le lendemain avec les corrections d'Alpaca.",
     res_recomputed: "† : séance antérieure aux frais et aux repères, simulation recalculée après coup avec les règles actuelles (diagnostic, hors expérience 001). Le 13 octobre, seule la liste sans PER existait.",
@@ -420,13 +420,13 @@ const TEXT = {
     intro_archive: (dates, since) => `Les séances du ${dates.join(", ")} ont été faites avec des règles remplacées depuis (sans « pas au sommet » ni « confirmation », achat à 10 h 45). Elles sont rangées ici pour ne pas se mélanger aux résultats actuels, qui repartent de zéro le ${since}. Rien n'a été effacé : chaque séance reste aussi consultable dans le menu « Séance », groupe « Archive ».`,
     archive_lists_title: "Listes archivées",
     intro_archive_lists: "Les actions retenues chaque séance archivée, par version de la liste.",
-    archive_n: "Titres", archive_symbols: "Symboles", opt_archive: "Archive (anciennes règles)",
+    archive_n: "Titres", archive_symbols: "Symboles", series_old_per12: "PER < 12", pe_label: x => `PER < ${Number(x)}`, opt_archive: "Archive (anciennes règles)",
     versions_title: "Les deux versions de la liste",
     intro_versions: "Chaque jour, le programme fait deux listes. Elles partagent les mêmes critères de base (actions calmes, en baisse sur un mois, qui remontent depuis deux jours et pendant la première heure) et quatre règles de prudence (deux de tendance, deux contre l'achat au sommet) ; seule la seconde ajoute le PER. Le menu « Version » en haut de page choisit la liste affichée.",
     versions_head: ["Version", "Règles", "Liste et achat (New York)", "Depuis"],
     versions_rows: [
       ["Sans PER", "Critères de base + marché en bonne forme + pas en chute + pas au sommet + confirmation.", "11 h 00", "16 octobre 2026 (critères de base seuls du 13 au 15 octobre, achat à 10 h 45)"],
-      ["PER < 12", "Pareil, + prix / bénéfice annuel par action inférieur à 12 : des entreprises bon marché par rapport à ce qu'elles gagnent.", "11 h 00", "16 octobre 2026 (sans les deux règles les 14 et 15 octobre, achat à 10 h 45)"],
+      ["PER < 25", "Pareil, + prix / bénéfice annuel par action inférieur à 25 : des entreprises pas trop chères par rapport à ce qu'elles gagnent.", "11 h 00", "16 octobre 2026 (PER < 12 sans les règles de prudence les 14 et 15 octobre, achat à 10 h 45)"],
     ],
     rules_head: ["Règle de prudence", "Ce qu'elle vérifie", "Exemple"],
     rules_rows: [
@@ -437,7 +437,7 @@ const TEXT = {
     ],
     versions_note: "Les règles « pas au sommet » et « confirmation » viennent de l'exemple d'AT&T le 15 octobre : retenue avec +1,52 % sur la première heure, elle a atteint son plus haut à 10 h 35 puis a baissé dès l'achat. Les règles de tendance viennent de l'examen des trois premières séances : les actions les plus loin sous leur moyenne ont fait le moins bien. Les règles sont encore en réglage : l'expérience 001 repartira de zéro quand elles seront figées.",
     intro_selection: "Voici les actions retenues aujourd'hui par le programme. Chaque ligne est une entreprise cotée en bourse aux États-Unis ; les colonnes disent comment son prix a bougé : sur un mois, les deux derniers jours, la première heure de bourse, depuis l'ouverture et depuis l'achat de la simulation. Clique sur un symbole pour voir son graphique.",
-    intro_plan: "Si tu veux acheter la liste PER < 12 avec 10 000 $, voici exactement quoi faire : pour chaque action, combien en acheter et à quel prix environ. On n'achète que des actions entières, donc il reste un peu d'argent non utilisé (ligne « Reste non investi »).",
+    intro_plan: "Si tu veux acheter la liste avec PER (PER < 25) avec 10 000 $, voici exactement quoi faire : pour chaque action, combien en acheter et à quel prix environ. On n'achète que des actions entières, donc il reste un peu d'argent non utilisé (ligne « Reste non investi »).",
     intro_run_bubbles: "Chaque bulle est un secteur de l'économie (technologie, finance, énergie…). Le chiffre est la variation moyenne du prix des actions de ce secteur sur le dernier mois, au moment où la liste a été faite. Vert : le secteur a monté ; rouge : il a baissé ; plus la bulle est grosse, plus le secteur compte d'actions.",
     intro_live: "Le même principe, mis à jour chaque minute pendant la séance. Chaque ligne est un secteur, chaque colonne une période : aujourd'hui, la première heure, 2 jours, 1 semaine, 1 mois. Clique sur un secteur pour voir toutes ses actions.",
     intro_sector: "Toutes les actions de ce secteur. Chaque colonne en % montre de combien le prix a varié sur la période ; clique sur un titre de colonne pour trier. Les deux dernières colonnes comptent combien de fois l'action a été dans la liste du jour, et combien de fois elle a fait partie des 20 meilleures de son secteur.",
@@ -458,7 +458,7 @@ const TEXT = {
     bt_rules: "Mêmes règles que la simulation : listes calculées avec les seules données connues à leur décision (10 h 45 avec les règles actuelles, 10 h 30 avant), achat au premier échange 15 minutes plus tard, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre, liste vide = 0 %.",
     bt_trace: sha => `Code utilisé : ${sha.slice(0, 7)}.`,
     bt_pair: "Comparaison", bt_diff: "Écart moyen / séance", bt_t: "t apparié",
-    bt_pairs: { per12_vs_sans_per: "PER < 12 − Sans PER", per12_vs_spy: "PER < 12 − SPY", sans_per_vs_spy: "Sans PER − SPY", per12_vs_per12_v2: "PER < 12 : avec les règles − avant", sans_per_vs_sans_per_v1: "Sans PER : avec les règles − avant", per12_confirmation_vs_per12: "+ confirmation − PER < 12", per12_pas_au_sommet_vs_per12: "+ pas au sommet − PER < 12" },
+    bt_pairs: { per12_vs_sans_per: "PER < 25 − Sans PER", per12_vs_spy: "PER < 25 − SPY", sans_per_vs_spy: "Sans PER − SPY", per12_vs_per12_v2: "Liste avec PER : règles actuelles − avant", sans_per_vs_sans_per_v1: "Sans PER : avec les règles − avant", per12_confirmation_vs_per12: "+ confirmation − PER < 12", per12_pas_au_sommet_vs_per12: "+ pas au sommet − PER < 12" },
     bt_biases: "Limites connues de ce test :",
     bt_bias_items: [
       "Seuls les titres encore cotés aujourd'hui sont testés : ceux qui ont disparu depuis (faillites, rachats) manquent, ce qui rend le passé plus flatteur.",
@@ -535,7 +535,7 @@ const TEXT = {
     tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", months: "Monthly tests", archive: "Archive", method: "Methodology" },
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
-    variants: { per12: "P/E < 12", sans_per: "Without P/E" }, not_judged: "not judged",
+    variants: { per12: "P/E < 25", sans_per: "Without P/E" }, not_judged: "not judged",
     live_title: "Live: trend by sector",
     disclaimer: "These stocks meet, an hour and a quarter after the open, criteria set in advance. This is a list, not buy advice: the decision is yours.",
     run_bubbles_title: "One-month trend by sector at run time (previous close)",
@@ -580,21 +580,21 @@ const TEXT = {
     final_state: d => `End of session ${d}`,
     opt_live: "live", opt_provisional: "end of session (provisional)", opt_final: "end of session",
     session_of: d => `Session of ${d}`,
-    plan_title: "Orders to place: $10,000 on the P/E < 12 list",
+    plan_title: "Orders to place: $10,000 on the P/E list",
     plan_live: t => `Price of the latest known trade (${t}, New York, 15-min delay), updated every minute`,
     plan_entry: "Price of the first trade at buying time (New York), when the list was available",
     plan_share: (a, n, s) => `${a} split across ${n} stocks: ${s} per stock`,
     plan_qty: "Shares to buy", plan_price: "Price to enter", plan_cost: "Cost",
     plan_total: "Total invested", plan_left: "Left uninvested",
-    plan_no_list: "This session's P/E < 12 list doesn't exist yet: it is produced at 4:45 PM (Paris).",
+    plan_no_list: "This session's P/E list doesn't exist yet: it is produced around 5:00 PM (Paris).",
     plan_note: "Whole shares, rounded down so each stock never exceeds its share; the rest stays uninvested. The price to enter is the latest known price: as the limit of a limit order, the order may not fill if the price rises. To invest the exact amount (fractional shares), use buy-list.",
     sim_title: "Simulation: the day's gain or loss by amount invested",
     sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs", sim_tax: "After tax: what you keep",
     sim_version: (v, n, t) => `${v} · ${n} stock(s) · bought from ${t}`,
     sim_bench: s => `Today's benchmarks, same rules, after costs: ${s}.`,
-    series: { per12: "P/E < 12", sans_per: "Without P/E", per12_v2: "P/E < 12 (before the rules)", sans_per_v1: "Without P/E (before the rules)", per12_confirmation: "P/E < 12 + confirmation only", per12_pas_au_sommet: "P/E < 12 + not at the top only", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
+    series: { per12: "P/E < 25", sans_per: "Without P/E", per12_v2: "P/E < 12 (before the rules)", sans_per_v1: "Without P/E (before the rules)", per12_confirmation: "P/E < 12 + confirmation only", per12_pas_au_sommet: "P/E < 12 + not at the top only", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
     results_title: "Results history (simulation after costs)",
-    exp_title: id => `Experiment ${id}: P/E < 12 vs without P/E and the liquid universe`,
+    exp_title: id => `Experiment ${id}: P/E list vs without P/E and the liquid universe`,
     exp_progress: (n, total, start, pending) => `${n} session(s) counted out of ${total}, from ${start}: a session counts as soon as the market closes (everything is sold at 3:30 PM)${pending ? `; ${pending} still provisional, checked the following night with Alpaca's corrections` : ""}. The verdict is only given after session ${total}.`,
     exp_rule: "Confirmed if the mean daily difference is positive and the paired t ≥ 1.685 (criterion set before the window).",
     exp_suspended: "Suspended: the rules are still being tuned. The experiment will start over from zero (40 new sessions) on the day you freeze them; until then, the results below are observations, not a test.",
@@ -604,7 +604,7 @@ const TEXT = {
     res_suspect: "Over 100% annualized: suspicious result (rule 6), to be explained.",
     res_empty: "No session with the current rules yet: the first will be October 16, after the close. Earlier sessions are in the Archive tab.",
     res_chart_soon: "The chart appears from two sessions on.", res_chart_aria: "Cumulative returns by series",
-    res_note: "Each session: equal amounts bought at the first trade from 11:00 AM (10:45 AM until October 15), sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty P/E < 12 list: 0%.",
+    res_note: "Each session: equal amounts bought at the first trade from 11:00 AM (10:45 AM until October 15), sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty list: 0%.",
     res_skipped: s => `Not counted (simulation from before costs and benchmarks): ${s}.`,
     res_provisional: "*: session still provisional, recalculated the next day with Alpaca's corrections.",
     res_recomputed: "†: session from before costs and benchmarks; simulation recomputed afterwards with the current rules (diagnostic, outside experiment 001). On October 13, only the list without P/E existed.",
@@ -626,13 +626,13 @@ const TEXT = {
     intro_archive: (dates, since) => `The sessions of ${dates.join(", ")} were made with rules that have since been replaced (no "not at the top" or "confirmation", bought at 10:45 AM). They are kept here so they do not mix with the current results, which start over from zero on ${since}. Nothing was deleted: each session can still be opened from the "Session" menu, "Archive" group.`,
     archive_lists_title: "Archived lists",
     intro_archive_lists: "The stocks picked in each archived session, by version of the list.",
-    archive_n: "Stocks", archive_symbols: "Symbols", opt_archive: "Archive (old rules)",
+    archive_n: "Stocks", archive_symbols: "Symbols", series_old_per12: "P/E < 12", pe_label: x => `P/E < ${Number(x)}`, opt_archive: "Archive (old rules)",
     versions_title: "The two versions of the list",
     intro_versions: "Every day, the program makes two lists. They share the same base criteria (calm stocks, down over a month, rising for two days and during the first hour) and four caution rules (two on trends, two against buying at the top); only the second adds the P/E. The \"Version\" menu at the top of the page chooses which list is shown.",
     versions_head: ["Version", "Rules", "List and purchase (New York)", "Since"],
     versions_rows: [
       ["Without P/E", "Base criteria + healthy market + not a falling knife + not at the top + confirmation.", "11:00 AM", "October 16, 2026 (base criteria only from October 13 to 15, bought at 10:45 AM)"],
-      ["P/E < 12", "Same, + price / yearly earnings per share below 12: companies that are cheap relative to what they earn.", "11:00 AM", "October 16, 2026 (without the two rules on October 14 and 15, bought at 10:45 AM)"],
+      ["P/E < 25", "Same, + price / yearly earnings per share below 25: companies not too expensive relative to what they earn.", "11:00 AM", "October 16, 2026 (P/E < 12 without the caution rules on October 14 and 15, bought at 10:45 AM)"],
     ],
     rules_head: ["Caution rule", "What it checks", "Example"],
     rules_rows: [
@@ -643,7 +643,7 @@ const TEXT = {
     ],
     versions_note: "The \"not at the top\" and \"confirmation\" rules come from the AT&T example on October 15: picked with +1.52% in the first hour, it peaked at 10:35 AM and fell right after the purchase. The trend rules come from reviewing the first three sessions: the stocks furthest below their average did worst. The rules are still being tuned: experiment 001 will start over from zero once they are frozen.",
     intro_selection: "These are the stocks the program picked today. Each row is a company listed on a US stock exchange; the columns show how its price moved: over a month, over the last two days, during the first hour of trading, since the open and since the simulation's purchase. Click a symbol to see its chart.",
-    intro_plan: "If you want to buy the P/E < 12 list with $10,000, here is exactly what to do: for each stock, how many shares to buy and at roughly what price. Only whole shares can be bought, so a little money is left unused (\"Left uninvested\" row).",
+    intro_plan: "If you want to buy the P/E list (P/E < 25) with $10,000, here is exactly what to do: for each stock, how many shares to buy and at roughly what price. Only whole shares can be bought, so a little money is left unused (\"Left uninvested\" row).",
     intro_run_bubbles: "Each bubble is a sector of the economy (technology, finance, energy…). The number is the average price change of that sector's stocks over the last month, at the time the list was made. Green: the sector went up; red: it went down; the bigger the bubble, the more stocks in the sector.",
     intro_live: "Same idea, updated every minute during the session. Each row is a sector, each column a period: today, the first hour, 2 days, 1 week, 1 month. Click a sector to see all its stocks.",
     intro_sector: "All the stocks in this sector. Each % column shows how much the price changed over the period; click a column title to sort. The last two columns count how many times the stock was on the day's list, and how many times it was among the 20 best of its sector.",
@@ -664,7 +664,7 @@ const TEXT = {
     bt_rules: "Same rules as the simulation: lists computed using only data known at their decision time (10:45 AM with the current rules, 10:30 AM before), bought at the first trade 15 minutes later, sold at the last trade before 3:30 PM (New York), 0.05% cost per order, empty list = 0%.",
     bt_trace: sha => `Code used: ${sha.slice(0, 7)}.`,
     bt_pair: "Comparison", bt_diff: "Mean gap / session", bt_t: "Paired t",
-    bt_pairs: { per12_vs_sans_per: "P/E < 12 − Without P/E", per12_vs_spy: "P/E < 12 − SPY", sans_per_vs_spy: "Without P/E − SPY", per12_vs_per12_v2: "P/E < 12: with the rules − before", sans_per_vs_sans_per_v1: "Without P/E: with the rules − before", per12_confirmation_vs_per12: "+ confirmation − P/E < 12", per12_pas_au_sommet_vs_per12: "+ not at the top − P/E < 12" },
+    bt_pairs: { per12_vs_sans_per: "P/E < 25 − Without P/E", per12_vs_spy: "P/E < 25 − SPY", sans_per_vs_spy: "Without P/E − SPY", per12_vs_per12_v2: "P/E list: current rules − before", sans_per_vs_sans_per_v1: "Without P/E: with the rules − before", per12_confirmation_vs_per12: "+ confirmation − P/E < 12", per12_pas_au_sommet_vs_per12: "+ not at the top − P/E < 12" },
     bt_biases: "Known limits of this test:",
     bt_bias_items: [
       "Only stocks still listed today are tested: those that disappeared since (bankruptcies, buyouts) are missing, which makes the past look better.",
@@ -1132,7 +1132,7 @@ function renderLive() {
   renderPlan();
 }
 
-// Ordres à passer : nombre entier d'actions et prix à saisir pour la liste PER < 12.
+// Ordres à passer : nombre entier d'actions et prix à saisir pour la liste avec PER.
 function renderPlan() {
   const status = document.getElementById("plan-status");
   const box = document.getElementById("plan");
@@ -1167,7 +1167,7 @@ function renderPlan() {
 }
 
 // Courbe des rendements cumulés, une ligne par série (historique des résultats et test sur le passé).
-function cumulativeChart(chart, cumulativeBySeries, series) {
+function cumulativeChart(chart, cumulativeBySeries, series, labels = TEXT.series) {
   const dates = [...new Set(series.flatMap(s => (cumulativeBySeries[s] || []).map(([d]) => d)))].sort();
   if (dates.length < 2) {
     chart.replaceChildren(el("div", "empty", TEXT.res_chart_soon));
@@ -1199,17 +1199,17 @@ function cumulativeChart(chart, cumulativeBySeries, series) {
   const legend = el("div", "legend");
   series.filter(s => (cumulativeBySeries[s] || []).length).forEach(s => {
     const item = el("span"); const swatch = el("i"); swatch.style.background = `var(--s-${s})`;
-    item.append(swatch, TEXT.series[s]); legend.appendChild(item);
+    item.append(swatch, labels[s]); legend.appendChild(item);
   });
   chart.replaceChildren(legend, box);
 }
 
 // Tableau résumé d'une série de rendements (mêmes colonnes pour l'historique et le test sur le passé).
-function summaryTable(summaries, series) {
+function summaryTable(summaries, series, labels = TEXT.series) {
   const fmt = v => v == null ? "—" : pct(v);
   const rows = series.filter(s => summaries[s]?.n);
   return rows.length ? table([
-    { label: TEXT.res_series, cls: "text", value: s => TEXT.series[s] },
+    { label: TEXT.res_series, cls: "text", value: s => labels[s] },
     { label: TEXT.res_n, value: s => summaries[s].n },
     { label: TEXT.res_mean, value: s => fmt(summaries[s].mean), tone: s => summaries[s].mean },
     { label: TEXT.res_total, value: s => fmt(summaries[s].total), tone: s => summaries[s].total },
@@ -1231,13 +1231,14 @@ function renderBacktest() {
   // Un bloc par durée (6 mois, 1 mois…), puis les limites communes à tous les tests.
   const blocks = tests.flatMap(bt => {
     const series = Object.keys(bt.summaries);
+    const labels = { ...TEXT.series, ...(bt.max_pe ? { per12: TEXT.pe_label(bt.max_pe) } : {}) };
     const head = el("div", "panel exp-box");
     head.append(el("b", "", TEXT.bt_head(bt.id, bt.period)), el("span", "", TEXT.bt_status),
                 el("span", "", TEXT.bt_rules), el("span", "", TEXT.bt_trace(bt.git_sha)));
     const summaryBox = el("div", "panel");
-    summaryBox.appendChild(summaryTable(bt.summaries, series));
+    summaryBox.appendChild(summaryTable(bt.summaries, series, labels));
     const chart = el("div", "panel");
-    cumulativeChart(chart, bt.cumulative, series);
+    cumulativeChart(chart, bt.cumulative, series, labels);
     const diffs = Object.keys(bt.differences);
     const diffBox = el("div", "panel");
     diffBox.appendChild(table([
@@ -1277,13 +1278,13 @@ function renderResults() {
 }
 
 // Tableau par séance (historique des résultats et archive) : rendement après frais de chaque série.
-function dailyTable(res, series) {
+function dailyTable(res, series, labels = TEXT.series) {
   const fmt = v => v == null ? "—" : pct(v);
   const days = Object.keys(Object.assign({}, ...series.map(s => res.series[s]))).sort().reverse();
   return days.length ? table([
     { label: TEXT.res_date, cls: "text", value: d => d + (res.provisional.includes(d) ? " *" : "")
       + ((res.recomputed || []).includes(d) ? " †" : "") },
-    ...series.map(s => ({ label: TEXT.series[s], value: d => fmt(res.series[s][d]), tone: d => res.series[s][d] ?? 0 })),
+    ...series.map(s => ({ label: labels[s], value: d => fmt(res.series[s][d]), tone: d => res.series[s][d] ?? 0 })),
   ], days) : el("div", "empty", TEXT.res_empty);
 }
 
@@ -1328,7 +1329,7 @@ function renderMonthTests() {
     VARIANTS.filter(v => a.lists[v]).forEach(v => {
       const l = a.lists[v];
       const panel = (node) => { const p = el("div", "panel"); p.appendChild(node); return p; };
-      blocks.push(el("h3", "bt-period", `${TEXT.variants[v]} · ${TEXT.months_total(usdSigned(l.total.kept))}`),
+      blocks.push(el("h3", "bt-period", `${v === "per12" && t.max_pe ? TEXT.pe_label(t.max_pe) : TEXT.variants[v]} · ${TEXT.months_total(usdSigned(l.total.kept))}`),
         el("p", "intro", TEXT.months_days_intro),
         panel(table([{ label: TEXT.res_date, cls: "text", value: r => longDate(r.date) },
                      { label: TEXT.archive_n, value: r => r.n || TEXT.months_no_list }, ...moneyCols], l.days)),
@@ -1352,16 +1353,18 @@ function renderArchive() {
   const archive = HISTORY.archive;
   const res = archive.results;
   const series = [...VARIANTS, "univers", "spy"];
+  // Ces séances avaient leur propre seuil de PER (12) : l'archive l'affiche tel quel.
+  const labels = { ...TEXT.series, per12: TEXT.series_old_per12 };
   const dates = [...new Set(archive.lists.map(l => l.session_date))].sort();
   document.getElementById("archive-intro").textContent = TEXT.intro_archive(dates, archive.since);
-  document.getElementById("archive-summary").replaceChildren(summaryTable(res.summaries, series));
-  cumulativeChart(document.getElementById("archive-chart"), res.cumulative, series);
-  document.getElementById("archive-daily").replaceChildren(dailyTable(res, series));
+  document.getElementById("archive-summary").replaceChildren(summaryTable(res.summaries, series, labels));
+  cumulativeChart(document.getElementById("archive-chart"), res.cumulative, series, labels);
+  document.getElementById("archive-daily").replaceChildren(dailyTable(res, series, labels));
   document.getElementById("archive-note").textContent = resultsNote(res);
   const lists = [...archive.lists].sort((a, b) => b.session_date.localeCompare(a.session_date) || a.variant.localeCompare(b.variant));
   document.getElementById("archive-lists").replaceChildren(lists.length ? table([
     { label: TEXT.res_date, cls: "text", value: l => l.session_date },
-    { label: TEXT.version, cls: "text", value: l => TEXT.variants[l.variant] },
+    { label: TEXT.version, cls: "text", value: l => l.variant === "per12" ? TEXT.series_old_per12 : TEXT.variants[l.variant] },
     { label: "run", cls: "text", value: l => l.run_id },
     { label: TEXT.archive_n, value: l => l.symbols.length },
     { label: TEXT.archive_symbols, cls: "text wrap", value: l => l.symbols.join(", ") || "—" },
@@ -1394,7 +1397,7 @@ function renderSim() {
                  ["whole_gains", null, TEXT.sim_whole], ["after_tax_gains", null, TEXT.sim_tax]];
   const money = (value, rate) => value === undefined ? "—"
     : `${Number(value) >= 0 ? "+" : ""}${usd(value)}` + (rate == null ? "" : ` (${pct(rate)})`);
-  // Un tableau par version de la liste (PER < 12 d'abord) : montant investi, puis brut, après frais, actions entières.
+  // Un tableau par version de la liste (liste avec PER d'abord) : montant investi, puis brut, après frais, actions entières.
   const tables = VARIANTS.filter(v => sim.versions[v]).map(v => {
     const r = sim.versions[v];
     const shown = kinds.filter(([field]) => field === "gains" || r[field]);
@@ -1471,7 +1474,7 @@ Object.entries(TEXT.tabs).forEach(([id, label]) => {
 showTab(TEXT.tabs[VIEW.tab] ? VIEW.tab : "today");
 
 const picker = document.getElementById("run");
-// Deux versions de la liste chaque séance : critères d'origine, et critères + PER < 12.
+// Deux versions de la liste chaque séance : sans PER, et avec PER (seuil dans le fichier de critères).
 const VARIANTS = ["per12", "sans_per"];
 const variantOf = run => run.variant || (run.criteria.max_pe ? "per12" : "sans_per");
 let VARIANT = VARIANTS.includes(VIEW.variant) ? VIEW.variant : VARIANTS[0];

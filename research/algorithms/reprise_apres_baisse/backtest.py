@@ -2,7 +2,7 @@
 Test sur le passé (diagnostic) : rejoue chaque séance des N derniers mois avec les fonctions du screener
 quotidien et de la simulation (règle 8 : un seul module de logique).
 
-Pour chaque séance : les deux versions actuelles (sans PER, PER < 12) et les mêmes d'avant les règles contre
+Pour chaque séance : les deux versions actuelles (sans PER, avec PER) et les mêmes d'avant les règles contre
 l'achat au sommet (archive), chacune calculée avec les seules données connues à sa décision (10 h 45 avec
 confirmation, 10 h 30 sans ; New York), achat au premier échange 15 min après la décision, vente au dernier
 échange avant 15 h 30, 0,05 % de frais par ordre ; repère SPY acheté à l'heure d'achat des versions actuelles.
@@ -114,11 +114,13 @@ def run(months, first=None, last=None):
         # SPY acheté à l'heure d'achat des versions actuelles.
         entries["spy"] = min(entries[variant] for variant in VARIANTS)
         lists["spy"] = [{"symbol": BENCHMARK}]
-        traded = sorted({i["symbol"] for items in lists.values() for i in items})
-        frames = [cached(f"{day_key}/entry_bars_all_{at.astimezone(NEW_YORK):%H%M}",
+        # Prix d'achat et de vente de TOUS les candidats du jour (toute liste en est tirée) et de SPY : le cache
+        # ne dépend pas des règles testées, une autre règle trouve toujours les prix de ses titres.
+        traded = sorted(set(wanted) | {i["symbol"] for items in lists.values() for i in items})
+        frames = [cached(f"{day_key}/entry_bars_candidates_{at.astimezone(NEW_YORK):%H%M}",
                          lambda: alpaca.bars(traded, "1Min", at, at + TRADE_WINDOW)) for at in sorted(set(entries.values()))]
         entry_bars = pd.concat(frames, ignore_index=True)
-        exit_bars = cached(f"{day_key}/exit_bars_all", lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
+        exit_bars = cached(f"{day_key}/exit_bars_candidates", lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
         record = {"date": session_date.isoformat()}
         for name, items in lists.items():

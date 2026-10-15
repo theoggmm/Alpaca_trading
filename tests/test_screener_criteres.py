@@ -21,8 +21,9 @@ def test_fichiers_de_criteres_des_deux_versions():
     rules = {"min_gap_below_high": Decimal("0.002"), "confirmation_minutes": 15,
              "max_below_ma": Decimal("0.05"), "ma_sessions": 50, "market_symbol": "SPY", "market_ma_sessions": 50}
     assert Criteria.from_file(FAMILY_DIR / "criteres_sans_per.json") == replace(CRITERIA, version=5, **rules)
+    # Liste avec PER : seuil relevé à 25 le 15 octobre 2026 au soir, avant le premier run (décision T7).
     assert Criteria.from_file(FAMILY_DIR / "criteres_per12.json") == replace(
-        CRITERIA, version=6, max_pe=Decimal("12"), **rules)
+        CRITERIA, version=6, max_pe=Decimal("25"), **rules)
 
 
 def test_seuls_les_titres_en_baisse_puis_en_hausse_sont_retenus():

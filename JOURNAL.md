@@ -274,3 +274,17 @@ Autrement dit : dès demain, pas de liste les jours où tout le marché va mal, 
 
 **Points signalés** : examen des trois séances (68 titres) : titres à moins de 5 % sous leur moyenne −0,02 %
 en moyenne, les autres −0,32 % ; trois jours ne prouvent rien, le test sur 6 mois tranchera mieux.
+
+## 2026-10-15 (nuit) — PER < 25, et correction du test sur le passé
+
+**Question posée** : passer le seuil de PER à 25 pour les listes de demain.
+
+**Fait** : `criteres_per12.json` à `max_pe` 25 (décision T7) ; libellés « PER < 25 » (l'archive garde
+« PER < 12 ») ; les tests sur le passé affichent le seuil réellement testé.
+
+**Point signalé et corrigé** : le test sur le passé gardait en cache les prix d'achat et de vente des seuls
+titres retenus ; un test relancé avec d'autres règles trouvait des prix manquants pour ses nouveaux titres,
+écartés sans bruit. Le test de 6 mois du 15 octobre (jours 1 à ~49) en est faussé. Les prix sont désormais lus
+pour tous les candidats du jour (nouveau nom de cache) ; les tests sont relancés.
+
+Autrement dit : dès demain la liste avec PER s'ouvre aux PER jusqu'à 25, et les tests sont refaits proprement.

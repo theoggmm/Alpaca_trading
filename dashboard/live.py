@@ -50,7 +50,7 @@ OPENING_WINDOW = timedelta(minutes=5)
 EXIT_BEFORE_CLOSE = timedelta(minutes=30)
 TRADE_WINDOW = timedelta(minutes=5)
 EXIT_WINDOW = timedelta(minutes=30)
-# Section « Ordres à passer » : montant réparti en actions entières sur la liste PER < 12.
+# Section « Ordres à passer » : montant réparti en actions entières sur la liste avec PER.
 ORDER_PLAN_AMOUNT = Decimal("10000")
 ORDER_PLAN_VARIANT = "per12"
 # Repères de la simulation : tous les titres liquides à parts égales, et l'indice S&P 500 (fonds SPY).
@@ -191,7 +191,7 @@ def _since_entry(runs, entry_bars, trades, market_open, market_close, now):
 
 def _order_plan(runs, prices, basis):
     """
-    Ordres à passer sur la liste PER < 12 : nombre entier d'actions et prix, pour ORDER_PLAN_AMOUNT.
+    Ordres à passer sur la liste avec PER : nombre entier d'actions et prix, pour ORDER_PLAN_AMOUNT.
     basis « live » : dernier prix connu ; « entry » : premier échange à l'heure d'achat (séance passée).
     """
     run = next((r for r in runs if variant_of(r) == ORDER_PLAN_VARIANT), None)
