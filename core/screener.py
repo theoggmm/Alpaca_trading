@@ -45,6 +45,12 @@ class Criteria:
     max_pairwise_correlation: float
     # Optionnel (variante) : PER sur 12 mois glissants strictement inférieur à ce seuil ; absent = pas de filtre.
     max_pe: Decimal = None
+    # Optionnel (variante « pas au sommet ») : à la fin de la première heure, le dernier prix doit être au
+    # moins à cette fraction sous le plus haut (des clôtures minute) de la première heure ; absent = pas de filtre.
+    min_gap_below_high: Decimal = None
+    # Optionnel (variante « confirmation ») : décision repoussée de ce nombre de minutes après la première
+    # heure ; le dernier prix à la décision ne doit pas être sous celui de la fin de la première heure.
+    confirmation_minutes: int = None
 
     @classmethod
     def from_json(cls, raw, source="critères"):
@@ -66,6 +72,11 @@ class Criteria:
         """Nombre de clôtures nécessaires : la plus longue fenêtre de rendements + 1."""
         return max(self.month_sessions, self.volatility_sessions, self.correlation_sessions,
                    self.liquidity_sessions, self.up_days) + 1
+
+    @property
+    def decision_minutes(self):
+        """Minutes entre l'ouverture et la décision : première heure, plus la confirmation s'il y en a une."""
+        return self.first_hour_minutes + (self.confirmation_minutes or 0)
 
     def to_json(self):
         return {k: str(v) if isinstance(v, Decimal) else v for k, v in asdict(self).items()}
@@ -158,6 +169,12 @@ def first_hour_prices(minute, market_open):
             for symbol, bars in session.groupby("symbol", sort=True)}
 
 
+def first_hour_highs(minute, market_open):
+    """symbole -> plus haute clôture minute des barres fournies (à partir de l'ouverture)."""
+    session = minute[minute["timestamp"] >= market_open]
+    return {symbol: bars["close"].max() for symbol, bars in session.groupby("symbol", sort=True)}
+
+
 def recent_closes(daily, market_open, symbols, sessions):
     """
     symbole -> [(date de la séance à New York, clôture en texte)] des `sessions` dernières séances
@@ -230,15 +247,31 @@ def screen(daily, minute, market_open, decision_time, criteria, earnings_for=Non
     daily = usable_bars(daily, DAY, decision_time)
     minute = usable_bars(minute, MINUTE, decision_time)
 
-    if decision_time != market_open + timedelta(minutes=criteria.first_hour_minutes):
-        raise ValueError("decision_time doit valoir market_open + first_hour_minutes")
+    if decision_time != market_open + timedelta(minutes=criteria.decision_minutes):
+        raise ValueError("decision_time doit valoir market_open + decision_minutes")
 
     candidates, funnel = daily_candidates(daily, decision_time, criteria)
-    first_hour = first_hour_prices(minute, market_open)
+    # Barres de la seule première heure (identiques à toutes les barres quand la décision est à sa fin).
+    first_hour_bars = usable_bars(minute, MINUTE, market_open + timedelta(minutes=criteria.first_hour_minutes))
+    first_hour = first_hour_prices(first_hour_bars, market_open)
 
     rising = [(s, *first_hour[s.symbol]) for s in candidates
               if s.symbol in first_hour and first_hour[s.symbol][1] > first_hour[s.symbol][0]]
     funnel["hausse_premiere_heure"] = len(rising)
+
+    gap = {}
+    if criteria.min_gap_below_high is not None:
+        highs = first_hour_highs(first_hour_bars, market_open)
+        gap = {s.symbol: 1 - price / highs[s.symbol] for s, _, price in rising}
+        rising = [r for r in rising if gap[r[0].symbol] >= criteria.min_gap_below_high]
+        funnel["pas_au_sommet"] = len(rising)
+
+    confirmation = {}
+    if criteria.confirmation_minutes is not None:
+        latest = {symbol: last for symbol, (_, last) in first_hour_prices(minute, market_open).items()}
+        confirmation = {s.symbol: (latest[s.symbol], latest[s.symbol] / price - 1) for s, _, price in rising}
+        rising = [r for r in rising if confirmation[r[0].symbol][1] >= 0]
+        funnel["confirmation"] = len(rising)
 
     pe = {}
     if criteria.max_pe is not None:
@@ -277,6 +310,11 @@ def screen(daily, minute, market_open, decision_time, criteria, earnings_for=Non
             "avg_dollar_volume": str(item["stats"].avg_dollar_volume.quantize(Decimal("1"))),
             "max_correlation_with_previous": item["max_correlation"],
             "pe_ttm": None if pe.get(item["stats"].symbol) is None else str(pe[item["stats"].symbol].quantize(Decimal("0.01"))),
+            # Variantes seulement : écart sous le plus haut de la première heure ; prix et variation à la confirmation.
+            **({"gap_below_high": float(gap[item["stats"].symbol])} if item["stats"].symbol in gap else {}),
+            **({"price_at_confirmation": str(confirmation[item["stats"].symbol][0]),
+                "return_confirmation": float(confirmation[item["stats"].symbol][1])}
+               if item["stats"].symbol in confirmation else {}),
         }
         for rank, item in enumerate(selection, start=1)
     ], funnel

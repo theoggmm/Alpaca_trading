@@ -22,8 +22,11 @@ from infra.trace import TraceError, committed_git_sha, load_runs, next_run_id, s
 
 FAMILY = "reprise_apres_baisse"
 HERE = Path(__file__).resolve().parent
-# Deux versions produites à chaque séance : variante -> fichier de critères.
-VARIANTS = {"sans_per": HERE / "criteres_sans_per.json", "per12": HERE / "criteres_per12.json"}
+# Versions produites à chaque séance : variante -> fichier de critères. Les deux dernières (à partir du
+# 16 octobre 2026) ajoutent au PER < 12 une règle contre l'achat au sommet de la première heure.
+VARIANTS = {"sans_per": HERE / "criteres_sans_per.json", "per12": HERE / "criteres_per12.json",
+            "per12_confirmation": HERE / "criteres_per12_confirmation.json",
+            "per12_pas_au_sommet": HERE / "criteres_per12_pas_au_sommet.json"}
 NEW_YORK = ZoneInfo("America/New_York")
 # Offre gratuite Alpaca : les barres consolidées (SIP) des 15 dernières minutes ne sont pas servies.
 SIP_DELAY = timedelta(minutes=15)
@@ -40,17 +43,17 @@ def _pct(value):
 def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     """
     Calcule le run d'une séance (sans l'enregistrer) : sélection, entonnoir, domaines, sources.
-    Toutes les données sont tronquées à l'instant de décision (ouverture + première heure).
+    Toutes les données sont tronquées à l'instant de décision (ouverture + première heure, + confirmation).
     """
     key = session_date.isoformat()
-    decision_time = market_open + timedelta(minutes=criteria.first_hour_minutes)
+    decision_time = market_open + timedelta(minutes=criteria.decision_minutes)
     listings, listings_created = cached(f"{key}/nasdaq_listings", nasdaq_symbols.listings)
     assets = cached(f"{key}/alpaca_assets", alpaca.assets)
     symbols, universe_funnel = eligible_symbols(assets, listings)
     daily = cached(f"{key}/daily_bars",
                    lambda: alpaca.bars(symbols, "1Day", decision_time - DAILY_HISTORY, decision_time))
     candidates, _ = daily_candidates(daily, decision_time, criteria)
-    minute = cached(f"{key}/minute_bars",
+    minute = cached(f"{key}/minute_bars" if criteria.confirmation_minutes is None else f"{key}/minute_bars_{criteria.decision_minutes}",
                     lambda: alpaca.bars([c.symbol for c in candidates], "1Min", market_open, decision_time))
     selection, funnel = screen(daily, minute, market_open, decision_time, criteria,
                                earnings_for=lambda symbols: sec.eps(symbols, key))
@@ -127,19 +130,19 @@ def run():
         return 0
 
     market_open = datetime.combine(session_date, session[0], NEW_YORK).astimezone(timezone.utc)
-    first_hour = max(c.first_hour_minutes for c in todo.values())
-    ready_at = market_open + timedelta(minutes=first_hour) + SIP_DELAY
-    if ready_at - MAX_WAIT <= now < ready_at:
-        print(f"Données de la première heure disponibles à {ready_at.astimezone(NEW_YORK):%H:%M:%S} (New York) : "
-              f"attente de {(ready_at - now).total_seconds():.0f} s.")
-        time.sleep((ready_at - now).total_seconds())
+    # Chaque version part dès que ses données sont disponibles (décision + 15 min) : la version avec
+    # confirmation, décidée 15 min plus tard, ne retarde pas les autres.
+    for variant, criteria in sorted(todo.items(), key=lambda item: item[1].decision_minutes):
+        ready_at = market_open + timedelta(minutes=criteria.decision_minutes) + SIP_DELAY
         now = datetime.now(timezone.utc)
-    if now < ready_at:
-        print(f"Trop tôt : les données de la première heure seront disponibles à "
-              f"{ready_at.astimezone(NEW_YORK):%H:%M} (New York).")
-        return 1
-
-    for variant, criteria in todo.items():
+        if ready_at - MAX_WAIT <= now < ready_at:
+            print(f"[{variant}] Données disponibles à {ready_at.astimezone(NEW_YORK):%H:%M:%S} (New York) : "
+                  f"attente de {(ready_at - now).total_seconds():.0f} s.")
+            time.sleep((ready_at - now).total_seconds())
+            now = datetime.now(timezone.utc)
+        if now < ready_at:
+            print(f"[{variant}] Trop tôt : les données seront disponibles à {ready_at.astimezone(NEW_YORK):%H:%M} (New York).")
+            return 1
         payload = {"run_id": next_run_id(FAMILY), "variant": variant,
                    **produce(alpaca, criteria, session_date, market_open, now, git_sha)}
         _report(payload, criteria, save_run(FAMILY, payload))

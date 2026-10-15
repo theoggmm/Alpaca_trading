@@ -28,3 +28,16 @@ Le propriétaire demande que la séance du 15 octobre compte. Amendement écrit 
 l'expérience et commité avant la publication de la liste du jour et avant l'heure d'achat (10 h 45,
 New York) : aucun résultat de cette séance n'était connu. Fenêtre : 40 séances à partir du 15 octobre
 2026. Seuils et mesure inchangés.
+
+## T4 — 2026-10-15 — Deux versions contre l'achat au sommet (propriétaire)
+
+À partir de la séance du 16 octobre, deux listes s'ajoutent aux deux existantes, inchangées :
+version 3 « PER < 12 + confirmation » (prix à 10 h 45 ≥ prix à 10 h 30, achat à 11 h 00) et version 4
+« PER < 12 + pas au sommet » (à 10 h 30, au moins 0,2 % sous le plus haut de la première heure). Les ordres
+à passer restent calculés sur la liste PER < 12. Aucune règle de l'expérience 001 n'est modifiée.
+
+## 002.1 — 2026-10-15 — Pré-enregistrement de l'expérience 002
+
+Fichier `research/algorithms/reprise_apres_baisse/experiences/002_regles_contre_le_sommet.md`, commité
+avant la première séance des versions 3 et 4 et avant leur test sur le passé. Fenêtre : 40 séances à
+partir du 16 octobre 2026.

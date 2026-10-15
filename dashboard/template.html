@@ -20,6 +20,7 @@
     --chip: #e8eef5;
     --up-fill: #1f7f4f;
     --s-per12: #2b5d8c; --s-sans_per: #c0672a; --s-univers: #6b7785; --s-spy: #7a4fb0;
+    --s-per12_confirmation: #2e8b57; --s-per12_pas_au_sommet: #a07a12;
     --down-fill: #b33b3b;
     --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -29,12 +30,14 @@
       --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
       --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
       --s-per12: #7fb0de; --s-sans_per: #f0a060; --s-univers: #93a0b0; --s-spy: #b794e6;
+      --s-per12_confirmation: #6fd3a0; --s-per12_pas_au_sommet: #e8c060;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
     --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
     --s-per12: #7fb0de; --s-sans_per: #f0a060; --s-univers: #93a0b0; --s-spy: #b794e6;
+      --s-per12_confirmation: #6fd3a0; --s-per12_pas_au_sommet: #e8c060;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
@@ -284,7 +287,7 @@ const TEXT = {
     tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", method: "Méthodologie" },
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
-    variants: { per12: "PER < 12", sans_per: "Sans PER" }, not_judged: "non jugé",
+    variants: { per12: "PER < 12", per12_confirmation: "PER < 12 + confirmation", per12_pas_au_sommet: "PER < 12 + pas au sommet", sans_per: "Sans PER" }, not_judged: "non jugé",
     live_title: "En direct : tendance par domaine",
     disclaimer: "Ces titres remplissent, une heure après l'ouverture, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
     run_bubbles_title: "Tendance sur un mois par domaine, au moment du run (clôture de la veille)",
@@ -322,7 +325,7 @@ const TEXT = {
           vol: "Volatilité annuelle", volume: "Volume moyen / jour", times: "Fois retenu", last: "Dernière fois" },
     live_cell: (p, t) => `dernier prix ${p} à ${t} (New York), 15 min de retard`,
     open_to_close: "Ouverture → clôture",
-    since_entry: "Depuis l'achat (10 h 45)",
+    since_entry: t => `Depuis l'achat (${t})`, default_entry: "10 h 45",
     entry_col_note: " « Depuis l'achat (10 h 45) » : dernier prix / prix d'achat de la simulation (premier échange à partir de 10 h 45, New York), avant frais ; après la clôture, jusqu'au dernier échange avant 16 h 00.",
     final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t} (New York)`,
     final_col_note: " « Ouverture → clôture » : dernier échange avant 16 h 00 / premier prix de la séance, reconstitué depuis l'historique minute d'Alpaca.",
@@ -339,9 +342,9 @@ const TEXT = {
     plan_note: "Nombre entier d'actions, arrondi vers le bas pour ne jamais dépasser la part de chaque titre ; le reste n'est pas investi. Le prix à saisir est le dernier prix connu : comme limite d'un ordre à cours limité, l'ordre peut ne pas s'exécuter si le prix monte. Pour investir exactement le montant (fractions d'action), utilise buy-list.",
     sim_title: "Simulation : gain ou perte du jour selon le montant investi",
     sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais", sim_tax: "Après impôts : ce que tu gardes",
-    sim_version: (v, n) => `${v} · ${n} titre(s)`,
+    sim_version: (v, n, t) => `${v} · ${n} titre(s) · achat à partir de ${t}`,
     sim_bench: s => `Repères du jour, mêmes règles, après frais : ${s}.`,
-    series: { per12: "PER < 12", sans_per: "Sans PER", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
+    series: { per12: "PER < 12", per12_confirmation: "PER < 12 + confirmation", per12_pas_au_sommet: "PER < 12 + pas au sommet", sans_per: "Sans PER", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
     results_title: "Historique des résultats (simulation après frais)",
     exp_title: id => `Expérience ${id} : PER < 12 face à sans PER et à l'univers liquide`,
     exp_progress: (n, total, start, pending) => `${n} séance(s) comptée(s) sur ${total}, à partir du ${start} : une séance compte dès la clôture (tout est vendu à 15 h 30)${pending ? ` ; ${pending} encore provisoire(s), vérifiée(s) la nuit suivante avec les corrections d'Alpaca` : ""}. Le verdict n'est rendu qu'après la ${total}e séance.`,
@@ -422,6 +425,8 @@ const TEXT = {
       `En baisse sur les ${c.month_sessions} dernières séances (environ un mois).`,
       `En hausse à chacune des ${c.up_days} dernières séances.`,
       `En hausse pendant les ${c.first_hour_minutes} premières minutes de la séance.`,
+      ...(c.min_gap_below_high ? [`Pas au sommet : à la fin de la première heure, le prix est au moins ${pct(Number(c.min_gap_below_high)).replace("+", "")} sous le plus haut atteint pendant cette heure (plus haute clôture minute). Évite d'acheter un titre au plus haut de sa matinée.`] : []),
+      ...(c.confirmation_minutes ? [`Confirmation : ${c.confirmation_minutes} minutes après la première heure, le prix n'est pas redescendu sous celui de la fin de la première heure. La liste sort donc 15 minutes plus tard et l'achat se fait à 11 h 00.`] : []),
       ...(c.max_pe ? [`PER sur 12 mois glissants inférieur à ${c.max_pe} (bénéfice dilué par action déposé à la SEC ; titre exclu si le bénéfice est négatif ou non disponible).`] : []),
       `Classement par baisse sur un mois, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu (${c.correlation_sessions} séances).`,
     ],
@@ -433,6 +438,7 @@ const TEXT = {
       historique_complet: "Historique complet", prix_minimum: "Prix minimum", volume_echange_minimum: "Volume échangé suffisant",
       volatilite_basse: "Volatilité basse", en_baisse_sur_un_mois: "En baisse sur un mois",
       hausse_des_derniers_jours: "Hausse des 2 derniers jours", hausse_premiere_heure: "Hausse 1re heure",
+      pas_au_sommet: "Pas au sommet de la 1re heure", confirmation: "Confirmée à 10 h 45",
       per_maximum: "PER sous le seuil",
       selection_diversifiee: "Sélection diversifiée",
     },
@@ -449,7 +455,7 @@ const TEXT = {
     tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", method: "Methodology" },
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
-    variants: { per12: "P/E < 12", sans_per: "Without P/E" }, not_judged: "not judged",
+    variants: { per12: "P/E < 12", per12_confirmation: "P/E < 12 + confirmation", per12_pas_au_sommet: "P/E < 12 + not at the top", sans_per: "Without P/E" }, not_judged: "not judged",
     live_title: "Live: trend by sector",
     disclaimer: "These stocks meet, one hour after the open, criteria set in advance. This is a list, not buy advice: the decision is yours.",
     run_bubbles_title: "One-month trend by sector at run time (previous close)",
@@ -487,7 +493,7 @@ const TEXT = {
           vol: "Annual volatility", volume: "Avg volume / day", times: "Times selected", last: "Last time" },
     live_cell: (p, t) => `last price ${p} at ${t} (New York), 15-min delay`,
     open_to_close: "Open → close",
-    since_entry: "Since purchase (10:45)",
+    since_entry: t => `Since purchase (${t})`, default_entry: "10:45 AM",
     entry_col_note: " \"Since purchase (10:45)\": last price / the simulation's purchase price (first trade from 10:45 AM, New York), before costs; after the close, up to the last trade before 4:00 PM.",
     final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t} (New York)`,
     final_col_note: " \"Open → close\": last trade before 4:00 PM / first price of the session, rebuilt from Alpaca's minute history.",
@@ -504,9 +510,9 @@ const TEXT = {
     plan_note: "Whole shares, rounded down so each stock never exceeds its share; the rest stays uninvested. The price to enter is the latest known price: as the limit of a limit order, the order may not fill if the price rises. To invest the exact amount (fractional shares), use buy-list.",
     sim_title: "Simulation: the day's gain or loss by amount invested",
     sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs", sim_tax: "After tax: what you keep",
-    sim_version: (v, n) => `${v} · ${n} stock(s)`,
+    sim_version: (v, n, t) => `${v} · ${n} stock(s) · bought from ${t}`,
     sim_bench: s => `Today's benchmarks, same rules, after costs: ${s}.`,
-    series: { per12: "P/E < 12", sans_per: "Without P/E", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
+    series: { per12: "P/E < 12", per12_confirmation: "P/E < 12 + confirmation", per12_pas_au_sommet: "P/E < 12 + not at the top", sans_per: "Without P/E", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
     results_title: "Results history (simulation after costs)",
     exp_title: id => `Experiment ${id}: P/E < 12 vs without P/E and the liquid universe`,
     exp_progress: (n, total, start, pending) => `${n} session(s) counted out of ${total}, from ${start}: a session counts as soon as the market closes (everything is sold at 3:30 PM)${pending ? `; ${pending} still provisional, checked the following night with Alpaca's corrections` : ""}. The verdict is only given after session ${total}.`,
@@ -598,6 +604,7 @@ const TEXT = {
       historique_complet: "Full history", prix_minimum: "Minimum price", volume_echange_minimum: "Enough traded volume",
       volatilite_basse: "Low volatility", en_baisse_sur_un_mois: "Down over a month",
       hausse_des_derniers_jours: "Up the last 2 days", hausse_premiere_heure: "Up in the first hour",
+      pas_au_sommet: "Not at the first-hour top", confirmation: "Confirmed at 10:45 AM",
       per_maximum: "P/E below threshold",
       selection_diversifiee: "Diversified selection",
     },
@@ -758,9 +765,13 @@ function renderRun(run) {
       : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(live[r.symbol].price), nyTime(live[r.symbol].at)),
   };
   // Variation depuis l'achat de la simulation (premier échange à partir de 10 h 45, New York).
-  const entry = inSession ? LIVE.selection?.since_entry : FINALS[run.session_date]?.selection?.since_entry;
+  const sinceEntry = inSession ? LIVE.selection?.since_entry : FINALS[run.session_date]?.selection?.since_entry;
+  // Ancien format (avant les versions avec confirmation) : une seule série pour toutes les listes.
+  const flat = sinceEntry && Object.values(sinceEntry).some(v => v && v.change !== undefined);
+  const entry = flat ? sinceEntry : sinceEntry?.[variantOf(run)];
+  const entryAt = (inSession ? LIVE : FINALS[run.session_date])?.portfolio?.versions?.[variantOf(run)]?.entry_time;
   const entryColumn = entry && Object.keys(entry).length && {
-    label: TEXT.since_entry, value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
+    label: TEXT.since_entry(entryAt ? nyTime(entryAt) : TEXT.default_entry), value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
     tone: r => entry[r.symbol]?.change ?? 0,
     title: r => !entry[r.symbol] ? TEXT.no_live_price
       : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(entry[r.symbol].price), nyTime(entry[r.symbol].at)),
@@ -1096,7 +1107,7 @@ function renderBacktest() {
     box.replaceChildren(el("div", "empty", TEXT.bt_empty));
     return;
   }
-  const series = ["per12", "sans_per", "spy"];
+  const series = [...VARIANTS, "spy"];
   const head = el("div", "panel exp-box");
   head.append(el("b", "", TEXT.bt_head(bt.id, bt.period)), el("span", "", TEXT.bt_status),
               el("span", "", TEXT.bt_rules), el("span", "", TEXT.bt_trace(bt.git_sha)));
@@ -1126,7 +1137,7 @@ function renderBacktest() {
 function renderResults() {
   const res = HISTORY.results;
   const exp = res.experiment;
-  const series = ["per12", "sans_per", "univers", "spy"];
+  const series = [...VARIANTS, "univers", "spy"];
   document.getElementById("experiment").replaceChildren(
     el("b", "", TEXT.exp_title(exp.id)),
     el("span", "", TEXT.exp_progress(exp.observed, exp.sessions, exp.start, exp.pending)),
@@ -1177,11 +1188,11 @@ function renderSim() {
   const money = (value, rate) => value === undefined ? "—"
     : `${Number(value) >= 0 ? "+" : ""}${usd(value)}` + (rate == null ? "" : ` (${pct(rate)})`);
   // Un tableau par version de la liste (PER < 12 d'abord) : montant investi, puis brut, après frais, actions entières.
-  const tables = ["per12", "sans_per"].filter(v => sim.versions[v]).map(v => {
+  const tables = VARIANTS.filter(v => sim.versions[v]).map(v => {
     const r = sim.versions[v];
     const shown = kinds.filter(([field]) => field === "gains" || r[field]);
     const block = el("div", "sim-block");
-    block.appendChild(el("h3", "", TEXT.sim_version(TEXT.variants[v], r.n)));
+    block.appendChild(el("h3", "", TEXT.sim_version(TEXT.variants[v], r.n, nyTime(r.entry_time || sim.entry_time))));
     const t = el("table");
     const head = t.createTHead().insertRow();
     head.appendChild(el("th", "text", TEXT.sim_amount));
@@ -1253,7 +1264,7 @@ showTab(TEXT.tabs[VIEW.tab] ? VIEW.tab : "today");
 
 const picker = document.getElementById("run");
 // Deux versions de la liste chaque séance : critères d'origine, et critères + PER < 12.
-const VARIANTS = ["per12", "sans_per"];
+const VARIANTS = ["per12", "per12_confirmation", "per12_pas_au_sommet", "sans_per"];
 const variantOf = run => run.variant || (run.criteria.max_pe ? "per12" : "sans_per");
 let VARIANT = VARIANTS.includes(VIEW.variant) ? VIEW.variant : VARIANTS[0];
 // Liste la plus récente d'une séance pour une version (celle choisie par défaut).
