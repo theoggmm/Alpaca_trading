@@ -131,6 +131,7 @@
     <h1 data-t="title"></h1>
     <span class="chip" id="status"></span>
     <span class="spacer"></span>
+    <a id="methodology"></a>
     <a id="other-lang"></a>
     <label for="run" data-t="session"></label>
     <select id="run"></select>
@@ -223,7 +224,7 @@ const LIVE_STALE_MS = 3 * 60 * 1000;
 // Tous les textes de la page, en français et en anglais. Une fonction reçoit les valeurs à insérer.
 const TEXT = {
   fr: {
-    locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
+    locale: "fr-FR", other: "English", other_href: "index_en.html", methodology: "Méthodologie", methodology_href: "methodologie.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
     variants: { per12: "PER < 12", sans_per: "Sans PER" }, not_judged: "non jugé",
     live_title: "En direct : tendance par domaine",
@@ -366,7 +367,7 @@ const TEXT = {
     },
   },
   en: {
-    locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
+    locale: "en-US", other: "Français", other_href: "index.html", methodology: "Methodology", methodology_href: "methodology_en.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
     variants: { per12: "P/E < 12", sans_per: "Without P/E" }, not_judged: "not judged",
     live_title: "Live: trend by sector",
@@ -1111,6 +1112,9 @@ document.querySelectorAll("[data-t]").forEach(node => { node.textContent = TEXT[
 const other = document.getElementById("other-lang");
 other.textContent = TEXT.other;
 other.href = TEXT.other_href;
+const methodology = document.getElementById("methodology");
+methodology.textContent = TEXT.methodology;
+methodology.href = TEXT.methodology_href;
 
 const picker = document.getElementById("run");
 // Deux versions de la liste chaque séance : critères d'origine, et critères + PER < 12.

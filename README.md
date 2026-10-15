@@ -63,6 +63,10 @@ open -a "Google Chrome" /Users/theodoremeyer/Documents/Alpaca_trading/dashboard/
 open -a "Google Chrome" /Users/theodoremeyer/Documents/Alpaca_trading/dashboard/index_en.html
 ```
 
+**Méthodologie.** Lien en haut du tableau de bord : `dashboard/methodologie.html` (anglais :
+`methodology_en.html`), régénérée avec lui depuis `dashboard/methodology_template.html`. Seuils, heures,
+frais et montants y sont lus dans le code et les fichiers de critères au moment de la génération.
+
 ## Bulles en direct
 
 Pendant la séance de New York, suivre la tendance moyenne de chaque domaine (classement SEC) :

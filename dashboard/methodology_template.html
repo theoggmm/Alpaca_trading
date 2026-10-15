@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="__LANG__">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Méthodologie · Methodology</title>
+<!-- Généré par dashboard/methodology.py : les valeurs entre accolades viennent du code et des fichiers de critères. -->
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --ink: #17202b; --muted: #5d6877; --line: #dde1e7;
+    --accent: #2b5d8c; --chip: #e8eef5; --note: #fff8e6; --note-line: #e8d29a;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+      --accent: #7fb0de; --chip: #1f2c3a; --note: #2a2618; --note-line: #5c5130; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+    --accent: #7fb0de; --chip: #1f2c3a; --note: #2a2618; --note-line: #5c5130; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 var(--font-ui); }
+  article { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; margin-bottom: 8px; }
+  header a { color: var(--accent); font-weight: 600; }
+  h1 { margin: 0; font-size: 28px; letter-spacing: -0.01em; flex: 1 1 auto; }
+  h2 { margin: 40px 0 8px; font-size: 20px; scroll-margin-top: 16px; }
+  h2 .n { color: var(--muted); font-weight: 500; margin-right: 6px; }
+  h3 { margin: 20px 0 4px; font-size: 16px; }
+  p, li { max-width: 72ch; }
+  .lead { color: var(--muted); font-size: 17px; }
+  .plain { background: var(--chip); border-radius: 6px; padding: 8px 12px; font-weight: 500; }
+  .warn { background: var(--note); border: 1px solid var(--note-line); border-radius: 6px; padding: 8px 12px; }
+  nav { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 20px; margin: 20px 0; }
+  nav ol { margin: 0; padding-left: 20px; columns: 2 260px; }
+  nav a { color: var(--accent); text-decoration: none; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 12px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  tr:last-child td { border-bottom: none; }
+  code { font-family: var(--font-data); font-size: 13px; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
+  .timeline { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+  .timeline b { font-family: var(--font-data); white-space: nowrap; }
+</style>
+</head>
+<body>
+<article lang="fr">
+  <header>
+    <h1>Méthodologie</h1>
+    <a href="index.html">← Tableau de bord</a>
+    <a href="methodology_en.html">English</a>
+  </header>
+  <p class="lead">Comment chaque liste, chaque bulle et chaque chiffre du tableau de bord est produit, avec
+  les règles qui empêchent de se raconter des histoires. Les valeurs ci-dessous sont lues dans le code au
+  moment où la page est générée.</p>
+
+  <nav><ol>
+    <li><a href="#journee">Une journée type</a></li>
+    <li><a href="#donnees">Les données</a></li>
+    <li><a href="#selection">La sélection du jour</a></li>
+    <li><a href="#datation">Pas de donnée du futur</a></li>
+    <li><a href="#domaines">Les bulles par domaine</a></li>
+    <li><a href="#simulation">La simulation</a></li>
+    <li><a href="#ordres">Les ordres à passer</a></li>
+    <li><a href="#fin">Fin de séance : provisoire puis définitif</a></li>
+    <li><a href="#resultats">L'historique des résultats</a></li>
+    <li><a href="#experience">L'expérience {{exp_id}}</a></li>
+    <li><a href="#passe">Le test sur le passé</a></li>
+    <li><a href="#limites">Limites connues</a></li>
+    <li><a href="#trace">Traçabilité</a></li>
+  </ol></nav>
+
+  <h2 id="journee"><span class="n">1</span>Une journée type</h2>
+  <p>Heures de New York (Paris : + 6 h la plupart de l'année).</p>
+  <div class="panel" style="padding: 12px 16px"><div class="timeline">
+    <b>9 h 30</b><span>Ouverture. Le suivi en direct démarre : bulles, cours, prix des titres.</span>
+    <b>{{decision_time}}</b><span>Fin de la première heure : instant de décision. Seules les données connues à cet instant servent.</span>
+    <b>{{entry_time}}</b><span>Les prix de {{decision_time}} sont disponibles (offre gratuite : {{feed_delay}} min de retard). Les deux listes sont produites ; la simulation « achète » au premier échange à partir de cette heure.</span>
+    <b>{{exit_time}}</b><span>La simulation « vend » au dernier échange avant cette heure ({{exit_before}} min avant la clôture).</span>
+    <b>16 h 00</b><span>Clôture. L'état de fin de séance est figé, provisoire.</span>
+    <b>+ {{definitive_after}} h</b><span>L'état de fin de séance est recalculé avec les corrections d'Alpaca, puis n'est plus jamais modifié.</span>
+  </div></div>
+  <p class="plain">Autrement dit : la liste est connue un peu plus d'une heure après l'ouverture, et tout est figé le lendemain.</p>
+
+  <h2 id="donnees"><span class="n">2</span>Les données</h2>
+  <ul>
+    <li><b>Cours</b> : Alpaca, flux consolidé de toutes les bourses américaines (SIP), corrigé des divisions
+      et dividendes. Cours quotidiens et à la minute. En direct : {{feed_delay}} minutes de retard (offre gratuite).</li>
+    <li><b>Liste des titres</b> : titres actifs et négociables chez Alpaca, croisés avec l'annuaire Nasdaq
+      Trader pour écarter les ETF et les titres de test.</li>
+    <li><b>Bénéfices (pour le PER)</b> : déclarations officielles à la SEC (bénéfice dilué par action, US GAAP).</li>
+    <li><b>Domaines d'activité</b> : bureau de la SEC qui examine la société (par exemple « Technology »).</li>
+  </ul>
+  <p>Chaque source est mise en cache sur le disque ; une source qui ne répond pas est signalée, jamais remplacée par une estimation.</p>
+  <p class="plain">Autrement dit : les chiffres viennent du courtier et du régulateur, pas d'un site tiers.</p>
+
+  <h2 id="selection"><span class="n">3</span>La sélection du jour</h2>
+  <p>Deux listes chaque séance, avec les mêmes critères, sauf le PER : <b>Sans PER</b> (version 1) et
+  <b>PER &lt; {{max_pe}}</b> (version 2). Critères appliqués dans cet ordre à {{decision_time}} :</p>
+  <div class="panel"><table>
+    <tr><th>#</th><th>Critère</th><th>Règle</th></tr>
+    <tr><td>1</td><td>Univers</td><td>Actions cotées aux États-Unis, hors ETF et hors cryptomonnaies.</td></tr>
+    <tr><td>2</td><td>Historique</td><td>{{closes}} clôtures quotidiennes disponibles</td></tr>
+    <tr><td>3</td><td>Prix</td><td>Dernière clôture ≥ {{min_price}}</td></tr>
+    <tr><td>4</td><td>Liquidité</td><td>Montant échangé moyen sur {{liquidity_sessions}} séances ≥ {{min_volume}} par jour</td></tr>
+    <tr><td>5</td><td>Volatilité basse</td><td>Variabilité des rendements quotidiens sur {{volatility_sessions}} séances dans les {{volatility_pct}} % les plus calmes des titres restants</td></tr>
+    <tr><td>6</td><td>En baisse sur un mois</td><td>Rendement sur {{month_sessions}} séances &lt; 0</td></tr>
+    <tr><td>7</td><td>Reprise récente</td><td>En hausse à chacune des {{up_days}} dernières séances</td></tr>
+    <tr><td>8</td><td>Hausse première heure</td><td>Dernier prix à {{decision_time}} &gt; premier prix de la séance</td></tr>
+    <tr><td>8 bis</td><td>PER (version 2 seulement)</td><td>Prix / bénéfice par action des 12 derniers mois &lt; {{max_pe}}. Bénéfice négatif, nul, absent ou publié il y a plus de {{eps_staleness}} jours : titre exclu.</td></tr>
+    <tr><td>9</td><td>Classement</td><td>Du plus fort repli sur un mois au plus faible</td></tr>
+    <tr><td>10</td><td>Diversification</td><td>Un titre n'entre que si sa corrélation sur {{correlation_sessions}} séances avec chaque titre déjà retenu est ≤ {{max_corr}} ; arrêt à {{count}} titres</td></tr>
+  </table></div>
+  <p>Si moins de {{count}} titres passent, la liste est plus courte : aucun critère n'est assoupli pour la remplir.
+  L'entonnoir du tableau de bord montre combien de titres restent après chaque critère.</p>
+  <p class="plain">Autrement dit : on cherche des actions solides et calmes, tombées sur le mois, qui repartent depuis deux jours et encore ce matin, sans prendre deux fois le même pari.</p>
+
+  <h2 id="datation"><span class="n">4</span>Pas de donnée du futur</h2>
+  <p>Toute fonction qui calcule un critère reçoit l'instant de décision et, dès sa première ligne, retire
+  toute donnée qui n'était pas encore terminée à cet instant (une barre d'une minute n'est utilisable que
+  quand sa minute est écoulée). Pour le PER, seules les déclarations déposées à la SEC avant le jour de
+  décision comptent. Un test automatique le vérifie à chaque modification du code.</p>
+  <p class="plain">Autrement dit : la liste d'un jour est exactement celle qu'on aurait pu obtenir ce jour-là, à cette heure-là.</p>
+
+  <h2 id="domaines"><span class="n">5</span>Les bulles par domaine</h2>
+  <p>Une lecture du marché, <b>pas un critère de sélection</b>. Pour chaque domaine : moyenne simple des
+  variations de tous ses titres liquides (critères 2 à 4). Mesures : journée (dernier prix / clôture
+  précédente), première heure ({{decision_time}} / premier prix), 2 séances, 1 semaine ({{week_sessions}} séances)
+  et 1 mois ({{month_sessions}} séances). Verte si positive, rouge si négative ; taille selon le nombre de titres.</p>
+  <p>Deux comptages par titre : <b>« Fois dans les 20 »</b> (jours où il était dans la liste) et
+  <b>« Fois top {{top_n}} du domaine »</b> (séances terminées parmi les {{top_n}} meilleures hausses de son domaine).
+  La « tendance sur un mois par domaine au moment du run » fige les bulles à l'heure de la liste.</p>
+  <p class="plain">Autrement dit : les bulles disent quels secteurs montent ou baissent, elles ne choisissent rien.</p>
+
+  <h2 id="simulation"><span class="n">6</span>La simulation</h2>
+  <p>Pour chaque liste : {{amounts}} répartis à parts égales sur ses titres, achetés au premier échange à
+  partir de {{entry_time}}, vendus au dernier échange avant {{exit_time}}. Gain suivi en direct, puis figé.</p>
+  <div class="panel"><table>
+    <tr><th>Colonne</th><th>Calcul</th></tr>
+    <tr><td>Brut</td><td>Moyenne des rendements des titres (prix de vente / prix d'achat − 1)</td></tr>
+    <tr><td>Après frais</td><td>Brut − {{cost_pct}} % à l'achat − {{cost_pct}} % à la vente (≈ {{cost_round_pct}} % par jour)</td></tr>
+    <tr><td>Actions entières</td><td>Nombre d'actions arrondi à l'unité inférieure ; le reste n'est pas investi</td></tr>
+  </table></div>
+  <p>Deux repères, mêmes règles : <b>univers liquide</b> (tous les titres liquides du jour, à parts égales)
+  et <b>SPY</b> (fonds qui suit le S&amp;P 500). Une liste PER &lt; {{max_pe}} vide ce jour-là compte pour 0 %.
+  Les frais de {{cost_pct}} % représentent l'écart entre prix d'achat et de vente et le glissement ;
+  Alpaca ne prend pas de commission. Pas d'impôts.</p>
+  <p class="plain">Autrement dit : on mesure ce qu'un vrai achat à {{entry_time}} aurait rapporté, frais compris, et on le compare au marché.</p>
+
+  <h2 id="ordres"><span class="n">7</span>Les ordres à passer</h2>
+  <p>{{plan_amount}} répartis sur la liste PER &lt; {{max_pe}} : pour chaque titre, nombre entier d'actions
+  (montant par titre / prix, arrondi à l'unité inférieure), prix à saisir, coût, et reste non investi.
+  Pendant la séance, le prix est le dernier connu ; dans l'état de fin de séance, il est figé sur le prix d'achat de la simulation ({{entry_time}}).</p>
+  <p class="warn">Aucun programme ne passe d'ordre. <code>trade.py buy-list</code> et <code>sell-list</code>
+  préparent les ordres ; c'est toi qui les lances et les confirmes.</p>
+  <p class="plain">Autrement dit : la page te dit quoi acheter et combien, mais la décision reste la tienne.</p>
+
+  <h2 id="fin"><span class="n">8</span>Fin de séance : provisoire puis définitif</h2>
+  <p>Après la clôture, l'état de la séance (bulles, colonne « Ouverture → clôture », simulation, ordres) est
+  reconstruit depuis l'historique minute d'Alpaca et figé, <b>provisoire</b>. Alpaca corrige parfois des
+  échanges après coup ; {{definitive_after}} heures après la clôture, tout est recalculé et devient <b>définitif</b>,
+  puis n'est plus jamais modifié. L'ancienne version est archivée, jamais effacée.</p>
+  <p class="plain">Autrement dit : les chiffres du soir peuvent bouger un peu ; ceux du lendemain ne bougent plus.</p>
+
+  <h2 id="resultats"><span class="n">9</span>L'historique des résultats</h2>
+  <p>Chaque séance ajoute une ligne : rendement après frais de chaque liste et des deux repères. Les calculs
+  passent tous par un seul module (<code>core/performance_metrics.py</code>).</p>
+  <div class="panel"><table>
+    <tr><th>Mesure</th><th>Définition</th></tr>
+    <tr><td>Moyenne / séance</td><td>Moyenne simple des rendements quotidiens</td></tr>
+    <tr><td>Total cumulé</td><td>Produit de (1 + rendement du jour), moins 1 : gains réinvestis chaque jour</td></tr>
+    <tr><td>Annualisé</td><td>(1 + total) ^ ({{year_days}} / nombre de séances) − 1. Au-delà de 100 % : ⚠ suspect, à expliquer</td></tr>
+    <tr><td>Séances positives</td><td>Part des séances avec un rendement &gt; 0</td></tr>
+    <tr><td>Pire séance</td><td>Plus mauvais rendement quotidien</td></tr>
+  </table></div>
+  <p>Les séances du 13 et 14 octobre 2026 (simulées avant l'ajout des frais et des repères) ne sont pas comptées.
+  Une étoile * marque une séance encore provisoire.</p>
+  <p class="plain">Autrement dit : c'est le carnet de notes de chaque liste, jour après jour.</p>
+
+  <h2 id="experience"><span class="n">10</span>L'expérience {{exp_id}}</h2>
+  <p>Question : la liste PER &lt; {{max_pe}} rapporte-t-elle plus que la liste sans PER, et plus que l'univers liquide ?
+  La règle de jugement a été écrite et publiée sur GitHub <b>avant</b> les séances qui la jugent : elle ne
+  peut pas être ajustée après coup pour donner la réponse voulue.</p>
+  <ul>
+    <li><b>Fenêtre</b> : les {{exp_sessions}} séances à partir du {{exp_start}}.</li>
+    <li><b>Mesure</b> : rendement après frais de l'état définitif de chaque séance.</li>
+    <li><b>Confirmée</b> si l'écart quotidien moyen est positif <b>et</b> assez régulier pour ne pas être dû au
+      hasard (t apparié ≥ 1,685, seuil statistique usuel de 5 %). Sinon : non confirmée.</li>
+    <li><b>Figés pendant la fenêtre</b> : critères, heures d'achat et de vente, frais, calcul de la simulation.</li>
+    <li><b>Verdict</b> : ouvert par toi, une seule fois, après la dernière séance.</li>
+  </ul>
+  <p>Fichier : <code>{{exp_file}}</code> ; décisions datées dans <code>research/experiments/decisions.md</code>.</p>
+  <p class="plain">Autrement dit : dans environ deux mois, une règle écrite d'avance dira si le filtre PER aide vraiment.</p>
+
+  <h2 id="passe"><span class="n">11</span>Le test sur le passé</h2>
+  <p>Le même code rejoue les deux listes sur les derniers mois, séance par séance, avec les seules données
+  connues à {{decision_time}} chaque jour, les mêmes heures et les mêmes frais, comparées à SPY.</p>
+  <p class="warn">Biais connu : seuls les titres encore cotés aujourd'hui sont testés. Ceux qui ont disparu
+  (faillites, rachats) manquent, ce qui rend le passé plus flatteur. Le test est donc un <b>diagnostic</b> :
+  il peut révéler un problème, il ne décide rien.</p>
+  <p class="plain">Autrement dit : si la méthode perdait de l'argent dans le passé, on le saurait ; si elle en gagnait, ce n'est pas une promesse.</p>
+
+  <h2 id="limites"><span class="n">12</span>Limites connues</h2>
+  <ul>
+    <li>Prix en direct avec {{feed_delay}} minutes de retard (offre gratuite d'Alpaca).</li>
+    <li>« Volatilité basse » est relative : la moitié la plus calme ce jour-là, pas un seuil fixe.</li>
+    <li>Le PER suit les bénéfices officiels, éléments exceptionnels compris ; les sociétés qui ne déposent pas
+      en US GAAP (beaucoup d'étrangères, certaines banques) sont exclues de la version 2.</li>
+    <li>La simulation suppose qu'on obtient le prix du premier échange affiché ; une grosse commande pourrait payer plus.</li>
+    <li>Peu de séances observées pour l'instant : les moyennes bougeront beaucoup au début.</li>
+  </ul>
+  <p class="plain">Autrement dit : les chiffres sont honnêtes, mais pas parfaits, et il faudra du temps pour qu'ils veuillent dire quelque chose.</p>
+
+  <h2 id="trace"><span class="n">13</span>Traçabilité</h2>
+  <p>Chaque liste est enregistrée dans <code>research/experiments/runs/reprise_apres_baisse/r00N/results.json</code>
+  avec les critères, l'entonnoir, les sources et l'identifiant exact du code utilisé (<code>git_sha</code>) ;
+  le programme refuse de tourner si le code n'est pas enregistré dans git. Les états de fin de séance sont
+  dans <code>research/experiments/final/</code>. Tout est envoyé chaque soir sur GitHub.</p>
+  <p class="plain">Autrement dit : n'importe quel chiffre de la page peut être retrouvé et recalculé.</p>
+</article>
+<article lang="en">
+  <header>
+    <h1>Methodology</h1>
+    <a href="index_en.html">← Dashboard</a>
+    <a href="methodologie.html">Français</a>
+  </header>
+  <p class="lead">How every list, bubble and number on the dashboard is produced, and the rules that keep us
+  from fooling ourselves. The values below are read from the code when the page is generated.</p>
+
+  <nav><ol>
+    <li><a href="#day">A typical day</a></li>
+    <li><a href="#data">The data</a></li>
+    <li><a href="#selection">The daily selection</a></li>
+    <li><a href="#datation">No data from the future</a></li>
+    <li><a href="#sectors">Sector bubbles</a></li>
+    <li><a href="#simulation">The simulation</a></li>
+    <li><a href="#orders">Orders to place</a></li>
+    <li><a href="#close">End of session: provisional, then final</a></li>
+    <li><a href="#results">Results history</a></li>
+    <li><a href="#experiment">Experiment {{exp_id}}</a></li>
+    <li><a href="#past">The test on past data</a></li>
+    <li><a href="#limits">Known limits</a></li>
+    <li><a href="#trace">Traceability</a></li>
+  </ol></nav>
+
+  <h2 id="day"><span class="n">1</span>A typical day</h2>
+  <p>New York times (Paris: + 6 h most of the year).</p>
+  <div class="panel" style="padding: 12px 16px"><div class="timeline">
+    <b>9:30 AM</b><span>Open. Live tracking starts: bubbles, prices.</span>
+    <b>{{decision_time}}</b><span>End of the first hour: decision time. Only data known at that moment is used.</span>
+    <b>{{entry_time}}</b><span>{{decision_time}} prices become available (free plan: {{feed_delay}}-minute delay). Both lists are produced; the simulation "buys" at the first trade from this time.</span>
+    <b>{{exit_time}}</b><span>The simulation "sells" at the last trade before this time ({{exit_before}} min before the close).</span>
+    <b>4:00 PM</b><span>Close. The end-of-session state is frozen, provisional.</span>
+    <b>+ {{definitive_after}} h</b><span>The end-of-session state is recomputed with Alpaca's corrections, then never changed again.</span>
+  </div></div>
+  <p class="plain">In other words: the list is known a little over an hour after the open, and everything is final the next day.</p>
+
+  <h2 id="data"><span class="n">2</span>The data</h2>
+  <ul>
+    <li><b>Prices</b>: Alpaca, consolidated feed of all US exchanges (SIP), adjusted for splits and dividends.
+      Daily and minute prices. Live: {{feed_delay}}-minute delay (free plan).</li>
+    <li><b>Stock list</b>: active, tradable stocks at Alpaca, matched with the Nasdaq Trader directory to drop ETFs and test symbols.</li>
+    <li><b>Earnings (for P/E)</b>: official SEC filings (diluted earnings per share, US GAAP).</li>
+    <li><b>Sectors</b>: the SEC office that reviews the company (e.g. "Technology").</li>
+  </ul>
+  <p>Every source is cached on disk; a source that does not answer is reported, never replaced by an estimate.</p>
+  <p class="plain">In other words: the numbers come from the broker and the regulator, not from a third-party website.</p>
+
+  <h2 id="selection"><span class="n">3</span>The daily selection</h2>
+  <p>Two lists every session, same criteria except P/E: <b>Without P/E</b> (version 1) and
+  <b>P/E &lt; {{max_pe}}</b> (version 2). Criteria applied in this order at {{decision_time}}:</p>
+  <div class="panel"><table>
+    <tr><th>#</th><th>Criterion</th><th>Rule</th></tr>
+    <tr><td>1</td><td>Universe</td><td>US-listed stocks, excluding ETFs and crypto.</td></tr>
+    <tr><td>2</td><td>History</td><td>{{closes}} daily closes available</td></tr>
+    <tr><td>3</td><td>Price</td><td>Last close ≥ {{min_price}}</td></tr>
+    <tr><td>4</td><td>Liquidity</td><td>Average traded value over {{liquidity_sessions}} sessions ≥ {{min_volume}} a day</td></tr>
+    <tr><td>5</td><td>Low volatility</td><td>Variability of daily returns over {{volatility_sessions}} sessions within the calmest {{volatility_pct}}% of remaining stocks</td></tr>
+    <tr><td>6</td><td>Down over a month</td><td>Return over {{month_sessions}} sessions &lt; 0</td></tr>
+    <tr><td>7</td><td>Recent rebound</td><td>Up in each of the last {{up_days}} sessions</td></tr>
+    <tr><td>8</td><td>Up in the first hour</td><td>Last price at {{decision_time}} &gt; first price of the session</td></tr>
+    <tr><td>8b</td><td>P/E (version 2 only)</td><td>Price / trailing 12-month earnings per share &lt; {{max_pe}}. Negative, zero or missing earnings, or last filing older than {{eps_staleness}} days: stock excluded.</td></tr>
+    <tr><td>9</td><td>Ranking</td><td>From the largest one-month decline to the smallest</td></tr>
+    <tr><td>10</td><td>Diversification</td><td>A stock is added only if its {{correlation_sessions}}-session correlation with every stock already selected is ≤ {{max_corr}}; stop at {{count}} stocks</td></tr>
+  </table></div>
+  <p>If fewer than {{count}} stocks pass, the list is shorter: no criterion is loosened to fill it.
+  The dashboard funnel shows how many stocks remain after each criterion.</p>
+  <p class="plain">In other words: we look for solid, calm stocks that fell over the month, have been rebounding for two days and again this morning, without making the same bet twice.</p>
+
+  <h2 id="datation"><span class="n">4</span>No data from the future</h2>
+  <p>Every function that computes a criterion receives the decision time and, on its very first line, drops any
+  data not yet complete at that moment (a one-minute bar is usable only once its minute is over). For P/E, only
+  filings submitted to the SEC before the decision day count. An automated test checks this on every code change.</p>
+  <p class="plain">In other words: a day's list is exactly the one you could have obtained on that day, at that time.</p>
+
+  <h2 id="sectors"><span class="n">5</span>Sector bubbles</h2>
+  <p>A reading of the market, <b>not a selection criterion</b>. For each sector: simple average of the moves of all
+  its liquid stocks (criteria 2 to 4). Measures: day (last price / previous close), first hour ({{decision_time}} /
+  first price), 2 sessions, 1 week ({{week_sessions}} sessions) and 1 month ({{month_sessions}} sessions).
+  Green if positive, red if negative; size by number of stocks.</p>
+  <p>Two counts per stock: <b>"Times in top 20"</b> (days it was on the list) and <b>"Times top {{top_n}} of sector"</b>
+  (completed sessions among the {{top_n}} best gainers of its sector). The "one-month trend by sector at run time"
+  freezes the bubbles at the time of the list.</p>
+  <p class="plain">In other words: the bubbles show which sectors are rising or falling; they do not pick anything.</p>
+
+  <h2 id="simulation"><span class="n">6</span>The simulation</h2>
+  <p>For each list: {{amounts}} split equally across its stocks, bought at the first trade from {{entry_time}},
+  sold at the last trade before {{exit_time}}. Gain tracked live, then frozen.</p>
+  <div class="panel"><table>
+    <tr><th>Column</th><th>Calculation</th></tr>
+    <tr><td>Gross</td><td>Average of the stocks' returns (sell price / buy price − 1)</td></tr>
+    <tr><td>After costs</td><td>Gross − {{cost_pct}}% on buying − {{cost_pct}}% on selling (≈ {{cost_round_pct}}% a day)</td></tr>
+    <tr><td>Whole shares</td><td>Share count rounded down; the remainder stays uninvested</td></tr>
+  </table></div>
+  <p>Two benchmarks, same rules: the <b>liquid universe</b> (all liquid stocks of the day, equal amounts) and
+  <b>SPY</b> (fund tracking the S&amp;P 500). An empty P/E &lt; {{max_pe}} list counts as 0% that day. The {{cost_pct}}%
+  cost stands for the bid-ask spread and slippage; Alpaca charges no commission. No taxes.</p>
+  <p class="plain">In other words: we measure what a real purchase at {{entry_time}} would have earned, costs included, and compare it with the market.</p>
+
+  <h2 id="orders"><span class="n">7</span>Orders to place</h2>
+  <p>{{plan_amount}} split across the P/E &lt; {{max_pe}} list: for each stock, a whole number of shares (amount per
+  stock / price, rounded down), price to enter, cost, and uninvested remainder. During the session the price is
+  the latest known; in the end-of-session state it is frozen at the simulation's purchase price ({{entry_time}}).</p>
+  <p class="warn">No program places orders. <code>trade.py buy-list</code> and <code>sell-list</code> prepare the
+  orders; you run and confirm them yourself.</p>
+  <p class="plain">In other words: the page tells you what to buy and how much, but the decision stays yours.</p>
+
+  <h2 id="close"><span class="n">8</span>End of session: provisional, then final</h2>
+  <p>After the close, the session state (bubbles, "Open → close" column, simulation, orders) is rebuilt from Alpaca's
+  minute history and frozen as <b>provisional</b>. Alpaca sometimes corrects trades after the fact; {{definitive_after}}
+  hours after the close, everything is recomputed and becomes <b>final</b>, then never changes again. The previous
+  version is archived, never deleted.</p>
+  <p class="plain">In other words: the evening's numbers may move a little; the next day's numbers no longer move.</p>
+
+  <h2 id="results"><span class="n">9</span>Results history</h2>
+  <p>Each session adds a row: after-cost return of each list and both benchmarks. All calculations go through a
+  single module (<code>core/performance_metrics.py</code>).</p>
+  <div class="panel"><table>
+    <tr><th>Measure</th><th>Definition</th></tr>
+    <tr><td>Mean / session</td><td>Simple average of daily returns</td></tr>
+    <tr><td>Cumulative total</td><td>Product of (1 + daily return), minus 1: gains reinvested every day</td></tr>
+    <tr><td>Annualized</td><td>(1 + total) ^ ({{year_days}} / number of sessions) − 1. Above 100%: ⚠ suspicious, to be explained</td></tr>
+    <tr><td>Positive sessions</td><td>Share of sessions with a return &gt; 0</td></tr>
+    <tr><td>Worst session</td><td>Lowest daily return</td></tr>
+  </table></div>
+  <p>The October 13 and 14, 2026 sessions (simulated before costs and benchmarks were added) are not counted.
+  An asterisk * marks a session that is still provisional.</p>
+  <p class="plain">In other words: it is each list's report card, day after day.</p>
+
+  <h2 id="experiment"><span class="n">10</span>Experiment {{exp_id}}</h2>
+  <p>Question: does the P/E &lt; {{max_pe}} list earn more than the list without P/E, and more than the liquid universe?
+  The judging rule was written and published on GitHub <b>before</b> the sessions that judge it: it cannot be
+  adjusted afterwards to give the desired answer.</p>
+  <ul>
+    <li><b>Window</b>: the {{exp_sessions}} sessions from {{exp_start}}.</li>
+    <li><b>Measure</b>: after-cost return from each session's final state.</li>
+    <li><b>Confirmed</b> if the mean daily gap is positive <b>and</b> steady enough not to be chance (paired t ≥ 1.685,
+      the usual 5% statistical threshold). Otherwise: not confirmed.</li>
+    <li><b>Frozen during the window</b>: criteria, buy and sell times, costs, the simulation calculation.</li>
+    <li><b>Verdict</b>: opened by you, once, after the last session.</li>
+  </ul>
+  <p>File: <code>{{exp_file}}</code>; dated decisions in <code>research/experiments/decisions.md</code>.</p>
+  <p class="plain">In other words: in about two months, a rule written in advance will say whether the P/E filter really helps.</p>
+
+  <h2 id="past"><span class="n">11</span>The test on past data</h2>
+  <p>The same code replays both lists over recent months, session by session, using only data known at
+  {{decision_time}} each day, with the same times and costs, compared with SPY.</p>
+  <p class="warn">Known bias: only stocks still listed today are tested. Those that disappeared (bankruptcies,
+  buyouts) are missing, which makes the past look better. The test is therefore a <b>diagnostic</b>: it can reveal
+  a problem, it decides nothing.</p>
+  <p class="plain">In other words: if the method lost money in the past, we would know; if it made money, that is not a promise.</p>
+
+  <h2 id="limits"><span class="n">12</span>Known limits</h2>
+  <ul>
+    <li>Live prices delayed by {{feed_delay}} minutes (Alpaca free plan).</li>
+    <li>"Low volatility" is relative: the calmest half that day, not a fixed threshold.</li>
+    <li>P/E follows official earnings, one-off items included; companies that do not file in US GAAP (many foreign
+      companies, some banks) are excluded from version 2.</li>
+    <li>The simulation assumes you get the first displayed trade price; a large order could pay more.</li>
+    <li>Few sessions observed so far: averages will move a lot at first.</li>
+  </ul>
+  <p class="plain">In other words: the numbers are honest but not perfect, and it will take time for them to mean something.</p>
+
+  <h2 id="trace"><span class="n">13</span>Traceability</h2>
+  <p>Each list is saved in <code>research/experiments/runs/reprise_apres_baisse/r00N/results.json</code> with the
+  criteria, the funnel, the sources and the exact identifier of the code used (<code>git_sha</code>); the program
+  refuses to run if the code is not committed to git. End-of-session states are in
+  <code>research/experiments/final/</code>. Everything is pushed to GitHub every evening.</p>
+  <p class="plain">In other words: any number on the page can be traced and recomputed.</p>
+</article>
+</body>
+</html>

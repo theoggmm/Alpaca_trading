@@ -175,6 +175,9 @@ def build(family):
     _write_session_files(family)
     for lang, path in OUTPUTS.items():
         path.write_text(page.replace("__LANG__", lang), encoding="utf-8")
+    # Import tardif : dashboard.methodology lit les constantes de dashboard.live, qui importe ce module.
+    from dashboard.methodology import write as write_methodology
+    write_methodology(EXPERIMENT)
     return OUTPUTS, len(runs)
 
 
