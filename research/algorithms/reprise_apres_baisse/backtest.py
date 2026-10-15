@@ -12,12 +12,13 @@ manquent, ce qui avantage le passé) ; indicateur ETF et domaines lus aujourd'hu
 
 Depuis la racine du dépôt :
     .venv/bin/python -m research.algorithms.reprise_apres_baisse.backtest --months 6
+    .venv/bin/python -m research.algorithms.reprise_apres_baisse.backtest --start 2025-02-01 --end 2025-02-28
 """
 
 import argparse
 import json
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import pandas as pd
 
@@ -55,15 +56,21 @@ def _next_id():
     return f"b{max(numbers, default=0) + 1:03d}"
 
 
-def run(months):
+def run(months, first=None, last=None):
+    """Rejoue les `months` derniers mois, ou les séances du `first` au `last` inclus (dates) s'ils sont donnés."""
     # Versions actuelles et versions d'avant (archive) : la comparaison montre l'effet des derniers changements.
     criteria = {variant: Criteria.from_file(path) for variant, path in {**VARIANTS, **ARCHIVED}.items()}
     base = criteria["sans_per"]
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
     today = datetime.now(timezone.utc).astimezone(NEW_YORK).date()
-    start = today - timedelta(days=round(months * 30.44))
-    sessions = [s for s in alpaca.sessions(start, today) if s[0] < today]
+    start = first or today - timedelta(days=round(months * 30.44))
+    end = min(last or today, today)
+    sessions = [s for s in alpaca.sessions(start, end) if s[0] < today]
+    if not sessions:
+        raise ValueError(f"Aucune séance terminée entre {start} et {end}")
+    if first is not None:
+        months = None   # période donnée par ses dates
     print(f"{len(sessions)} séances du {sessions[0][0]} au {sessions[-1][0]}.")
 
     key = f"backtest/{sessions[0][0]}_{sessions[-1][0]}"
@@ -116,6 +123,9 @@ def run(months):
                               market_close)
             record[name] = 0.0 if not items else result.get("net_mean_return")
             record[f"{name}_n"] = len(items)
+            # Détail par montant (liste vide : rien d'investi, 0) : brut, après frais, actions entières après frais.
+            record[f"{name}_gross"] = 0.0 if not items else result.get("mean_return")
+            record[f"{name}_whole_gains"] = {} if not items else result.get("whole_gains", {})
         days.append(record)
         print(f"  [{n}/{len(sessions)}] {record['date']} : "
               + ", ".join(f"{name} {record[f'{name}_n']} titres {_pct(record[name])}" for name in lists))
@@ -157,9 +167,11 @@ def _pct(value):
 def main():
     parser = argparse.ArgumentParser(description="Test sur le passé du screener reprise_apres_baisse (diagnostic)")
     parser.add_argument("--months", type=int, default=6, help="Nombre de mois rejoués (défaut : 6)")
+    parser.add_argument("--start", type=date.fromisoformat, help="Première date rejouée (AAAA-MM-JJ), au lieu de --months")
+    parser.add_argument("--end", type=date.fromisoformat, help="Dernière date rejouée (AAAA-MM-JJ), avec --start")
     args = parser.parse_args()
     try:
-        return run(args.months)
+        return run(args.months, args.start, args.end)
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
         return 1

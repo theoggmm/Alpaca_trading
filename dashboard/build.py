@@ -182,7 +182,8 @@ def _backtests(family):
     latest = {}
     for path in sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
-        latest[result["period"]["months"]] = result
+        # Une durée glissante (6 mois, 1 mois) ou une période datée (« février 2025 ») : dernier résultat de chacune.
+        latest[result["period"]["months"] or result["period"]["start"]] = result
     return [{
         "id": result["backtest_id"],
         "git_sha": result["git_sha"],
@@ -191,7 +192,7 @@ def _backtests(family):
         "differences": result["differences"],
         "cumulative": {name: cumulative({d["date"]: d[name] for d in result["days"] if d[name] is not None})
                        for name in result["summaries"]},
-    } for _, result in sorted(latest.items(), reverse=True)]
+    } for _, result in sorted(latest.items(), key=lambda item: (isinstance(item[0], str), item[0]), reverse=True)]
 
 
 def build(family):

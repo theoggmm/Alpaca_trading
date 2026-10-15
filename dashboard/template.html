@@ -429,7 +429,7 @@ const TEXT = {
     intro_diff: "Chaque ligne compare deux séries jour par jour. « Écart moyen » : de combien l'une a fait mieux (ou moins bien) que l'autre en moyenne par jour. « t apparié » : à partir d'environ 1,7, l'écart est probablement réel ; en dessous, il peut être dû au hasard.",
     bt_empty: "Le test sur le passé n'a pas encore été lancé.",
     bt_head: (id, p) => `Test ${id} : ${p.sessions} séances, du ${p.start} au ${p.end}`,
-    bt_period: m => `Sur ${m} mois`,
+    bt_period: p => p.months ? `Sur ${p.months} mois` : `Du ${p.start} au ${p.end}`,
     bt_status: "Statut : diagnostic. Ce test sert à repérer un problème, pas à décider : seule l'expérience 001, sur les séances à venir, tranchera.",
     bt_rules: "Mêmes règles que la simulation : listes calculées avec les seules données connues à leur décision (10 h 45 avec les règles actuelles, 10 h 30 avant), achat au premier échange 15 minutes plus tard, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre, liste vide = 0 %.",
     bt_trace: sha => `Code utilisé : ${sha.slice(0, 7)}.`,
@@ -623,7 +623,7 @@ const TEXT = {
     intro_diff: "Each row compares two series day by day. \"Mean gap\": how much better (or worse) one did than the other on average per day. \"Paired t\": from about 1.7 up, the gap is probably real; below that, it may be chance.",
     bt_empty: "The test on past data has not been run yet.",
     bt_head: (id, p) => `Test ${id}: ${p.sessions} sessions, from ${p.start} to ${p.end}`,
-    bt_period: m => `Over ${m} month${m > 1 ? "s" : ""}`,
+    bt_period: p => p.months ? `Over ${p.months} month${p.months > 1 ? "s" : ""}` : `From ${p.start} to ${p.end}`,
     bt_status: "Status: diagnostic. This test is meant to spot problems, not to decide: only experiment 001, on upcoming sessions, will settle it.",
     bt_rules: "Same rules as the simulation: lists computed using only data known at their decision time (10:45 AM with the current rules, 10:30 AM before), bought at the first trade 15 minutes later, sold at the last trade before 3:30 PM (New York), 0.05% cost per order, empty list = 0%.",
     bt_trace: sha => `Code used: ${sha.slice(0, 7)}.`,
@@ -1211,7 +1211,7 @@ function renderBacktest() {
         tone: k => bt.differences[k].mean },
       { label: TEXT.bt_t, value: k => bt.differences[k].t == null ? "—" : bt.differences[k].t.toFixed(2) },
     ], diffs));
-    return [el("h3", "bt-period", TEXT.bt_period(bt.period.months)), head,
+    return [el("h3", "bt-period", TEXT.bt_period(bt.period)), head,
             el("p", "intro", TEXT.intro_summary), summaryBox, el("p", "intro", TEXT.intro_chart), chart,
             el("p", "intro", TEXT.intro_diff), diffBox];
   });
