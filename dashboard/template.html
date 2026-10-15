@@ -169,6 +169,13 @@
       <p class="note" data-t="history_note"></p>
     </section>
   </div>
+
+  <section>
+    <h2 data-t="sim_title"></h2>
+    <div class="live-status" id="sim-status"></div>
+    <div class="panel" id="sim"></div>
+    <p class="note" id="sim-note"></p>
+  </section>
 </main>
 
 <!-- Clôtures du dernier mois de tout l'univers (écrit une fois par séance par le suivi en direct). -->
@@ -232,6 +239,15 @@ const TEXT = {
     final_state: d => `Fin de séance du ${d}`,
     opt_live: "en direct", opt_provisional: "fin de séance (provisoire)", opt_final: "fin de séance",
     session_of: d => `Séance du ${d}`,
+    sim_title: "Simulation : gain ou perte du jour selon le montant investi",
+    sim_amount: "Montant investi",
+    sim_waiting: t => `En attente : achat au premier échange à partir de ${t} (New York)`,
+    sim_live: t => `En direct : valeur au dernier prix connu (${t}, New York)`,
+    sim_closed: t => `Figé : vendu au dernier échange avant ${t} (New York)`,
+    sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b} (New York)`,
+    sim_no_list: "Pas encore de liste pour cette séance : la simulation commence quand elle est produite.",
+    sim_missing: "Pas de simulation pour cette séance (fonction ajoutée le 15 octobre).",
+    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et quart après l'ouverture) et vendu au dernier échange 30 minutes avant la clôture. Montants bruts, avant frais et impôts. Un titre sans échange au moment de l'achat est écarté de la répartition.",
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
     no_run_yet: "La liste des 20 titres de cette séance sera produite à 16 h 45 (Paris), une heure et quart après l'ouverture.",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
@@ -325,6 +341,15 @@ const TEXT = {
     final_state: d => `End of session ${d}`,
     opt_live: "live", opt_provisional: "end of session (provisional)", opt_final: "end of session",
     session_of: d => `Session of ${d}`,
+    sim_title: "Simulation: the day's gain or loss by amount invested",
+    sim_amount: "Amount invested",
+    sim_waiting: t => `Waiting: bought at the first trade from ${t} (New York)`,
+    sim_live: t => `Live: value at the latest known price (${t}, New York)`,
+    sim_closed: t => `Fixed: sold at the last trade before ${t} (New York)`,
+    sim_times: (a, b) => `bought from ${a}, sold before ${b} (New York)`,
+    sim_no_list: "No list for this session yet: the simulation starts once it is produced.",
+    sim_missing: "No simulation for this session (feature added on October 15).",
+    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a quarter after the open) and sold at the last trade 30 minutes before the close. Gross amounts, before fees and tax. A stock with no trade at buying time is left out of the split.",
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
     no_run_yet: "This session's list of 20 stocks will be produced at 4:45 PM (Paris), an hour and a quarter after the open.",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
@@ -658,6 +683,7 @@ function renderLive() {
   if (!SHOWN) {
     status.replaceChildren(el("span", "pulse off"), el("span", "", TEXT.live_off));
     box.replaceChildren(el("div", "empty", TEXT.live_launch));
+    renderSim();
     return;
   }
   const running = !SHOWN.final && Date.now() - new Date(SHOWN.observed_at).getTime() < LIVE_STALE_MS;
@@ -742,6 +768,50 @@ function renderLive() {
   });
   box.replaceChildren(order.length ? t : el("div", "empty", TEXT.no_session_prices));
   document.getElementById("live-note").textContent = TEXT.live_note(SHOWN.universe, SHOWN.first_hour_minutes);
+  renderSim();
+}
+
+// Simulation : montant réparti à parts égales sur chaque liste, achat après la première heure, vente 30 min avant la clôture.
+function renderSim() {
+  const status = document.getElementById("sim-status");
+  const box = document.getElementById("sim");
+  const note = document.getElementById("sim-note");
+  const sim = SHOWN?.portfolio;
+  if (!sim || !Object.keys(sim.versions).length) {
+    status.replaceChildren();
+    box.replaceChildren(el("div", "empty", SHOWN?.portfolio ? TEXT.sim_no_list : TEXT.sim_missing));
+    note.textContent = "";
+    return;
+  }
+  const versions = VARIANTS.filter(v => sim.versions[v]);
+  const states = versions.map(v => sim.versions[v].status);
+  const label = states.every(s => s === "closed") ? TEXT.sim_closed(nyTime(sim.exit_time))
+    : states.includes("live") ? TEXT.sim_live(SHOWN.prices_until ? nyTime(SHOWN.prices_until) : "—")
+    : TEXT.sim_waiting(nyTime(sim.entry_time));
+  status.replaceChildren(el("span", "pulse" + (states.includes("live") && !SHOWN.final ? "" : " off")), el("span", "", label),
+                         el("span", "", TEXT.sim_times(nyTime(sim.entry_time), nyTime(sim.exit_time))));
+
+  const amounts = ["10000", "25000", "50000", "100000", "1000000"];
+  const t = el("table");
+  const head = t.createTHead().insertRow();
+  head.appendChild(el("th", "text", TEXT.sim_amount));
+  versions.forEach(v => {
+    const r = sim.versions[v];
+    head.appendChild(el("th", "", `${TEXT.variants[v]} · ${TEXT.n_stocks(r.priced || r.n)}`));
+  });
+  const body = t.createTBody();
+  amounts.forEach(amount => {
+    const tr = body.insertRow();
+    tr.appendChild(el("td", "text", usd(amount)));
+    versions.forEach(v => {
+      const r = sim.versions[v];
+      const gain = r.gains[amount];
+      tr.appendChild(gain === undefined ? el("td", "", "—")
+        : el("td", signed(Number(gain)), `${Number(gain) >= 0 ? "+" : ""}${usd(gain)} (${pct(r.mean_return)})`));
+    });
+  });
+  box.replaceChildren(t);
+  note.textContent = TEXT.sim_note;
 }
 
 function renderHistory() {

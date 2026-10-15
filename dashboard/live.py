@@ -24,6 +24,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 from core.domains import LIVE_MEASURES, WEEK_SESSIONS, live_domain_trends
+from core.portfolio import simulate
 from core.screener import (Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes,
                            session_open_prices, session_trades)
 from core.universe import eligible_symbols
@@ -32,7 +33,7 @@ from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
-from infra.trace import ROOT, committed_git_sha, latest_per_session, load_runs
+from infra.trace import ROOT, committed_git_sha, latest_per_session, load_runs, variant_of
 
 NEW_YORK = ZoneInfo("America/New_York")
 FEED = "delayed_sip"
@@ -44,6 +45,11 @@ DAILY_HISTORY = timedelta(days=130)
 CLOSING_WINDOW = timedelta(minutes=30)
 # Fenêtre lue après l'ouverture pour connaître le premier prix de chaque titre (graphiques « depuis l'ouverture »).
 OPENING_WINDOW = timedelta(minutes=5)
+# Simulation d'investissement (tableau du bas) : achat dès que la liste est disponible (décision + 15 min),
+# vente 30 min avant la clôture. Fenêtres lues pour trouver le premier et le dernier échange.
+EXIT_BEFORE_CLOSE = timedelta(minutes=30)
+TRADE_WINDOW = timedelta(minutes=5)
+EXIT_WINDOW = timedelta(minutes=30)
 # Les données minute d'Alpaca sont corrigées après coup (échanges annulés ou rectifiés) : un état de
 # fin de séance calculé le soir même est provisoire ; il devient définitif, relu à neuf, 12 h après la clôture.
 DEFINITIVE_AFTER = timedelta(hours=12)
@@ -97,6 +103,24 @@ def _selection(family, key):
     """
     runs = [r for r in latest_per_session(load_runs(family)) if r["session_date"] == key]
     return runs, {item["symbol"]: Decimal(item["open_today"]) for r in runs for item in r["selection"]}
+
+
+def _trade_times(criteria, market_open, market_close):
+    """(achat, vente) : liste disponible (décision + 15 min) et 30 min avant la clôture."""
+    return (market_open + timedelta(minutes=criteria.first_hour_minutes) + FEED_DELAY,
+            market_close - EXIT_BEFORE_CLOSE)
+
+
+def _portfolio(runs, entry_bars, exit_bars, trades, entry_time, exit_time, now):
+    """Simulation par version de la liste (sans PER, PER < 12) : achat, valeur en cours ou vente."""
+    return {
+        "entry_time": entry_time.isoformat(),
+        "exit_time": exit_time.isoformat(),
+        "versions": {variant_of(r): {"run_id": r["run_id"],
+                                     **simulate([i["symbol"] for i in r["selection"]], entry_bars, exit_bars,
+                                                trades, entry_time, exit_time, now)}
+                     for r in runs},
+    }
 
 
 def _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, opening,
@@ -163,9 +187,15 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     closing = cached(f"{key}/{stage}_closing_bars",
                      lambda: alpaca.bars(tracked, "1Min", market_close - CLOSING_WINDOW, market_close))
     trades = last_session_prices(closing, market_close)
+    entry_time, exit_time = _trade_times(criteria, market_open, market_close)
+    entry_bars = cached(f"{key}/{stage}_entry_bars",
+                        lambda: alpaca.bars(sorted(opens), "1Min", entry_time, entry_time + TRADE_WINDOW))
+    exit_bars = cached(f"{key}/{stage}_exit_bars",
+                       lambda: alpaca.bars(sorted(opens), "1Min", exit_time - EXIT_WINDOW, exit_time))
 
     state = _state(family, criteria, key, market_open, market_close, market_close,
                    daily, domains, names, trades, minute, minute, runs, opens)
+    state["portfolio"] = _portfolio(runs, entry_bars, exit_bars, trades, entry_time, exit_time, market_close)
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
@@ -244,6 +274,9 @@ def run(family):
     _write_chart_data(daily, market_open, symbols, criteria, key)
     minute = EMPTY_BARS
     opening = EMPTY_BARS
+    entry_time, exit_time = _trade_times(criteria, market_open, market_close)
+    # Prix d'achat et de vente des titres des listes : relus si les listes changent (liste produite en retard).
+    entry_bars, exit_bars, bars_for = EMPTY_BARS, EMPTY_BARS, (set(), set())
 
     while True:
         now = datetime.now(timezone.utc)
@@ -265,6 +298,12 @@ def run(family):
             if opening.empty and now >= market_open + OPENING_WINDOW + FEED_DELAY:
                 opening = cached(f"{key}/opening_bars",
                                  lambda: alpaca.bars(symbols, "1Min", market_open, market_open + OPENING_WINDOW))
+            if opens and set(opens) != bars_for[0] and now >= entry_time + TRADE_WINDOW + FEED_DELAY:
+                entry_bars = alpaca.bars(sorted(opens), "1Min", entry_time, entry_time + TRADE_WINDOW)
+                bars_for = (set(opens), bars_for[1])
+            if opens and set(opens) != bars_for[1] and now >= exit_time + FEED_DELAY:
+                exit_bars = alpaca.bars(sorted(opens), "1Min", exit_time - EXIT_WINDOW, exit_time)
+                bars_for = (bars_for[0], set(opens))
             trades = alpaca.latest_trades(sorted(set(symbols) | set(opens)), FEED)
         except FetchError as e:
             print(f"{now.astimezone(NEW_YORK):%H:%M} — lecture impossible, nouvel essai dans {REFRESH_S} s : {e}")
@@ -274,6 +313,7 @@ def run(family):
         # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
         state = _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades,
                        minute, minute if not minute.empty else opening, today_runs, opens)
+        state["portfolio"] = _portfolio(today_runs, entry_bars, exit_bars, trades, entry_time, exit_time, now)
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)
