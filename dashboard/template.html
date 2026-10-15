@@ -106,6 +106,8 @@
   td.wrap, th.wrap { white-space: normal; }
   .bt-period { margin: 18px 0 4px; font-size: 17px; }
   .bt-period:first-child { margin-top: 0; }
+  .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 8px; }
+  .warn-line { color: var(--down); }
   .sim-tables { display: grid; gap: 16px; }
   .sim-block h3 { margin: 0 0 6px; font-size: 15px; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
@@ -278,7 +280,8 @@
     <section>
       <h2 data-t="months_title"></h2>
       <p class="intro" data-t="intro_months"></p>
-      <label><span data-t="months_pick"></span> <select id="month-test"></select></label>
+      <div class="pickers"><label><span data-t="months_pick"></span> <select id="month-test"></select></label>
+      <label><span data-t="months_amount"></span> <select id="month-amount"></select></label></div>
       <div id="month-detail" style="display: grid; gap: 4px;"></div>
     </section>
   </div>
@@ -403,7 +406,8 @@ const TEXT = {
     bt_title: "Test sur le passé (diagnostic)",
     months_title: "Tests d'un mois avec les règles actuelles",
     intro_months: "Que se serait-il passé si tu avais suivi les deux listes, avec les règles actuelles, pendant tout un mois passé, en investissant la même somme chaque jour ? Choisis le mois dans le menu. Pour chaque liste : le résultat jour par jour, puis semaine par semaine et sur le mois, de plus en plus réaliste de gauche à droite.",
-    months_pick: "Mois testé :", months_empty: "Aucun mois testé pour l'instant.",
+    months_pick: "Mois testé :", months_amount: "Montant investi chaque séance :", months_empty: "Aucun mois testé pour l'instant.",
+    months_big: "Attention : avec un tel montant, sur 1 à 5 actions, ton ordre pèserait lourd face aux échanges de quelques minutes ; le prix bougerait contre toi et les frais réels seraient bien plus que 0,05 %. Ces chiffres sont donc trop optimistes.",
     months_label: p => `${new Date(`${p.start}T12:00:00Z`).toLocaleDateString("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" })} (${p.sessions} séances)`,
     months_head: (p, a) => `Du ${p.start} au ${p.end} : ${p.sessions} séances, ${usd(a)} investis chaque séance dans chaque liste`,
     months_spy: s => `Pour comparer : le S&P 500 (SPY) acheté et revendu aux mêmes heures, avec la même somme, aurait donné ${s} sur le mois (après frais).`,
@@ -608,7 +612,8 @@ const TEXT = {
     bt_title: "Test on past data (diagnostic)",
     months_title: "One-month tests with the current rules",
     intro_months: "What would have happened if you had followed both lists, with the current rules, for a whole past month, investing the same amount every day? Pick the month in the menu. For each list: the result day by day, then week by week and for the month, more and more realistic from left to right.",
-    months_pick: "Month tested:", months_empty: "No month tested yet.",
+    months_pick: "Month tested:", months_amount: "Amount invested each session:", months_empty: "No month tested yet.",
+    months_big: "Warning: with such an amount, on 1 to 5 stocks, your order would weigh heavily against a few minutes of trading; the price would move against you and real costs would be well above 0.05%. These figures are therefore too optimistic.",
     months_label: p => `${new Date(`${p.start}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })} (${p.sessions} sessions)`,
     months_head: (p, a) => `From ${p.start} to ${p.end}: ${p.sessions} sessions, ${usd(a)} invested every session in each list`,
     months_spy: s => `For comparison: the S&P 500 (SPY) bought and sold at the same times, with the same amount, would have given ${s} over the month (after costs).`,
@@ -1301,6 +1306,7 @@ function renderMonthTests() {
   }
   picker.replaceChildren(...tests.map(t => new Option(TEXT.months_label(t.period), t.id)));
   picker.value = tests.some(t => t.id === VIEW.monthTest) ? VIEW.monthTest : tests[0].id;
+  const amountPicker = document.getElementById("month-amount");
   const usdSigned = v => `${Number(v) > 0 ? "+" : ""}${usd(v)}`;
   const moneyCols = [
     { label: TEXT.sim_gross, value: r => usdSigned(r.gross), tone: r => Number(r.gross) },
@@ -1310,11 +1316,17 @@ function renderMonthTests() {
   ];
   const draw = () => {
     const t = tests.find(x => x.id === picker.value);
+    // Montants calculés par ce test ; celui choisi est gardé d'un mois à l'autre quand il existe.
+    const amounts = Object.keys(t.amounts);
+    amountPicker.replaceChildren(...amounts.map(a => new Option(usd(a), a)));
+    amountPicker.value = amounts.includes(VIEW.monthAmount) ? VIEW.monthAmount : amounts[0];
+    const a = t.amounts[amountPicker.value];
     const blocks = [el("div", "panel exp-box")];
-    blocks[0].append(el("b", "", TEXT.months_head(t.period, t.amount)), el("span", "", TEXT.bt_status),
-                     el("span", "", TEXT.bt_trace(t.git_sha)), el("span", "", TEXT.months_spy(usdSigned(t.spy_net))));
-    VARIANTS.filter(v => t.lists[v]).forEach(v => {
-      const l = t.lists[v];
+    blocks[0].append(el("b", "", TEXT.months_head(t.period, amountPicker.value)), el("span", "", TEXT.bt_status),
+                     el("span", "", TEXT.bt_trace(t.git_sha)), el("span", "", TEXT.months_spy(usdSigned(a.spy_net))));
+    if (Number(amountPicker.value) >= 1000000) blocks[0].append(el("span", "warn-line", TEXT.months_big));
+    VARIANTS.filter(v => a.lists[v]).forEach(v => {
+      const l = a.lists[v];
       const panel = (node) => { const p = el("div", "panel"); p.appendChild(node); return p; };
       blocks.push(el("h3", "bt-period", `${TEXT.variants[v]} · ${TEXT.months_total(usdSigned(l.total.kept))}`),
         el("p", "intro", TEXT.months_days_intro),
@@ -1330,6 +1342,7 @@ function renderMonthTests() {
     box.replaceChildren(...blocks);
   };
   picker.onchange = () => { saveView({ ...VIEW, monthTest: picker.value }); draw(); };
+  amountPicker.onchange = () => { saveView({ ...VIEW, monthAmount: amountPicker.value }); draw(); };
   draw();
 }
 const longDate = iso => new Date(`${iso}T12:00:00Z`).toLocaleDateString(TEXT.locale, { weekday: "short", day: "numeric", month: "short", timeZone: "UTC" });

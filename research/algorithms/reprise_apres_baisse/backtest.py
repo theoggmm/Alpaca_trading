@@ -19,11 +19,12 @@ import argparse
 import json
 import sys
 from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
 
 import pandas as pd
 
 from core.performance_metrics import paired_difference, summary
-from core.portfolio import simulate
+from core.portfolio import AMOUNTS, simulate
 from core.screener import Criteria, daily_candidates, screen
 from core.universe import eligible_symbols
 from infra import nasdaq_symbols, sec
@@ -34,6 +35,8 @@ from infra.trace import RUNS_DIR, TraceError, committed_git_sha
 from research.algorithms.reprise_apres_baisse.run import ARCHIVED, DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, VARIANTS
 
 BENCHMARK = "SPY"
+# Montants détaillés (actions entières) : ceux de la simulation, plus 2 M$ (onglet « Tests d'un mois »).
+TESTED_AMOUNTS = tuple(sorted({*AMOUNTS, Decimal("2000000")}))
 # Comparaisons rapportées (écarts quotidiens appariés) : (série, référence).
 COMPARISONS = [("per12", "sans_per"), ("per12", "spy"), ("sans_per", "spy"),
                ("per12", "per12_v2"), ("sans_per", "sans_per_v1")]
@@ -120,7 +123,7 @@ def run(months, first=None, last=None):
         record = {"date": session_date.isoformat()}
         for name, items in lists.items():
             result = simulate([i["symbol"] for i in items], entry_bars, exit_bars, {}, entries[name], exit_time,
-                              market_close)
+                              market_close, amounts=TESTED_AMOUNTS)
             record[name] = 0.0 if not items else result.get("net_mean_return")
             record[f"{name}_n"] = len(items)
             # Détail par montant (liste vide : rien d'investi, 0) : brut, après frais, actions entières après frais.

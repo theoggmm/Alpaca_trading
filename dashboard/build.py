@@ -196,17 +196,17 @@ def _backtests(family):
     } for _, result in sorted(latest.items(), key=lambda item: (isinstance(item[0], str), item[0]), reverse=True)]
 
 
-# Onglet « Tests d'un mois » : montant investi chaque séance dans chaque liste.
-MONTH_TEST_AMOUNT = Decimal("25000")
+# Onglet « Tests d'un mois » : montants proposés (investis chaque séance dans chaque liste), si le test les a calculés.
+MONTH_TEST_AMOUNTS = (Decimal("25000"), Decimal("2000000"))
 MONTH_TEST_LISTS = ("per12", "sans_per")
 
 
 def _month_tests(family):
     """
-    Tests sur le passé d'une période datée (un mois) : pour chaque liste, à MONTH_TEST_AMOUNT par séance,
-    gain par séance, par semaine et sur la période — brut, après frais, actions entières après frais, et
-    ce qui reste après impôt. Impôt d'une semaine ou du mois : sur son total (les pertes compensent les gains) ;
-    d'une séance : sur elle seule. Liste vide : rien d'investi, 0.
+    Tests sur le passé d'une période datée (un mois) : pour chaque montant et chaque liste, gain par séance,
+    par semaine et sur la période — brut, après frais, actions entières après frais, et ce qui reste après
+    impôt. Impôt d'une semaine ou du mois : sur son total (les pertes compensent les gains) ; d'une séance :
+    sur elle seule. Liste vide : rien d'investi, 0.
     """
     def kept(whole):
         return after_tax({"x": str(whole)})["x"]
@@ -216,19 +216,15 @@ def _month_tests(family):
         return {"sessions": len(rows), "gross": str(sum(Decimal(r["gross"]) for r in rows)),
                 "net": str(sum(Decimal(r["net"]) for r in rows)), "whole": str(whole), "kept": kept(whole)}
 
-    tests = []
-    for path in sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
-        result = json.loads(path.read_text(encoding="utf-8"))
-        if result["period"]["months"] or "per12_gross" not in result["days"][0]:
-            continue
+    def lists_for(result, amount):
         lists = {}
         for name in MONTH_TEST_LISTS:
             days = []
             for d in result["days"]:
                 empty = not d[f"{name}_n"]
-                gross = Decimal(0) if empty else (MONTH_TEST_AMOUNT * Decimal(str(d[f"{name}_gross"]))).quantize(Decimal("0.01"))
-                net = Decimal(0) if empty else (MONTH_TEST_AMOUNT * Decimal(str(d[name]))).quantize(Decimal("0.01"))
-                whole = Decimal(d[f"{name}_whole_gains"].get(str(MONTH_TEST_AMOUNT), "0"))
+                gross = Decimal(0) if empty else (amount * Decimal(str(d[f"{name}_gross"]))).quantize(Decimal("0.01"))
+                net = Decimal(0) if empty else (amount * Decimal(str(d[name]))).quantize(Decimal("0.01"))
+                whole = Decimal(d[f"{name}_whole_gains"].get(str(amount), "0"))
                 days.append({"date": d["date"], "n": d[f"{name}_n"], "gross": str(gross), "net": str(net),
                              "whole": str(whole), "kept": kept(whole)})
             weeks = {}
@@ -238,10 +234,21 @@ def _month_tests(family):
                            "weeks": [{"start": rows[0]["date"], "end": rows[-1]["date"], **totals(rows)}
                                      for rows in weeks.values()],
                            "total": totals(days)}
+        return lists
+
+    tests = []
+    for path in sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+        result = json.loads(path.read_text(encoding="utf-8"))
+        if result["period"]["months"] or "per12_gross" not in result["days"][0]:
+            continue
+        # Montants calculés en actions entières par ce test (un ancien test n'a pas 2 M$).
+        computed = {k for d in result["days"] for n in MONTH_TEST_LISTS for k in d[f"{n}_whole_gains"]}
+        empty_month = not computed
         spy = sum(Decimal(str(d["spy"])) for d in result["days"] if d["spy"] is not None)
         tests.append({"id": result["backtest_id"], "git_sha": result["git_sha"], "period": result["period"],
-                      "amount": str(MONTH_TEST_AMOUNT), "lists": lists,
-                      "spy_net": str((MONTH_TEST_AMOUNT * spy).quantize(Decimal("0.01")))})
+                      "amounts": {str(a): {"lists": lists_for(result, a),
+                                           "spy_net": str((a * spy).quantize(Decimal("0.01")))}
+                                  for a in MONTH_TEST_AMOUNTS if empty_month or str(a) in computed}})
     # Le plus récent test de chaque période seulement.
     latest = {t["period"]["start"]: t for t in tests}
     return [latest[k] for k in sorted(latest, reverse=True)]
