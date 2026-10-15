@@ -50,6 +50,11 @@ def _values(lang, experiment):
     per12 = Criteria.from_file(CRITERIA_DIR / "criteres_per12.json")
     if per12.to_json() | {"max_pe": None, "version": None} != base.to_json() | {"max_pe": None, "version": None}:
         raise ValueError("Les deux fichiers de critères diffèrent ailleurs que sur le PER : la page serait fausse.")
+    confirm = Criteria.from_file(CRITERIA_DIR / "criteres_per12_confirmation.json")
+    not_at_top = Criteria.from_file(CRITERIA_DIR / "criteres_per12_pas_au_sommet.json")
+    for variant, rule in ((confirm, "confirmation_minutes"), (not_at_top, "min_gap_below_high")):
+        if variant.to_json() | {rule: None, "version": None} != per12.to_json() | {rule: None, "version": None}:
+            raise ValueError(f"Une version diffère de la version 2 ailleurs que sur {rule} : la page serait fausse.")
     feed = int(FEED_DELAY.total_seconds() // 60)
     exit_before = int(EXIT_BEFORE_CLOSE.total_seconds() // 60)
     decision = NY_OPEN_MINUTES + base.first_hour_minutes
@@ -63,6 +68,10 @@ def _values(lang, experiment):
         "max_corr": _number(base.max_pairwise_correlation, lang), "max_pe": _number(per12.max_pe, lang),
         "closes": base.required_sessions,
         "decision_time": _ny_time(decision, lang), "entry_time": _ny_time(decision + feed, lang),
+        "confirm_decision_time": _ny_time(NY_OPEN_MINUTES + confirm.decision_minutes, lang),
+        "confirm_entry_time": _ny_time(NY_OPEN_MINUTES + confirm.decision_minutes + feed, lang),
+        "confirmation_minutes": confirm.confirmation_minutes,
+        "gap_pct": _number(not_at_top.min_gap_below_high * 100, lang),
         "exit_time": _ny_time(16 * 60 - exit_before, lang), "feed_delay": feed, "exit_before": exit_before,
         "tax_pct": _number(TAX_RATE * 100, lang),
         "cost_pct": _number(COST_BPS / 100, lang), "cost_round_pct": _number(COST_BPS * 2 / 100, lang),

@@ -2,9 +2,10 @@
 Test sur le passé (diagnostic) : rejoue chaque séance des N derniers mois avec les fonctions du screener
 quotidien et de la simulation (règle 8 : un seul module de logique).
 
-Pour chaque séance : liste « sans PER » et liste « PER < 12 » calculées avec les seules données connues à
-10 h 30 (New York), achat au premier échange à partir de 10 h 45, vente au dernier échange avant 15 h 30,
-0,05 % de frais par ordre ; repère SPY selon les mêmes règles.
+Pour chaque séance : chaque version de la liste (sans PER, PER < 12, + confirmation, + pas au sommet)
+calculée avec les seules données connues à sa décision (10 h 30, ou 10 h 45 avec confirmation ; New York),
+achat au premier échange 15 min après la décision, vente au dernier échange avant 15 h 30, 0,05 % de frais
+par ordre ; repère SPY acheté à 10 h 45 selon les mêmes règles.
 
 Biais connus, écrits dans le résultat : univers = titres actifs aujourd'hui (les titres disparus depuis
 manquent, ce qui avantage le passé) ; indicateur ETF et domaines lus aujourd'hui.
@@ -17,7 +18,8 @@ import argparse
 import json
 import sys
 from datetime import datetime, timedelta, timezone
-from pathlib import Path
+
+import pandas as pd
 
 from core.performance_metrics import paired_difference, summary
 from core.portfolio import simulate
@@ -31,6 +33,9 @@ from infra.trace import RUNS_DIR, TraceError, committed_git_sha
 from research.algorithms.reprise_apres_baisse.run import DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, VARIANTS
 
 BENCHMARK = "SPY"
+# Comparaisons rapportées (écarts quotidiens appariés) : (série, référence).
+COMPARISONS = [("per12", "sans_per"), ("per12", "spy"), ("sans_per", "spy"),
+               ("per12_confirmation", "per12"), ("per12_pas_au_sommet", "per12")]
 TRADE_WINDOW = timedelta(minutes=5)
 EXIT_BEFORE_CLOSE = timedelta(minutes=30)
 EXIT_WINDOW = timedelta(minutes=30)
@@ -41,6 +46,7 @@ BIASES = [
     "Indicateur ETF (Nasdaq Trader) lu aujourd'hui, appliqué au passé.",
     "Bénéfices (PER) : seules les déclarations déposées à la SEC avant chaque jour de décision servent.",
     "Repère univers liquide non calculé (trop coûteux sur le passé) : seul SPY sert de repère.",
+    "Plus haut de la première heure (version « pas au sommet ») : plus haute clôture minute, comme en direct.",
 ]
 
 
@@ -72,32 +78,44 @@ def run(months):
     for n, (session_date, open_time, close_time) in enumerate(sessions, start=1):
         market_open = datetime.combine(session_date, open_time, NEW_YORK).astimezone(timezone.utc)
         market_close = datetime.combine(session_date, close_time, NEW_YORK).astimezone(timezone.utc)
-        decision_time = market_open + timedelta(minutes=base.first_hour_minutes)
-        entry_time, exit_time = decision_time + SIP_DELAY, market_close - EXIT_BEFORE_CLOSE
+        first_hour_end = market_open + timedelta(minutes=base.first_hour_minutes)
+        last_decision = market_open + timedelta(minutes=max(c.decision_minutes for c in criteria.values()))
+        exit_time = market_close - EXIT_BEFORE_CLOSE
         day_key = f"backtest/{session_date}"
 
-        candidates, _ = daily_candidates(daily, decision_time, base)
-        minute = cached(f"{day_key}/first_hour_bars",
-                        lambda: alpaca.bars([c.symbol for c in candidates], "1Min", market_open, decision_time))
-        lists = {variant: screen(daily, minute, market_open, decision_time, c,
+        candidates, _ = daily_candidates(daily, first_hour_end, base)
+        wanted = [c.symbol for c in candidates]
+        minute = cached(f"{day_key}/first_hour_bars", lambda: alpaca.bars(wanted, "1Min", market_open, first_hour_end))
+        if last_decision > first_hour_end:   # minutes de confirmation après la première heure
+            minute = pd.concat([minute, cached(f"{day_key}/confirmation_bars_{int((last_decision - market_open).total_seconds() // 60)}",
+                                               lambda: alpaca.bars(wanted, "1Min", first_hour_end, last_decision))],
+                               ignore_index=True)
+        decisions = {variant: market_open + timedelta(minutes=c.decision_minutes) for variant, c in criteria.items()}
+        lists = {variant: screen(daily, minute, market_open, decisions[variant], c,
                                  earnings_for=lambda s: sec.eps(s, "backtest"))[0]
                  for variant, c in criteria.items()}
-        traded = sorted({i["symbol"] for items in lists.values() for i in items} | {BENCHMARK})
-        entry_bars = cached(f"{day_key}/entry_bars", lambda: alpaca.bars(traded, "1Min", entry_time, entry_time + TRADE_WINDOW))
-        exit_bars = cached(f"{day_key}/exit_bars", lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
+        entries = {variant: decisions[variant] + SIP_DELAY for variant in criteria}
+        base_entry = first_hour_end + SIP_DELAY
+        entries["spy"] = base_entry
+        lists["spy"] = [{"symbol": BENCHMARK}]
+        traded = sorted({i["symbol"] for items in lists.values() for i in items})
+        frames = [cached(f"{day_key}/entry_bars_all_{at.astimezone(NEW_YORK):%H%M}",
+                         lambda: alpaca.bars(traded, "1Min", at, at + TRADE_WINDOW)) for at in sorted(set(entries.values()))]
+        entry_bars = pd.concat(frames, ignore_index=True)
+        exit_bars = cached(f"{day_key}/exit_bars_all", lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
         record = {"date": session_date.isoformat()}
-        for name, items in [*lists.items(), ("spy", [{"symbol": BENCHMARK}])]:
-            result = simulate([i["symbol"] for i in items], entry_bars, exit_bars, {}, entry_time, exit_time,
+        for name, items in lists.items():
+            result = simulate([i["symbol"] for i in items], entry_bars, exit_bars, {}, entries[name], exit_time,
                               market_close)
             record[name] = 0.0 if not items else result.get("net_mean_return")
             record[f"{name}_n"] = len(items)
         days.append(record)
-        print(f"  [{n}/{len(sessions)}] {record['date']} : sans PER {record['sans_per_n']} titres "
-              f"{_pct(record['sans_per'])}, PER < 12 {record['per12_n']} titres {_pct(record['per12'])}, "
-              f"SPY {_pct(record['spy'])}")
+        print(f"  [{n}/{len(sessions)}] {record['date']} : "
+              + ", ".join(f"{name} {record[f'{name}_n']} titres {_pct(record[name])}" for name in lists))
 
-    series = {name: {d["date"]: d[name] for d in days if d[name] is not None} for name in ("per12", "sans_per", "spy")}
+    names = [*criteria, "spy"]
+    series = {name: {d["date"]: d[name] for d in days if d[name] is not None} for name in names}
     payload = {
         "backtest_id": _next_id(),
         "family": FAMILY,
@@ -105,14 +123,14 @@ def run(months):
         "created_at": datetime.now(timezone.utc).isoformat(),
         "git_sha": git_sha,
         "period": {"start": days[0]["date"], "end": days[-1]["date"], "sessions": len(days), "months": months},
-        "rules": {"entry": "premier échange à partir de 10 h 45 (New York)", "exit": "dernier échange avant 15 h 30",
+        "rules": {"entry": "premier échange 15 min après la décision : 10 h 45, ou 11 h 00 avec confirmation (New York)",
+                  "exit": "dernier échange avant 15 h 30",
                   "cost_bps_per_order": "5", "split": "parts égales, fractions d'action"},
         "criteria": {variant: c.to_json() for variant, c in criteria.items()},
         "biases": BIASES,
         "summaries": {name: summary(values) for name, values in series.items()},
-        "differences": {"per12_vs_sans_per": paired_difference(series["per12"], series["sans_per"]),
-                        "per12_vs_spy": paired_difference(series["per12"], series["spy"]),
-                        "sans_per_vs_spy": paired_difference(series["sans_per"], series["spy"])},
+        "differences": {f"{a}_vs_{b}": paired_difference(series[a], series[b]) for a, b in COMPARISONS
+                        if a in series and b in series},
         "days": days,
     }
     path = BACKTEST_DIR / payload["backtest_id"] / "results.json"
