@@ -147,9 +147,13 @@ def _results(finals):
         "skipped": skipped,
         "provisional": provisional,
         "recomputed": recomputed,
-        "experiment": {**EXPERIMENT, "observed": sum(1 for f in finals if f["session_date"] >= EXPERIMENT["start"]
-                                                     and not f.get("provisional", True)
-                                                     and f["session_date"] in series["per12"])},
+        # Une séance compte dès la clôture (positions vendues à 15 h 30) ; « pending » = encore provisoire,
+        # en attente des corrections d'Alpaca de la nuit. Le verdict se calcule sur les états définitifs.
+        "experiment": {**EXPERIMENT,
+                       "observed": sum(1 for f in finals if f["session_date"] >= EXPERIMENT["start"]
+                                       and f["session_date"] in series["per12"]),
+                       "pending": sum(1 for f in finals if f["session_date"] >= EXPERIMENT["start"]
+                                      and f.get("provisional", True) and f["session_date"] in series["per12"])},
     }
 
 

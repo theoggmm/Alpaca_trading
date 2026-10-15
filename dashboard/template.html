@@ -96,6 +96,7 @@
   .method code { font-family: var(--font-data); font-size: 13px; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
   .method .timeline { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
   .method .timeline b { font-family: var(--font-data); white-space: nowrap; }
+  svg.chart .grid.zero { stroke: var(--muted); stroke-dasharray: 4 3; }
   .sim-tables { display: grid; gap: 16px; }
   .sim-block h3 { margin: 0 0 6px; font-size: 15px; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
@@ -327,7 +328,7 @@ const TEXT = {
     series: { per12: "PER < 12", sans_per: "Sans PER", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
     results_title: "Historique des résultats (simulation après frais)",
     exp_title: id => `Expérience ${id} : PER < 12 face à sans PER et à l'univers liquide`,
-    exp_progress: (n, total, start) => `${n} séance(s) définitive(s) observée(s) sur ${total}, à partir du ${start}. Le verdict n'est rendu qu'après la ${total}e séance.`,
+    exp_progress: (n, total, start, pending) => `${n} séance(s) comptée(s) sur ${total}, à partir du ${start} : une séance compte dès la clôture (tout est vendu à 15 h 30)${pending ? ` ; ${pending} encore provisoire(s), vérifiée(s) la nuit suivante avec les corrections d'Alpaca` : ""}. Le verdict n'est rendu qu'après la ${total}e séance.`,
     exp_rule: "Confirmée si l'écart quotidien moyen est positif et le t apparié ≥ 1,685 (critère fixé avant la fenêtre).",
     exp_file: f => `Pré-enregistrement : ${f}`,
     res_series: "Série", res_n: "Séances", res_mean: "Moyenne / séance", res_total: "Total cumulé",
@@ -476,7 +477,7 @@ const TEXT = {
     series: { per12: "P/E < 12", sans_per: "Without P/E", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
     results_title: "Results history (simulation after costs)",
     exp_title: id => `Experiment ${id}: P/E < 12 vs without P/E and the liquid universe`,
-    exp_progress: (n, total, start) => `${n} final session(s) observed out of ${total}, from ${start}. The verdict is only given after session ${total}.`,
+    exp_progress: (n, total, start, pending) => `${n} session(s) counted out of ${total}, from ${start}: a session counts as soon as the market closes (everything is sold at 3:30 PM)${pending ? `; ${pending} still provisional, checked the following night with Alpaca's corrections` : ""}. The verdict is only given after session ${total}.`,
     exp_rule: "Confirmed if the mean daily difference is positive and the paired t ≥ 1.685 (criterion set before the window).",
     exp_file: f => `Pre-registration: ${f}`,
     res_series: "Series", res_n: "Sessions", res_mean: "Mean / session", res_total: "Cumulative total",
@@ -1004,10 +1005,14 @@ function cumulativeChart(chart, cumulativeBySeries, series) {
     box.append(svg("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }),
                svg("text", { x: L - 8, y: y(v) + 4, class: "axis", "text-anchor": "end" }, pct(v)));
   }
+  // Ligne du zéro (ni gain ni perte), plus marquée que la grille.
+  box.append(svg("line", { x1: L, x2: W - R, y1: y(0), y2: y(0), class: "grid zero" }));
   series.forEach(s => {
     const pts = cumulativeBySeries[s] || [];
     if (pts.length) box.append(svg("polyline", { points: pts.map(([d, v]) => `${x(d)},${y(v)}`).join(" "),
                                                  class: "series", style: `stroke: var(--s-${s})` }));
+    // Un point par séance : une série d'une seule séance reste visible.
+    pts.forEach(([d, v]) => box.append(svg("circle", { cx: x(d), cy: y(v), r: 3.5, style: `fill: var(--s-${s})` })));
   });
   [dates[0], dates[dates.length - 1]].forEach((d, i) => box.append(svg("text", { x: x(d), y: H - 8, class: "axis",
     "text-anchor": i ? "end" : "start" }, d)));
@@ -1075,7 +1080,7 @@ function renderResults() {
   const series = ["per12", "sans_per", "univers", "spy"];
   document.getElementById("experiment").replaceChildren(
     el("b", "", TEXT.exp_title(exp.id)),
-    el("span", "", TEXT.exp_progress(exp.observed, exp.sessions, exp.start)),
+    el("span", "", TEXT.exp_progress(exp.observed, exp.sessions, exp.start, exp.pending)),
     el("span", "", TEXT.exp_rule),
     el("span", "", TEXT.exp_file(exp.file)));
 
