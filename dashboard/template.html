@@ -585,7 +585,9 @@ function renderRun(run) {
 function renderBubbles(run) {
   const box = document.getElementById("bubbles");
   const note = document.getElementById("bubbles-note");
-  const domains = run?.domains || SHOWN?.month_trend;
+  // Les bulles ne dépendent pas de la version : à défaut, celles de l'autre liste de la même séance.
+  const domains = run?.domains || SHOWN?.month_trend
+    || RUNS.findLast(r => r.session_date === SHOWN?.session_date && r.domains)?.domains;
   if (!domains || domains.error) {
     box.replaceChildren(el("div", "empty", domains ? TEXT.bubbles_error(domains.error) : TEXT.bubbles_missing));
     note.textContent = "";
