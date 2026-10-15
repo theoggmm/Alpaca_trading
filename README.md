@@ -103,7 +103,32 @@ direct. Les clôtures de tout l'univers sont écrites une fois par séance dans 
 **Simulation (bas de page).** Pour chaque version de la liste : 10 k$, 25 k$, 50 k$, 100 k$ et 1 M$
 répartis à parts égales sur ses titres, achetés au premier échange à partir de 10 h 45 (New York, liste
 disponible) et vendus au dernier échange avant 15 h 30 (30 min avant la clôture). Gain en direct entre
-les deux, figé ensuite et gardé dans l'état de fin de séance. Montants bruts, avant frais et impôts.
+les deux, figé ensuite et gardé dans l'état de fin de séance. Trois colonnes : **brut** ; **après frais**
+(0,05 % par ordre, achat et vente : `COST_BPS` de `core/portfolio.py`) ; **actions entières** (nombre
+d'actions arrondi à l'unité inférieure, reste non investi). Repères, mêmes règles : **univers liquide**
+(tous les titres liquides du jour) et **SPY** (S&P 500). Avant impôts.
+
+**Ordres à passer.** 10 000 $ répartis sur la liste PER < 12 en actions entières : symbole, nombre
+d'actions, prix à saisir, coût, reste. En direct pendant la séance, puis figé sur le prix d'achat de 10 h 45.
+Les ordres se passent à la main (`trade.py buy-list`, ci-dessous) : aucun programme n'en passe seul.
+
+**Historique des résultats.** Chaque séance, rendement après frais de chaque version et des deux repères
+(liste PER < 12 vide = 0 %) : résumé (séances, moyenne, total cumulé, annualisé — signalé ⚠ au-delà de
+100 %, séances positives, pire séance), courbe cumulée et tableau par séance. Calculs par
+`core/performance_metrics.py` uniquement. L'encadré suit l'**expérience 001**, pré-enregistrée
+(`research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md`) : 40 séances à partir
+du 16 octobre 2026, critères chiffrés figés, verdict ouvert par le propriétaire seulement à la fin.
+
+**Test sur le passé (diagnostic).** Rejoue les deux versions sur les 6 derniers mois avec le même code
+(listes calculées à 10 h 30 avec les seules données connues à ce moment, mêmes règles d'achat, de vente
+et de frais), comparées à SPY. Le résultat est écrit dans
+`research/experiments/runs/reprise_apres_baisse/backtests/b00N/results.json` (avec `git_sha`) et affiché
+en bas du tableau de bord. Biais connu : seuls les titres encore cotés aujourd'hui sont testés. Durée :
+plusieurs dizaines de minutes la première fois (données mises en cache ensuite) :
+
+```bash
+/Users/theodoremeyer/Documents/Alpaca_trading/.venv/bin/python -m research.algorithms.reprise_apres_baisse.backtest --months 6
+```
 
 **Menu « Séance ».** Une entrée par jour de bourse. La séance du jour apparaît avec les premiers prix
 et bouge en direct ; à la clôture elle est figée (provisoire le soir, définitive le lendemain avec les

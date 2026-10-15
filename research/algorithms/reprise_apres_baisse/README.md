@@ -73,8 +73,9 @@ même produite et l'erreur est enregistrée dans le run.
 
 - **Diversification de la sélection** : elle se fait sur la corrélation des cours (le but recherché :
   limiter les titres qui bougent ensemble), pas sur le domaine SEC, qui sert seulement aux bulles.
-- **Non testé sur le passé** : aucun backtest. L'historique des runs, produit au jour le jour, est la
-  seule observation ; il pourra servir de juge sur le futur si une hypothèse est pré-enregistrée.
+- **Test sur le passé = diagnostic** (`backtest.py`, résultats dans `backtests/b00N/`) : univers des
+  titres encore cotés aujourd'hui (biais du survivant), indicateur ETF d'aujourd'hui, pas de repère
+  « univers liquide ». Il ne sert pas de juge : seule l'expérience 001, sur les séances à venir, en sert.
 - **Volatilité relative** : « basse » veut dire « dans la moitié la moins volatile ce jour-là », pas
   sous un seuil absolu.
 
@@ -84,6 +85,13 @@ Chaque run écrit `research/experiments/runs/reprise_apres_baisse/r00N/results.j
 entonnoir, sélection, `git_sha` du code commité) et une ligne dans `research/experiments/registry.csv`.
 Un seul run par séance ; le run refuse de tourner si le code n'est pas commité. `run_screener.sh`
 commite ensuite ces deux fichiers (et rien d'autre) et les pousse sur GitHub.
+
+## Expérience 001 (pré-enregistrée)
+
+`experiences/001_per12_vs_sans_per.md` : la liste PER < 12 rapporte-t-elle plus que la liste sans PER et
+que l'univers liquide, après frais ? Fenêtre : 40 séances à partir du 16 octobre 2026. Confirmée si
+l'écart quotidien moyen est positif et le t apparié ≥ 1,685. Critères, heures, frais et simulation figés
+pendant la fenêtre ; décision 001.1 dans `research/experiments/decisions.md`.
 
 ## Historique des versions
 

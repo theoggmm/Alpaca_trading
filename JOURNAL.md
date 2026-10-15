@@ -190,3 +190,25 @@ avant la clôture, en direct puis figé ; test sur la séance du 14 octobre.
 (+382,84 $) ; recalcul indépendant identique. 38 tests verts.
 
 Autrement dit : chaque jour, tu vois ce qu'aurait rapporté chaque montant, avec un achat réaliste.
+
+## 2026-10-15 (suite) — Suivi des résultats, pré-enregistrement, test sur le passé, réalisme
+
+**Question posée** : ajouter, sans rien retirer, (1) le suivi des résultats dans le temps, (2) un critère
+de réussite fixé à l'avance, (3) un test sur le passé, (4) les frais et les actions entières.
+
+**Fait** :
+- (4) `core/portfolio.py` : frais de 0,05 % par ordre (`COST_BPS`), rendement après frais, gain en actions
+  entières ; repères univers liquide et SPY ; section « Ordres à passer » (10 000 $, PER < 12).
+- (2) `experiences/001_per12_vs_sans_per.md` pré-enregistré et commité avant sa fenêtre (40 séances à partir
+  du 16 octobre) ; `research/experiments/decisions.md` créé (T1, T2, T3, 001.1) ;
+  `core/performance_metrics.py`, seul module de métriques, testé.
+- (1) Section « Historique des résultats » : résumé, courbe cumulée, tableau par séance, avancement de 001.
+- (3) `backtest.py` : rejoue les deux versions sur 6 mois avec les mêmes fonctions de `core/`, résultat
+  tracé dans `backtests/b00N/` (statut diagnostic) ; section « Test sur le passé » du tableau de bord.
+- `infra/http.py` : pause puis nouvel essai sur une réponse 429 (trop de requêtes).
+
+Autrement dit : tu vois désormais chaque jour ce que chaque liste rapporte vraiment, frais compris, et la
+règle qui dira dans deux mois si le PER < 12 aide vraiment est écrite d'avance.
+
+**Points signalés** : le test sur le passé ne voit que les titres encore cotés aujourd'hui, ce qui le rend
+trop flatteur ; il sert à repérer un problème, pas à décider.
