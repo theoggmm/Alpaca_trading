@@ -97,6 +97,9 @@
   .method .timeline { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
   .method .timeline b { font-family: var(--font-data); white-space: nowrap; }
   svg.chart .grid.zero { stroke: var(--muted); stroke-dasharray: 4 3; }
+  /* Deux lignes avant chaque tableau : ce qu'on regarde, pour quelqu'un qui découvre. */
+  .intro { margin: 0 0 8px; max-width: 85ch; font-size: 14px; color: var(--ink); text-align: left; white-space: normal; }
+  .panel + .intro { margin-top: 16px; }
   .sim-tables { display: grid; gap: 16px; }
   .sim-block h3 { margin: 0 0 6px; font-size: 15px; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
@@ -173,12 +176,14 @@
 
     <section>
       <h2 data-t="selection_title"></h2>
+      <p class="intro" data-t="intro_selection"></p>
       <div class="panel" id="selection"></div>
       <p class="note" id="selection-note"></p>
     </section>
 
     <section>
       <h2 data-t="plan_title"></h2>
+      <p class="intro" data-t="intro_plan"></p>
       <div class="live-status" id="plan-status"></div>
       <div class="panel" id="plan"></div>
       <p class="note" id="plan-note"></p>
@@ -189,12 +194,14 @@
   <div class="tab-panel" id="tab-market" role="tabpanel" aria-labelledby="tabbtn-market" hidden>
     <section>
       <h2 data-t="run_bubbles_title"></h2>
+      <p class="intro" data-t="intro_run_bubbles"></p>
       <div class="panel bubbles" id="bubbles"></div>
       <p class="note" id="bubbles-note"></p>
     </section>
 
     <section>
       <h2 data-t="live_title"></h2>
+      <p class="intro" data-t="intro_live"></p>
       <div class="live-status" id="live-status"></div>
       <div class="panel live" id="live"></div>
       <p class="note" id="live-note"></p>
@@ -204,6 +211,7 @@
   <div class="tab-panel" id="tab-details" role="tabpanel" aria-labelledby="tabbtn-details" hidden>
     <section>
       <h2 data-t="funnel_title"></h2>
+      <p class="intro" data-t="intro_funnel"></p>
       <div class="panel funnel" id="funnel"></div>
       <p class="note" data-t="funnel_note"></p>
     </section>
@@ -211,10 +219,12 @@
     <div class="grid2">
       <section>
         <h2 data-t="criteria_title"></h2>
+        <p class="intro" data-t="intro_criteria"></p>
         <ol class="panel criteria" id="criteria"></ol>
       </section>
       <section>
         <h2 data-t="history_title"></h2>
+        <p class="intro" data-t="intro_history"></p>
         <div class="panel" id="history"></div>
         <p class="note" data-t="history_note"></p>
       </section>
@@ -224,6 +234,7 @@
   <div class="tab-panel" id="tab-results" role="tabpanel" aria-labelledby="tabbtn-results" hidden>
     <section>
       <h2 data-t="sim_title"></h2>
+      <p class="intro" data-t="intro_sim"></p>
       <div class="live-status" id="sim-status"></div>
       <div class="sim-tables" id="sim"></div>
       <p class="note" id="sim-note"></p>
@@ -231,15 +242,20 @@
 
     <section>
       <h2 data-t="results_title"></h2>
+      <p class="intro" data-t="intro_results"></p>
       <div class="panel exp-box" id="experiment"></div>
+      <p class="intro" data-t="intro_summary"></p>
       <div class="panel" id="results-summary"></div>
+      <p class="intro" data-t="intro_chart"></p>
       <div class="panel" id="results-chart"></div>
+      <p class="intro" data-t="intro_daily"></p>
       <div class="panel" id="results-daily"></div>
       <p class="note" id="results-note"></p>
     </section>
 
     <section>
       <h2 data-t="bt_title"></h2>
+      <p class="intro" data-t="intro_bt"></p>
       <div id="backtest" style="display: grid; gap: 4px;"></div>
     </section>
   </div>
@@ -342,6 +358,21 @@ const TEXT = {
     res_recomputed: "† : séance antérieure aux frais et aux repères, simulation recalculée après coup avec les règles actuelles (diagnostic, hors expérience 001). Le 13 octobre, seule la liste sans PER existait.",
     sim_recomputed: d => `Séance antérieure aux frais : simulation recalculée le ${d} avec les règles actuelles (diagnostic).`,
     bt_title: "Test sur le passé (diagnostic)",
+    intro_selection: "Voici les actions retenues aujourd'hui par le programme. Chaque ligne est une entreprise cotée en bourse aux États-Unis ; les colonnes disent comment son prix a bougé : sur un mois, les deux derniers jours, la première heure de bourse, depuis l'ouverture et depuis l'achat de 10 h 45. Clique sur un symbole pour voir son graphique.",
+    intro_plan: "Si tu veux acheter la liste PER < 12 avec 10 000 $, voici exactement quoi faire : pour chaque action, combien en acheter et à quel prix environ. On n'achète que des actions entières, donc il reste un peu d'argent non utilisé (ligne « Reste non investi »).",
+    intro_run_bubbles: "Chaque bulle est un secteur de l'économie (technologie, finance, énergie…). Le chiffre est la variation moyenne du prix des actions de ce secteur sur le dernier mois, au moment où la liste a été faite. Vert : le secteur a monté ; rouge : il a baissé ; plus la bulle est grosse, plus le secteur compte d'actions.",
+    intro_live: "Le même principe, mis à jour chaque minute pendant la séance. Chaque ligne est un secteur, chaque colonne une période : aujourd'hui, la première heure, 2 jours, 1 semaine, 1 mois. Clique sur un secteur pour voir toutes ses actions.",
+    intro_sector: "Toutes les actions de ce secteur. Chaque colonne en % montre de combien le prix a varié sur la période ; clique sur un titre de colonne pour trier. Les deux dernières colonnes comptent combien de fois l'action a été dans la liste du jour, et combien de fois elle a fait partie des 20 meilleures de son secteur.",
+    intro_funnel: "Le programme part de toutes les actions américaines et applique ses règles une par une. Chaque ligne montre combien d'actions restent après chaque étape : comme un entonnoir, on passe de plusieurs milliers d'actions à une vingtaine au plus.",
+    intro_criteria: "Les règles exactes utilisées pour faire la liste de cette séance, dans l'ordre où elles sont appliquées.",
+    intro_history: "Les actions qui reviennent le plus souvent dans les listes depuis le début, avec le nombre de jours où chacune a été retenue.",
+    intro_sim: "Que se serait-il passé si tu avais investi aujourd'hui ? Chaque tableau prend une liste, répartit la somme de la première colonne à parts égales entre ses actions, achète à 10 h 45 et revend à 15 h 30 (heure de New York). De gauche à droite, le résultat est de plus en plus réaliste : sans frais, avec frais, en actions entières, puis après impôts.",
+    intro_results: "Le bilan jour après jour depuis le début. L'encadré suit le test officiel qui dira, après 40 séances, si le filtre PER aide vraiment.",
+    intro_summary: "Le résumé de chaque liste, comparée au marché (« Univers liquide » : toutes les actions assez échangées ; « S&P 500 » : les 500 plus grandes entreprises américaines). Tout est après frais. La colonne la plus parlante est « Total cumulé » : ce qu'aurait rapporté le fait de suivre la liste chaque jour.",
+    intro_chart: "Le même total cumulé, dessiné jour après jour. Chaque ligne est une liste ou un repère du marché ; plus elle finit haut, plus elle a rapporté. La ligne en pointillés est le zéro : au-dessus on gagne, en dessous on perd.",
+    intro_daily: "Le détail jour par jour : le gain ou la perte de chaque liste et du marché sur chaque séance, après frais.",
+    intro_bt: "Que se serait-il passé en suivant ces règles chaque jour pendant les 6 derniers mois ? Le programme rejoue le passé avec exactement les mêmes règles. Utile pour repérer un problème, mais le passé ne garantit pas l'avenir.",
+    intro_diff: "Chaque ligne compare deux séries jour par jour. « Écart moyen » : de combien l'une a fait mieux (ou moins bien) que l'autre en moyenne par jour. « t apparié » : à partir d'environ 1,7, l'écart est probablement réel ; en dessous, il peut être dû au hasard.",
     bt_empty: "Le test sur le passé n'a pas encore été lancé.",
     bt_head: (id, p) => `Test ${id} : ${p.sessions} séances, du ${p.start} au ${p.end}`,
     bt_status: "Statut : diagnostic. Ce test sert à repérer un problème, pas à décider : seule l'expérience 001, sur les séances à venir, tranchera.",
@@ -492,6 +523,21 @@ const TEXT = {
     res_recomputed: "†: session from before costs and benchmarks; simulation recomputed afterwards with the current rules (diagnostic, outside experiment 001). On October 13, only the list without P/E existed.",
     sim_recomputed: d => `Session from before costs: simulation recomputed on ${d} with the current rules (diagnostic).`,
     bt_title: "Test on past data (diagnostic)",
+    intro_selection: "These are the stocks the program picked today. Each row is a company listed on a US stock exchange; the columns show how its price moved: over a month, over the last two days, during the first hour of trading, since the open and since the 10:45 AM purchase. Click a symbol to see its chart.",
+    intro_plan: "If you want to buy the P/E < 12 list with $10,000, here is exactly what to do: for each stock, how many shares to buy and at roughly what price. Only whole shares can be bought, so a little money is left unused (\"Left uninvested\" row).",
+    intro_run_bubbles: "Each bubble is a sector of the economy (technology, finance, energy…). The number is the average price change of that sector's stocks over the last month, at the time the list was made. Green: the sector went up; red: it went down; the bigger the bubble, the more stocks in the sector.",
+    intro_live: "Same idea, updated every minute during the session. Each row is a sector, each column a period: today, the first hour, 2 days, 1 week, 1 month. Click a sector to see all its stocks.",
+    intro_sector: "All the stocks in this sector. Each % column shows how much the price changed over the period; click a column title to sort. The last two columns count how many times the stock was on the day's list, and how many times it was among the 20 best of its sector.",
+    intro_funnel: "The program starts from all US stocks and applies its rules one by one. Each row shows how many stocks remain after each step: like a funnel, it goes from several thousand stocks to twenty at most.",
+    intro_criteria: "The exact rules used to build this session's list, in the order they are applied.",
+    intro_history: "The stocks that come back most often in the lists since the start, with the number of days each one was picked.",
+    intro_sim: "What would have happened if you had invested today? Each table takes one list, splits the amount in the first column equally across its stocks, buys at 10:45 AM and sells at 3:30 PM (New York time). From left to right, the result gets more and more realistic: without costs, with costs, in whole shares, then after tax.",
+    intro_results: "The day-by-day record since the start. The box follows the official test that will say, after 40 sessions, whether the P/E filter really helps.",
+    intro_summary: "A summary of each list, compared with the market (\"Liquid universe\": all sufficiently traded stocks; \"S&P 500\": the 500 largest US companies). Everything is after costs. The most telling column is \"Cumulative total\": what following the list every day would have earned.",
+    intro_chart: "The same cumulative total, drawn day by day. Each line is a list or a market benchmark; the higher it ends, the more it earned. The dashed line is zero: above it you gain, below it you lose.",
+    intro_daily: "The day-by-day detail: each list's and the market's gain or loss for each session, after costs.",
+    intro_bt: "What would have happened following these rules every day for the last 6 months? The program replays the past with exactly the same rules. Useful to spot a problem, but the past does not guarantee the future.",
+    intro_diff: "Each row compares two series day by day. \"Mean gap\": how much better (or worse) one did than the other on average per day. \"Paired t\": from about 1.7 up, the gap is probably real; below that, it may be chance.",
     bt_empty: "The test on past data has not been run yet.",
     bt_head: (id, p) => `Test ${id}: ${p.sessions} sessions, from ${p.start} to ${p.end}`,
     bt_status: "Status: diagnostic. This test is meant to spot problems, not to decide: only experiment 001, on upcoming sessions, will settle it.",
@@ -944,7 +990,7 @@ function renderLive() {
       detail.className = "detail";
       const td = el("td");
       td.colSpan = columns.length + 1;
-      td.appendChild(sectorTable(list, columns, picked));
+      td.append(el("p", "intro", TEXT.intro_sector), sectorTable(list, columns, picked));
       detail.appendChild(td);
     }
   });
@@ -1072,7 +1118,8 @@ function renderBacktest() {
   const list = el("ul");
   TEXT.bt_bias_items.forEach(b => list.appendChild(el("li", "", b)));
   biases.appendChild(list);
-  box.replaceChildren(head, summaryBox, chart, diffBox, biases, el("p", "note", TEXT.bt_note));
+  box.replaceChildren(head, el("p", "intro", TEXT.intro_summary), summaryBox, el("p", "intro", TEXT.intro_chart), chart,
+                     el("p", "intro", TEXT.intro_diff), diffBox, biases, el("p", "note", TEXT.bt_note));
 }
 
 // Historique des résultats : séries quotidiennes après frais, cumul, avancement de l'expérience 001.
