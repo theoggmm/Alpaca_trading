@@ -1,0 +1,309 @@
+{
+  "run_id": "r005",
+  "variant": "per12",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-15",
+  "market_open": "2026-10-15T13:30:00+00:00",
+  "decision_time": "2026-10-15T14:30:00+00:00",
+  "created_at": "2026-10-15T14:51:56.467774+00:00",
+  "git_sha": "55e32ecb8dc6754dbc7d3250f8755ea1129b82a7",
+  "criteria": {
+    "version": 2,
+    "count": 20,
+    "month_sessions": 21,
+    "up_days": 2,
+    "first_hour_minutes": 60,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "max_pe": "12"
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1015202608:01",
+      "otherlisted": "1015202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13505,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6990,
+    "avec_barres_quotidiennes": 6988,
+    "historique_complet": 6820,
+    "prix_minimum": 4704,
+    "volume_echange_minimum": 2085,
+    "volatilite_basse": 1043,
+    "en_baisse_sur_un_mois": 661,
+    "hausse_des_derniers_jours": 101,
+    "hausse_premiere_heure": 71,
+    "per_maximum": 17,
+    "selection_diversifiee": 11
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 196,
+        "mean_return": 0.009253912877022905
+      },
+      {
+        "domain": "Trade & Services",
+        "n": 269,
+        "mean_return": -0.00466059634680213
+      },
+      {
+        "domain": "Technology",
+        "n": 305,
+        "mean_return": -0.010484355934392007
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 354,
+        "mean_return": -0.018725941587447573
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 307,
+        "mean_return": -0.03304668187172312
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 173,
+        "mean_return": -0.03999044275362887
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 42,
+        "mean_return": -0.045380800606132206
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 171,
+        "mean_return": -0.05148859176550224
+      },
+      {
+        "domain": "Finance",
+        "n": 255,
+        "mean_return": -0.06135423002940311
+      }
+    ],
+    "unclassified": 13,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "T",
+      "prev_close": "23.05",
+      "open_today": "23.42",
+      "price_at_decision": "23.775",
+      "return_month": -0.12755488266464798,
+      "return_day_minus_2": 0.01600711427301023,
+      "return_day_minus_1": 0.0087527352297593,
+      "return_first_hour": 0.01515798462852263,
+      "volatility_annualized": 0.3203048008045334,
+      "avg_dollar_volume": "1093887017",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "7.87",
+      "name": "AT&T Inc.",
+      "domain": "Technology",
+      "sic_description": "Telephone Communications (No Radiotelephone)"
+    },
+    {
+      "rank": 2,
+      "symbol": "CMCSA",
+      "prev_close": "21.05",
+      "open_today": "21.49",
+      "price_at_decision": "21.82",
+      "return_month": -0.12474012474012475,
+      "return_day_minus_2": 0.009671179883945842,
+      "return_day_minus_1": 0.008141762452107279,
+      "return_first_hour": 0.015355979525360632,
+      "volatility_annualized": 0.3428248918868065,
+      "avg_dollar_volume": "710612203",
+      "max_correlation_with_previous": 0.46442868055546044,
+      "pe_ttm": "6.99",
+      "name": "Comcast Corporation - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Cable & Other Pay Television Services"
+    },
+    {
+      "rank": 3,
+      "symbol": "NMIH",
+      "prev_close": "39.7",
+      "open_today": "40.41",
+      "price_at_decision": "40.42",
+      "return_month": -0.08777573529411764,
+      "return_day_minus_2": 0.004315816197004316,
+      "return_day_minus_1": 0.003538928210313448,
+      "return_first_hour": 0.00024746349913387774,
+      "volatility_annualized": 0.25014763911454435,
+      "avg_dollar_volume": "32623803",
+      "max_correlation_with_previous": 0.24933649006863545,
+      "pe_ttm": "7.96",
+      "name": "NMI Holdings Inc - Common Stock",
+      "domain": "Finance",
+      "sic_description": "Surety Insurance"
+    },
+    {
+      "rank": 4,
+      "symbol": "SEB",
+      "prev_close": "4033.82",
+      "open_today": "4033.72",
+      "price_at_decision": "4077.01",
+      "return_month": -0.059715617715617716,
+      "return_day_minus_2": 1.0069606152529359e-05,
+      "return_day_minus_1": 0.015464241929921282,
+      "return_first_hour": 0.010732028995567367,
+      "volatility_annualized": 0.28287001473559936,
+      "avg_dollar_volume": "38463241",
+      "max_correlation_with_previous": 0.26876648043025536,
+      "pe_ttm": "6.17",
+      "name": "Seaboard Corporation Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Farm Product Raw Materials"
+    },
+    {
+      "rank": 5,
+      "symbol": "FIS",
+      "prev_close": "35.47",
+      "open_today": "36.4",
+      "price_at_decision": "36.615",
+      "return_month": -0.0500803427959293,
+      "return_day_minus_2": 0.027437244600116754,
+      "return_day_minus_1": 0.007670454545454545,
+      "return_first_hour": 0.005906593406593406,
+      "volatility_annualized": 0.35033055949631264,
+      "avg_dollar_volume": "225487899",
+      "max_correlation_with_previous": 0.5373145718089337,
+      "pe_ttm": "5.62",
+      "name": "Fidelity National Information Services, Inc. Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Services-Business Services, NEC"
+    },
+    {
+      "rank": 6,
+      "symbol": "PRI",
+      "prev_close": "278.35",
+      "open_today": "281.17",
+      "price_at_decision": "282.605",
+      "return_month": -0.050032422101634756,
+      "return_day_minus_2": 0.002095451425268254,
+      "return_day_minus_1": 0.003533186718102174,
+      "return_first_hour": 0.005103673933918982,
+      "volatility_annualized": 0.19162595588141043,
+      "avg_dollar_volume": "56949390",
+      "max_correlation_with_previous": 0.39825141411383186,
+      "pe_ttm": "11.36",
+      "name": "Primerica, Inc. Common Stock",
+      "domain": "Finance",
+      "sic_description": "Life Insurance"
+    },
+    {
+      "rank": 7,
+      "symbol": "WTRG",
+      "prev_close": "39.85",
+      "open_today": "40.48",
+      "price_at_decision": "40.61",
+      "return_month": -0.03929604628736741,
+      "return_day_minus_2": 0.0035759897828863347,
+      "return_day_minus_1": 0.014252990582845508,
+      "return_first_hour": 0.0032114624505928855,
+      "volatility_annualized": 0.18548858519797762,
+      "avg_dollar_volume": "99283202",
+      "max_correlation_with_previous": 0.29124595708309503,
+      "pe_ttm": "7.47",
+      "name": "Essential Utilities, Inc. Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Water Supply"
+    },
+    {
+      "rank": 8,
+      "symbol": "SIGI",
+      "prev_close": "86.21",
+      "open_today": "87.68",
+      "price_at_decision": "88.14",
+      "return_month": -0.03503469890306694,
+      "return_day_minus_2": 0.0027084314649081487,
+      "return_day_minus_1": 0.012448620082207868,
+      "return_first_hour": 0.005246350364963503,
+      "volatility_annualized": 0.19074235992248165,
+      "avg_dollar_volume": "45805345",
+      "max_correlation_with_previous": 0.29335208905426496,
+      "pe_ttm": "10.94",
+      "name": "Selective Insurance Group, Inc. - Common Stock",
+      "domain": "Finance",
+      "sic_description": "Fire, Marine & Casualty Insurance"
+    },
+    {
+      "rank": 9,
+      "symbol": "HIG",
+      "prev_close": "131.96",
+      "open_today": "133.64",
+      "price_at_decision": "133.96",
+      "return_month": -0.02991987061677571,
+      "return_day_minus_2": 0.007681081496274675,
+      "return_day_minus_1": 0.005869349798002897,
+      "return_first_hour": 0.002394492666866208,
+      "volatility_annualized": 0.1898602754851404,
+      "avg_dollar_volume": "242675402",
+      "max_correlation_with_previous": 0.5652827496897017,
+      "pe_ttm": "8.67",
+      "name": "The Hartford Insurance Group, Inc. Common Stock",
+      "domain": "Finance",
+      "sic_description": "Fire, Marine & Casualty Insurance"
+    },
+    {
+      "rank": 10,
+      "symbol": "EG",
+      "prev_close": "375.47",
+      "open_today": "381.79",
+      "price_at_decision": "384.23",
+      "return_month": -0.010749571861414833,
+      "return_day_minus_2": 0.005878721176817974,
+      "return_day_minus_1": 0.0020014944491887274,
+      "return_first_hour": 0.006390947903297624,
+      "volatility_annualized": 0.207374505993686,
+      "avg_dollar_volume": "156396821",
+      "max_correlation_with_previous": 0.5718789457668947,
+      "pe_ttm": "8.12",
+      "name": "Everest Group, Ltd. Common Stock",
+      "domain": "Finance",
+      "sic_description": "Fire, Marine & Casualty Insurance"
+    },
+    {
+      "rank": 11,
+      "symbol": "INGR",
+      "prev_close": "97.32",
+      "open_today": "98.79",
+      "price_at_decision": "99.1",
+      "return_month": -0.009062213623867223,
+      "return_day_minus_2": 0.010808563708168779,
+      "return_day_minus_1": 0.0006169031462060457,
+      "return_first_hour": 0.0031379694301042617,
+      "volatility_annualized": 0.18324778672561953,
+      "avg_dollar_volume": "66232317",
+      "max_correlation_with_previous": 0.4318046116787999,
+      "pe_ttm": "10.77",
+      "name": "Ingredion Incorporated Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Grain Mill Products"
+    }
+  ]
+}
