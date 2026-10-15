@@ -142,6 +142,12 @@ plusieurs dizaines de minutes la première fois (données mises en cache ensuite
 /Users/theodoremeyer/Documents/Alpaca_trading/.venv/bin/python -m research.algorithms.reprise_apres_baisse.backtest --months 6
 ```
 
+Même test sur le dernier mois (affiché à côté : chaque durée garde son dernier résultat) :
+
+```bash
+/Users/theodoremeyer/Documents/Alpaca_trading/.venv/bin/python -m research.algorithms.reprise_apres_baisse.backtest --months 1
+```
+
 **Menu « Séance ».** Une entrée par jour de bourse. La séance du jour apparaît avec les premiers prix
 et bouge en direct ; à la clôture elle est figée (provisoire le soir, définitive le lendemain avec les
 corrections d'Alpaca, puis plus jamais modifiée). Une séance passée est chargée à la demande depuis

@@ -104,6 +104,8 @@
   .intro { margin: 0 0 8px; max-width: 85ch; font-size: 14px; color: var(--ink); text-align: left; white-space: normal; }
   .panel + .intro { margin-top: 16px; }
   td.wrap, th.wrap { white-space: normal; }
+  .bt-period { margin: 18px 0 4px; font-size: 17px; }
+  .bt-period:first-child { margin-top: 0; }
   .sim-tables { display: grid; gap: 16px; }
   .sim-block h3 { margin: 0 0 6px; font-size: 15px; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
@@ -427,6 +429,7 @@ const TEXT = {
     intro_diff: "Chaque ligne compare deux séries jour par jour. « Écart moyen » : de combien l'une a fait mieux (ou moins bien) que l'autre en moyenne par jour. « t apparié » : à partir d'environ 1,7, l'écart est probablement réel ; en dessous, il peut être dû au hasard.",
     bt_empty: "Le test sur le passé n'a pas encore été lancé.",
     bt_head: (id, p) => `Test ${id} : ${p.sessions} séances, du ${p.start} au ${p.end}`,
+    bt_period: m => `Sur ${m} mois`,
     bt_status: "Statut : diagnostic. Ce test sert à repérer un problème, pas à décider : seule l'expérience 001, sur les séances à venir, tranchera.",
     bt_rules: "Mêmes règles que la simulation : listes calculées avec les seules données connues à leur décision (10 h 45 avec les règles actuelles, 10 h 30 avant), achat au premier échange 15 minutes plus tard, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre, liste vide = 0 %.",
     bt_trace: sha => `Code utilisé : ${sha.slice(0, 7)}.`,
@@ -620,6 +623,7 @@ const TEXT = {
     intro_diff: "Each row compares two series day by day. \"Mean gap\": how much better (or worse) one did than the other on average per day. \"Paired t\": from about 1.7 up, the gap is probably real; below that, it may be chance.",
     bt_empty: "The test on past data has not been run yet.",
     bt_head: (id, p) => `Test ${id}: ${p.sessions} sessions, from ${p.start} to ${p.end}`,
+    bt_period: m => `Over ${m} month${m > 1 ? "s" : ""}`,
     bt_status: "Status: diagnostic. This test is meant to spot problems, not to decide: only experiment 001, on upcoming sessions, will settle it.",
     bt_rules: "Same rules as the simulation: lists computed using only data known at their decision time (10:45 AM with the current rules, 10:30 AM before), bought at the first trade 15 minutes later, sold at the last trade before 3:30 PM (New York), 0.05% cost per order, empty list = 0%.",
     bt_trace: sha => `Code used: ${sha.slice(0, 7)}.`,
@@ -1182,36 +1186,41 @@ function summaryTable(summaries, series) {
 
 // Test sur le passé (diagnostic) : résumé, courbe, écarts appariés, biais connus.
 function renderBacktest() {
-  const bt = HISTORY.backtest;
+  const tests = HISTORY.backtests;
   const box = document.getElementById("backtest");
-  if (!bt) {
+  if (!tests.length) {
     box.replaceChildren(el("div", "empty", TEXT.bt_empty));
     return;
   }
-  const series = Object.keys(bt.summaries);
-  const head = el("div", "panel exp-box");
-  head.append(el("b", "", TEXT.bt_head(bt.id, bt.period)), el("span", "", TEXT.bt_status),
-              el("span", "", TEXT.bt_rules), el("span", "", TEXT.bt_trace(bt.git_sha)));
-  const summaryBox = el("div", "panel");
-  summaryBox.appendChild(summaryTable(bt.summaries, series));
-  const chart = el("div", "panel");
-  cumulativeChart(chart, bt.cumulative, series);
-  const diffs = Object.keys(bt.differences);
-  const diffBox = el("div", "panel");
-  diffBox.appendChild(table([
-    { label: TEXT.bt_pair, cls: "text", value: k => TEXT.bt_pairs[k] },
-    { label: TEXT.res_n, value: k => bt.differences[k].n },
-    { label: TEXT.bt_diff, value: k => bt.differences[k].mean == null ? "—" : pct(bt.differences[k].mean),
-      tone: k => bt.differences[k].mean },
-    { label: TEXT.bt_t, value: k => bt.differences[k].t == null ? "—" : bt.differences[k].t.toFixed(2) },
-  ], diffs));
+  // Un bloc par durée (6 mois, 1 mois…), puis les limites communes à tous les tests.
+  const blocks = tests.flatMap(bt => {
+    const series = Object.keys(bt.summaries);
+    const head = el("div", "panel exp-box");
+    head.append(el("b", "", TEXT.bt_head(bt.id, bt.period)), el("span", "", TEXT.bt_status),
+                el("span", "", TEXT.bt_rules), el("span", "", TEXT.bt_trace(bt.git_sha)));
+    const summaryBox = el("div", "panel");
+    summaryBox.appendChild(summaryTable(bt.summaries, series));
+    const chart = el("div", "panel");
+    cumulativeChart(chart, bt.cumulative, series);
+    const diffs = Object.keys(bt.differences);
+    const diffBox = el("div", "panel");
+    diffBox.appendChild(table([
+      { label: TEXT.bt_pair, cls: "text", value: k => TEXT.bt_pairs[k] },
+      { label: TEXT.res_n, value: k => bt.differences[k].n },
+      { label: TEXT.bt_diff, value: k => bt.differences[k].mean == null ? "—" : pct(bt.differences[k].mean),
+        tone: k => bt.differences[k].mean },
+      { label: TEXT.bt_t, value: k => bt.differences[k].t == null ? "—" : bt.differences[k].t.toFixed(2) },
+    ], diffs));
+    return [el("h3", "bt-period", TEXT.bt_period(bt.period.months)), head,
+            el("p", "intro", TEXT.intro_summary), summaryBox, el("p", "intro", TEXT.intro_chart), chart,
+            el("p", "intro", TEXT.intro_diff), diffBox];
+  });
   const biases = el("div", "panel note");
   biases.append(el("b", "", TEXT.bt_biases));
   const list = el("ul");
   TEXT.bt_bias_items.forEach(b => list.appendChild(el("li", "", b)));
   biases.appendChild(list);
-  box.replaceChildren(head, el("p", "intro", TEXT.intro_summary), summaryBox, el("p", "intro", TEXT.intro_chart), chart,
-                     el("p", "intro", TEXT.intro_diff), diffBox, biases, el("p", "note", TEXT.bt_note));
+  box.replaceChildren(...blocks, biases, el("p", "note", TEXT.bt_note));
 }
 
 // Historique des résultats : séries quotidiennes après frais, cumul, avancement de l'expérience 001.

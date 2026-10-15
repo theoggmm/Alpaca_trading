@@ -174,13 +174,16 @@ def _results(finals):
     }
 
 
-def _backtest(family):
-    """Dernier test sur le passé de la famille (diagnostic) : résumés, cumuls, écarts appariés. None s'il n'y en a pas."""
-    paths = sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json"))
-    if not paths:
-        return None
-    result = json.loads(paths[-1].read_text(encoding="utf-8"))
-    return {
+def _backtests(family):
+    """
+    Dernier test sur le passé de chaque durée (6 mois, 1 mois…), de la plus longue à la plus courte
+    (diagnostic) : résumés, cumuls, écarts appariés. Liste vide s'il n'y en a pas.
+    """
+    latest = {}
+    for path in sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+        result = json.loads(path.read_text(encoding="utf-8"))
+        latest[result["period"]["months"]] = result
+    return [{
         "id": result["backtest_id"],
         "git_sha": result["git_sha"],
         "period": result["period"],
@@ -188,7 +191,7 @@ def _backtest(family):
         "differences": result["differences"],
         "cumulative": {name: cumulative({d["date"]: d[name] for d in result["days"] if d[name] is not None})
                        for name in result["summaries"]},
-    }
+    } for _, result in sorted(latest.items(), reverse=True)]
 
 
 def build(family):
@@ -217,7 +220,7 @@ def build(family):
                          for variant in {variant_of(r) for r in current_runs}},
         "top_in_domain": top_in_domain_counts(current_finals),
         "results": _results(current_finals),
-        "backtest": _backtest(family),
+        "backtests": _backtests(family),
         "archive": {
             "since": RULES_SINCE,
             "results": _results(archived_finals),
