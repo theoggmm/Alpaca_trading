@@ -13,6 +13,9 @@ from core.datation import usable_bars
 from core.screener import MINUTE, session_trades
 
 AMOUNTS = (Decimal("10000"), Decimal("25000"), Decimal("50000"), Decimal("100000"), Decimal("1000000"))
+# Coût par ordre (achat et vente), en points de base : écart entre prix d'achat et de vente et frais.
+# Hypothèse fixée et commitée avant l'expérience 001 ; 5 points de base = 0,05 % par ordre.
+COST_BPS = Decimal("5")
 
 
 def _first_open(bars, start):
@@ -50,6 +53,9 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
 
     returns = [current[s] / entry[s] - 1 for s in held]
     mean = sum(returns) / len(held)
+    cost = COST_BPS / Decimal("10000")
+    # Après frais : achat payé (1 + coût), vente reçue (1 - coût).
+    net = sum(current[s] * (1 - cost) / (entry[s] * (1 + cost)) - 1 for s in held) / len(held)
     return {
         "status": status,
         "n": len(symbols),
@@ -57,7 +63,21 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
         "mean_return": float(mean),
         # Montant réparti à parts égales sur les titres valorisés : gain = montant × variation moyenne.
         "gains": {str(amount): str((amount * mean).quantize(Decimal("0.01"))) for amount in amounts},
+        "cost_bps": str(COST_BPS),
+        "net_mean_return": float(net),
+        "net_gains": {str(amount): str((amount * net).quantize(Decimal("0.01"))) for amount in amounts},
+        # Actions entières (arrondies vers le bas) au prix d'achat, après frais ; le reste n'est pas investi.
+        "whole_gains": {str(amount): str(_whole_shares_gain(amount, held, entry, current, cost)) for amount in amounts},
     }
+
+
+def _whole_shares_gain(amount, held, entry, current, cost):
+    share = (amount / len(held)).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    gain = Decimal("0")
+    for s in held:
+        qty = int(share // (entry[s] * (1 + cost)))
+        gain += qty * (current[s] * (1 - cost) - entry[s] * (1 + cost))
+    return gain.quantize(Decimal("0.01"))
 
 
 def entry_prices(entry_bars, entry_time, now):

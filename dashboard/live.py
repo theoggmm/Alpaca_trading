@@ -53,6 +53,8 @@ EXIT_WINDOW = timedelta(minutes=30)
 # Section « Ordres à passer » : montant réparti en actions entières sur la liste PER < 12.
 ORDER_PLAN_AMOUNT = Decimal("10000")
 ORDER_PLAN_VARIANT = "per12"
+# Repères de la simulation : tous les titres liquides à parts égales, et l'indice S&P 500 (fonds SPY).
+BENCHMARK = "SPY"
 # Les données minute d'Alpaca sont corrigées après coup (échanges annulés ou rectifiés) : un état de
 # fin de séance calculé le soir même est provisoire ; il devient définitif, relu à neuf, 12 h après la clôture.
 DEFINITIVE_AFTER = timedelta(hours=12)
@@ -120,15 +122,20 @@ def _trade_times(criteria, market_open, market_close):
             market_close - EXIT_BEFORE_CLOSE)
 
 
-def _portfolio(runs, entry_bars, exit_bars, trades, entry_time, exit_time, now):
-    """Simulation par version de la liste (sans PER, PER < 12) : achat, valeur en cours ou vente."""
+def _portfolio(runs, universe, entry_bars, exit_bars, trades, entry_time, exit_time, now):
+    """
+    Simulation par version de la liste (sans PER, PER < 12) : achat, valeur en cours ou vente ;
+    et les mêmes règles appliquées aux repères (univers liquide à parts égales, SPY).
+    """
+    def run(symbols):
+        return simulate(symbols, entry_bars, exit_bars, trades, entry_time, exit_time, now)
+
     return {
         "entry_time": entry_time.isoformat(),
         "exit_time": exit_time.isoformat(),
-        "versions": {variant_of(r): {"run_id": r["run_id"],
-                                     **simulate([i["symbol"] for i in r["selection"]], entry_bars, exit_bars,
-                                                trades, entry_time, exit_time, now)}
+        "versions": {variant_of(r): {"run_id": r["run_id"], **run([i["symbol"] for i in r["selection"]])}
                      for r in runs},
+        "benchmarks": {"univers": run(universe), "spy": run([BENCHMARK])},
     }
 
 
@@ -213,14 +220,15 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
                      lambda: alpaca.bars(tracked, "1Min", market_close - CLOSING_WINDOW, market_close))
     trades = last_session_prices(closing, market_close)
     entry_time, exit_time = _trade_times(criteria, market_open, market_close)
-    entry_bars = cached(f"{key}/{stage}_entry_bars",
-                        lambda: alpaca.bars(sorted(opens), "1Min", entry_time, entry_time + TRADE_WINDOW))
-    exit_bars = cached(f"{key}/{stage}_exit_bars",
-                       lambda: alpaca.bars(sorted(opens), "1Min", exit_time - EXIT_WINDOW, exit_time))
+    traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
+    entry_bars = cached(f"{key}/{stage}_entry_bars_all",
+                        lambda: alpaca.bars(traded, "1Min", entry_time, entry_time + TRADE_WINDOW))
+    exit_bars = cached(f"{key}/{stage}_exit_bars_all",
+                       lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
     state = _state(family, criteria, key, market_open, market_close, market_close,
                    daily, domains, names, trades, minute, minute, runs, opens)
-    state["portfolio"] = _portfolio(runs, entry_bars, exit_bars, trades, entry_time, exit_time, market_close)
+    state["portfolio"] = _portfolio(runs, symbols, entry_bars, exit_bars, trades, entry_time, exit_time, market_close)
     state["month_trend"] = _month_trend(daily, market_open, criteria, domains)
     state["order_plan"] = _order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry")
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
@@ -303,8 +311,9 @@ def run(family):
     minute = EMPTY_BARS
     opening = EMPTY_BARS
     entry_time, exit_time = _trade_times(criteria, market_open, market_close)
-    # Prix d'achat et de vente des titres des listes : relus si les listes changent (liste produite en retard).
-    entry_bars, exit_bars, bars_for = EMPTY_BARS, EMPTY_BARS, (set(), set())
+    # Prix d'achat et de vente de tous les titres liquides et du SPY (les listes en font partie) : lus une fois.
+    traded = sorted(set(symbols) | {BENCHMARK})
+    entry_bars, exit_bars = EMPTY_BARS, EMPTY_BARS
 
     while True:
         now = datetime.now(timezone.utc)
@@ -326,13 +335,13 @@ def run(family):
             if opening.empty and now >= market_open + OPENING_WINDOW + FEED_DELAY:
                 opening = cached(f"{key}/opening_bars",
                                  lambda: alpaca.bars(symbols, "1Min", market_open, market_open + OPENING_WINDOW))
-            if opens and set(opens) != bars_for[0] and now >= entry_time + TRADE_WINDOW + FEED_DELAY:
-                entry_bars = alpaca.bars(sorted(opens), "1Min", entry_time, entry_time + TRADE_WINDOW)
-                bars_for = (set(opens), bars_for[1])
-            if opens and set(opens) != bars_for[1] and now >= exit_time + FEED_DELAY:
-                exit_bars = alpaca.bars(sorted(opens), "1Min", exit_time - EXIT_WINDOW, exit_time)
-                bars_for = (bars_for[0], set(opens))
-            trades = alpaca.latest_trades(sorted(set(symbols) | set(opens)), FEED)
+            if entry_bars.empty and now >= entry_time + TRADE_WINDOW + FEED_DELAY:
+                entry_bars = cached(f"{key}/live_entry_bars_all",
+                                    lambda: alpaca.bars(traded, "1Min", entry_time, entry_time + TRADE_WINDOW))
+            if exit_bars.empty and now >= exit_time + FEED_DELAY:
+                exit_bars = cached(f"{key}/live_exit_bars_all",
+                                   lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
+            trades = alpaca.latest_trades(sorted(set(traded) | set(opens)), FEED)
         except FetchError as e:
             print(f"{now.astimezone(NEW_YORK):%H:%M} — lecture impossible, nouvel essai dans {REFRESH_S} s : {e}")
             time.sleep(REFRESH_S)
@@ -341,7 +350,7 @@ def run(family):
         # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
         state = _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades,
                        minute, minute if not minute.empty else opening, today_runs, opens)
-        state["portfolio"] = _portfolio(today_runs, entry_bars, exit_bars, trades, entry_time, exit_time, now)
+        state["portfolio"] = _portfolio(today_runs, symbols, entry_bars, exit_bars, trades, entry_time, exit_time, now)
         state["month_trend"] = month_trend
         last_prices = {s: price for s, (_, price) in session_trades(trades, market_open, market_close, now).items()}
         state["order_plan"] = _order_plan(today_runs, last_prices, "live")

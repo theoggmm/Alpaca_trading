@@ -67,3 +67,17 @@ def test_prix_d_achat_connu_seulement_apres_coup():
     from core.portfolio import entry_prices
     assert entry_prices(ENTRY_BARS, ENTRY, ENTRY) == {}
     assert entry_prices(ENTRY_BARS, ENTRY, ENTRY + timedelta(minutes=5)) == {"A": Decimal("100"), "B": Decimal("50")}
+
+
+def test_frais_et_actions_entieres():
+    later = EXIT + timedelta(hours=1)
+    result = simulate(["A", "B"], ENTRY_BARS, EXIT_BARS, {}, ENTRY, EXIT, later)
+    # A : 100 -> 110, B : 50 -> 49. Après frais de 5 pb par ordre : A 110 × 0,9995 / (100 × 1,0005) - 1, etc.
+    c = Decimal("0.0005")
+    net_a = Decimal("110") * (1 - c) / (Decimal("100") * (1 + c)) - 1
+    net_b = Decimal("49") * (1 - c) / (Decimal("50") * (1 + c)) - 1
+    assert result["net_mean_return"] == float((net_a + net_b) / 2)
+    assert result["net_mean_return"] < result["mean_return"]
+    # 10 000 $ -> 5 000 $ par titre : A 49 actions (5 000 / 100,05), B 99 actions (5 000 / 50,025).
+    whole = 49 * (Decimal("110") * (1 - c) - Decimal("100") * (1 + c)) + 99 * (Decimal("49") * (1 - c) - Decimal("50") * (1 + c))
+    assert result["whole_gains"]["10000"] == str(whole.quantize(Decimal("0.01")))
