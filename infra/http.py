@@ -10,6 +10,7 @@ TIMEOUT_S = 10
 # Coupure réseau ou délai dépassé : nouvel essai, au plus 3 en tout, après une pause croissante.
 ATTEMPTS = 3
 RETRY_PAUSE_S = 2
+RATE_LIMIT_PAUSE_S = 15
 USER_AGENT = "Alpaca_trading/0.1 (screener personnel, lecture seule)"
 
 
@@ -33,11 +34,16 @@ class Reader:
             self._last_request = time.monotonic()
             try:
                 response = self._session.get(url, params=params, timeout=TIMEOUT_S)
-                break
             except requests.RequestException as e:
                 if attempt == ATTEMPTS:
                     raise FetchError(f"Requête impossible vers {url} ({ATTEMPTS} essais) : {e}") from e
                 time.sleep(RETRY_PAUSE_S * attempt)
+                continue
+            # Trop de requêtes (plusieurs programmes partagent la limite du fournisseur) : pause, puis nouvel essai.
+            if response.status_code == 429 and attempt < ATTEMPTS:
+                time.sleep(RATE_LIMIT_PAUSE_S * attempt)
+                continue
+            break
         if response.status_code == 404 and missing_ok:
             return None
         if response.status_code == 401:
