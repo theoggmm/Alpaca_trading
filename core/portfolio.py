@@ -7,7 +7,7 @@ suit le dernier échange connu ; après la sortie, elle est figée. Fractions d'
 Montants en Decimal (règle des nombres d'argent de CLAUDE.md).
 """
 
-from decimal import Decimal
+from decimal import ROUND_DOWN, Decimal
 
 from core.datation import usable_bars
 from core.screener import MINUTE, session_trades
@@ -58,3 +58,31 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
         # Montant réparti à parts égales sur les titres valorisés : gain = montant × variation moyenne.
         "gains": {str(amount): str((amount * mean).quantize(Decimal("0.01"))) for amount in amounts},
     }
+
+
+def entry_prices(entry_bars, entry_time, now):
+    """symbole -> prix d'achat : premier échange à partir de entry_time, connu à now."""
+    entry_bars = usable_bars(entry_bars, MINUTE, now)
+
+    return _first_open(entry_bars, entry_time)
+
+
+def order_plan(symbols, prices, amount):
+    """
+    Nombre entier d'actions à acheter pour répartir amount à parts égales entre symbols, au prix indiqué.
+    Part par titre = amount / nombre de titres ; quantité = part / prix arrondie à l'entier inférieur
+    (jamais au-delà de la part). Un titre sans prix est listé sans quantité.
+    Retourne {"share", "rows": [{"symbol", "price", "qty", "cost"}], "total_cost", "cash_left"}.
+    """
+    if not symbols:
+        return {"share": None, "rows": [], "total_cost": "0.00", "cash_left": str(amount)}
+    share = (amount / len(symbols)).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    rows, total = [], Decimal("0")
+    for symbol in symbols:
+        price = prices.get(symbol)
+        qty = None if price is None else int(share // price)
+        cost = None if qty is None else (qty * price).quantize(Decimal("0.01"))
+        total += cost or 0
+        rows.append({"symbol": symbol, "price": None if price is None else str(price), "qty": qty,
+                     "cost": None if cost is None else str(cost)})
+    return {"share": str(share), "rows": rows, "total_cost": str(total), "cash_left": str(amount - total)}

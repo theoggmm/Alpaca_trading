@@ -50,3 +50,20 @@ def test_titre_sans_prix_d_achat_exclu_de_la_repartition():
     bars = ENTRY_BARS[ENTRY_BARS["symbol"] == "A"]
     result = simulate(["A", "B"], bars, EXIT_BARS, {}, ENTRY, EXIT, EXIT + timedelta(hours=1))
     assert result["n"] == 2 and result["priced"] == 1 and result["gains"]["10000"] == "1000.00"
+
+
+def test_plan_d_ordres_actions_entieres_sans_depasser_la_part():
+    from core.portfolio import order_plan
+    plan = order_plan(["A", "B", "C"], {"A": Decimal("276.81"), "B": Decimal("39.11")}, Decimal("10000"))
+    assert plan["share"] == "3333.33"
+    rows = {r["symbol"]: r for r in plan["rows"]}
+    assert rows["A"]["qty"] == 12 and rows["A"]["cost"] == "3321.72"    # 13 actions dépasseraient 3 333,33 $
+    assert rows["B"]["qty"] == 85 and rows["B"]["cost"] == "3324.35"
+    assert rows["C"]["qty"] is None                                       # pas de prix : pas de quantité
+    assert plan["total_cost"] == "6646.07" and plan["cash_left"] == "3353.93"
+
+
+def test_prix_d_achat_connu_seulement_apres_coup():
+    from core.portfolio import entry_prices
+    assert entry_prices(ENTRY_BARS, ENTRY, ENTRY) == {}
+    assert entry_prices(ENTRY_BARS, ENTRY, ENTRY + timedelta(minutes=5)) == {"A": Decimal("100"), "B": Decimal("50")}

@@ -55,6 +55,7 @@
   td.name { color: var(--muted); max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
   td.symbol { font-weight: 700; font-family: var(--font-data); }
   tr:last-child td { border-bottom: none; }
+  tfoot td { font-weight: 700; border-top: 1px solid var(--line); border-bottom: none; }
   .up { color: var(--up); } .down { color: var(--down); }
   .funnel { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; }
   .step { display: grid; gap: 2px; min-width: 128px; padding: 8px 12px; border-left: 3px solid var(--line); }
@@ -153,6 +154,13 @@
   </section>
 
   <section>
+    <h2 data-t="plan_title"></h2>
+    <div class="live-status" id="plan-status"></div>
+    <div class="panel" id="plan"></div>
+    <p class="note" id="plan-note"></p>
+  </section>
+
+  <section>
     <h2 data-t="funnel_title"></h2>
     <div class="panel funnel" id="funnel"></div>
     <p class="note" data-t="funnel_note"></p>
@@ -239,6 +247,14 @@ const TEXT = {
     final_state: d => `Fin de séance du ${d}`,
     opt_live: "en direct", opt_provisional: "fin de séance (provisoire)", opt_final: "fin de séance",
     session_of: d => `Séance du ${d}`,
+    plan_title: "Ordres à passer : 10 000 $ sur la liste PER < 12",
+    plan_live: t => `Prix du dernier échange connu (${t}, New York, 15 min de retard), mis à jour chaque minute`,
+    plan_entry: "Prix du premier échange à partir de 10 h 45 (New York), quand la liste était disponible",
+    plan_share: (a, n, s) => `${a} répartis entre ${n} titres : ${s} par titre`,
+    plan_qty: "Actions à acheter", plan_price: "Prix à saisir", plan_cost: "Coût",
+    plan_total: "Total investi", plan_left: "Reste non investi",
+    plan_no_list: "La liste PER < 12 de cette séance n'existe pas encore : elle est produite à 16 h 45 (Paris).",
+    plan_note: "Nombre entier d'actions, arrondi vers le bas pour ne jamais dépasser la part de chaque titre ; le reste n'est pas investi. Le prix à saisir est le dernier prix connu : comme limite d'un ordre à cours limité, l'ordre peut ne pas s'exécuter si le prix monte. Pour investir exactement le montant (fractions d'action), utilise buy-list.",
     sim_title: "Simulation : gain ou perte du jour selon le montant investi",
     sim_amount: "Montant investi",
     sim_waiting: t => `En attente : achat au premier échange à partir de ${t} (New York)`,
@@ -342,6 +358,14 @@ const TEXT = {
     final_state: d => `End of session ${d}`,
     opt_live: "live", opt_provisional: "end of session (provisional)", opt_final: "end of session",
     session_of: d => `Session of ${d}`,
+    plan_title: "Orders to place: $10,000 on the P/E < 12 list",
+    plan_live: t => `Price of the latest known trade (${t}, New York, 15-min delay), updated every minute`,
+    plan_entry: "Price of the first trade from 10:45 AM (New York), when the list was available",
+    plan_share: (a, n, s) => `${a} split across ${n} stocks: ${s} per stock`,
+    plan_qty: "Shares to buy", plan_price: "Price to enter", plan_cost: "Cost",
+    plan_total: "Total invested", plan_left: "Left uninvested",
+    plan_no_list: "This session's P/E < 12 list doesn't exist yet: it is produced at 4:45 PM (Paris).",
+    plan_note: "Whole shares, rounded down so each stock never exceeds its share; the rest stays uninvested. The price to enter is the latest known price: as the limit of a limit order, the order may not fill if the price rises. To invest the exact amount (fractional shares), use buy-list.",
     sim_title: "Simulation: the day's gain or loss by amount invested",
     sim_amount: "Amount invested",
     sim_waiting: t => `Waiting: bought at the first trade from ${t} (New York)`,
@@ -690,6 +714,7 @@ function renderLive() {
     status.replaceChildren(el("span", "pulse off"), el("span", "", TEXT.live_off));
     box.replaceChildren(el("div", "empty", TEXT.live_launch));
     renderSim();
+    renderPlan();
     return;
   }
   const running = !SHOWN.final && Date.now() - new Date(SHOWN.observed_at).getTime() < LIVE_STALE_MS;
@@ -775,6 +800,41 @@ function renderLive() {
   box.replaceChildren(order.length ? t : el("div", "empty", TEXT.no_session_prices));
   document.getElementById("live-note").textContent = TEXT.live_note(SHOWN.universe, SHOWN.first_hour_minutes);
   renderSim();
+  renderPlan();
+}
+
+// Ordres à passer : nombre entier d'actions et prix à saisir pour la liste PER < 12.
+function renderPlan() {
+  const status = document.getElementById("plan-status");
+  const box = document.getElementById("plan");
+  const note = document.getElementById("plan-note");
+  const plan = SHOWN?.order_plan;
+  if (!plan) {
+    status.replaceChildren();
+    box.replaceChildren(el("div", "empty", SHOWN ? TEXT.plan_no_list : TEXT.sim_missing));
+    note.textContent = "";
+    return;
+  }
+  status.replaceChildren(
+    el("span", "pulse" + (plan.basis === "live" && !SHOWN.final ? "" : " off")),
+    el("span", "", plan.basis === "live"
+      ? TEXT.plan_live(SHOWN.prices_until ? nyTime(SHOWN.prices_until) : "—") : TEXT.plan_entry),
+    el("span", "", TEXT.plan_share(usd(plan.amount), plan.rows.length, plan.share ? usd(plan.share) : "—")));
+  const th = TEXT.th;
+  const t = table([
+    { label: th.symbol, cls: "text symbol", value: r => r.symbol },
+    { label: th.name, cls: "text name", value: r => r.name, title: r => r.name },
+    { label: TEXT.plan_qty, value: r => r.qty ?? "—" },
+    { label: TEXT.plan_price, value: r => r.price == null ? "—" : usd(r.price) },
+    { label: TEXT.plan_cost, value: r => r.cost == null ? "—" : usd(r.cost) },
+  ], plan.rows);
+  const foot = t.createTFoot();
+  [[TEXT.plan_total, plan.total_cost], [TEXT.plan_left, plan.cash_left]].forEach(([label, value]) => {
+    const tr = foot.insertRow();
+    tr.append(el("td", "text", label), el("td"), el("td"), el("td"), el("td", "", usd(value)));
+  });
+  box.replaceChildren(t);
+  note.textContent = TEXT.plan_note;
 }
 
 // Simulation : montant réparti à parts égales sur chaque liste, achat après la première heure, vente 30 min avant la clôture.

@@ -24,7 +24,7 @@ from zoneinfo import ZoneInfo
 import pandas as pd
 
 from core.domains import LIVE_MEASURES, WEEK_SESSIONS, domain_trends, live_domain_trends
-from core.portfolio import simulate
+from core.portfolio import entry_prices, order_plan, simulate
 from core.screener import (Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes,
                            session_open_prices, session_trades)
 from core.universe import eligible_symbols
@@ -50,6 +50,9 @@ OPENING_WINDOW = timedelta(minutes=5)
 EXIT_BEFORE_CLOSE = timedelta(minutes=30)
 TRADE_WINDOW = timedelta(minutes=5)
 EXIT_WINDOW = timedelta(minutes=30)
+# Section « Ordres à passer » : montant réparti en actions entières sur la liste PER < 12.
+ORDER_PLAN_AMOUNT = Decimal("10000")
+ORDER_PLAN_VARIANT = "per12"
 # Les données minute d'Alpaca sont corrigées après coup (échanges annulés ou rectifiés) : un état de
 # fin de séance calculé le soir même est provisoire ; il devient définitif, relu à neuf, 12 h après la clôture.
 DEFINITIVE_AFTER = timedelta(hours=12)
@@ -129,6 +132,22 @@ def _portfolio(runs, entry_bars, exit_bars, trades, entry_time, exit_time, now):
     }
 
 
+def _order_plan(runs, prices, basis):
+    """
+    Ordres à passer sur la liste PER < 12 : nombre entier d'actions et prix, pour ORDER_PLAN_AMOUNT.
+    basis « live » : dernier prix connu ; « entry » : premier échange à l'heure d'achat (séance passée).
+    """
+    run = next((r for r in runs if variant_of(r) == ORDER_PLAN_VARIANT), None)
+    if run is None:
+        return None
+    names = {item["symbol"]: item["name"] for item in run["selection"]}
+    plan = order_plan(list(names), prices, ORDER_PLAN_AMOUNT)
+    for row in plan["rows"]:
+        row["name"] = names[row["symbol"]]
+    return {"run_id": run["run_id"], "variant": ORDER_PLAN_VARIANT, "amount": str(ORDER_PLAN_AMOUNT),
+            "basis": basis, **plan}
+
+
 def _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, opening,
            runs, opens):
     """
@@ -203,6 +222,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
                    daily, domains, names, trades, minute, minute, runs, opens)
     state["portfolio"] = _portfolio(runs, entry_bars, exit_bars, trades, entry_time, exit_time, market_close)
     state["month_trend"] = _month_trend(daily, market_open, criteria, domains)
+    state["order_plan"] = _order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry")
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
@@ -323,6 +343,8 @@ def run(family):
                        minute, minute if not minute.empty else opening, today_runs, opens)
         state["portfolio"] = _portfolio(today_runs, entry_bars, exit_bars, trades, entry_time, exit_time, now)
         state["month_trend"] = month_trend
+        last_prices = {s: price for s, (_, price) in session_trades(trades, market_open, market_close, now).items()}
+        state["order_plan"] = _order_plan(today_runs, last_prices, "live")
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)
