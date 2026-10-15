@@ -14,6 +14,7 @@ from pathlib import Path
 
 from core.domains import domain_trends
 from core.history import TOP_IN_DOMAIN, selection_counts, top_in_domain_counts
+from core.performance_metrics import cumulative, summary
 from core.screener import Criteria, liquid_universe
 from infra import sec
 from infra.cache import read_cached
@@ -89,6 +90,43 @@ def _fill_month_trend(runs):
         run["domains"] = {"bubbles": bubbles, "unclassified": unclassified, "read_later": True}
 
 
+# Expérience 001 (pré-enregistrée) : fenêtre de jugement.
+EXPERIMENT = {"id": "001", "start": "2026-10-16", "sessions": 40,
+              "file": "research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md"}
+SERIES = ("per12", "sans_per", "univers", "spy")
+
+
+def _results(finals):
+    """
+    Rendement quotidien après frais de chaque série (versions de la liste, repères), depuis les états de fin
+    de séance qui portent la simulation après frais. Liste vide ce jour-là : 0 (règle de l'expérience 001).
+    """
+    series = {name: {} for name in SERIES}
+    skipped = []
+    for final in finals:
+        portfolio = final.get("portfolio") or {}
+        rows = {**portfolio.get("versions", {}), **portfolio.get("benchmarks", {})}
+        if "net_mean_return" not in str(rows):
+            skipped.append(final["session_date"])
+            continue
+        for name, row in rows.items():
+            if row.get("net_mean_return") is not None:
+                series[name][final["session_date"]] = row["net_mean_return"]
+            elif row.get("n") == 0:
+                series[name][final["session_date"]] = 0.0
+    provisional = [f["session_date"] for f in finals if f.get("provisional", True) and f["session_date"] not in skipped]
+    return {
+        "series": series,
+        "summaries": {name: summary(values) for name, values in series.items()},
+        "cumulative": {name: cumulative(values) for name, values in series.items()},
+        "skipped": skipped,
+        "provisional": provisional,
+        "experiment": {**EXPERIMENT, "observed": sum(1 for f in finals if f["session_date"] >= EXPERIMENT["start"]
+                                                     and not f.get("provisional", True)
+                                                     and f["session_date"] in series["per12"])},
+    }
+
+
 def build(family):
     runs = load_runs(family)
     _fill_domains(runs)
@@ -107,6 +145,7 @@ def build(family):
         "in_selection": {variant: selection_counts([r for r in latest_per_session(runs) if variant_of(r) == variant])
                          for variant in {variant_of(r) for r in runs}},
         "top_in_domain": top_in_domain_counts(finals),
+        "results": _results(finals),
     }
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))

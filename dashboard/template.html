@@ -19,6 +19,7 @@
     --down: #b23a3a;
     --chip: #e8eef5;
     --up-fill: #1f7f4f;
+    --s-per12: #2b5d8c; --s-sans_per: #c0672a; --s-univers: #6b7785; --s-spy: #7a4fb0;
     --down-fill: #b33b3b;
     --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
     --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
@@ -27,11 +28,13 @@
     :root:not([data-theme="light"]) {
       --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
       --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
+      --s-per12: #7fb0de; --s-sans_per: #f0a060; --s-univers: #93a0b0; --s-spy: #b794e6;
     }
   }
   :root[data-theme="dark"] {
     --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
     --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --chip: #1f2c3a; color-scheme: dark;
+    --s-per12: #7fb0de; --s-sans_per: #f0a060; --s-univers: #93a0b0; --s-spy: #b794e6;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
@@ -55,6 +58,10 @@
   td.name { color: var(--muted); max-width: 320px; overflow: hidden; text-overflow: ellipsis; }
   td.symbol { font-weight: 700; font-family: var(--font-data); }
   tr:last-child td { border-bottom: none; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; padding: 10px 14px 0; }
+  .legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 6px; }
+  svg.chart .series { fill: none; stroke-width: 2; }
+  .exp-box { padding: 12px 14px; display: grid; gap: 4px; font-size: 14px; }
   tfoot td { font-weight: 700; border-top: 1px solid var(--line); border-bottom: none; }
   .up { color: var(--up); } .down { color: var(--down); }
   .funnel { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; }
@@ -184,6 +191,15 @@
     <div class="panel" id="sim"></div>
     <p class="note" id="sim-note"></p>
   </section>
+
+  <section>
+    <h2 data-t="results_title"></h2>
+    <div class="panel exp-box" id="experiment"></div>
+    <div class="panel" id="results-summary"></div>
+    <div class="panel" id="results-chart"></div>
+    <div class="panel" id="results-daily"></div>
+    <p class="note" id="results-note"></p>
+  </section>
 </main>
 
 <!-- Clôtures du dernier mois de tout l'univers (écrit une fois par séance par le suivi en direct). -->
@@ -256,6 +272,22 @@ const TEXT = {
     plan_no_list: "La liste PER < 12 de cette séance n'existe pas encore : elle est produite à 16 h 45 (Paris).",
     plan_note: "Nombre entier d'actions, arrondi vers le bas pour ne jamais dépasser la part de chaque titre ; le reste n'est pas investi. Le prix à saisir est le dernier prix connu : comme limite d'un ordre à cours limité, l'ordre peut ne pas s'exécuter si le prix monte. Pour investir exactement le montant (fractions d'action), utilise buy-list.",
     sim_title: "Simulation : gain ou perte du jour selon le montant investi",
+    sim_gross: "brut", sim_net: "après frais", sim_whole: "actions entières, après frais",
+    sim_bench: s => `Repères du jour, mêmes règles, après frais : ${s}.`,
+    series: { per12: "PER < 12", sans_per: "Sans PER", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
+    results_title: "Historique des résultats (simulation après frais)",
+    exp_title: id => `Expérience ${id} : PER < 12 face à sans PER et à l'univers liquide`,
+    exp_progress: (n, total, start) => `${n} séance(s) définitive(s) observée(s) sur ${total}, à partir du ${start}. Le verdict n'est rendu qu'après la ${total}e séance.`,
+    exp_rule: "Confirmée si l'écart quotidien moyen est positif et le t apparié ≥ 1,685 (critère fixé avant la fenêtre).",
+    exp_file: f => `Pré-enregistrement : ${f}`,
+    res_series: "Série", res_n: "Séances", res_mean: "Moyenne / séance", res_total: "Total cumulé",
+    res_annual: "Annualisé", res_positive: "Séances positives", res_worst: "Pire séance", res_date: "Séance",
+    res_suspect: "Plus de 100 % annualisé : résultat suspect (règle 6), à expliquer.",
+    res_empty: "Pas encore de séance avec simulation après frais : la première sera celle du 15 octobre, ce soir.",
+    res_chart_soon: "La courbe apparaît à partir de deux séances.", res_chart_aria: "Rendements cumulés par série",
+    res_note: "Chaque séance : achat à parts égales au premier échange à partir de 10 h 45, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste PER < 12 vide : 0 %.",
+    res_skipped: s => `Non comptées (simulation antérieure aux frais et aux repères) : ${s}.`,
+    res_provisional: "* : séance encore provisoire, recalculée le lendemain avec les corrections d'Alpaca.",
     sim_amount: "Montant investi",
     sim_waiting: t => `En attente : achat au premier échange à partir de ${t} (New York)`,
     sim_live: t => `En direct : valeur au dernier prix connu (${t}, New York)`,
@@ -367,6 +399,22 @@ const TEXT = {
     plan_no_list: "This session's P/E < 12 list doesn't exist yet: it is produced at 4:45 PM (Paris).",
     plan_note: "Whole shares, rounded down so each stock never exceeds its share; the rest stays uninvested. The price to enter is the latest known price: as the limit of a limit order, the order may not fill if the price rises. To invest the exact amount (fractional shares), use buy-list.",
     sim_title: "Simulation: the day's gain or loss by amount invested",
+    sim_gross: "gross", sim_net: "after costs", sim_whole: "whole shares, after costs",
+    sim_bench: s => `Today's benchmarks, same rules, after costs: ${s}.`,
+    series: { per12: "P/E < 12", sans_per: "Without P/E", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
+    results_title: "Results history (simulation after costs)",
+    exp_title: id => `Experiment ${id}: P/E < 12 vs without P/E and the liquid universe`,
+    exp_progress: (n, total, start) => `${n} final session(s) observed out of ${total}, from ${start}. The verdict is only given after session ${total}.`,
+    exp_rule: "Confirmed if the mean daily difference is positive and the paired t ≥ 1.685 (criterion set before the window).",
+    exp_file: f => `Pre-registration: ${f}`,
+    res_series: "Series", res_n: "Sessions", res_mean: "Mean / session", res_total: "Cumulative total",
+    res_annual: "Annualized", res_positive: "Positive sessions", res_worst: "Worst session", res_date: "Session",
+    res_suspect: "Over 100% annualized: suspicious result (rule 6), to be explained.",
+    res_empty: "No session with an after-cost simulation yet: the first will be October 15, tonight.",
+    res_chart_soon: "The chart appears from two sessions on.", res_chart_aria: "Cumulative returns by series",
+    res_note: "Each session: equal amounts bought at the first trade from 10:45 AM, sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty P/E < 12 list: 0%.",
+    res_skipped: s => `Not counted (simulation from before costs and benchmarks): ${s}.`,
+    res_provisional: "*: session still provisional, recalculated the next day with Alpaca's corrections.",
     sim_amount: "Amount invested",
     sim_waiting: t => `Waiting: bought at the first trade from ${t} (New York)`,
     sim_live: t => `Live: value at the latest known price (${t}, New York)`,
@@ -837,6 +885,72 @@ function renderPlan() {
   note.textContent = TEXT.plan_note;
 }
 
+// Historique des résultats : séries quotidiennes après frais, cumul, avancement de l'expérience 001.
+function renderResults() {
+  const res = HISTORY.results;
+  const exp = res.experiment;
+  const series = ["per12", "sans_per", "univers", "spy"];
+  document.getElementById("experiment").replaceChildren(
+    el("b", "", TEXT.exp_title(exp.id)),
+    el("span", "", TEXT.exp_progress(exp.observed, exp.sessions, exp.start)),
+    el("span", "", TEXT.exp_rule),
+    el("span", "", TEXT.exp_file(exp.file)));
+
+  const fmt = v => v == null ? "—" : pct(v);
+  const rows = series.filter(s => res.summaries[s]?.n);
+  document.getElementById("results-summary").replaceChildren(rows.length ? table([
+    { label: TEXT.res_series, cls: "text", value: s => TEXT.series[s] },
+    { label: TEXT.res_n, value: s => res.summaries[s].n },
+    { label: TEXT.res_mean, value: s => fmt(res.summaries[s].mean), tone: s => res.summaries[s].mean },
+    { label: TEXT.res_total, value: s => fmt(res.summaries[s].total), tone: s => res.summaries[s].total },
+    { label: TEXT.res_annual, value: s => fmt(res.summaries[s].annualized) + (res.summaries[s].suspect ? " ⚠" : ""),
+      title: s => res.summaries[s].suspect ? TEXT.res_suspect : "" },
+    { label: TEXT.res_positive, value: s => fmt(res.summaries[s].positive_share) },
+    { label: TEXT.res_worst, value: s => fmt(res.summaries[s].worst), tone: s => res.summaries[s].worst },
+  ], rows) : el("div", "empty", TEXT.res_empty));
+
+  // Courbe des rendements cumulés (une ligne par série).
+  const chart = document.getElementById("results-chart");
+  const dates = [...new Set(series.flatMap(s => res.cumulative[s].map(([d]) => d)))].sort();
+  if (dates.length < 2) {
+    chart.replaceChildren(el("div", "empty", TEXT.res_chart_soon));
+  } else {
+    const W = 760, H = 230, L = 64, R = 20, T = 14, B = 28;
+    const values = series.flatMap(s => res.cumulative[s].map(([, v]) => v)).concat([0]);
+    const lo = Math.min(...values), hi = Math.max(...values), pad = (hi - lo) * 0.1 || 0.01;
+    const x = d => L + (W - L - R) * dates.indexOf(d) / (dates.length - 1);
+    const y = v => T + (H - T - B) * (hi + pad - v) / (hi - lo + 2 * pad);
+    const box = svg("svg", { viewBox: `0 0 ${W} ${H}`, class: "chart", role: "img", "aria-label": TEXT.res_chart_aria });
+    for (let g = 0; g <= 4; g++) {
+      const v = lo - pad + (hi - lo + 2 * pad) * g / 4;
+      box.append(svg("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "grid" }),
+                 svg("text", { x: L - 8, y: y(v) + 4, class: "axis", "text-anchor": "end" }, pct(v)));
+    }
+    series.forEach(s => {
+      const pts = res.cumulative[s];
+      if (pts.length) box.append(svg("polyline", { points: pts.map(([d, v]) => `${x(d)},${y(v)}`).join(" "),
+                                                   class: "series", style: `stroke: var(--s-${s})` }));
+    });
+    [dates[0], dates[dates.length - 1]].forEach((d, i) => box.append(svg("text", { x: x(d), y: H - 8, class: "axis",
+      "text-anchor": i ? "end" : "start" }, d)));
+    const legend = el("div", "legend");
+    series.filter(s => res.cumulative[s].length).forEach(s => {
+      const item = el("span"); const swatch = el("i"); swatch.style.background = `var(--s-${s})`;
+      item.append(swatch, TEXT.series[s]); legend.appendChild(item);
+    });
+    chart.replaceChildren(legend, box);
+  }
+
+  const days = Object.keys(Object.assign({}, ...series.map(s => res.series[s]))).sort().reverse();
+  document.getElementById("results-daily").replaceChildren(days.length ? table([
+    { label: TEXT.res_date, cls: "text", value: d => d + (res.provisional.includes(d) ? " *" : "") },
+    ...series.map(s => ({ label: TEXT.series[s], value: d => fmt(res.series[s][d]), tone: d => res.series[s][d] ?? 0 })),
+  ], days) : el("div", "empty", TEXT.res_empty));
+  document.getElementById("results-note").textContent = TEXT.res_note
+    + (res.skipped.length ? " " + TEXT.res_skipped(res.skipped.join(", ")) : "")
+    + (res.provisional.length ? " " + TEXT.res_provisional : "");
+}
+
 // Simulation : montant réparti à parts égales sur chaque liste, achat après la première heure, vente 30 min avant la clôture.
 function renderSim() {
   const status = document.getElementById("sim-status");
@@ -858,26 +972,38 @@ function renderSim() {
                          el("span", "", TEXT.sim_times(nyTime(sim.entry_time), nyTime(sim.exit_time))));
 
   const amounts = ["10000", "25000", "50000", "100000", "1000000"];
+  // Pour chaque version : brut, après frais, et en actions entières après frais (colonnes ajoutées le 15 octobre).
+  const kinds = [["gains", "mean_return", TEXT.sim_gross], ["net_gains", "net_mean_return", TEXT.sim_net],
+                 ["whole_gains", null, TEXT.sim_whole]];
   const t = el("table");
   const head = t.createTHead().insertRow();
   head.appendChild(el("th", "text", TEXT.sim_amount));
   versions.forEach(v => {
     const r = sim.versions[v];
-    head.appendChild(el("th", "", `${TEXT.variants[v]} · ${TEXT.n_stocks(r.priced || r.n)}`));
+    kinds.forEach(([field, , label]) => {
+      if (field === "gains" || r[field]) head.appendChild(el("th", "", `${TEXT.variants[v]} · ${label}`));
+    });
   });
   const body = t.createTBody();
+  const money = (value, rate) => value === undefined ? "—"
+    : `${Number(value) >= 0 ? "+" : ""}${usd(value)}` + (rate == null ? "" : ` (${pct(rate)})`);
   amounts.forEach(amount => {
     const tr = body.insertRow();
     tr.appendChild(el("td", "text", usd(amount)));
     versions.forEach(v => {
       const r = sim.versions[v];
-      const gain = r.gains[amount];
-      tr.appendChild(gain === undefined ? el("td", "", "—")
-        : el("td", signed(Number(gain)), `${Number(gain) >= 0 ? "+" : ""}${usd(gain)} (${pct(r.mean_return)})`));
+      kinds.forEach(([field, rateField]) => {
+        if (field !== "gains" && !r[field]) return;
+        const value = r[field]?.[amount];
+        tr.appendChild(el("td", value === undefined ? "" : signed(Number(value)), money(value, rateField && r[rateField])));
+      });
     });
   });
   box.replaceChildren(t);
-  note.textContent = TEXT.sim_note;
+  const bench = sim.benchmarks || {};
+  const benchText = ["univers", "spy"].filter(b => bench[b]?.net_mean_return != null)
+    .map(b => `${TEXT.series[b]} ${pct(bench[b].net_mean_return)}`).join(" · ");
+  note.textContent = TEXT.sim_note + (benchText ? " " + TEXT.sim_bench(benchText) : "");
 }
 
 function renderHistory() {
@@ -976,6 +1102,7 @@ if (!SESSION_DATES.length) {
   renderSession(chosen);
 }
 renderHistory();
+renderResults();
 </script>
 </body>
 </html>
