@@ -151,6 +151,12 @@ Toutes les commandes s'écrivent sous la forme :
 | `close AAPL` | Clôturer une position au marché |
 | `close-all` | Clôturer toutes les positions et annuler les ordres |
 
+| `buy-list --amount 100000` | Acheter la liste du jour (version PER < 12 par défaut), montant réparti à parts égales, ordres au marché en dollars, après confirmation |
+| `buy-list --amount 100000 --variant sans_per` | Même chose avec la liste sans PER |
+| `sell-list` | Vendre au marché les positions des titres de la liste du jour (à lancer vers 15 h 30, New York), après confirmation |
+
+`buy-list` et `sell-list` acceptent `--dry-run` (montrer le plan sans rien envoyer) et `--session AAAA-MM-JJ`.
+
 Options : `--tif day|gtc|opg|cls|ioc|fok` (durée de validité, `day` par défaut), `-y` pour ne pas demander de confirmation.
 Chaque ordre affiche un récapitulatif `[PAPER]` et demande confirmation avant l'envoi.
 Les règles propres à Alpaca (fractions, `--notional`, `--tif` autorisés selon le type d'ordre) sont vérifiées par l'API, qui renvoie un message d'erreur explicite.

@@ -8,7 +8,9 @@ est écrit explicitement dans le fichier .env situé à côté de ce script.
 import argparse
 import sys
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from datetime import datetime, timezone
+from decimal import ROUND_DOWN, Decimal, InvalidOperation
+from zoneinfo import ZoneInfo
 
 from alpaca.common.exceptions import APIError
 from alpaca.data.historical import StockHistoricalDataClient
@@ -25,6 +27,10 @@ from alpaca.trading.requests import (
 
 from infra.alpaca_api import load_credentials
 from infra.http import FetchError
+from infra.trace import latest_per_session, load_runs, variant_of
+
+FAMILY = "reprise_apres_baisse"
+NEW_YORK = ZoneInfo("America/New_York")
 
 PRICE_FIELDS = ("limit_price", "stop_price")
 
@@ -188,6 +194,69 @@ def cmd_close(ctx, args):
     print_order(ctx.trading.close_position(symbol))
 
 
+# --------------------------------------------------------------------------- #
+# Ordres sur la liste du screener (une version : sans PER ou PER < 12)
+# --------------------------------------------------------------------------- #
+
+def _session_list(variant, session):
+    """Liste la plus récente d'une version pour une séance (date de New York, aujourd'hui par défaut)."""
+    key = session or datetime.now(timezone.utc).astimezone(NEW_YORK).date().isoformat()
+    runs = [r for r in latest_per_session(load_runs(FAMILY)) if r["session_date"] == key and variant_of(r) == variant]
+    if not runs:
+        sys.exit(f"Pas de liste « {variant} » pour la séance du {key} (elle est produite à 10 h 45, New York).")
+    if not runs[0]["selection"]:
+        sys.exit(f"La liste « {variant} » du {key} ({runs[0]['run_id']}) ne contient aucun titre.")
+    return runs[0]
+
+
+def cmd_buy_list(ctx, args):
+    run = _session_list(args.variant, args.session)
+    items = run["selection"]
+    # Montant réparti à parts égales, arrondi au cent inférieur pour ne jamais dépasser le total.
+    share = (args.amount / len(items)).quantize(Decimal("0.01"), rounding=ROUND_DOWN)
+    mode = "PAPER" if ctx.paper else "!!! RÉEL !!!"
+    print(f"[{mode}] Liste {run['run_id']} ({args.variant}), séance du {run['session_date']} : {len(items)} titres, "
+          f"{money(share)} chacun, {money(share * len(items))} au total (achat au marché, montant en dollars).")
+    for item in items:
+        price = Decimal(item["price_at_decision"])
+        print(f"  {item['symbol']:<6} {item['name'][:40]:<40} {money(share):>14}  "
+              f"≈ {(share / price).quantize(Decimal('0.0001'))} actions à ~{money(price)} (prix à la décision)")
+    if args.dry_run:
+        print("Mode --dry-run : aucun ordre envoyé.")
+        return
+    confirm_or_abort(f"Envoyer ces {len(items)} ordres d'achat au marché ?", args.yes)
+    for item in items:
+        request = MarketOrderRequest(symbol=item["symbol"], notional=float(share), side=OrderSide.BUY,
+                                     time_in_force=TimeInForce.DAY)
+        try:
+            print_order(ctx.trading.submit_order(order_data=request))
+        except APIError as e:
+            print(f"  {item['symbol']} : ordre refusé par Alpaca : {e}")
+
+
+def cmd_sell_list(ctx, args):
+    run = _session_list(args.variant, args.session)
+    symbols = {item["symbol"] for item in run["selection"]}
+    positions = [p for p in ctx.trading.get_all_positions() if p.symbol in symbols]
+    if not positions:
+        sys.exit(f"Aucune position ouverte sur les titres de la liste {run['run_id']}.")
+    mode = "PAPER" if ctx.paper else "!!! RÉEL !!!"
+    print(f"[{mode}] Vente au marché des positions de la liste {run['run_id']} ({args.variant}) :")
+    for p in positions:
+        print(f"  {p.symbol:<6} qty={p.qty:<12} valeur={money(p.market_value):>14}  P&L={money(p.unrealized_pl)}")
+    total = sum(Decimal(p.unrealized_pl) for p in positions)
+    print(f"  P&L latent total : {money(total)}")
+    if args.dry_run:
+        print("Mode --dry-run : aucun ordre envoyé.")
+        return
+    confirm_or_abort(f"Vendre ces {len(positions)} positions au marché ?", args.yes)
+    for p in positions:
+        try:
+            print_order(ctx.trading.close_position(p.symbol))
+        except APIError as e:
+            print(f"  {p.symbol} : ordre refusé par Alpaca : {e}")
+
+
 def cmd_close_all(ctx, args):
     confirm_or_abort("Clôturer TOUTES les positions et annuler tous les ordres ?", args.yes)
     print(f"{len(ctx.trading.close_all_positions(cancel_orders=True))} position(s) en cours de clôture.")
@@ -237,6 +306,18 @@ def build_parser():
         .set_defaults(func=cmd_close)
     sub.add_parser("close-all", parents=[with_confirm], help="Clôturer toutes les positions") \
         .set_defaults(func=cmd_close_all)
+
+    with_list = argparse.ArgumentParser(add_help=False)
+    with_list.add_argument("--variant", default="per12", choices=["per12", "sans_per"],
+                           help="Version de la liste (défaut : per12, PER < 12)")
+    with_list.add_argument("--session", help="Séance AAAA-MM-JJ (défaut : aujourd'hui, heure de New York)")
+    with_list.add_argument("--dry-run", action="store_true", help="Montrer le plan sans rien envoyer")
+    p = sub.add_parser("buy-list", parents=[with_list, with_confirm],
+                       help="Acheter la liste du jour, montant réparti à parts égales")
+    p.add_argument("--amount", type=positive_decimal, required=True, help="Montant total en $")
+    p.set_defaults(func=cmd_buy_list)
+    sub.add_parser("sell-list", parents=[with_list, with_confirm],
+                   help="Vendre au marché les positions de la liste du jour").set_defaults(func=cmd_sell_list)
 
     return parser
 
