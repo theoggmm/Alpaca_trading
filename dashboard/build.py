@@ -91,7 +91,7 @@ def _fill_month_trend(runs):
 
 
 # Expérience 001 (pré-enregistrée) : fenêtre de jugement.
-EXPERIMENT = {"id": "001", "start": "2026-10-16", "sessions": 40,
+EXPERIMENT = {"id": "001", "start": "2026-10-15", "sessions": 40,
               "file": "research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md"}
 SERIES = ("per12", "sans_per", "univers", "spy")
 

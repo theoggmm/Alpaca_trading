@@ -53,3 +53,11 @@ Le verdict reporte aussi, pour chaque série : rendement total, rendement annual
 
 Ouvert par le propriétaire, explicitement, une seule fois, après la 40ᵉ séance (vers mi-décembre 2026).
 Le verdict est écrit dans `research/experiments/decisions.md` avec les chiffres et le `git_sha`.
+
+## Amendement 001.2 — fenêtre avancée au 15 octobre 2026 (propriétaire)
+
+Écrit et commité le 15 octobre 2026 vers 10 h 44 (New York), **avant** que la liste du jour existe et
+avant l'heure d'achat (10 h 45) : aucun résultat de la séance du 15 n'a été vu. Sur demande du
+propriétaire, la fenêtre de jugement devient **les 40 séances à partir du 15 octobre 2026 inclus**.
+Rien d'autre ne change : mesure, hypothèses, seuils (moyenne > 0 et t apparié ≥ 1,685) et éléments
+figés restent ceux écrits ci-dessus. Les séances du 13 et 14 octobre restent des diagnostics.

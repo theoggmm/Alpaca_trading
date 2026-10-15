@@ -21,3 +21,10 @@ lance et les confirme lui-même. Aucun ordre automatique : aucune exception à l
 
 Fichier `research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md`, commité avant
 la fenêtre de jugement (40 séances à partir du 16 octobre 2026). Juge à ouvrir par le propriétaire.
+
+## 001.2 — 2026-10-15 — Fenêtre de l'expérience 001 avancée au 15 octobre (propriétaire)
+
+Le propriétaire demande que la séance du 15 octobre compte. Amendement écrit dans le fichier de
+l'expérience et commité avant la publication de la liste du jour et avant l'heure d'achat (10 h 45,
+New York) : aucun résultat de cette séance n'était connu. Fenêtre : 40 séances à partir du 15 octobre
+2026. Seuils et mesure inchangés.

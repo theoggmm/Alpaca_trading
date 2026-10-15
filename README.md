@@ -117,7 +117,7 @@ Les ordres se passent à la main (`trade.py buy-list`, ci-dessous) : aucun progr
 100 %, séances positives, pire séance), courbe cumulée et tableau par séance. Calculs par
 `core/performance_metrics.py` uniquement. L'encadré suit l'**expérience 001**, pré-enregistrée
 (`research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md`) : 40 séances à partir
-du 16 octobre 2026, critères chiffrés figés, verdict ouvert par le propriétaire seulement à la fin.
+du 15 octobre 2026 (séance du jour comprise), critères chiffrés figés, verdict ouvert par le propriétaire seulement à la fin.
 
 **Test sur le passé (diagnostic).** Rejoue les deux versions sur les 6 derniers mois avec le même code
 (listes calculées à 10 h 30 avec les seules données connues à ce moment, mêmes règles d'achat, de vente

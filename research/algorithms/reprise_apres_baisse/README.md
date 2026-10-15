@@ -89,7 +89,7 @@ commite ensuite ces deux fichiers (et rien d'autre) et les pousse sur GitHub.
 ## Expérience 001 (pré-enregistrée)
 
 `experiences/001_per12_vs_sans_per.md` : la liste PER < 12 rapporte-t-elle plus que la liste sans PER et
-que l'univers liquide, après frais ? Fenêtre : 40 séances à partir du 16 octobre 2026. Confirmée si
+que l'univers liquide, après frais ? Fenêtre : 40 séances à partir du 15 octobre 2026 (amendement 001.2). Confirmée si
 l'écart quotidien moyen est positif et le t apparié ≥ 1,685. Critères, heures, frais et simulation figés
 pendant la fenêtre ; décision 001.1 dans `research/experiments/decisions.md`.
 
