@@ -96,6 +96,8 @@
   .method code { font-family: var(--font-data); font-size: 13px; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
   .method .timeline { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
   .method .timeline b { font-family: var(--font-data); white-space: nowrap; }
+  .sim-tables { display: grid; gap: 16px; }
+  .sim-block h3 { margin: 0 0 6px; font-size: 15px; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
   .bubbles { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; padding: 20px; }
   .bubble { border-radius: 50%; display: grid; place-content: center; text-align: center; gap: 2px;
@@ -181,12 +183,6 @@
       <p class="note" id="plan-note"></p>
     </section>
 
-    <section>
-      <h2 data-t="sim_title"></h2>
-      <div class="live-status" id="sim-status"></div>
-      <div class="panel" id="sim"></div>
-      <p class="note" id="sim-note"></p>
-    </section>
   </div>
 
   <div class="tab-panel" id="tab-market" role="tabpanel" aria-labelledby="tabbtn-market" hidden>
@@ -225,6 +221,13 @@
   </div>
 
   <div class="tab-panel" id="tab-results" role="tabpanel" aria-labelledby="tabbtn-results" hidden>
+    <section>
+      <h2 data-t="sim_title"></h2>
+      <div class="live-status" id="sim-status"></div>
+      <div class="sim-tables" id="sim"></div>
+      <p class="note" id="sim-note"></p>
+    </section>
+
     <section>
       <h2 data-t="results_title"></h2>
       <div class="panel exp-box" id="experiment"></div>
@@ -318,7 +321,8 @@ const TEXT = {
     plan_no_list: "La liste PER < 12 de cette séance n'existe pas encore : elle est produite à 16 h 45 (Paris).",
     plan_note: "Nombre entier d'actions, arrondi vers le bas pour ne jamais dépasser la part de chaque titre ; le reste n'est pas investi. Le prix à saisir est le dernier prix connu : comme limite d'un ordre à cours limité, l'ordre peut ne pas s'exécuter si le prix monte. Pour investir exactement le montant (fractions d'action), utilise buy-list.",
     sim_title: "Simulation : gain ou perte du jour selon le montant investi",
-    sim_gross: "brut", sim_net: "après frais", sim_whole: "actions entières, après frais",
+    sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais",
+    sim_version: (v, n) => `${v} · ${n} titre(s)`,
     sim_bench: s => `Repères du jour, mêmes règles, après frais : ${s}.`,
     series: { per12: "PER < 12", sans_per: "Sans PER", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
     results_title: "Historique des résultats (simulation après frais)",
@@ -357,7 +361,7 @@ const TEXT = {
     sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b} (New York)`,
     sim_no_list: "Pas encore de liste pour cette séance : la simulation commence quand elle est produite.",
     sim_missing: "Pas de simulation pour cette séance (fonction ajoutée le 15 octobre).",
-    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et quart après l'ouverture) et vendu au dernier échange 30 minutes avant la clôture. Montants bruts, avant frais et impôts. Un titre sans échange au moment de l'achat est écarté de la répartition.",
+    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et quart après l'ouverture) et vendu au dernier échange 30 minutes avant la clôture. Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Avant impôts. Un titre sans échange au moment de l'achat est écarté de la répartition.",
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
     no_run_yet: "La liste des 20 titres de cette séance sera produite à 16 h 45 (Paris), une heure et quart après l'ouverture.",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
@@ -464,7 +468,8 @@ const TEXT = {
     plan_no_list: "This session's P/E < 12 list doesn't exist yet: it is produced at 4:45 PM (Paris).",
     plan_note: "Whole shares, rounded down so each stock never exceeds its share; the rest stays uninvested. The price to enter is the latest known price: as the limit of a limit order, the order may not fill if the price rises. To invest the exact amount (fractional shares), use buy-list.",
     sim_title: "Simulation: the day's gain or loss by amount invested",
-    sim_gross: "gross", sim_net: "after costs", sim_whole: "whole shares, after costs",
+    sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs",
+    sim_version: (v, n) => `${v} · ${n} stock(s)`,
     sim_bench: s => `Today's benchmarks, same rules, after costs: ${s}.`,
     series: { per12: "P/E < 12", sans_per: "Without P/E", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
     results_title: "Results history (simulation after costs)",
@@ -503,7 +508,7 @@ const TEXT = {
     sim_times: (a, b) => `bought from ${a}, sold before ${b} (New York)`,
     sim_no_list: "No list for this session yet: the simulation starts once it is produced.",
     sim_missing: "No simulation for this session (feature added on October 15).",
-    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a quarter after the open) and sold at the last trade 30 minutes before the close. Gross amounts, before fees and tax. A stock with no trade at buying time is left out of the split.",
+    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a quarter after the open) and sold at the last trade 30 minutes before the close. Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. Before tax. A stock with no trade at buying time is left out of the split.",
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
     no_run_yet: "This session's list of 20 stocks will be produced at 4:45 PM (Paris), an hour and a quarter after the open.",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
@@ -1109,31 +1114,33 @@ function renderSim() {
   // Pour chaque version : brut, après frais, et en actions entières après frais (colonnes ajoutées le 15 octobre).
   const kinds = [["gains", "mean_return", TEXT.sim_gross], ["net_gains", "net_mean_return", TEXT.sim_net],
                  ["whole_gains", null, TEXT.sim_whole]];
-  const t = el("table");
-  const head = t.createTHead().insertRow();
-  head.appendChild(el("th", "text", TEXT.sim_amount));
-  versions.forEach(v => {
-    const r = sim.versions[v];
-    kinds.forEach(([field, , label]) => {
-      if (field === "gains" || r[field]) head.appendChild(el("th", "", `${TEXT.variants[v]} · ${label}`));
-    });
-  });
-  const body = t.createTBody();
   const money = (value, rate) => value === undefined ? "—"
     : `${Number(value) >= 0 ? "+" : ""}${usd(value)}` + (rate == null ? "" : ` (${pct(rate)})`);
-  amounts.forEach(amount => {
-    const tr = body.insertRow();
-    tr.appendChild(el("td", "text", usd(amount)));
-    versions.forEach(v => {
-      const r = sim.versions[v];
-      kinds.forEach(([field, rateField]) => {
-        if (field !== "gains" && !r[field]) return;
+  // Un tableau par version de la liste (PER < 12 d'abord) : montant investi, puis brut, après frais, actions entières.
+  const tables = ["per12", "sans_per"].filter(v => sim.versions[v]).map(v => {
+    const r = sim.versions[v];
+    const shown = kinds.filter(([field]) => field === "gains" || r[field]);
+    const block = el("div", "sim-block");
+    block.appendChild(el("h3", "", TEXT.sim_version(TEXT.variants[v], r.n)));
+    const t = el("table");
+    const head = t.createTHead().insertRow();
+    head.appendChild(el("th", "text", TEXT.sim_amount));
+    shown.forEach(([, , label]) => head.appendChild(el("th", "", label)));
+    const body = t.createTBody();
+    amounts.forEach(amount => {
+      const tr = body.insertRow();
+      tr.appendChild(el("td", "text", usd(amount)));
+      shown.forEach(([field, rateField]) => {
         const value = r[field]?.[amount];
         tr.appendChild(el("td", value === undefined ? "" : signed(Number(value)), money(value, rateField && r[rateField])));
       });
     });
+    const panel = el("div", "panel");
+    panel.appendChild(t);
+    block.appendChild(panel);
+    return block;
   });
-  box.replaceChildren(t);
+  box.replaceChildren(...tables);
   const bench = sim.benchmarks || {};
   const benchText = ["univers", "spy"].filter(b => bench[b]?.net_mean_return != null)
     .map(b => `${TEXT.series[b]} ${pct(bench[b].net_mean_return)}`).join(" · ");
