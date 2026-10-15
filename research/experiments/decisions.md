@@ -57,3 +57,10 @@ pré-enregistrée à nouveau, avec une nouvelle fenêtre, quand les règles sero
 ## 002.2 — 2026-10-15 — Expérience 002 retirée avant toute donnée
 
 Remplacée par T5 (les deux règles dans les deux listes). Aucun run des versions 3 et 4.
+
+## T6 — 2026-10-15 — Deux règles de tendance ajoutées aux deux listes (propriétaire)
+
+Avant le premier run des versions 5 et 6 (16 octobre) : « marché en bonne forme » (la veille, SPY a clôturé
+au-dessus de sa moyenne des 50 dernières séances ; sinon aucune liste ce jour-là) et « pas en chute » (à
+10 h 30, prix au plus 5 % sous la moyenne des 50 dernières clôtures). Choisies après examen des séances du
+13 au 15 octobre (diagnostic, 68 titres) : à vérifier par le test sur le passé.

@@ -68,6 +68,8 @@ def _values(lang, experiment):
         "entry_time": _ny_time(confirm_decision + feed, lang),
         "confirmation_minutes": base.confirmation_minutes,
         "gap_pct": _number(base.min_gap_below_high * 100, lang),
+        "ma_pct": _number(base.max_below_ma * 100, lang), "ma_sessions": base.ma_sessions,
+        "market_symbol": base.market_symbol, "market_ma_sessions": base.market_ma_sessions,
         "exit_time": _ny_time(16 * 60 - exit_before, lang), "feed_delay": feed, "exit_before": exit_before,
         "tax_pct": _number(TAX_RATE * 100, lang),
         "cost_pct": _number(COST_BPS / 100, lang), "cost_round_pct": _number(COST_BPS * 2 / 100, lang),

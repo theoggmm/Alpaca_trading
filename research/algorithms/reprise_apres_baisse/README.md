@@ -13,8 +13,8 @@ reprise en cours après une baisse.
 
 ## Critères : deux versions produites à chaque séance
 
-- **Sans PER** : `criteres_sans_per.json` (version 5), critères 1 à 10 ci-dessous avec 8 ter et 8 quater.
-- **PER < 12** : `criteres_per12.json` (version 6), les mêmes + 8 bis.
+- **Sans PER** : `criteres_sans_per.json` (version 5), critères 1 à 10 ci-dessous avec 7 bis, 8 bis, 8 ter et 8 quater.
+- **PER < 12** : `criteres_per12.json` (version 6), les mêmes + 8 quinquies.
 
 Décision en deux temps (10 h 30 puis 10 h 45, New York), listes et achat à 11 h 00. Chaque séance produit un
 run par version (champ `variant` : `sans_per`, `per12`). Versions précédentes dans `archive/` (1 et 2 :
@@ -36,10 +36,12 @@ pour la confirmation (heure de New York) :
 | 5 | Volatilité basse | Écart-type des rendements quotidiens sur 60 séances ≤ quantile 0,5 des titres restants (interpolation linéaire, `numpy.quantile`) |
 | 6 | En baisse sur un mois | Rendement sur 21 séances < 0 |
 | 7 | Hausse des derniers jours | Rendement > 0 à chacune des 2 dernières séances |
+| 7 bis | Marché en bonne forme (versions 5 et 6) | Dernière clôture de SPY avant la séance > moyenne de ses 50 dernières clôtures ; sinon, liste vide (barres quotidiennes de SPY lues à part : c'est un ETF, hors univers) |
 | 8 | Hausse première heure | Dernier cours connu à la décision > premier cours de la séance |
-| 8 bis | PER (version 2) | Prix à la décision / bénéfice dilué par action des 12 derniers mois < 12. Bénéfice US GAAP en dollars déclaré à la SEC, déposé avant le jour de décision ; bénéfice nul, négatif ou non disponible = titre exclu |
+| 8 bis | Pas en chute (versions 5 et 6) | Dernier prix à 10 h 30 ≥ moyenne des 50 dernières clôtures × (1 − 0,05) |
 | 8 ter | Pas au sommet (versions 5 et 6) | Dernier prix à 10 h 30 ≤ plus haute clôture minute de la première heure × (1 − 0,002) |
 | 8 quater | Confirmation (versions 5 et 6) | Dernier prix à 10 h 45 ≥ dernier prix à 10 h 30 ; la hausse de la première heure (critère 8) reste mesurée à 10 h 30 |
+| 8 quinquies | PER (version 2) | Prix à la décision / bénéfice dilué par action des 12 derniers mois < 12. Bénéfice US GAAP en dollars déclaré à la SEC, déposé avant le jour de décision ; bénéfice nul, négatif ou non disponible = titre exclu |
 | 9 | Classement | Du plus fort repli sur 21 séances au plus faible (égalité : ordre alphabétique) |
 | 10 | Diversification | Un titre n'est retenu que si sa corrélation (rendements quotidiens, 60 séances) avec chaque titre déjà retenu est ≤ 0,6 ; arrêt à 20 titres |
 
@@ -118,3 +120,5 @@ sur le passé (versions actuelles contre versions 1 et 2).
   run (décision T5).
 - **Versions 5 et 6** (à partir du 16 octobre 2026, décision T5) : versions 1 et 2 + pas au sommet +
   confirmation ; listes et achat à 11 h 00.
+- **Règles de tendance** (ajoutées aux versions 5 et 6 avant leur premier run, décision T6) : marché en bonne
+  forme (7 bis) et pas en chute (8 bis).

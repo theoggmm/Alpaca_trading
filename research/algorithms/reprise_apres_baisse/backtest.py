@@ -74,6 +74,11 @@ def run(months):
     last_close = datetime.combine(sessions[-1][0], sessions[-1][2], NEW_YORK).astimezone(timezone.utc)
     print("Lecture des cours quotidiens (une fois)…")
     daily = cached(f"{key}/daily_bars", lambda: alpaca.bars(symbols, "1Day", first_open - DAILY_HISTORY, last_close))
+    # Repère de la règle « marché en bonne forme » (ETF, hors univers) : une lecture pour toute la période.
+    market_symbols = sorted({c.market_symbol for c in criteria.values() if c.market_symbol})
+    market_daily = cached(f"{key}/market_daily_bars_{'_'.join(market_symbols)}",
+                          lambda: alpaca.bars(market_symbols, "1Day", first_open - DAILY_HISTORY, last_close)) \
+        if market_symbols else None
 
     days = []
     for n, (session_date, open_time, close_time) in enumerate(sessions, start=1):
@@ -93,7 +98,7 @@ def run(months):
                                ignore_index=True)
         decisions = {variant: market_open + timedelta(minutes=c.decision_minutes) for variant, c in criteria.items()}
         lists = {variant: screen(daily, minute, market_open, decisions[variant], c,
-                                 earnings_for=lambda s: sec.eps(s, "backtest"))[0]
+                                 earnings_for=lambda s: sec.eps(s, "backtest"), market_daily=market_daily)[0]
                  for variant, c in criteria.items()}
         entries = {variant: decisions[variant] + SIP_DELAY for variant in criteria}
         # SPY acheté à l'heure d'achat des versions actuelles.

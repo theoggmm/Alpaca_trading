@@ -12,5 +12,9 @@
   "correlation_sessions": 60,
   "max_pairwise_correlation": 0.6,
   "min_gap_below_high": "0.002",
-  "confirmation_minutes": 15
+  "confirmation_minutes": 15,
+  "max_below_ma": "0.05",
+  "ma_sessions": 50,
+  "market_symbol": "SPY",
+  "market_ma_sessions": 50
 }

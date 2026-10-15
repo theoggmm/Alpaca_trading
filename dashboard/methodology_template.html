@@ -102,7 +102,7 @@
 
   <h2 id="selection"><span class="n">3</span>La sélection du jour</h2>
   <p>Deux listes chaque séance, avec les mêmes critères, sauf le PER : <b>Sans PER</b> et <b>PER &lt; {{max_pe}}</b>.
-  Depuis le 16 octobre 2026, toutes deux portent les deux règles contre l'achat au sommet (8 ter et 8 quater).
+  Depuis le 16 octobre 2026, toutes deux portent quatre règles de prudence : deux de tendance (7 bis, 8 bis) et deux contre l'achat au sommet (8 ter, 8 quater).
   Critères appliqués dans cet ordre ; la décision se fait en deux temps, à {{decision_time}} puis à {{confirm_decision_time}} :</p>
   <div class="panel"><table>
     <tr><th>#</th><th>Critère</th><th>Règle</th></tr>
@@ -113,16 +113,19 @@
     <tr><td>5</td><td>Volatilité basse</td><td>Variabilité des rendements quotidiens sur {{volatility_sessions}} séances dans les {{volatility_pct}} % les plus calmes des titres restants</td></tr>
     <tr><td>6</td><td>En baisse sur un mois</td><td>Rendement sur {{month_sessions}} séances &lt; 0</td></tr>
     <tr><td>7</td><td>Reprise récente</td><td>En hausse à chacune des {{up_days}} dernières séances</td></tr>
+    <tr><td>7 bis</td><td>Marché en bonne forme</td><td>La veille, {{market_symbol}} (S&amp;P 500) a clôturé au-dessus de sa moyenne des {{market_ma_sessions}} dernières séances. Sinon, aucune liste ce jour-là (0 % dans les résultats).</td></tr>
     <tr><td>8</td><td>Hausse première heure</td><td>Dernier prix à {{decision_time}} &gt; premier prix de la séance</td></tr>
+    <tr><td>8 bis</td><td>Pas en chute</td><td>À {{decision_time}}, le prix est au plus {{ma_pct}} % sous la moyenne des {{ma_sessions}} dernières clôtures. Exemple : PATK le 14 octobre, 16 % sous sa moyenne, aurait été exclu.</td></tr>
     <tr><td>8 ter</td><td>Pas au sommet</td><td>À {{decision_time}}, le prix est au moins {{gap_pct}} % sous le plus haut atteint pendant la première heure (plus haute clôture minute). Exemple : AT&amp;T le 15 octobre, à son plus haut à 10 h 30, aurait été exclu.</td></tr>
     <tr><td>8 quater</td><td>Confirmation</td><td>À {{confirm_decision_time}}, soit {{confirmation_minutes}} minutes après la première heure, le prix n'est pas redescendu sous celui de {{decision_time}}. AT&amp;T le 15 octobre (23,80 $ à 10 h 30, 23,715 $ à 10 h 45) aurait été exclu.</td></tr>
-    <tr><td>8 bis</td><td>PER (liste PER &lt; {{max_pe}} seulement)</td><td>Prix / bénéfice par action des 12 derniers mois &lt; {{max_pe}}. Bénéfice négatif, nul, absent ou publié il y a plus de {{eps_staleness}} jours : titre exclu.</td></tr>
+    <tr><td>8 quinquies</td><td>PER (liste PER &lt; {{max_pe}} seulement)</td><td>Prix / bénéfice par action des 12 derniers mois &lt; {{max_pe}}. Bénéfice négatif, nul, absent ou publié il y a plus de {{eps_staleness}} jours : titre exclu.</td></tr>
     <tr><td>9</td><td>Classement</td><td>Du plus fort repli sur un mois au plus faible</td></tr>
     <tr><td>10</td><td>Diversification</td><td>Un titre n'entre que si sa corrélation sur {{correlation_sessions}} séances avec chaque titre déjà retenu est ≤ {{max_corr}} ; arrêt à {{count}} titres</td></tr>
   </table></div>
   <p>Si moins de {{count}} titres passent, la liste est plus courte : aucun critère n'est assoupli pour la remplir.
   L'entonnoir du tableau de bord montre combien de titres restent après chaque critère.</p>
-  <p>Les règles 8 ter et 8 quater visent un même problème : acheter une action au moment exact où sa hausse du matin s'arrête.
+  <p>Les règles 7 bis et 8 bis regardent la tendance : on n'investit pas quand tout le marché baisse, et on écarte une action en chute libre plutôt qu'en léger repli.
+  Les règles 8 ter et 8 quater visent un autre problème : acheter une action au moment exact où sa hausse du matin s'arrête.
   La 8 ter écarte l'action qui est à son plus haut quand on décide ; la 8 quater attend 15 minutes pour vérifier que la hausse tient.
   Elles s'appliquent aux deux listes. Elles sont encore en réglage : leurs seuils peuvent changer dans les prochains jours.</p>
   <p class="plain">Autrement dit : on cherche des actions solides et calmes, tombées sur le mois, qui repartent depuis deux jours et encore ce matin, sans prendre deux fois le même pari , et sans acheter au sommet de la matinée.</p>
@@ -286,7 +289,7 @@
 
   <h2 id="selection"><span class="n">3</span>The daily selection</h2>
   <p>Two lists every session, same criteria except P/E: <b>Without P/E</b> and <b>P/E &lt; {{max_pe}}</b>.
-  Since October 16, 2026, both carry the two rules against buying at the top (8c and 8d).
+  Since October 16, 2026, both carry four caution rules: two on trends (7b, 8b) and two against buying at the top (8c, 8d).
   Criteria applied in this order; the decision is made in two steps, at {{decision_time}} then at {{confirm_decision_time}}:</p>
   <div class="panel"><table>
     <tr><th>#</th><th>Criterion</th><th>Rule</th></tr>
@@ -297,16 +300,19 @@
     <tr><td>5</td><td>Low volatility</td><td>Variability of daily returns over {{volatility_sessions}} sessions within the calmest {{volatility_pct}}% of remaining stocks</td></tr>
     <tr><td>6</td><td>Down over a month</td><td>Return over {{month_sessions}} sessions &lt; 0</td></tr>
     <tr><td>7</td><td>Recent rebound</td><td>Up in each of the last {{up_days}} sessions</td></tr>
+    <tr><td>7b</td><td>Healthy market</td><td>The day before, {{market_symbol}} (S&amp;P 500) closed above its average of the last {{market_ma_sessions}} sessions. Otherwise, no list that day (0% in the results).</td></tr>
     <tr><td>8</td><td>Up in the first hour</td><td>Last price at {{decision_time}} &gt; first price of the session</td></tr>
+    <tr><td>8b</td><td>Not a falling knife</td><td>At {{decision_time}}, the price is at most {{ma_pct}}% below the average of the last {{ma_sessions}} closes. Example: PATK on October 14, 16% below its average, would have been excluded.</td></tr>
     <tr><td>8c</td><td>Not at the top</td><td>At {{decision_time}}, the price is at least {{gap_pct}}% below the highest price reached during the first hour (highest minute close). Example: AT&amp;T on October 15, at its high at 10:30 AM, would have been excluded.</td></tr>
     <tr><td>8d</td><td>Confirmation</td><td>At {{confirm_decision_time}}, {{confirmation_minutes}} minutes after the first hour, the price has not fallen back below its {{decision_time}} price. AT&amp;T on October 15 ($23.80 at 10:30 AM, $23.715 at 10:45 AM) would have been excluded.</td></tr>
-    <tr><td>8b</td><td>P/E (P/E &lt; {{max_pe}} list only)</td><td>Price / trailing 12-month earnings per share &lt; {{max_pe}}. Negative, zero or missing earnings, or last filing older than {{eps_staleness}} days: stock excluded.</td></tr>
+    <tr><td>8e</td><td>P/E (P/E &lt; {{max_pe}} list only)</td><td>Price / trailing 12-month earnings per share &lt; {{max_pe}}. Negative, zero or missing earnings, or last filing older than {{eps_staleness}} days: stock excluded.</td></tr>
     <tr><td>9</td><td>Ranking</td><td>From the largest one-month decline to the smallest</td></tr>
     <tr><td>10</td><td>Diversification</td><td>A stock is added only if its {{correlation_sessions}}-session correlation with every stock already selected is ≤ {{max_corr}}; stop at {{count}} stocks</td></tr>
   </table></div>
   <p>If fewer than {{count}} stocks pass, the list is shorter: no criterion is loosened to fill it.
   The dashboard funnel shows how many stocks remain after each criterion.</p>
-  <p>Rules 8c and 8d target the same problem: buying a stock at the exact moment its morning rise stops.
+  <p>Rules 7b and 8b look at the trend: we do not invest when the whole market is falling, and we leave out a stock in free fall rather than in a mild dip.
+  Rules 8c and 8d target another problem: buying a stock at the exact moment its morning rise stops.
   8c leaves out a stock that is at its high when we decide; 8d waits 15 minutes to check that the rise holds.
   They apply to both lists. They are still being tuned: their thresholds may change in the coming days.</p>
   <p class="plain">In other words: we look for solid, calm stocks that fell over the month, have been rebounding for two days and again this morning, without making the same bet twice, and without buying at the morning's top.</p>

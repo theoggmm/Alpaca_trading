@@ -47,7 +47,8 @@ Coller ensuite les clés **Paper Trading** (tableau de bord Alpaca → Paper →
 
 Lancer le run du jour (au plus tôt 1 h 15 après l'ouverture de New York), régénérer le tableau de bord,
 puis commiter l'historique du jour et l'envoyer sur GitHub (tests verts et `git pull --ff-only` avant).
-Deux listes par séance (sans PER, PER < 12), avec les règles « pas au sommet » et « confirmation » :
+Deux listes par séance (sans PER, PER < 12), avec quatre règles de prudence (« marché en bonne forme »,
+« pas en chute », « pas au sommet », « confirmation ») :
 décision à 10 h 45 (New York), listes disponibles à 11 h 00. La tâche planifiée lance le script vers
 17 h 02 (Paris) :
 

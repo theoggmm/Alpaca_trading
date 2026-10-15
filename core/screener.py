@@ -51,6 +51,14 @@ class Criteria:
     # Optionnel (variante « confirmation ») : décision repoussée de ce nombre de minutes après la première
     # heure ; le dernier prix à la décision ne doit pas être sous celui de la fin de la première heure.
     confirmation_minutes: int = None
+    # Optionnel (règle « pas en chute ») : à la fin de la première heure, le prix doit être au plus à cette
+    # fraction sous la moyenne des ma_sessions dernières clôtures ; absent = pas de filtre.
+    max_below_ma: Decimal = None
+    ma_sessions: int = None
+    # Optionnel (règle « marché en bonne forme ») : la dernière clôture de market_symbol doit être au-dessus de
+    # la moyenne de ses market_ma_sessions dernières clôtures ; sinon aucune liste ce jour-là.
+    market_symbol: str = None
+    market_ma_sessions: int = None
 
     @classmethod
     def from_json(cls, raw, source="critères"):
@@ -71,7 +79,7 @@ class Criteria:
     def required_sessions(self):
         """Nombre de clôtures nécessaires : la plus longue fenêtre de rendements + 1."""
         return max(self.month_sessions, self.volatility_sessions, self.correlation_sessions,
-                   self.liquidity_sessions, self.up_days) + 1
+                   self.liquidity_sessions, self.up_days, self.ma_sessions or 0) + 1
 
     @property
     def decision_minutes(self):
@@ -236,11 +244,26 @@ def _correlation(a, b):
     return None if math.isnan(value) else float(value)
 
 
-def screen(daily, minute, market_open, decision_time, criteria, earnings_for=None):
+def market_in_uptrend(market_daily, decision_time, symbol, sessions):
+    """
+    Dernière clôture de symbol terminée avant decision_time au-dessus de la moyenne de ses `sessions`
+    dernières clôtures. Retourne (vrai/faux, dernière clôture, moyenne) ; ValueError si l'historique manque.
+    """
+    market_daily = usable_bars(market_daily, DAY, decision_time)
+
+    closes = list(market_daily[market_daily["symbol"] == symbol].sort_values("timestamp")["close"])
+    if len(closes) < sessions:
+        raise ValueError(f"Historique insuffisant pour {symbol} : {len(closes)} clôtures sur {sessions}")
+    average = sum(closes[-sessions:]) / sessions
+    return closes[-1] > average, closes[-1], average
+
+
+def screen(daily, minute, market_open, decision_time, criteria, earnings_for=None, market_daily=None):
     """
     Liste les titres qui remplissent tous les critères à decision_time.
     earnings_for(symboles) -> {symbole: déclarations de bénéfice par action} : requis seulement si
     criteria.max_pe est défini ; seules les déclarations déposées avant le jour de décision servent.
+    market_daily : barres quotidiennes de criteria.market_symbol, requises si criteria.market_ma_sessions est défini.
     Retourne (sélection, entonnoir). La sélection peut compter moins de criteria.count titres :
     elle n'est jamais complétée en assouplissant les critères.
     """
@@ -251,6 +274,13 @@ def screen(daily, minute, market_open, decision_time, criteria, earnings_for=Non
         raise ValueError("decision_time doit valoir market_open + decision_minutes")
 
     candidates, funnel = daily_candidates(daily, decision_time, criteria)
+    if criteria.market_ma_sessions is not None:
+        if market_daily is None:
+            raise ValueError("market_daily requis par la règle « marché en bonne forme »")
+        healthy, _, _ = market_in_uptrend(market_daily, decision_time, criteria.market_symbol,
+                                          criteria.market_ma_sessions)
+        candidates = candidates if healthy else []
+        funnel["marche_en_bonne_forme"] = len(candidates)
     # Barres de la seule première heure (identiques à toutes les barres quand la décision est à sa fin).
     first_hour_bars = usable_bars(minute, MINUTE, market_open + timedelta(minutes=criteria.first_hour_minutes))
     first_hour = first_hour_prices(first_hour_bars, market_open)
@@ -258,6 +288,13 @@ def screen(daily, minute, market_open, decision_time, criteria, earnings_for=Non
     rising = [(s, *first_hour[s.symbol]) for s in candidates
               if s.symbol in first_hour and first_hour[s.symbol][1] > first_hour[s.symbol][0]]
     funnel["hausse_premiere_heure"] = len(rising)
+
+    below_ma = {}
+    if criteria.max_below_ma is not None:
+        window = criteria.ma_sessions
+        below_ma = {s.symbol: 1 - price / (sum(s.closes[-window:]) / window) for s, _, price in rising}
+        rising = [r for r in rising if below_ma[r[0].symbol] <= criteria.max_below_ma]
+        funnel["pas_en_chute"] = len(rising)
 
     gap = {}
     if criteria.min_gap_below_high is not None:
@@ -312,6 +349,7 @@ def screen(daily, minute, market_open, decision_time, criteria, earnings_for=Non
             "pe_ttm": None if pe.get(item["stats"].symbol) is None else str(pe[item["stats"].symbol].quantize(Decimal("0.01"))),
             # Variantes seulement : écart sous le plus haut de la première heure ; prix et variation à la confirmation.
             **({"gap_below_high": float(gap[item["stats"].symbol])} if item["stats"].symbol in gap else {}),
+            **({"below_ma": float(below_ma[item["stats"].symbol])} if item["stats"].symbol in below_ma else {}),
             **({"price_at_confirmation": str(confirmation[item["stats"].symbol][0]),
                 "return_confirmation": float(confirmation[item["stats"].symbol][1])}
                if item["stats"].symbol in confirmation else {}),

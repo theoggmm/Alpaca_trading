@@ -260,3 +260,17 @@ Rien n'est effacé. Test sur le passé à quatre versions arrêté (règles aban
 listes actuelles, comparées aux listes d'avant les règles.
 
 Autrement dit : le tableau de bord repart à zéro demain avec les nouvelles règles, et l'ancien reste consultable à part.
+
+## 2026-10-15 (nuit, fin) — Deux règles de tendance
+
+**Question posée** : ajouter une règle de tendance ; après examen des trois premières séances, règles 1
+(« pas en chute ») et 3 (« marché en bonne forme ») retenues.
+
+**Fait** : `core/screener.py` (`market_in_uptrend`, règles `max_below_ma` / `ma_sessions` et
+`market_symbol` / `market_ma_sessions`, datation testée), critères des versions 5 et 6, barres quotidiennes
+de SPY lues à part par le run et le test sur le passé, onglet Détail, Méthodologie, décision T6. 56 tests verts.
+
+Autrement dit : dès demain, pas de liste les jours où tout le marché va mal, et plus d'actions en chute libre.
+
+**Points signalés** : examen des trois séances (68 titres) : titres à moins de 5 % sous leur moyenne −0,02 %
+en moyenne, les autres −0,32 % ; trois jours ne prouvent rien, le test sur 6 mois tranchera mieux.

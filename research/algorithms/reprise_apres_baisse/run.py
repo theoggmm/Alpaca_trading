@@ -56,8 +56,12 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     candidates, _ = daily_candidates(daily, decision_time, criteria)
     minute = cached(f"{key}/minute_bars" if criteria.confirmation_minutes is None else f"{key}/minute_bars_{criteria.decision_minutes}",
                     lambda: alpaca.bars([c.symbol for c in candidates], "1Min", market_open, decision_time))
+    # Règle « marché en bonne forme » : clôtures quotidiennes du repère (SPY), lues à part (c'est un ETF, hors univers).
+    market_daily = None if criteria.market_symbol is None else cached(
+        f"{key}/market_daily_bars_{criteria.market_symbol}",
+        lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
     selection, funnel = screen(daily, minute, market_open, decision_time, criteria,
-                               earnings_for=lambda symbols: sec.eps(symbols, key))
+                               earnings_for=lambda symbols: sec.eps(symbols, key), market_daily=market_daily)
 
     # Domaines : complément de lecture, pas un critère. Une panne SEC n'empêche pas la liste, elle est enregistrée.
     liquid, _ = liquid_universe(daily, decision_time, criteria)
