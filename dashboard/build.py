@@ -10,6 +10,7 @@ Depuis la racine du dépôt :
 import json
 import sys
 from datetime import date, datetime
+from decimal import Decimal
 from pathlib import Path
 
 from core.domains import domain_trends
@@ -195,6 +196,57 @@ def _backtests(family):
     } for _, result in sorted(latest.items(), key=lambda item: (isinstance(item[0], str), item[0]), reverse=True)]
 
 
+# Onglet « Tests d'un mois » : montant investi chaque séance dans chaque liste.
+MONTH_TEST_AMOUNT = Decimal("25000")
+MONTH_TEST_LISTS = ("per12", "sans_per")
+
+
+def _month_tests(family):
+    """
+    Tests sur le passé d'une période datée (un mois) : pour chaque liste, à MONTH_TEST_AMOUNT par séance,
+    gain par séance, par semaine et sur la période — brut, après frais, actions entières après frais, et
+    ce qui reste après impôt. Impôt d'une semaine ou du mois : sur son total (les pertes compensent les gains) ;
+    d'une séance : sur elle seule. Liste vide : rien d'investi, 0.
+    """
+    def kept(whole):
+        return after_tax({"x": str(whole)})["x"]
+
+    def totals(rows):
+        whole = sum(Decimal(r["whole"]) for r in rows)
+        return {"sessions": len(rows), "gross": str(sum(Decimal(r["gross"]) for r in rows)),
+                "net": str(sum(Decimal(r["net"]) for r in rows)), "whole": str(whole), "kept": kept(whole)}
+
+    tests = []
+    for path in sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+        result = json.loads(path.read_text(encoding="utf-8"))
+        if result["period"]["months"] or "per12_gross" not in result["days"][0]:
+            continue
+        lists = {}
+        for name in MONTH_TEST_LISTS:
+            days = []
+            for d in result["days"]:
+                empty = not d[f"{name}_n"]
+                gross = Decimal(0) if empty else (MONTH_TEST_AMOUNT * Decimal(str(d[f"{name}_gross"]))).quantize(Decimal("0.01"))
+                net = Decimal(0) if empty else (MONTH_TEST_AMOUNT * Decimal(str(d[name]))).quantize(Decimal("0.01"))
+                whole = Decimal(d[f"{name}_whole_gains"].get(str(MONTH_TEST_AMOUNT), "0"))
+                days.append({"date": d["date"], "n": d[f"{name}_n"], "gross": str(gross), "net": str(net),
+                             "whole": str(whole), "kept": kept(whole)})
+            weeks = {}
+            for row in days:
+                weeks.setdefault(tuple(date.fromisoformat(row["date"]).isocalendar()[:2]), []).append(row)
+            lists[name] = {"days": days,
+                           "weeks": [{"start": rows[0]["date"], "end": rows[-1]["date"], **totals(rows)}
+                                     for rows in weeks.values()],
+                           "total": totals(days)}
+        spy = sum(Decimal(str(d["spy"])) for d in result["days"] if d["spy"] is not None)
+        tests.append({"id": result["backtest_id"], "git_sha": result["git_sha"], "period": result["period"],
+                      "amount": str(MONTH_TEST_AMOUNT), "lists": lists,
+                      "spy_net": str((MONTH_TEST_AMOUNT * spy).quantize(Decimal("0.01")))})
+    # Le plus récent test de chaque période seulement.
+    latest = {t["period"]["start"]: t for t in tests}
+    return [latest[k] for k in sorted(latest, reverse=True)]
+
+
 def build(family):
     runs = load_runs(family)
     _fill_domains(runs)
@@ -222,6 +274,7 @@ def build(family):
         "top_in_domain": top_in_domain_counts(current_finals),
         "results": _results(current_finals),
         "backtests": _backtests(family),
+        "month_tests": _month_tests(family),
         "archive": {
             "since": RULES_SINCE,
             "results": _results(archived_finals),
