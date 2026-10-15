@@ -28,7 +28,7 @@ from core.portfolio import entry_prices, order_plan, simulate
 from core.screener import (Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes,
                            session_open_prices, session_trades)
 from core.universe import eligible_symbols
-from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, build
+from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, SUPPLEMENTS, build
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
@@ -280,6 +280,57 @@ def catch_up(family):
         provisional = path.exists() and json.loads(path.read_text(encoding="utf-8")).get("provisional", True)
         if missing or (provisional and is_definitive(now, market_close)):
             done.append(finalize(family, alpaca, criteria, session_date, open_time, close_time))
+    if done:
+        build(family)
+    return done
+
+
+def supplement(family):
+    """
+    Séances définitives dont l'état de fin de séance a été produit avant l'ajout des frais, des actions
+    entières et des repères (13 et 14 octobre 2026) : simulation, ordres et colonne « Depuis l'achat »
+    recalculés avec le code actuel, mêmes règles (achat à partir de 10 h 45, vente avant 15 h 30).
+    Écrits à part dans final/<famille>/supplements/<date>.json : l'état définitif n'est jamais modifié.
+    Statut diagnostic : calculé après lecture de la séance. Un complément existant n'est jamais réécrit.
+    """
+    criteria = _criteria(family)
+    git_sha = committed_git_sha()
+    alpaca = AlpacaReader()
+    done = []
+    for path in sorted((FINALS_DIR / family).glob("*.json")):
+        final = json.loads(path.read_text(encoding="utf-8"))
+        target = FINALS_DIR / family / SUPPLEMENTS / path.name
+        if final.get("provisional", True) or "net_mean_return" in json.dumps(final.get("portfolio")) or target.exists():
+            continue
+        session_date = datetime.fromisoformat(final["session_date"]).date()
+        open_time, close_time = alpaca.session(session_date)
+        key = session_date.isoformat()
+        market_open, market_close = _times(session_date, open_time, close_time)
+        daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
+        runs, opens = _selection(family, key)
+        entry_time, exit_time = _trade_times(criteria, market_open, market_close)
+        traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
+        entry_bars = cached(f"{key}/supplement_entry_bars_all",
+                            lambda: alpaca.bars(traded, "1Min", entry_time, entry_time + TRADE_WINDOW))
+        exit_bars = cached(f"{key}/supplement_exit_bars_all",
+                           lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
+        closing = cached(f"{key}/supplement_closing_bars",
+                         lambda: alpaca.bars(sorted(opens), "1Min", market_close - CLOSING_WINDOW, market_close))
+        trades = last_session_prices(closing, market_close)
+        payload = {
+            "session_date": key,
+            "status": "diagnostic",
+            "reason": "état définitif produit avant l'ajout des frais, des actions entières et des repères ; "
+                      "simulation recalculée après coup avec le code actuel",
+            "computed_at": datetime.now(timezone.utc).isoformat(),
+            "git_sha": git_sha,
+            "portfolio": _portfolio(runs, symbols, entry_bars, exit_bars, trades, entry_time, exit_time, market_close),
+            "order_plan": _order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry"),
+            "since_entry": _since_entry(opens, entry_bars, entry_time, trades, market_open, market_close, market_close),
+        }
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(payload, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        done.append(target)
     if done:
         build(family)
     return done

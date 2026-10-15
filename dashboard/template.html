@@ -338,6 +338,8 @@ const TEXT = {
     res_note: "Chaque séance : achat à parts égales au premier échange à partir de 10 h 45, vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste PER < 12 vide : 0 %.",
     res_skipped: s => `Non comptées (simulation antérieure aux frais et aux repères) : ${s}.`,
     res_provisional: "* : séance encore provisoire, recalculée le lendemain avec les corrections d'Alpaca.",
+    res_recomputed: "† : séance antérieure aux frais et aux repères, simulation recalculée après coup avec les règles actuelles (diagnostic, hors expérience 001). Le 13 octobre, seule la liste sans PER existait.",
+    sim_recomputed: d => `Séance antérieure aux frais : simulation recalculée le ${d} avec les règles actuelles (diagnostic).`,
     bt_title: "Test sur le passé (diagnostic)",
     bt_empty: "Le test sur le passé n'a pas encore été lancé.",
     bt_head: (id, p) => `Test ${id} : ${p.sessions} séances, du ${p.start} au ${p.end}`,
@@ -485,6 +487,8 @@ const TEXT = {
     res_note: "Each session: equal amounts bought at the first trade from 10:45 AM, sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty P/E < 12 list: 0%.",
     res_skipped: s => `Not counted (simulation from before costs and benchmarks): ${s}.`,
     res_provisional: "*: session still provisional, recalculated the next day with Alpaca's corrections.",
+    res_recomputed: "†: session from before costs and benchmarks; simulation recomputed afterwards with the current rules (diagnostic, outside experiment 001). On October 13, only the list without P/E existed.",
+    sim_recomputed: d => `Session from before costs: simulation recomputed on ${d} with the current rules (diagnostic).`,
     bt_title: "Test on past data (diagnostic)",
     bt_empty: "The test on past data has not been run yet.",
     bt_head: (id, p) => `Test ${id}: ${p.sessions} sessions, from ${p.start} to ${p.end}`,
@@ -1082,12 +1086,14 @@ function renderResults() {
 
   const days = Object.keys(Object.assign({}, ...series.map(s => res.series[s]))).sort().reverse();
   document.getElementById("results-daily").replaceChildren(days.length ? table([
-    { label: TEXT.res_date, cls: "text", value: d => d + (res.provisional.includes(d) ? " *" : "") },
+    { label: TEXT.res_date, cls: "text", value: d => d + (res.provisional.includes(d) ? " *" : "")
+      + ((res.recomputed || []).includes(d) ? " †" : "") },
     ...series.map(s => ({ label: TEXT.series[s], value: d => fmt(res.series[s][d]), tone: d => res.series[s][d] ?? 0 })),
   ], days) : el("div", "empty", TEXT.res_empty));
   document.getElementById("results-note").textContent = TEXT.res_note
     + (res.skipped.length ? " " + TEXT.res_skipped(res.skipped.join(", ")) : "")
-    + (res.provisional.length ? " " + TEXT.res_provisional : "");
+    + (res.provisional.length ? " " + TEXT.res_provisional : "")
+    + ((res.recomputed || []).length ? " " + TEXT.res_recomputed : "");
 }
 
 // Simulation : montant réparti à parts égales sur chaque liste, achat après la première heure, vente 30 min avant la clôture.
@@ -1144,7 +1150,8 @@ function renderSim() {
   const bench = sim.benchmarks || {};
   const benchText = ["univers", "spy"].filter(b => bench[b]?.net_mean_return != null)
     .map(b => `${TEXT.series[b]} ${pct(bench[b].net_mean_return)}`).join(" · ");
-  note.textContent = TEXT.sim_note + (benchText ? " " + TEXT.sim_bench(benchText) : "");
+  note.textContent = TEXT.sim_note + (benchText ? " " + TEXT.sim_bench(benchText) : "")
+    + (SHOWN.supplement ? " " + TEXT.sim_recomputed(SHOWN.supplement.computed_at.slice(0, 10)) : "");
 }
 
 function renderHistory() {

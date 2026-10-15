@@ -32,6 +32,8 @@ CHARTS_FILE = HERE / "charts_data.js"
 SESSIONS_DIR = HERE / "sessions"
 # États de fin de séance, durables (commités avec l'historique) : <famille>/<date>.json.
 FINALS_DIR = ROOT / "research" / "experiments" / "final"
+# Compléments d'une séance définitive (simulation recalculée après coup), à côté de l'état, jamais dedans.
+SUPPLEMENTS = "supplements"
 
 
 def _embed(value):
@@ -56,16 +58,38 @@ def _fill_domains(runs):
                     domain_read_later=True)
 
 
-def _write_session_files(family):
+def _load_finals(family):
+    """
+    États de fin de séance, par date ; un complément (supplements/<date>.json) remplace à l'affichage la
+    simulation, les ordres et « Depuis l'achat » de l'état, qui reste intact sur le disque.
+    Retourne [(état, date de modification la plus récente)].
+    """
+    finals = []
+    for path in sorted((FINALS_DIR / family).glob("*.json")):
+        final = json.loads(path.read_text(encoding="utf-8"))
+        mtime = path.stat().st_mtime
+        extra = FINALS_DIR / family / SUPPLEMENTS / path.name
+        if extra.exists():
+            sup = json.loads(extra.read_text(encoding="utf-8"))
+            final.update(portfolio=sup["portfolio"], order_plan=sup["order_plan"],
+                         supplement={"computed_at": sup["computed_at"], "git_sha": sup["git_sha"]})
+            final.setdefault("selection", {})["since_entry"] = sup["since_entry"]
+            mtime = max(mtime, extra.stat().st_mtime)
+        finals.append((final, mtime))
+    return finals
+
+
+def _write_session_files(finals):
     """sessions/<date>.js pour chaque état de fin de séance, réécrit seulement s'il a changé."""
     SESSIONS_DIR.mkdir(exist_ok=True)
-    for source in (FINALS_DIR / family).glob("*.json"):
-        target = SESSIONS_DIR / f"{source.stem}.js"
-        if target.exists() and target.stat().st_mtime >= source.stat().st_mtime:
+    for final, mtime in finals:
+        target = SESSIONS_DIR / f"{final['session_date']}.js"
+        if target.exists() and target.stat().st_mtime >= mtime:
             continue
-        state = source.read_text(encoding="utf-8").strip()
+        state = json.dumps(final, ensure_ascii=False)
         target.write_text(f'window.SESSION_STATES=window.SESSION_STATES||{{}};'
-                          f'window.SESSION_STATES["{source.stem}"]={state.replace("</", "<\\/")};\n', encoding="utf-8")
+                          f'window.SESSION_STATES["{final["session_date"]}"]={state.replace("</", "<\\/")};\n',
+                          encoding="utf-8")
 
 
 def _fill_month_trend(runs):
@@ -115,12 +139,14 @@ def _results(finals):
             elif row.get("n") == 0:
                 series[name][final["session_date"]] = 0.0
     provisional = [f["session_date"] for f in finals if f.get("provisional", True) and f["session_date"] not in skipped]
+    recomputed = [f["session_date"] for f in finals if "supplement" in f]
     return {
         "series": series,
         "summaries": {name: summary(values) for name, values in series.items()},
         "cumulative": {name: cumulative(values) for name, values in series.items()},
         "skipped": skipped,
         "provisional": provisional,
+        "recomputed": recomputed,
         "experiment": {**EXPERIMENT, "observed": sum(1 for f in finals if f["session_date"] >= EXPERIMENT["start"]
                                                      and not f.get("provisional", True)
                                                      and f["session_date"] in series["per12"])},
@@ -151,7 +177,8 @@ def build(family):
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
     if live and live["family"] != family:
         live = None
-    finals = [json.loads(path.read_text(encoding="utf-8")) for path in sorted((FINALS_DIR / family).glob("*.json"))]
+    loaded = _load_finals(family)
+    finals = [final for final, _ in loaded]
     # La page n'embarque que les comptages et la colonne « ouverture → clôture » de chaque séance,
     # pas la liste complète des titres de chaque fin de séance.
     history = {
@@ -172,7 +199,7 @@ def build(family):
                                                                     "provisional": f.get("provisional", True)}
                                                 for f in finals}))
             .replace("__HISTORY_JSON__", _embed(history)))
-    _write_session_files(family)
+    _write_session_files(loaded)
     # Import tardif : dashboard.methodology lit les constantes de dashboard.live, qui importe ce module.
     from dashboard import methodology
     for lang, path in OUTPUTS.items():
