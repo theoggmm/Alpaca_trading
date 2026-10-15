@@ -212,3 +212,24 @@ règle qui dira dans deux mois si le PER < 12 aide vraiment est écrite d'avance
 
 **Points signalés** : le test sur le passé ne voit que les titres encore cotés aujourd'hui, ce qui le rend
 trop flatteur ; il sert à repérer un problème, pas à décider.
+
+## 2026-10-15 (soir) — Deux règles contre l'achat au sommet
+
+**Question posée** : AT&T remplissait tous les critères (+1,52 % sur la première heure) mais a été acheté
+à son plus haut ; ajouter une règle pour l'éviter. Règles 1 (confirmation) et 2 (pas au sommet) retenues.
+
+**Fait** : deux listes en plus, les deux existantes inchangées (expérience 001 figée) :
+- version 3 « PER < 12 + confirmation » : à 10 h 45, prix ≥ prix de 10 h 30 ; liste et achat à 11 h 00 ;
+- version 4 « PER < 12 + pas au sommet » : à 10 h 30, au moins 0,2 % sous le plus haut de la première heure.
+`core/screener.py` (règles, datation testée), simulation et « Depuis l'achat » à l'heure d'achat de chaque
+version, onglet Détail (tableau des quatre versions), Méthodologie, test sur le passé à quatre versions.
+Expérience 002 pré-enregistrée (40 séances à partir du 16 octobre), décisions T4 et 002.1. Tâche planifiée
+lancée deux fois (vers 16 h 45 et 17 h 02). Pages Alpaca de 5 000 barres (une page de 10 000 frôlait le
+délai de 10 s et bloquait le test sur le passé). 52 tests verts.
+
+Autrement dit : dès demain, tu verras deux listes de plus, et dans deux mois une règle écrite d'avance dira
+si l'une d'elles évite vraiment d'acheter au sommet.
+
+**Points signalés** : le suivi en direct s'est arrêté vers 15 h 45 (New York) faute d'avoir été relancé
+après une modification de la page ; relancé avant la clôture. WSE affiche un PER de 0,24 dans le test sur
+le passé : donnée SEC probablement erronée, à vérifier.

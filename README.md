@@ -46,7 +46,10 @@ Coller ensuite les clés **Paper Trading** (tableau de bord Alpaca → Paper →
 ## Screener
 
 Lancer le run du jour (au plus tôt 1 h 15 après l'ouverture de New York), régénérer le tableau de bord,
-puis commiter l'historique du jour et l'envoyer sur GitHub (tests verts et `git pull --ff-only` avant) :
+puis commiter l'historique du jour et l'envoyer sur GitHub (tests verts et `git pull --ff-only` avant).
+Quatre listes par séance (sans PER, PER < 12, + confirmation, + pas au sommet) : chacune sort dès que ses
+données sont prêtes ; la version « + confirmation » (décision à 10 h 45) sort au lancement suivant, après
+11 h 00 à New York. La tâche planifiée lance donc le script deux fois (vers 16 h 45 et 17 h 02, Paris) :
 
 ```bash
 /Users/theodoremeyer/Documents/Alpaca_trading/run_screener.sh

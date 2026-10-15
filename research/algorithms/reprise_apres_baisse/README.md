@@ -11,17 +11,24 @@ Des actions calmes et très échangées qui ont baissé sur le dernier mois, pui
 séances et pendant la première heure de la séance du jour. L'idée du propriétaire : repérer une
 reprise en cours après une baisse.
 
-## Critères : deux versions produites à chaque séance
+## Critères : quatre versions produites à chaque séance
 
-- **Sans PER** : `criteres_sans_per.json` (version 1), critères 1 à 10 ci-dessous sauf 8 bis.
-- **PER < 12** : `criteres_per12.json` (version 2), critères 1 à 10 avec 8 bis.
+- **Sans PER** : `criteres_sans_per.json` (version 1), critères 1 à 10 ci-dessous sauf 8 bis, ter et quater.
+- **PER < 12** : `criteres_per12.json` (version 2), + 8 bis.
+- **PER < 12 + confirmation** : `criteres_per12_confirmation.json` (version 3, depuis le 16 octobre 2026),
+  + 8 bis et 8 quater ; décision à 10 h 45, liste et achat à 11 h 00 (New York).
+- **PER < 12 + pas au sommet** : `criteres_per12_pas_au_sommet.json` (version 4, depuis le 16 octobre 2026),
+  + 8 bis et 8 ter.
 
-Chaque séance produit un run par version (champ `variant` : `sans_per`, `per12`). Les runs r001 et r002
+Chaque séance produit un run par version (champ `variant` : `sans_per`, `per12`, `per12_confirmation`,
+`per12_pas_au_sommet`). `run_screener.sh` est lancé deux fois (vers 16 h 45 et 17 h 02, Paris) : la
+version 3 sort au second lancement. Les runs r001 et r002
 sont la version sans PER, r003 la version PER < 12 du 14 octobre (recalculée après lecture : diagnostic).
 
 ### Détail des critères
 
-Appliqués dans cet ordre, à l'instant de décision = ouverture de la séance + 60 minutes (New York) :
+Appliqués dans cet ordre, à l'instant de décision = ouverture de la séance + 60 minutes (+ 15 minutes de
+confirmation pour la version 3), heure de New York :
 
 | # | Critère | Valeur |
 |---|---|---|
@@ -34,6 +41,8 @@ Appliqués dans cet ordre, à l'instant de décision = ouverture de la séance +
 | 7 | Hausse des derniers jours | Rendement > 0 à chacune des 2 dernières séances |
 | 8 | Hausse première heure | Dernier cours connu à la décision > premier cours de la séance |
 | 8 bis | PER (version 2) | Prix à la décision / bénéfice dilué par action des 12 derniers mois < 12. Bénéfice US GAAP en dollars déclaré à la SEC, déposé avant le jour de décision ; bénéfice nul, négatif ou non disponible = titre exclu |
+| 8 ter | Pas au sommet (version 4) | Dernier prix à 10 h 30 ≤ plus haute clôture minute de la première heure × (1 − 0,002) |
+| 8 quater | Confirmation (version 3) | Dernier prix à 10 h 45 ≥ dernier prix à 10 h 30 ; la hausse de la première heure (critère 8) reste mesurée à 10 h 30 |
 | 9 | Classement | Du plus fort repli sur 21 séances au plus faible (égalité : ordre alphabétique) |
 | 10 | Diversification | Un titre n'est retenu que si sa corrélation (rendements quotidiens, 60 séances) avec chaque titre déjà retenu est ≤ 0,6 ; arrêt à 20 titres |
 
@@ -93,6 +102,14 @@ que l'univers liquide, après frais ? Fenêtre : 40 séances à partir du 15 oct
 l'écart quotidien moyen est positif et le t apparié ≥ 1,685. Critères, heures, frais et simulation figés
 pendant la fenêtre ; décision 001.1 dans `research/experiments/decisions.md`.
 
+## Expérience 002 (pré-enregistrée)
+
+`experiences/002_regles_contre_le_sommet.md` : les versions 3 et 4 rapportent-elles plus que la version 2,
+après frais ? Fenêtre : 40 séances à partir du 16 octobre 2026, mêmes seuils que l'expérience 001.
+Origine : AT&T le 15 octobre, retenue à +1,52 % sur la première heure, à son plus haut de la journée à
+10 h 35, en baisse dès l'achat de 10 h 45. Dans `screen`, les règles 8 ter et 8 quater sont appliquées
+après le critère 8 et avant le PER (entonnoir : `pas_au_sommet`, `confirmation`).
+
 ## Historique des versions
 
 - **Version 1** (13–14 octobre 2026, runs r001 et r002) : critères 1 à 10 sans PER.
@@ -100,3 +117,5 @@ pendant la fenêtre ; décision 001.1 dans `research/experiments/decisions.md`.
   Diagnostic sur la séance du 14 octobre (déjà regardée, donc sans valeur de preuve) : 44 titres en hausse
   sur la première heure, 6 avec un PER < 12, 4 après diversification (PRI, WTRG, PRU, SIGI). La liste peut
   compter bien moins de 20 titres ; elle n'est jamais complétée.
+- **Versions 3 et 4** (à partir du 16 octobre 2026, décision T4 du propriétaire) : version 2 + confirmation
+  (achat à 11 h 00), et version 2 + pas au sommet. Les versions 1 et 2 sont inchangées.
