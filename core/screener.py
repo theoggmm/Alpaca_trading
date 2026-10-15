@@ -47,14 +47,19 @@ class Criteria:
     max_pe: Decimal = None
 
     @classmethod
-    def from_file(cls, path):
-        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+    def from_json(cls, raw, source="critères"):
+        """Critères depuis leur forme JSON (fichier de critères ou champ « criteria » d'un run)."""
+        raw = {k: v for k, v in raw.items() if v is not None}
         required = {f.name for f in fields(cls) if f.default is MISSING}
         allowed = {f.name for f in fields(cls)}
         if not required <= set(raw) <= allowed:
-            raise ValueError(f"Clés attendues dans {path} : {sorted(required)} (+ facultatives "
+            raise ValueError(f"Clés attendues dans {source} : {sorted(required)} (+ facultatives "
                              f"{sorted(allowed - required)}), reçues : {sorted(raw)}")
         return cls(**{name: next(f.type for f in fields(cls) if f.name == name)(value) for name, value in raw.items()})
+
+    @classmethod
+    def from_file(cls, path):
+        return cls.from_json(json.loads(Path(path).read_text(encoding="utf-8")), str(path))
 
     @property
     def required_sessions(self):

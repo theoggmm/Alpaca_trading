@@ -262,7 +262,8 @@ const TEXT = {
     domain_note: " Domaine : classement officiel de la SEC (survole pour l'activité exacte).",
     star_note: " * : domaine lu après le run, qui ne l'enregistrait pas encore.",
     bubbles_error: e => "Domaines indisponibles pour ce run : " + e,
-    bubbles_missing: "Pas de tendance par domaine pour ce run (fonction ajoutée après).",
+    bubbles_missing: "Pas de tendance par domaine pour cette séance (données non disponibles).",
+    bubbles_read_later: " Recalculée à l'affichage avec les données de ce run, qui ne l'enregistrait pas encore.",
     picked: k => ` · ${k} retenu(s)`, bubble_title: (d, n) => `${d} : moyenne de ${n} titres`,
     bubbles_note: (m, u) => `Moyenne simple des variations sur ${m} séances des titres assez liquides de chaque domaine (classement officiel de la SEC). Vert : en hausse en moyenne, rouge : en baisse. Taille : nombre de titres. ${u} titres sans domaine connu de la SEC ne sont pas comptés.`,
     criteria: c => [
@@ -364,7 +365,8 @@ const TEXT = {
     domain_note: " Sector: official SEC classification (hover for the exact business).",
     star_note: " *: sector read after the run, which did not record it yet.",
     bubbles_error: e => "Sectors unavailable for this run: " + e,
-    bubbles_missing: "No sector trend for this run (feature added later).",
+    bubbles_missing: "No sector trend for this session (data not available).",
+    bubbles_read_later: " Recalculated at display time from this run's data, which did not record it yet.",
     picked: k => ` · ${k} selected`, bubble_title: (d, n) => `${d}: average of ${n} stocks`,
     bubbles_note: (m, u) => `Simple average of the ${m}-session changes of each sector's sufficiently liquid stocks (official SEC classification). Green: up on average, red: down. Size: number of stocks. ${u} stocks with no sector known to the SEC are not counted.`,
     criteria: c => [
@@ -579,17 +581,18 @@ function renderRun(run) {
   document.getElementById("criteria").replaceChildren(...TEXT.criteria(run.criteria).map(t => el("li", "", t)));
 }
 
+// Tendance sur un mois par domaine : celle du run s'il existe, sinon celle de la séance (clôture de la veille).
 function renderBubbles(run) {
   const box = document.getElementById("bubbles");
   const note = document.getElementById("bubbles-note");
-  const domains = run.domains;
+  const domains = run?.domains || SHOWN?.month_trend;
   if (!domains || domains.error) {
     box.replaceChildren(el("div", "empty", domains ? TEXT.bubbles_error(domains.error) : TEXT.bubbles_missing));
     note.textContent = "";
     return;
   }
   const picked = new Map();
-  run.selection.forEach(item => picked.set(item.domain, (picked.get(item.domain) || 0) + 1));
+  (run?.selection || []).forEach(item => picked.set(item.domain, (picked.get(item.domain) || 0) + 1));
   const maxN = Math.max(...domains.bubbles.map(b => b.n));
   box.replaceChildren(...domains.bubbles.map(b => {
     const bubble = el("div", "bubble " + tone(b.mean_return));
@@ -599,7 +602,8 @@ function renderBubbles(run) {
                   el("span", "count", TEXT.n_stocks(b.n) + (picked.get(b.domain) ? TEXT.picked(picked.get(b.domain)) : "")));
     return bubble;
   }));
-  note.textContent = TEXT.bubbles_note(run.criteria.month_sessions, domains.unclassified);
+  note.textContent = TEXT.bubbles_note(run?.criteria.month_sessions ?? SHOWN?.sessions?.month, domains.unclassified)
+    + (domains.read_later ? TEXT.bubbles_read_later : "");
 }
 
 // Domaine ouvert et tri choisis : gardés pour la session de l'onglet, pour survivre au rechargement
@@ -876,8 +880,8 @@ function renderNoRun(date, message) {
   document.getElementById("meta").replaceChildren(el("span", "", TEXT.session_of(date)));
   document.getElementById("selection").replaceChildren(el("div", "empty", message));
   document.getElementById("selection-note").textContent = "";
-  ["bubbles", "funnel", "criteria"].forEach(id => document.getElementById(id).replaceChildren());
-  document.getElementById("bubbles-note").textContent = "";
+  ["funnel", "criteria"].forEach(id => document.getElementById(id).replaceChildren());
+  renderBubbles(null);
 }
 
 function renderSession(date) {

@@ -9,6 +9,12 @@ from pathlib import Path
 CACHE_DIR = Path(__file__).resolve().parents[1] / "research" / "outputs" / "cache"
 
 
+def read_cached(key):
+    """Valeur en cache pour key, ou None si absente (aucune lecture réseau)."""
+    path = CACHE_DIR / f"{key}.pkl"
+    return pickle.loads(path.read_bytes()) if path.exists() else None
+
+
 def cached(key, fetch, max_age=None):
     """
     Valeur en cache pour key (chemin relatif au cache), sinon fetch() puis mise en cache.

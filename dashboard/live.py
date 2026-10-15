@@ -23,7 +23,7 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from core.domains import LIVE_MEASURES, WEEK_SESSIONS, live_domain_trends
+from core.domains import LIVE_MEASURES, WEEK_SESSIONS, domain_trends, live_domain_trends
 from core.portfolio import simulate
 from core.screener import (Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes,
                            session_open_prices, session_trades)
@@ -103,6 +103,12 @@ def _selection(family, key):
     """
     runs = [r for r in latest_per_session(load_runs(family)) if r["session_date"] == key]
     return runs, {item["symbol"]: Decimal(item["open_today"]) for r in runs for item in r["selection"]}
+
+
+def _month_trend(daily, market_open, criteria, domains):
+    """Tendance sur un mois par domaine à la clôture de la veille : connue dès l'ouverture, fixe pour la séance."""
+    bubbles, unclassified = domain_trends(daily, market_open, criteria, domains)
+    return {"bubbles": bubbles, "unclassified": unclassified}
 
 
 def _trade_times(criteria, market_open, market_close):
@@ -196,6 +202,7 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     state = _state(family, criteria, key, market_open, market_close, market_close,
                    daily, domains, names, trades, minute, minute, runs, opens)
     state["portfolio"] = _portfolio(runs, entry_bars, exit_bars, trades, entry_time, exit_time, market_close)
+    state["month_trend"] = _month_trend(daily, market_open, criteria, domains)
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / family / f"{key}.json"
@@ -272,6 +279,7 @@ def run(family):
     print("Préparation : univers liquide et domaines (quelques minutes la première fois)…")
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
     _write_chart_data(daily, market_open, symbols, criteria, key)
+    month_trend = _month_trend(daily, market_open, criteria, domains)
     minute = EMPTY_BARS
     opening = EMPTY_BARS
     entry_time, exit_time = _trade_times(criteria, market_open, market_close)
@@ -314,6 +322,7 @@ def run(family):
         state = _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades,
                        minute, minute if not minute.empty else opening, today_runs, opens)
         state["portfolio"] = _portfolio(today_runs, entry_bars, exit_bars, trades, entry_time, exit_time, now)
+        state["month_trend"] = month_trend
         LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
         LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)

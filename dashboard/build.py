@@ -9,11 +9,14 @@ Depuis la racine du dépôt :
 
 import json
 import sys
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 
+from core.domains import domain_trends
 from core.history import TOP_IN_DOMAIN, selection_counts, top_in_domain_counts
+from core.screener import Criteria, liquid_universe
 from infra import sec
+from infra.cache import read_cached
 from infra.http import FetchError
 from infra.trace import ROOT, latest_per_session, load_runs, variant_of
 
@@ -64,9 +67,32 @@ def _write_session_files(family):
                           f'window.SESSION_STATES["{source.stem}"]={state.replace("</", "<\\/")};\n', encoding="utf-8")
 
 
+def _fill_month_trend(runs):
+    """
+    Runs produits avant l'ajout des bulles par domaine : bulles recalculées à l'affichage depuis les
+    données en cache du run (mêmes barres, même instant de décision), marquées read_later, sans modifier
+    le fichier du run. Données absentes du cache ou SEC injoignable : rien n'est ajouté.
+    """
+    for run in runs:
+        daily = None if "domains" in run else read_cached(f"{run['session_date']}/daily_bars")
+        if daily is None:
+            continue
+        criteria = Criteria.from_json(run["criteria"], run["run_id"])
+        decision_time = datetime.fromisoformat(run["decision_time"])
+        liquid, _ = liquid_universe(daily, decision_time, criteria)
+        try:
+            profiles = sec.profiles([s.symbol for s in liquid], date.today().isoformat())
+        except FetchError:
+            continue
+        bubbles, unclassified = domain_trends(daily, decision_time, criteria,
+                                              {symbol: p["domain"] for symbol, p in profiles.items()})
+        run["domains"] = {"bubbles": bubbles, "unclassified": unclassified, "read_later": True}
+
+
 def build(family):
     runs = load_runs(family)
     _fill_domains(runs)
+    _fill_month_trend(runs)
     live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
     if live and live["family"] != family:
         live = None
