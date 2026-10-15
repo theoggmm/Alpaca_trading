@@ -72,6 +72,30 @@
   .criteria { margin: 0; padding: 14px 18px 14px 34px; display: grid; gap: 4px; }
   .note { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
   .empty { padding: 28px; color: var(--muted); }
+  /* Onglets : une page par usage ; l'onglet ouvert est gardé pendant la session (rechargement chaque minute). */
+  .tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: -12px; }
+  .tabs button { font: inherit; font-weight: 600; color: var(--muted); background: none; border: none;
+    border-bottom: 3px solid transparent; padding: 8px 14px; cursor: pointer; margin-bottom: -1px; }
+  .tabs button:hover { color: var(--ink); }
+  .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: grid; gap: 28px; }
+  .tab-panel[hidden] { display: none; }
+  /* Méthodologie intégrée : texte de lecture, pas de tableaux de chiffres. */
+  .method { max-width: 860px; line-height: 1.6; }
+  .method h2 { margin: 36px 0 8px; font-size: 20px; text-transform: none; letter-spacing: 0; color: var(--ink); }
+  .method h2 .n { color: var(--muted); font-weight: 500; margin-right: 6px; }
+  .method p, .method li { max-width: 72ch; }
+  .method .lead { color: var(--muted); font-size: 16px; margin-top: 0; }
+  .method .plain { background: var(--chip); border-radius: 6px; padding: 8px 12px; font-weight: 500; margin: 8px 0; }
+  .method .warn { border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; padding: 8px 12px; }
+  .method nav { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px 20px; }
+  .method nav ol { margin: 0; padding-left: 20px; columns: 2 260px; }
+  .method nav a { color: var(--accent); text-decoration: none; }
+  .method .panel { margin: 8px 0; }
+  .method th, .method td { text-align: left; white-space: normal; vertical-align: top; font-family: var(--font-ui); }
+  .method code { font-family: var(--font-data); font-size: 13px; background: var(--chip); padding: 1px 5px; border-radius: 4px; }
+  .method .timeline { display: grid; grid-template-columns: max-content 1fr; gap: 6px 16px; }
+  .method .timeline b { font-family: var(--font-data); white-space: nowrap; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
   .bubbles { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; padding: 20px; }
   .bubble { border-radius: 50%; display: grid; place-content: center; text-align: center; gap: 2px;
@@ -131,7 +155,6 @@
     <h1 data-t="title"></h1>
     <span class="chip" id="status"></span>
     <span class="spacer"></span>
-    <a id="methodology"></a>
     <a id="other-lang"></a>
     <label for="run" data-t="session"></label>
     <select id="run"></select>
@@ -139,73 +162,87 @@
     <select id="variant"></select>
   </header>
 
-  <section>
-    <h2 data-t="run_bubbles_title"></h2>
-    <div class="panel bubbles" id="bubbles"></div>
-    <p class="note" id="bubbles-note"></p>
-  </section>
+  <nav class="tabs" role="tablist" id="tabs"></nav>
 
-  <section>
-    <h2 data-t="live_title"></h2>
-    <div class="live-status" id="live-status"></div>
-    <div class="panel live" id="live"></div>
-    <p class="note" id="live-note"></p>
-  </section>
+  <div class="tab-panel" id="tab-today" role="tabpanel" aria-labelledby="tabbtn-today" hidden>
+    <div class="meta" id="meta"></div>
+    <p class="plain" data-t="disclaimer"></p>
 
-  <div class="meta" id="meta"></div>
-  <p class="plain" data-t="disclaimer"></p>
-
-  <section>
-    <h2 data-t="selection_title"></h2>
-    <div class="panel" id="selection"></div>
-    <p class="note" id="selection-note"></p>
-  </section>
-
-  <section>
-    <h2 data-t="plan_title"></h2>
-    <div class="live-status" id="plan-status"></div>
-    <div class="panel" id="plan"></div>
-    <p class="note" id="plan-note"></p>
-  </section>
-
-  <section>
-    <h2 data-t="funnel_title"></h2>
-    <div class="panel funnel" id="funnel"></div>
-    <p class="note" data-t="funnel_note"></p>
-  </section>
-
-  <div class="grid2">
     <section>
-      <h2 data-t="criteria_title"></h2>
-      <ol class="panel criteria" id="criteria"></ol>
+      <h2 data-t="selection_title"></h2>
+      <div class="panel" id="selection"></div>
+      <p class="note" id="selection-note"></p>
     </section>
+
     <section>
-      <h2 data-t="history_title"></h2>
-      <div class="panel" id="history"></div>
-      <p class="note" data-t="history_note"></p>
+      <h2 data-t="plan_title"></h2>
+      <div class="live-status" id="plan-status"></div>
+      <div class="panel" id="plan"></div>
+      <p class="note" id="plan-note"></p>
+    </section>
+
+    <section>
+      <h2 data-t="sim_title"></h2>
+      <div class="live-status" id="sim-status"></div>
+      <div class="panel" id="sim"></div>
+      <p class="note" id="sim-note"></p>
     </section>
   </div>
 
-  <section>
-    <h2 data-t="sim_title"></h2>
-    <div class="live-status" id="sim-status"></div>
-    <div class="panel" id="sim"></div>
-    <p class="note" id="sim-note"></p>
-  </section>
+  <div class="tab-panel" id="tab-market" role="tabpanel" aria-labelledby="tabbtn-market" hidden>
+    <section>
+      <h2 data-t="run_bubbles_title"></h2>
+      <div class="panel bubbles" id="bubbles"></div>
+      <p class="note" id="bubbles-note"></p>
+    </section>
 
-  <section>
-    <h2 data-t="results_title"></h2>
-    <div class="panel exp-box" id="experiment"></div>
-    <div class="panel" id="results-summary"></div>
-    <div class="panel" id="results-chart"></div>
-    <div class="panel" id="results-daily"></div>
-    <p class="note" id="results-note"></p>
-  </section>
+    <section>
+      <h2 data-t="live_title"></h2>
+      <div class="live-status" id="live-status"></div>
+      <div class="panel live" id="live"></div>
+      <p class="note" id="live-note"></p>
+    </section>
+  </div>
 
-  <section>
-    <h2 data-t="bt_title"></h2>
-    <div id="backtest" style="display: grid; gap: 4px;"></div>
-  </section>
+  <div class="tab-panel" id="tab-details" role="tabpanel" aria-labelledby="tabbtn-details" hidden>
+    <section>
+      <h2 data-t="funnel_title"></h2>
+      <div class="panel funnel" id="funnel"></div>
+      <p class="note" data-t="funnel_note"></p>
+    </section>
+
+    <div class="grid2">
+      <section>
+        <h2 data-t="criteria_title"></h2>
+        <ol class="panel criteria" id="criteria"></ol>
+      </section>
+      <section>
+        <h2 data-t="history_title"></h2>
+        <div class="panel" id="history"></div>
+        <p class="note" data-t="history_note"></p>
+      </section>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-results" role="tabpanel" aria-labelledby="tabbtn-results" hidden>
+    <section>
+      <h2 data-t="results_title"></h2>
+      <div class="panel exp-box" id="experiment"></div>
+      <div class="panel" id="results-summary"></div>
+      <div class="panel" id="results-chart"></div>
+      <div class="panel" id="results-daily"></div>
+      <p class="note" id="results-note"></p>
+    </section>
+
+    <section>
+      <h2 data-t="bt_title"></h2>
+      <div id="backtest" style="display: grid; gap: 4px;"></div>
+    </section>
+  </div>
+
+  <div class="tab-panel" id="tab-method" role="tabpanel" aria-labelledby="tabbtn-method" hidden>
+    <div class="method">__METHODOLOGY__</div>
+  </div>
 </main>
 
 <!-- Clôtures du dernier mois de tout l'univers (écrit une fois par séance par le suivi en direct). -->
@@ -224,7 +261,8 @@ const LIVE_STALE_MS = 3 * 60 * 1000;
 // Tous les textes de la page, en français et en anglais. Une fonction reçoit les valeurs à insérer.
 const TEXT = {
   fr: {
-    locale: "fr-FR", other: "English", other_href: "index_en.html", methodology: "Méthodologie", methodology_href: "methodologie.html", millions: m => `${m} M$`,
+    tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", method: "Méthodologie" },
+    locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
     variants: { per12: "PER < 12", sans_per: "Sans PER" }, not_judged: "non jugé",
     live_title: "En direct : tendance par domaine",
@@ -367,7 +405,8 @@ const TEXT = {
     },
   },
   en: {
-    locale: "en-US", other: "Français", other_href: "index.html", methodology: "Methodology", methodology_href: "methodology_en.html", millions: m => `$${m}M`,
+    tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", method: "Methodology" },
+    locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
     variants: { per12: "P/E < 12", sans_per: "Without P/E" }, not_judged: "not judged",
     live_title: "Live: trend by sector",
@@ -1112,9 +1151,21 @@ document.querySelectorAll("[data-t]").forEach(node => { node.textContent = TEXT[
 const other = document.getElementById("other-lang");
 other.textContent = TEXT.other;
 other.href = TEXT.other_href;
-const methodology = document.getElementById("methodology");
-methodology.textContent = TEXT.methodology;
-methodology.href = TEXT.methodology_href;
+
+// Onglets : un bouton par panneau ; l'onglet ouvert est gardé dans VIEW (la page se recharge chaque minute).
+function showTab(id) {
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+  document.querySelectorAll(".tab-panel").forEach(p => { p.hidden = p.id !== `tab-${id}`; });
+}
+Object.entries(TEXT.tabs).forEach(([id, label]) => {
+  const button = el("button", "", label);
+  Object.assign(button, { type: "button", id: `tabbtn-${id}` });
+  button.setAttribute("role", "tab");
+  button.dataset.tab = id;
+  button.addEventListener("click", () => { saveView({ ...VIEW, tab: id }); showTab(id); });
+  document.getElementById("tabs").appendChild(button);
+});
+showTab(TEXT.tabs[VIEW.tab] ? VIEW.tab : "today");
 
 const picker = document.getElementById("run");
 // Deux versions de la liste chaque séance : critères d'origine, et critères + PER < 12.

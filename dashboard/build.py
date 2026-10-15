@@ -173,11 +173,12 @@ def build(family):
                                                 for f in finals}))
             .replace("__HISTORY_JSON__", _embed(history)))
     _write_session_files(family)
-    for lang, path in OUTPUTS.items():
-        path.write_text(page.replace("__LANG__", lang), encoding="utf-8")
     # Import tardif : dashboard.methodology lit les constantes de dashboard.live, qui importe ce module.
-    from dashboard.methodology import write as write_methodology
-    write_methodology(EXPERIMENT)
+    from dashboard import methodology
+    for lang, path in OUTPUTS.items():
+        path.write_text(page.replace("__LANG__", lang).replace("__METHODOLOGY__", methodology.embedded(lang, EXPERIMENT)),
+                        encoding="utf-8")
+    methodology.write(EXPERIMENT)
     return OUTPUTS, len(runs)
 
 

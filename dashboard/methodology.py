@@ -73,13 +73,27 @@ def _values(lang, experiment):
     }
 
 
+def _page(lang, experiment):
+    """Page complète d'une langue ; une valeur absente du dictionnaire lève une erreur plutôt que d'afficher {{…}}."""
+    values = _values(lang, experiment)
+    page = re.sub(r'<article lang="(fr|en)">.*?</article>\n',
+                  lambda m: m.group(0) if m.group(1) == lang else "", TEMPLATE.read_text(encoding="utf-8"), flags=re.S)
+    page = re.sub(r"\{\{(\w+)\}\}", lambda m: str(values[m.group(1)]), page)
+    return page.replace("__LANG__", lang)
+
+
 def write(experiment):
-    """Écrit les deux pages ; une valeur absente du dictionnaire lève une erreur plutôt que d'afficher {{…}}."""
-    template = TEMPLATE.read_text(encoding="utf-8")
+    """Écrit les deux pages autonomes."""
     for lang, path in OUTPUTS.items():
-        values = _values(lang, experiment)
-        page = re.sub(r'<article lang="(fr|en)">.*?</article>\n',
-                      lambda m: m.group(0) if m.group(1) == lang else "", template, flags=re.S)
-        page = re.sub(r"\{\{(\w+)\}\}", lambda m: str(values[m.group(1)]), page)
-        path.write_text(page.replace("__LANG__", lang), encoding="utf-8")
+        path.write_text(_page(lang, experiment), encoding="utf-8")
     return OUTPUTS
+
+
+def embedded(lang, experiment):
+    """
+    Contenu de la page pour l'onglet « Méthodologie » du tableau de bord : sans l'en-tête de navigation,
+    identifiants préfixés « m- » pour ne pas heurter ceux du tableau de bord (selection, experiment…).
+    """
+    body = re.search(r'<article lang="\w+">(.*?)</article>', _page(lang, experiment), flags=re.S).group(1)
+    body = re.sub(r"<header>.*?</header>", "", body, flags=re.S)
+    return re.sub(r'(id="|href="#)', r"\1m-", body)
