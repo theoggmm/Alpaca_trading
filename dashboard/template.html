@@ -322,7 +322,7 @@ const TEXT = {
     plan_no_list: "La liste PER < 12 de cette séance n'existe pas encore : elle est produite à 16 h 45 (Paris).",
     plan_note: "Nombre entier d'actions, arrondi vers le bas pour ne jamais dépasser la part de chaque titre ; le reste n'est pas investi. Le prix à saisir est le dernier prix connu : comme limite d'un ordre à cours limité, l'ordre peut ne pas s'exécuter si le prix monte. Pour investir exactement le montant (fractions d'action), utilise buy-list.",
     sim_title: "Simulation : gain ou perte du jour selon le montant investi",
-    sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais",
+    sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais", sim_tax: "Après impôts : ce que tu gardes",
     sim_version: (v, n) => `${v} · ${n} titre(s)`,
     sim_bench: s => `Repères du jour, mêmes règles, après frais : ${s}.`,
     series: { per12: "PER < 12", sans_per: "Sans PER", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
@@ -358,13 +358,14 @@ const TEXT = {
     ],
     bt_note: "Un t apparié d'au moins 1,7 sur beaucoup de séances suggère un écart réel ; en dessous, l'écart peut être dû au hasard. Autrement dit : ce tableau dit si la méthode semblait marcher avant, pas si elle marchera.",
     sim_amount: "Montant investi",
+    sim_tax_note: r => `Après impôts : gain en actions entières après frais, moins ${r} d'impôt français sur les plus-values (prélèvement forfaitaire unique 2026, résident fiscal français, hors PEA ; taux relevé sur des sites spécialisés, à vérifier sur impots.gouv.fr). Une perte n'est pas imposée et réduit l'impôt sur tes autres gains de l'année. Conversion dollar-euro non comptée.`,
     sim_waiting: t => `En attente : achat au premier échange à partir de ${t} (New York)`,
     sim_live: t => `En direct : valeur au dernier prix connu (${t}, New York)`,
     sim_closed: t => `Figé : vendu au dernier échange avant ${t} (New York)`,
     sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b} (New York)`,
     sim_no_list: "Pas encore de liste pour cette séance : la simulation commence quand elle est produite.",
     sim_missing: "Pas de simulation pour cette séance (fonction ajoutée le 15 octobre).",
-    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et quart après l'ouverture) et vendu au dernier échange 30 minutes avant la clôture. Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Avant impôts. Un titre sans échange au moment de l'achat est écarté de la répartition.",
+    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et quart après l'ouverture) et vendu au dernier échange 30 minutes avant la clôture. Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
     no_run_yet: "La liste des 20 titres de cette séance sera produite à 16 h 45 (Paris), une heure et quart après l'ouverture.",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
@@ -471,7 +472,7 @@ const TEXT = {
     plan_no_list: "This session's P/E < 12 list doesn't exist yet: it is produced at 4:45 PM (Paris).",
     plan_note: "Whole shares, rounded down so each stock never exceeds its share; the rest stays uninvested. The price to enter is the latest known price: as the limit of a limit order, the order may not fill if the price rises. To invest the exact amount (fractional shares), use buy-list.",
     sim_title: "Simulation: the day's gain or loss by amount invested",
-    sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs",
+    sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs", sim_tax: "After tax: what you keep",
     sim_version: (v, n) => `${v} · ${n} stock(s)`,
     sim_bench: s => `Today's benchmarks, same rules, after costs: ${s}.`,
     series: { per12: "P/E < 12", sans_per: "Without P/E", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
@@ -507,13 +508,14 @@ const TEXT = {
     ],
     bt_note: "A paired t of at least 1.7 over many sessions suggests a real gap; below that, the gap may be chance. In other words: this table says whether the method seemed to work before, not whether it will work.",
     sim_amount: "Amount invested",
+    sim_tax_note: r => `After tax: whole-share gain after costs, minus ${r} French capital gains tax (2026 flat tax, French tax resident, outside a PEA; rate taken from specialist websites, to be confirmed on impots.gouv.fr). A loss is not taxed and reduces the tax on your other gains of the year. Dollar-euro conversion not included.`,
     sim_waiting: t => `Waiting: bought at the first trade from ${t} (New York)`,
     sim_live: t => `Live: value at the latest known price (${t}, New York)`,
     sim_closed: t => `Fixed: sold at the last trade before ${t} (New York)`,
     sim_times: (a, b) => `bought from ${a}, sold before ${b} (New York)`,
     sim_no_list: "No list for this session yet: the simulation starts once it is produced.",
     sim_missing: "No simulation for this session (feature added on October 15).",
-    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a quarter after the open) and sold at the last trade 30 minutes before the close. Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. Before tax. A stock with no trade at buying time is left out of the split.",
+    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a quarter after the open) and sold at the last trade 30 minutes before the close. Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
     no_run_yet: "This session's list of 20 stocks will be produced at 4:45 PM (Paris), an hour and a quarter after the open.",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
@@ -1124,7 +1126,7 @@ function renderSim() {
   const amounts = ["10000", "25000", "50000", "100000", "1000000"];
   // Pour chaque version : brut, après frais, et en actions entières après frais (colonnes ajoutées le 15 octobre).
   const kinds = [["gains", "mean_return", TEXT.sim_gross], ["net_gains", "net_mean_return", TEXT.sim_net],
-                 ["whole_gains", null, TEXT.sim_whole]];
+                 ["whole_gains", null, TEXT.sim_whole], ["after_tax_gains", null, TEXT.sim_tax]];
   const money = (value, rate) => value === undefined ? "—"
     : `${Number(value) >= 0 ? "+" : ""}${usd(value)}` + (rate == null ? "" : ` (${pct(rate)})`);
   // Un tableau par version de la liste (PER < 12 d'abord) : montant investi, puis brut, après frais, actions entières.
@@ -1155,7 +1157,9 @@ function renderSim() {
   const bench = sim.benchmarks || {};
   const benchText = ["univers", "spy"].filter(b => bench[b]?.net_mean_return != null)
     .map(b => `${TEXT.series[b]} ${pct(bench[b].net_mean_return)}`).join(" · ");
-  note.textContent = TEXT.sim_note + (benchText ? " " + TEXT.sim_bench(benchText) : "")
+  const taxRate = Object.values(sim.versions).find(r => r.tax_rate)?.tax_rate;
+  note.textContent = TEXT.sim_note + (taxRate ? " " + TEXT.sim_tax_note(new Intl.NumberFormat(TEXT.locale, { style: "percent", maximumFractionDigits: 1 }).format(Number(taxRate))) : "")
+    + (benchText ? " " + TEXT.sim_bench(benchText) : "")
     + (SHOWN.supplement ? " " + TEXT.sim_recomputed(SHOWN.supplement.computed_at.slice(0, 10)) : "");
 }
 

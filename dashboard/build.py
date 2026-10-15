@@ -15,6 +15,7 @@ from pathlib import Path
 from core.domains import domain_trends
 from core.history import TOP_IN_DOMAIN, selection_counts, top_in_domain_counts
 from core.performance_metrics import cumulative, summary
+from core.portfolio import TAX_RATE, after_tax
 from core.screener import Criteria, liquid_universe
 from infra import sec
 from infra.cache import read_cached
@@ -58,6 +59,17 @@ def _fill_domains(runs):
                     domain_read_later=True)
 
 
+def _with_tax(state):
+    """
+    Ajoute à chaque version de la simulation le gain après impôt (actions entières, après frais), calculé
+    à l'affichage depuis le gain enregistré : les états de fin de séance ne sont pas modifiés.
+    """
+    for row in ((state or {}).get("portfolio") or {}).get("versions", {}).values():
+        if row.get("whole_gains"):
+            row.update(after_tax_gains=after_tax(row["whole_gains"]), tax_rate=str(TAX_RATE))
+    return state
+
+
 def _load_finals(family):
     """
     États de fin de séance, par date ; un complément (supplements/<date>.json) remplace à l'affichage la
@@ -75,7 +87,7 @@ def _load_finals(family):
                          supplement={"computed_at": sup["computed_at"], "git_sha": sup["git_sha"]})
             final.setdefault("selection", {})["since_entry"] = sup["since_entry"]
             mtime = max(mtime, extra.stat().st_mtime)
-        finals.append((final, mtime))
+        finals.append((_with_tax(final), mtime))
     return finals
 
 
@@ -178,7 +190,7 @@ def build(family):
     runs = load_runs(family)
     _fill_domains(runs)
     _fill_month_trend(runs)
-    live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
+    live = _with_tax(json.loads(LIVE_FILE.read_text(encoding="utf-8"))) if LIVE_FILE.exists() else None
     if live and live["family"] != family:
         live = None
     loaded = _load_finals(family)

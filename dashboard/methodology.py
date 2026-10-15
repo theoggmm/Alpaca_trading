@@ -13,7 +13,7 @@ from core.domains import WEEK_SESSIONS
 from core.fundamentals import MAX_STALENESS
 from core.history import TOP_IN_DOMAIN
 from core.performance_metrics import TRADING_DAYS_PER_YEAR
-from core.portfolio import AMOUNTS, COST_BPS
+from core.portfolio import AMOUNTS, COST_BPS, TAX_RATE
 from core.screener import Criteria
 from dashboard.live import (DEFINITIVE_AFTER, EXIT_BEFORE_CLOSE, FEED_DELAY, ORDER_PLAN_AMOUNT, ROOT)
 
@@ -64,6 +64,7 @@ def _values(lang, experiment):
         "closes": base.required_sessions,
         "decision_time": _ny_time(decision, lang), "entry_time": _ny_time(decision + feed, lang),
         "exit_time": _ny_time(16 * 60 - exit_before, lang), "feed_delay": feed, "exit_before": exit_before,
+        "tax_pct": _number(TAX_RATE * 100, lang),
         "cost_pct": _number(COST_BPS / 100, lang), "cost_round_pct": _number(COST_BPS * 2 / 100, lang),
         "amounts": ", ".join(_usd(a, lang) for a in AMOUNTS), "plan_amount": _usd(ORDER_PLAN_AMOUNT, lang),
         "definitive_after": int(DEFINITIVE_AFTER.total_seconds() // 3600), "top_n": TOP_IN_DOMAIN,

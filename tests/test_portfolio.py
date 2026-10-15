@@ -81,3 +81,10 @@ def test_frais_et_actions_entieres():
     # 10 000 $ -> 5 000 $ par titre : A 49 actions (5 000 / 100,05), B 99 actions (5 000 / 50,025).
     whole = 49 * (Decimal("110") * (1 - c) - Decimal("100") * (1 + c)) + 99 * (Decimal("49") * (1 - c) - Decimal("50") * (1 + c))
     assert result["whole_gains"]["10000"] == str(whole.quantize(Decimal("0.01")))
+
+
+def test_apres_impot_gain_impose_perte_entiere():
+    from core.portfolio import TAX_RATE, after_tax
+    kept = after_tax({"10000": "100.00", "25000": "-40.00", "50000": "0.00"})
+    assert kept == {"10000": str((Decimal("100") * (1 - TAX_RATE)).quantize(Decimal("0.01"))),
+                    "25000": "-40.00", "50000": "0.00"}

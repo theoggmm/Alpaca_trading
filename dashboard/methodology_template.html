@@ -145,11 +145,12 @@
     <tr><td>Brut</td><td>Moyenne des rendements des titres (prix de vente / prix d'achat − 1)</td></tr>
     <tr><td>Après frais</td><td>Brut − {{cost_pct}} % à l'achat − {{cost_pct}} % à la vente (≈ {{cost_round_pct}} % par jour)</td></tr>
     <tr><td>Actions entières</td><td>Nombre d'actions arrondi à l'unité inférieure ; le reste n'est pas investi</td></tr>
+    <tr><td>Après impôts</td><td>Actions entières après frais, moins {{tax_pct}} % d'impôt sur un gain (prélèvement forfaitaire unique 2026, résident français, hors PEA, taux à vérifier sur impots.gouv.fr) ; une perte n'est pas imposée</td></tr>
   </table></div>
   <p>Deux repères, mêmes règles : <b>univers liquide</b> (tous les titres liquides du jour, à parts égales)
   et <b>SPY</b> (fonds qui suit le S&amp;P 500). Une liste PER &lt; {{max_pe}} vide ce jour-là compte pour 0 %.
   Les frais de {{cost_pct}} % représentent l'écart entre prix d'achat et de vente et le glissement ;
-  Alpaca ne prend pas de commission. Pas d'impôts.</p>
+  Alpaca ne prend pas de commission.</p>
   <p class="plain">Autrement dit : on mesure ce qu'un vrai achat à {{entry_time}} aurait rapporté, frais compris, et on le compare au marché.</p>
 
   <h2 id="ordres"><span class="n">7</span>Les ordres à passer</h2>
@@ -316,10 +317,11 @@
     <tr><td>Gross</td><td>Average of the stocks' returns (sell price / buy price − 1)</td></tr>
     <tr><td>After costs</td><td>Gross − {{cost_pct}}% on buying − {{cost_pct}}% on selling (≈ {{cost_round_pct}}% a day)</td></tr>
     <tr><td>Whole shares</td><td>Share count rounded down; the remainder stays uninvested</td></tr>
+    <tr><td>After tax</td><td>Whole shares after costs, minus {{tax_pct}}% tax on a gain (French 2026 flat tax, French resident, outside a PEA, rate to be confirmed on impots.gouv.fr); a loss is not taxed</td></tr>
   </table></div>
   <p>Two benchmarks, same rules: the <b>liquid universe</b> (all liquid stocks of the day, equal amounts) and
   <b>SPY</b> (fund tracking the S&amp;P 500). An empty P/E &lt; {{max_pe}} list counts as 0% that day. The {{cost_pct}}%
-  cost stands for the bid-ask spread and slippage; Alpaca charges no commission. No taxes.</p>
+  cost stands for the bid-ask spread and slippage; Alpaca charges no commission.</p>
   <p class="plain">In other words: we measure what a real purchase at {{entry_time}} would have earned, costs included, and compare it with the market.</p>
 
   <h2 id="orders"><span class="n">7</span>Orders to place</h2>

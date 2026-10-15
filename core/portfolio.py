@@ -16,6 +16,11 @@ AMOUNTS = (Decimal("10000"), Decimal("25000"), Decimal("50000"), Decimal("100000
 # Coût par ordre (achat et vente), en points de base : écart entre prix d'achat et de vente et frais.
 # Hypothèse fixée et commitée avant l'expérience 001 ; 5 points de base = 0,05 % par ordre.
 COST_BPS = Decimal("5")
+# Impôt français sur les plus-values de cession d'actions d'un particulier résident, hors PEA :
+# prélèvement forfaitaire unique 2026 = 12,8 % d'impôt sur le revenu + 18,6 % de prélèvements sociaux.
+# Taux relevé le 15 octobre 2026 sur des sites spécialisés (socic.fr, dougs.fr, sinvestir.fr), NON
+# confirmé sur impots.gouv.fr (règle 10). Hors simulation figée de l'expérience 001 : affichage seulement.
+TAX_RATE = Decimal("0.314")
 
 
 def _first_open(bars, start):
@@ -69,6 +74,18 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
         # Actions entières (arrondies vers le bas) au prix d'achat, après frais ; le reste n'est pas investi.
         "whole_gains": {str(amount): str(_whole_shares_gain(amount, held, entry, current, cost)) for amount in amounts},
     }
+
+
+def after_tax(gains):
+    """
+    montant -> gain après impôt (texte, 2 décimales) : un gain perd TAX_RATE ; une perte n'est pas imposée
+    et reste entière (elle réduit l'impôt sur les autres gains de l'année, ce que ce calcul ne compte pas).
+    """
+    def keep(gain):
+        gain = Decimal(gain)
+        return gain if gain <= 0 else (gain * (1 - TAX_RATE)).quantize(Decimal("0.01"))
+
+    return {amount: str(keep(gain)) for amount, gain in gains.items()}
 
 
 def _whole_shares_gain(amount, held, entry, current, cost):
