@@ -247,3 +247,16 @@ Travail fait dans une copie séparée du dépôt, intégré après l'état de fi
 
 Autrement dit : dès demain, tes deux listes évitent d'acheter au sommet ; le test officiel attendra que tu
 aies fini tes réglages.
+
+## 2026-10-15 (nuit, suite) — Archive des trois premières séances, test sur le passé relancé
+
+**Question posée** : ranger les trois dernières séances dans une section d'archive et relancer le test sur
+les 6 derniers mois.
+
+**Fait** : onglet Archive (résumé, courbe, tableau par séance, listes) pour les séances du 13 au 15 octobre,
+faites avec les anciennes règles ; groupe « Archive » dans le menu « Séance ». Résultats, « Fois dans les 20 »,
+« Fois top 20 du domaine » et « Titres les plus souvent retenus » repartent du 16 octobre (`RULES_SINCE`).
+Rien n'est effacé. Test sur le passé à quatre versions arrêté (règles abandonnées) ; relancé sur les deux
+listes actuelles, comparées aux listes d'avant les règles.
+
+Autrement dit : le tableau de bord repart à zéro demain avec les nouvelles règles, et l'ancien reste consultable à part.

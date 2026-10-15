@@ -126,6 +126,10 @@ def _fill_month_trend(runs):
         run["domains"] = {"bubbles": bubbles, "unclassified": unclassified, "read_later": True}
 
 
+# Séances faites avec des règles remplacées (avant la décision T5 : sans « pas au sommet » ni « confirmation »,
+# achat à 10 h 45) : rangées dans l'onglet Archive, hors des résultats et des comptages actuels. Rien n'est effacé.
+RULES_SINCE = "2026-10-16"
+
 # Expérience 001 (pré-enregistrée) : fenêtre de jugement.
 # Suspendue (décision 001.3) : les règles sont en réglage ; repartira de zéro quand elles seront figées.
 EXPERIMENT = {"id": "001", "start": "2026-10-15", "sessions": 40, "suspended": True,
@@ -198,16 +202,28 @@ def build(family):
     finals = [final for final, _ in loaded]
     # La page n'embarque que les comptages et la colonne « ouverture → clôture » de chaque séance,
     # pas la liste complète des titres de chaque fin de séance.
+    current_runs = [r for r in runs if r["session_date"] >= RULES_SINCE]
+    current_finals = [f for f in finals if f["session_date"] >= RULES_SINCE]
+    archived_runs = [r for r in latest_per_session(runs) if r["session_date"] < RULES_SINCE]
+    archived_finals = [f for f in finals if f["session_date"] < RULES_SINCE]
+    # La page n'embarque que les comptages et la colonne « ouverture → clôture » de chaque séance,
+    # pas la liste complète des titres de chaque fin de séance. Comptages et résultats : règles actuelles.
     history = {
-        "runs": len(runs),
-        "finals": sum("stocks" in f for f in finals),
+        "runs": len(current_runs),
+        "finals": sum("stocks" in f for f in current_finals),
         "top_n": TOP_IN_DOMAIN,
         # Une liste par séance et par version ; comptage séparé pour chaque version.
-        "in_selection": {variant: selection_counts([r for r in latest_per_session(runs) if variant_of(r) == variant])
-                         for variant in {variant_of(r) for r in runs}},
-        "top_in_domain": top_in_domain_counts(finals),
-        "results": _results(finals),
+        "in_selection": {variant: selection_counts([r for r in latest_per_session(current_runs) if variant_of(r) == variant])
+                         for variant in {variant_of(r) for r in current_runs}},
+        "top_in_domain": top_in_domain_counts(current_finals),
+        "results": _results(current_finals),
         "backtest": _backtest(family),
+        "archive": {
+            "since": RULES_SINCE,
+            "results": _results(archived_finals),
+            "lists": [{"session_date": r["session_date"], "variant": variant_of(r), "run_id": r["run_id"],
+                       "symbols": [i["symbol"] for i in r["selection"]]} for r in archived_runs],
+        },
     }
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))

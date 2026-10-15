@@ -272,6 +272,25 @@
     </section>
   </div>
 
+  <div class="tab-panel" id="tab-archive" role="tabpanel" aria-labelledby="tabbtn-archive" hidden>
+    <section>
+      <h2 data-t="archive_title"></h2>
+      <p class="intro" id="archive-intro"></p>
+      <p class="intro" data-t="intro_summary"></p>
+      <div class="panel" id="archive-summary"></div>
+      <p class="intro" data-t="intro_chart"></p>
+      <div class="panel" id="archive-chart"></div>
+      <p class="intro" data-t="intro_daily"></p>
+      <div class="panel" id="archive-daily"></div>
+      <p class="note" id="archive-note"></p>
+    </section>
+    <section>
+      <h2 data-t="archive_lists_title"></h2>
+      <p class="intro" data-t="intro_archive_lists"></p>
+      <div class="panel" id="archive-lists"></div>
+    </section>
+  </div>
+
   <div class="tab-panel" id="tab-method" role="tabpanel" aria-labelledby="tabbtn-method" hidden>
     <div class="method">__METHODOLOGY__</div>
   </div>
@@ -293,7 +312,7 @@ const LIVE_STALE_MS = 3 * 60 * 1000;
 // Tous les textes de la page, en français et en anglais. Une fonction reçoit les valeurs à insérer.
 const TEXT = {
   fr: {
-    tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", method: "Méthodologie" },
+    tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", archive: "Archive", method: "Méthodologie" },
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
     variants: { per12: "PER < 12", sans_per: "Sans PER" }, not_judged: "non jugé",
@@ -363,7 +382,7 @@ const TEXT = {
     res_series: "Série", res_n: "Séances", res_mean: "Moyenne / séance", res_total: "Total cumulé",
     res_annual: "Annualisé", res_positive: "Séances positives", res_worst: "Pire séance", res_date: "Séance",
     res_suspect: "Plus de 100 % annualisé : résultat suspect (règle 6), à expliquer.",
-    res_empty: "Pas encore de séance avec simulation après frais : la première sera celle du 15 octobre, ce soir.",
+    res_empty: "Pas encore de séance avec les règles actuelles : la première sera celle du 16 octobre, après la clôture. Les séances précédentes sont dans l'onglet Archive.",
     res_chart_soon: "La courbe apparaît à partir de deux séances.", res_chart_aria: "Rendements cumulés par série",
     res_note: "Chaque séance : achat à parts égales au premier échange à partir de 11 h 00 (10 h 45 jusqu'au 15 octobre), vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste PER < 12 vide : 0 %.",
     res_skipped: s => `Non comptées (simulation antérieure aux frais et aux repères) : ${s}.`,
@@ -371,6 +390,11 @@ const TEXT = {
     res_recomputed: "† : séance antérieure aux frais et aux repères, simulation recalculée après coup avec les règles actuelles (diagnostic, hors expérience 001). Le 13 octobre, seule la liste sans PER existait.",
     sim_recomputed: d => `Séance antérieure aux frais : simulation recalculée le ${d} avec les règles actuelles (diagnostic).`,
     bt_title: "Test sur le passé (diagnostic)",
+    archive_title: "Archive : séances faites avec les anciennes règles",
+    intro_archive: (dates, since) => `Les séances du ${dates.join(", ")} ont été faites avec des règles remplacées depuis (sans « pas au sommet » ni « confirmation », achat à 10 h 45). Elles sont rangées ici pour ne pas se mélanger aux résultats actuels, qui repartent de zéro le ${since}. Rien n'a été effacé : chaque séance reste aussi consultable dans le menu « Séance », groupe « Archive ».`,
+    archive_lists_title: "Listes archivées",
+    intro_archive_lists: "Les actions retenues chaque séance archivée, par version de la liste.",
+    archive_n: "Titres", archive_symbols: "Symboles", opt_archive: "Archive (anciennes règles)",
     versions_title: "Les deux versions de la liste",
     intro_versions: "Chaque jour, le programme fait deux listes. Elles partagent les mêmes critères de base (actions calmes, en baisse sur un mois, qui remontent depuis deux jours et pendant la première heure) et les deux règles contre l'achat au sommet ; seule la seconde ajoute le PER. Le menu « Version » en haut de page choisit la liste affichée.",
     versions_head: ["Version", "Règles", "Liste et achat (New York)", "Depuis"],
@@ -475,7 +499,7 @@ const TEXT = {
     },
   },
   en: {
-    tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", method: "Methodology" },
+    tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", archive: "Archive", method: "Methodology" },
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
     variants: { per12: "P/E < 12", sans_per: "Without P/E" }, not_judged: "not judged",
@@ -545,7 +569,7 @@ const TEXT = {
     res_series: "Series", res_n: "Sessions", res_mean: "Mean / session", res_total: "Cumulative total",
     res_annual: "Annualized", res_positive: "Positive sessions", res_worst: "Worst session", res_date: "Session",
     res_suspect: "Over 100% annualized: suspicious result (rule 6), to be explained.",
-    res_empty: "No session with an after-cost simulation yet: the first will be October 15, tonight.",
+    res_empty: "No session with the current rules yet: the first will be October 16, after the close. Earlier sessions are in the Archive tab.",
     res_chart_soon: "The chart appears from two sessions on.", res_chart_aria: "Cumulative returns by series",
     res_note: "Each session: equal amounts bought at the first trade from 11:00 AM (10:45 AM until October 15), sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty P/E < 12 list: 0%.",
     res_skipped: s => `Not counted (simulation from before costs and benchmarks): ${s}.`,
@@ -553,6 +577,11 @@ const TEXT = {
     res_recomputed: "†: session from before costs and benchmarks; simulation recomputed afterwards with the current rules (diagnostic, outside experiment 001). On October 13, only the list without P/E existed.",
     sim_recomputed: d => `Session from before costs: simulation recomputed on ${d} with the current rules (diagnostic).`,
     bt_title: "Test on past data (diagnostic)",
+    archive_title: "Archive: sessions made with the old rules",
+    intro_archive: (dates, since) => `The sessions of ${dates.join(", ")} were made with rules that have since been replaced (no "not at the top" or "confirmation", bought at 10:45 AM). They are kept here so they do not mix with the current results, which start over from zero on ${since}. Nothing was deleted: each session can still be opened from the "Session" menu, "Archive" group.`,
+    archive_lists_title: "Archived lists",
+    intro_archive_lists: "The stocks picked in each archived session, by version of the list.",
+    archive_n: "Stocks", archive_symbols: "Symbols", opt_archive: "Archive (old rules)",
     versions_title: "The two versions of the list",
     intro_versions: "Every day, the program makes two lists. They share the same base criteria (calm stocks, down over a month, rising for two days and during the first hour) and the two rules against buying at the top; only the second adds the P/E. The \"Version\" menu at the top of the page chooses which list is shown.",
     versions_head: ["Version", "Rules", "List and purchase (New York)", "Since"],
@@ -1181,21 +1210,49 @@ function renderResults() {
     el("span", "", TEXT.exp_rule),
     el("span", "", TEXT.exp_file(exp.file)));
 
-  const fmt = v => v == null ? "—" : pct(v);
   document.getElementById("results-summary").replaceChildren(summaryTable(res.summaries, series));
-
   cumulativeChart(document.getElementById("results-chart"), res.cumulative, series);
+  document.getElementById("results-daily").replaceChildren(dailyTable(res, series));
+  document.getElementById("results-note").textContent = resultsNote(res);
+}
 
+// Tableau par séance (historique des résultats et archive) : rendement après frais de chaque série.
+function dailyTable(res, series) {
+  const fmt = v => v == null ? "—" : pct(v);
   const days = Object.keys(Object.assign({}, ...series.map(s => res.series[s]))).sort().reverse();
-  document.getElementById("results-daily").replaceChildren(days.length ? table([
+  return days.length ? table([
     { label: TEXT.res_date, cls: "text", value: d => d + (res.provisional.includes(d) ? " *" : "")
       + ((res.recomputed || []).includes(d) ? " †" : "") },
     ...series.map(s => ({ label: TEXT.series[s], value: d => fmt(res.series[s][d]), tone: d => res.series[s][d] ?? 0 })),
-  ], days) : el("div", "empty", TEXT.res_empty));
-  document.getElementById("results-note").textContent = TEXT.res_note
+  ], days) : el("div", "empty", TEXT.res_empty);
+}
+
+function resultsNote(res) {
+  return TEXT.res_note
     + (res.skipped.length ? " " + TEXT.res_skipped(res.skipped.join(", ")) : "")
     + (res.provisional.length ? " " + TEXT.res_provisional : "")
     + ((res.recomputed || []).length ? " " + TEXT.res_recomputed : "");
+}
+
+// Archive : séances faites avec des règles remplacées, à part des résultats actuels (rien n'est effacé).
+function renderArchive() {
+  const archive = HISTORY.archive;
+  const res = archive.results;
+  const series = [...VARIANTS, "univers", "spy"];
+  const dates = [...new Set(archive.lists.map(l => l.session_date))].sort();
+  document.getElementById("archive-intro").textContent = TEXT.intro_archive(dates, archive.since);
+  document.getElementById("archive-summary").replaceChildren(summaryTable(res.summaries, series));
+  cumulativeChart(document.getElementById("archive-chart"), res.cumulative, series);
+  document.getElementById("archive-daily").replaceChildren(dailyTable(res, series));
+  document.getElementById("archive-note").textContent = resultsNote(res);
+  const lists = [...archive.lists].sort((a, b) => b.session_date.localeCompare(a.session_date) || a.variant.localeCompare(b.variant));
+  document.getElementById("archive-lists").replaceChildren(lists.length ? table([
+    { label: TEXT.res_date, cls: "text", value: l => l.session_date },
+    { label: TEXT.version, cls: "text", value: l => TEXT.variants[l.variant] },
+    { label: "run", cls: "text", value: l => l.run_id },
+    { label: TEXT.archive_n, value: l => l.symbols.length },
+    { label: TEXT.archive_symbols, cls: "text wrap", value: l => l.symbols.join(", ") || "—" },
+  ], lists) : el("div", "empty", TEXT.no_history));
 }
 
 // Simulation : montant réparti à parts égales sur chaque liste, achat après la première heure, vente 30 min avant la clôture.
@@ -1261,7 +1318,8 @@ function renderSim() {
 function renderHistory() {
   const seen = new Map();
   // Une liste par séance : la plus récente (un run recalculé remplace l'ancien pour le comptage).
-  const latest = [...new Set(RUNS.map(run => run.session_date))].map(date => runFor(date)).filter(Boolean);
+  const latest = [...new Set(RUNS.map(run => run.session_date))].filter(date => date >= HISTORY.archive.since)
+    .map(date => runFor(date)).filter(Boolean);
   latest.forEach(run => run.selection.forEach(item => {
     const entry = seen.get(item.symbol) || { symbol: item.symbol, name: item.name, count: 0, last: "" };
     entry.count += 1;
@@ -1354,12 +1412,17 @@ if (!SESSION_DATES.length) {
   picker.disabled = true;
   renderLive();
 } else {
+  const archiveGroup = document.createElement("optgroup");
+  archiveGroup.label = TEXT.opt_archive;
   SESSION_DATES.forEach(date => {
     const runs = VARIANTS.map(v => runFor(date, v)).filter(Boolean);
     const live = LIVE?.session_date === date && !LIVE.final;
     const tag = live ? TEXT.opt_live : FINALS[date] ? (FINALS[date].provisional ? TEXT.opt_provisional : TEXT.opt_final) : "";
-    picker.add(new Option([date, tag, runs.map(r => r.run_id).join(" + ")].filter(Boolean).join(" · "), date));
+    const option = new Option([date, tag, runs.map(r => r.run_id).join(" + ")].filter(Boolean).join(" · "), date);
+    // Séances faites avec des règles remplacées : groupe « Archive » en bas du menu.
+    if (date < HISTORY.archive.since) archiveGroup.appendChild(option); else picker.add(option);
   });
+  if (archiveGroup.children.length) picker.appendChild(archiveGroup);
   // La séance choisie est gardée dans l'adresse (#2026-10-14) pour survivre au rechargement automatique.
   const fromHash = location.hash.slice(1);
   const legacy = RUNS.find(r => r.run_id === fromHash)?.session_date;
@@ -1370,6 +1433,7 @@ if (!SESSION_DATES.length) {
 }
 renderHistory();
 renderResults();
+renderArchive();
 // Les versions de la liste (onglet Détail de la sélection) : texte fixe, indépendant de la séance affichée.
 const fixedTable = (head, rows) => table(head.map((label, i) => ({ label, cls: "text wrap", value: row => row[i] })), rows);
 document.getElementById("versions").replaceChildren(fixedTable(TEXT.versions_head, TEXT.versions_rows));

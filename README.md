@@ -119,6 +119,10 @@ d'actions arrondi à l'unité inférieure, reste non investi). Repères, mêmes 
 d'actions, prix à saisir, coût, reste. En direct pendant la séance, puis figé sur le prix d'achat de 10 h 45.
 Les ordres se passent à la main (`trade.py buy-list`, ci-dessous) : aucun programme n'en passe seul.
 
+**Archive.** Les séances faites avec des règles remplacées (13, 14 et 15 octobre 2026) sont rangées dans
+l'onglet Archive (résultats, courbe, listes) et dans un groupe « Archive » du menu « Séance » ; les résultats et
+les comptages actuels partent du 16 octobre (`RULES_SINCE` de `dashboard/build.py`). Rien n'est effacé.
+
 **Historique des résultats.** Chaque séance, rendement après frais de chaque version et des deux repères
 (liste PER < 12 vide = 0 %) : résumé (séances, moyenne, total cumulé, annualisé — signalé ⚠ au-delà de
 100 %, séances positives, pire séance), courbe cumulée et tableau par séance. Calculs par
