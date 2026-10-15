@@ -130,23 +130,30 @@ def run():
         return 0
 
     market_open = datetime.combine(session_date, session[0], NEW_YORK).astimezone(timezone.utc)
-    # Chaque version part dès que ses données sont disponibles (décision + 15 min) : la version avec
-    # confirmation, décidée 15 min plus tard, ne retarde pas les autres.
-    for variant, criteria in sorted(todo.items(), key=lambda item: item[1].decision_minutes):
+    # Chaque version part dès que ses données sont disponibles (décision + 15 min). Seule la première attend
+    # (lancement planifié quelques secondes trop tôt) ; une version plus tardive (confirmation, 11 h 00) qui
+    # n'est pas prête est laissée au lancement suivant, sans retarder les autres.
+    domains = None
+    pending = []
+    for i, (variant, criteria) in enumerate(sorted(todo.items(), key=lambda item: item[1].decision_minutes)):
         ready_at = market_open + timedelta(minutes=criteria.decision_minutes) + SIP_DELAY
         now = datetime.now(timezone.utc)
-        if ready_at - MAX_WAIT <= now < ready_at:
+        if i == 0 and ready_at - MAX_WAIT <= now < ready_at:
             print(f"[{variant}] Données disponibles à {ready_at.astimezone(NEW_YORK):%H:%M:%S} (New York) : "
                   f"attente de {(ready_at - now).total_seconds():.0f} s.")
             time.sleep((ready_at - now).total_seconds())
             now = datetime.now(timezone.utc)
         if now < ready_at:
-            print(f"[{variant}] Trop tôt : les données seront disponibles à {ready_at.astimezone(NEW_YORK):%H:%M} (New York).")
-            return 1
+            print(f"[{variant}] Pas encore : données disponibles à {ready_at.astimezone(NEW_YORK):%H:%M} (New York), "
+                  f"liste produite au prochain lancement.")
+            pending.append(variant)
+            continue
         payload = {"run_id": next_run_id(FAMILY), "variant": variant,
                    **produce(alpaca, criteria, session_date, market_open, now, git_sha)}
         _report(payload, criteria, save_run(FAMILY, payload))
         domains = payload["domains"]
+    if domains is None:
+        return 1 if pending else 0
 
     if "error" in domains:
         print(f"Domaines indisponibles : {domains['error']}")
