@@ -288,3 +288,21 @@ titres retenus ; un test relancé avec d'autres règles trouvait des prix manqua
 pour tous les candidats du jour (nouveau nom de cache) ; les tests sont relancés.
 
 Autrement dit : dès demain la liste avec PER s'ouvre aux PER jusqu'à 25, et les tests sont refaits proprement.
+
+## 2026-10-16 — Plusieurs stratégies, un tableau de bord chacune
+
+**Question posée** : tester en parallèle d'autres heures d'achat et de vente, chacune sur son tableau de bord ;
+dont une stratégie achat à l'ouverture, vente après 1 h (2 h au plus), choisie sur la dernière heure de la veille
+et la nuit ; en direct dès aujourd'hui.
+
+**Fait** : `core/strategy.py` (une stratégie = un dossier : strategy.json + fichiers de critères ; stockage sous
+la famille) ; `core/opening.py` (sélection « ouverture », décision à 9 h 15, datation testée) ; le run produit
+les listes de toutes les stratégies, le suivi en direct les produit dès qu'elles sont prêtes (9 h 30 pour
+« ouverture ») et suit toutes les stratégies ; une page par stratégie (bandeau, menu « Stratégie ») et un
+accueil `dashboard/accueil.html`. Caches d'achat et de vente nommés par l'heure. Décision T8. 60 tests verts.
+
+Autrement dit : cinq façons de suivre les listes tournent en papier dès aujourd'hui, chacune sur sa page.
+
+**Points signalés** : PER suspects (BKNG 0,97, VIPS 1,41, WSE 0,24 : devise ou division d'actions) ; le test sur
+le passé ne sait pas encore rejouer les stratégies « ouverture » ; noms des stratégies en français sur les pages
+anglaises.

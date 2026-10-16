@@ -70,3 +70,12 @@ au-dessus de sa moyenne des 50 dernières séances ; sinon aucune liste ce jour-
 Avant le premier run de la version 6 (16 octobre) : la liste avec PER retient les titres dont le PER sur
 12 mois glissants est inférieur à 25 (et non plus 12). Fichier `criteres_per12.json` (nom et variante `per12`
 gardés pour la continuité de l'historique). Les séances archivées (14 et 15 octobre) restent à 12.
+
+## T8 — 2026-10-16 — Plusieurs stratégies suivies en parallèle (propriétaire)
+
+En papier, à partir du 16 octobre : la stratégie principale (achat 11 h 00, vente 15 h 30) et quatre variantes,
+chacune avec son tableau de bord : « achat à 10 h 30 » (mêmes règles sur la première demi-heure), « vente à la
+clôture » (vente 15 h 55), et deux stratégies « ouverture » (autre logique : fin de veille en hausse, nuit en
+hausse de +0,5 % à +3 % avant 9 h 15, marché en bonne forme ; achat 9 h 30, vente après 1 h ou 2 h). Règles
+« ouverture » proposées par l'agent et retenues par défaut faute de réponse ; à tester sur le passé. Les ordres
+à passer restent calculés sur la stratégie principale seulement.
