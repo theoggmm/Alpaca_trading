@@ -51,18 +51,22 @@
     <a id="other"></a>
   </header>
   <p class="intro" id="intro"></p>
+  <p class="note" id="updated"></p>
   <div class="panel"><table id="rows"></table></div>
   <p class="note" id="note"></p>
 </main>
 <script>
 const LANG = "__LANG__";
 const ROWS = __ROWS_JSON__;
+const BUILT_AT = __BUILT_AT__;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
     intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
     head: ["Stratégie", "Achat → vente (New York · Paris)", "Aujourd'hui · PER < 25", "Aujourd'hui · sans PER", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · sans PER", "Séances"],
     waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)",
+    updated: t => `Mise à jour à ${t} (Paris) — la page se recharge toute seule chaque minute pendant la séance.`,
+    list_at: t => `liste à ${t}`, bought_at: t => `achat à ${t}, prix attendu`, sold: "vendu",
     note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
   },
   en: {
@@ -70,6 +74,8 @@ const TEXT = {
     intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
     head: ["Strategy", "Buy → sell (New York · Paris)", "Today · P/E < 25", "Today · without P/E", "Since Oct 16 · P/E < 25", "Since Oct 16 · without P/E", "Sessions"],
     waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)",
+    updated: t => `Updated at ${t} (Paris) — the page reloads itself every minute during the session.`,
+    list_at: t => `list at ${t}`, bought_at: t => `bought at ${t}, price pending`, sold: "sold",
     note: "Today: live during the session (prices 15 min late), frozen at the selling time. All these strategies are paper diagnostics: no order is placed.",
   },
 }[LANG];
@@ -87,6 +93,8 @@ const other = document.getElementById("other");
 other.textContent = TEXT.other; other.href = TEXT.other_href;
 document.getElementById("intro").textContent = TEXT.intro;
 document.getElementById("note").textContent = TEXT.note;
+document.getElementById("updated").textContent = TEXT.updated(
+  new Date(BUILT_AT).toLocaleTimeString(TEXT.locale, { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" }));
 const t = document.getElementById("rows");
 const head = t.createTHead().insertRow();
 TEXT.head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i < 2) th.className = "text"; head.appendChild(th); });
@@ -99,9 +107,15 @@ ROWS.forEach(r => {
   name.append(a, d); tr.appendChild(name);
   const times = document.createElement("td"); times.className = "text num"; const next = r.next_day ? TEXT.next_day : "";
   times.textContent = `${r.buy} → ${r.sell}${next} · ${r.buy_paris} → ${r.sell_paris}${next}`; tr.appendChild(times);
+  // Aujourd'hui : la liste n'est pas encore produite → son heure ; produite mais prix d'achat pas encore servi →
+  // heure d'achat ; liste vide → « pas de liste » ; sinon le résultat en direct (« vendu » une fois figé).
   ["per12", "sans_per"].forEach(v => {
     const today = r.today[v];
-    tr.appendChild(cell(today?.net ?? null, !today ? TEXT.none : today.n === 0 ? TEXT.no_list : TEXT.waiting));
+    const n = r.lists_today[v];
+    const td = cell(today?.net ?? null,
+      n === undefined ? TEXT.list_at(r.buy_paris) : n === 0 ? TEXT.no_list : TEXT.bought_at(r.buy_paris));
+    if (today?.net != null && today.status === "closed") td.textContent += ` · ${TEXT.sold}`;
+    tr.appendChild(td);
   });
   ["per12", "sans_per"].forEach(v => tr.appendChild(cell(r.totals[v]?.total ?? null, TEXT.none)));
   const n = document.createElement("td"); n.className = "num"; n.textContent = r.totals.per12?.n ?? r.totals.sans_per?.n ?? 0; tr.appendChild(n);

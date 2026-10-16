@@ -370,7 +370,10 @@ def _build_strategy(strategy, infos):
     current = live if live and live.get("session_date") == session_today else None
     today = {v: {"status": row.get("status"), "net": row.get("net_mean_return"), "n": row.get("n")}
              for v, row in ((current or {}).get("portfolio") or {}).get("versions", {}).items()}
-    return {**info, "session_date": (live or {}).get("session_date"), "today": today,
+    # Listes du jour déjà produites (même avant que l'état en direct existe) : nombre de titres par version.
+    lists_today = {variant_of(r): len(r["selection"]) for r in latest_per_session(runs) if r["session_date"] == session_today}
+    return {**info, "session_date": (live or {}).get("session_date"), "today": today, "lists_today": lists_today,
+            "observed_at": (current or {}).get("observed_at"),
             "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "spy")}}
 
 
@@ -379,7 +382,8 @@ def build(family):
     every = strategies(family)
     infos = [_strategy_info(s) for s in every]
     rows = [_build_strategy(s, infos) for s in every]
-    home = HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
+    home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
+            .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")
     from dashboard import methodology
