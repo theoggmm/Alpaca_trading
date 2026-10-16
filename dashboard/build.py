@@ -200,12 +200,16 @@ def _results(finals):
     de séance qui portent la simulation après frais. Liste vide ce jour-là : 0 (règle de l'expérience 001).
     """
     series = {name: {} for name in SERIES}
-    skipped = []
+    skipped, unsold = [], []
     for final in finals:
         portfolio = final.get("portfolio") or {}
         rows = {**portfolio.get("versions", {}), **portfolio.get("benchmarks", {})}
         if "net_mean_return" not in str(rows):
             skipped.append(final["session_date"])
+            continue
+        # Achat de nuit pas encore vendu (vente à la séance suivante) : la séance ne compte qu'une fois vendue.
+        if any(row.get("status") == "live" for row in portfolio.get("versions", {}).values()):
+            unsold.append(final["session_date"])
             continue
         for name, row in rows.items():
             if row.get("net_mean_return") is not None:
@@ -223,6 +227,7 @@ def _results(finals):
         "summaries": {name: summary(values) for name, values in series.items()},
         "cumulative": {name: cumulative(values) for name, values in series.items()},
         "skipped": skipped,
+        "unsold": unsold,
         "provisional": provisional,
         "recomputed": recomputed,
         # Une séance compte dès la clôture (positions vendues à 15 h 30) ; « pending » = encore provisoire,
