@@ -26,7 +26,7 @@
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
-  main { max-width: 1280px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 20px; }
+  main { max-width: 1440px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 20px; }
   header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
   h1 { margin: 0; font-size: 26px; flex: 1 1 auto; }
   header a { color: var(--accent); font-weight: 600; }
@@ -38,10 +38,11 @@
   th.text, td.text { text-align: left; }
   td.num { font-family: var(--font-data); white-space: nowrap; }
   td a { color: var(--accent); font-weight: 700; text-decoration: none; }
-  td .desc { color: var(--muted); font-size: 13px; max-width: 46ch; }
+  td .desc { color: var(--muted); font-size: 13px; max-width: 34ch; }
   /* Mise en page d'origine : la colonne des stratégies garde sa largeur ; une situation (pas encore de chiffre)
      s'affiche en petit, en gris, et peut passer à la ligne. */
-  td.text:first-child { min-width: 260px; }
+  td.text:first-child { min-width: 220px; }
+  th:not(.text) { min-width: 82px; }
   /* Colonnes « sans stop/objectif » : fond légèrement grisé, pour les distinguer d'un coup d'œil. */
   th.alt, td.alt { background: color-mix(in srgb, var(--line) 35%, transparent); }
   td.state { font-family: var(--font-ui); font-size: 12px; color: var(--muted); white-space: normal; min-width: 70px; }
