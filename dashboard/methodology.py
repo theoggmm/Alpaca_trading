@@ -17,6 +17,8 @@ from core.history import TOP_IN_DOMAIN
 from core.performance_metrics import TRADING_DAYS_PER_YEAR
 from core.portfolio import AMOUNTS, COST_BPS, STOP_LOSS, TAKE_PROFIT, TAX_RATE
 from core.screener import Criteria
+from core.closing import ClosingCriteria
+from core.opening import OpeningCriteria
 from core.strategy import load_strategies
 from dashboard.live import DEFINITIVE_AFTER, FEED_DELAY, ORDER_PLAN_AMOUNT, ROOT
 
@@ -56,6 +58,35 @@ def _ny_time(minutes, lang):
     return f"{(h - 1) % 12 + 1}:{m:02d} {'AM' if h < 12 else 'PM'}"
 
 
+def _strategies_table(lang, feed):
+    """Tableau HTML des stratégies, dans l'ordre de l'accueil : sélection, décision, achat et vente (New York, Paris)."""
+    kinds = {"fr": {Criteria: "Reprise après baisse (début de séance)", OpeningCriteria: "Ouverture (veille et nuit)",
+                    ClosingCriteria: "Fin de journée (journée et dernière heure)"},
+             "en": {Criteria: "Rebound after decline (start of session)", OpeningCriteria: "Open (previous day and overnight)",
+                    ClosingCriteria: "End of day (day and last hour)"}}[lang]
+    head = {"fr": ["#", "Stratégie", "Sélection", "Décision", "Achat", "Vente"],
+            "en": ["#", "Strategy", "Selection", "Decision", "Purchase", "Sale"]}[lang]
+    next_day = {"fr": "le lendemain ", "en": "next day "}[lang]
+
+    def when(minutes, prefix=""):
+        return f"{prefix}{_ny_time(minutes, lang)} <small>({_paris_time(minutes, lang)} Paris)</small>"
+
+    rows = []
+    for i, strategy in enumerate(load_strategies(CRITERIA_DIR, "reprise_apres_baisse"), start=1):
+        c = strategy.criteria()["sans_per"]
+        decision = NY_OPEN_MINUTES + c.decision_minutes
+        if strategy.overnight:
+            sale = when(NY_OPEN_MINUTES + strategy.exit_next_open_minutes, next_day)
+        elif strategy.exit_after_open_minutes is not None:
+            sale = when(NY_OPEN_MINUTES + strategy.exit_after_open_minutes)
+        else:
+            sale = when(16 * 60 - strategy.exit_before_close_minutes)
+        name = strategy.name if lang == "fr" else strategy.name_en
+        rows.append(f"<tr><td>{i}</td><td>{name}</td><td>{kinds[type(c)]}</td><td>{when(decision)}</td>"
+                    f"<td>{when(decision + feed)}</td><td>{sale}</td></tr>")
+    return "<tr>" + "".join(f"<th>{h}</th>" for h in head) + "</tr>\n    " + "\n    ".join(rows)
+
+
 def _values(lang, experiment):
     base = Criteria.from_file(CRITERIA_DIR / "criteres_sans_per.json")
     per12 = Criteria.from_file(CRITERIA_DIR / "criteres_per12.json")
@@ -66,7 +97,18 @@ def _values(lang, experiment):
     exit_before = load_strategies(CRITERIA_DIR, "reprise_apres_baisse")[0].exit_before_close_minutes
     decision = NY_OPEN_MINUTES + base.first_hour_minutes
     confirm_decision = NY_OPEN_MINUTES + base.decision_minutes
+    # Règles des sélections « ouverture » et « fin de journée » : celles de la première stratégie de chaque sorte.
+    every = load_strategies(CRITERIA_DIR, "reprise_apres_baisse")
+    opening = next(c for s in every for c in s.criteria().values() if isinstance(c, OpeningCriteria))
+    closing = next(c for s in every for c in s.criteria().values() if isinstance(c, ClosingCriteria))
     return {
+        "strategies_table": _strategies_table(lang, feed), "n_strategies": len(every),
+        "open_last_hour": opening.last_hour_minutes, "open_min_night": _number(opening.min_overnight * 100, lang),
+        "open_max_night": _number(opening.max_overnight * 100, lang), "open_min_volume": opening.min_premarket_volume,
+        "open_decision": _ny_time(NY_OPEN_MINUTES + opening.decision_minutes, lang),
+        "open_decision_paris": _paris_time(NY_OPEN_MINUTES + opening.decision_minutes, lang),
+        "close_min_day": _number(closing.min_day_gain * 100, lang), "close_max_day": _number(closing.max_day_gain * 100, lang),
+        "close_last_hour": closing.last_hour_minutes, "close_below_high": _number(closing.max_below_day_high * 100, lang),
         "count": base.count, "month_sessions": base.month_sessions, "up_days": base.up_days,
         "first_hour": base.first_hour_minutes, "liquidity_sessions": base.liquidity_sessions,
         "min_price": _usd(base.min_price_usd, lang), "min_volume": _usd(base.min_avg_dollar_volume_usd, lang),

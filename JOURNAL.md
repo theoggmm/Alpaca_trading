@@ -345,3 +345,15 @@ lendemain jusqu'à la vente ; test sur le passé ; colonne « Depuis l'achat » 
 décision T10. 63 tests verts. Essai sur le 15 octobre : 4 et 2 titres vendus au stop, résultat quasi inchangé.
 
 Autrement dit : une action qui chute de 1,5 % ou monte de 3 % est vendue tout de suite dans la simulation.
+
+## 2026-10-16 (suite) — Méthodologie complète
+
+**Question posée** : que tout figure sur la page Méthodologie.
+
+**Fait** : sections ajoutées (FR/EN), valeurs lues dans les fichiers de stratégies et de critères : les stratégies
+(tableau généré : sélection, décision, achat, vente, New York et Paris), sélection « ouverture », sélection « fin de
+journée », achats de nuit, tableaux de bord (accueil, onglets, heures de Paris, production des listes, archive, tests
+d'un mois) ; limites des nouvelles stratégies et du stop ; sommaire et numérotation régénérés. Déjà présents :
+stop / objectif (simulation), PER corrigé (critère PER).
+
+Autrement dit : la page Méthodologie décrit maintenant toutes les stratégies et toutes les règles en vigueur.

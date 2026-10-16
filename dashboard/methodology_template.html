@@ -60,9 +60,13 @@
   moment où la page est générée.</p>
 
   <nav><ol>
-    <li><a href="#journee">Une journée type</a></li>
+    <li><a href="#strategies">Les stratégies</a></li>
+    <li><a href="#journee">Une journée type (stratégie principale)</a></li>
     <li><a href="#donnees">Les données</a></li>
-    <li><a href="#selection">La sélection du jour</a></li>
+    <li><a href="#selection">Sélection « reprise après baisse » (stratégies 1 à 3)</a></li>
+    <li><a href="#ouverture">Sélection « ouverture » (stratégies d'ouverture)</a></li>
+    <li><a href="#fin-de-journee">Sélection « fin de journée » (stratégies de nuit)</a></li>
+    <li><a href="#nuit">Achats de nuit</a></li>
     <li><a href="#datation">Pas de donnée du futur</a></li>
     <li><a href="#domaines">Les bulles par domaine</a></li>
     <li><a href="#simulation">La simulation</a></li>
@@ -72,10 +76,22 @@
     <li><a href="#experience">L'expérience {{exp_id}}</a></li>
     <li><a href="#passe">Le test sur le passé</a></li>
     <li><a href="#limites">Limites connues</a></li>
+    <li><a href="#tableaux">Les tableaux de bord</a></li>
     <li><a href="#trace">Traçabilité</a></li>
   </ol></nav>
 
-  <h2 id="journee"><span class="n">1</span>Une journée type</h2>
+  <h2 id="strategies"><span class="n">1</span>Les stratégies</h2>
+  <p>{{n_strategies}} stratégies sont suivies en parallèle, en papier, chacune avec son tableau de bord. Elles se distinguent
+  par leurs heures d'achat et de vente, et par la façon de choisir les actions : trois sortes de sélection, décrites plus bas.
+  Chaque stratégie fait deux listes : une sans PER, une avec PER &lt; {{max_pe}}.</p>
+  <div class="panel"><table>
+    {{strategies_table}}
+  </table></div>
+  <p>La décision précède l'achat de {{feed_delay}} minutes : c'est le retard des prix de l'offre gratuite d'Alpaca. « Le lendemain » :
+  achat en fin de séance, vente à la séance suivante (achats de nuit, plus bas).</p>
+  <p class="plain">Autrement dit : plusieurs façons d'investir sont comparées côte à côte ; aucune n'est encore prouvée.</p>
+
+  <h2 id="journee"><span class="n">2</span>Une journée type (stratégie principale)</h2>
   <p>Heures de New York, et entre parenthèses l'heure de Paris le jour où la page est générée (6 h d'écart la plupart de l'année, 5 h quelques semaines au printemps et en automne).</p>
   <div class="panel" style="padding: 12px 16px"><div class="timeline">
     <b>9 h 30 <small>({{open_paris}} Paris)</small></b><span>Ouverture. Le suivi en direct démarre : bulles, cours, prix des titres.</span>
@@ -88,7 +104,7 @@
   </div></div>
   <p class="plain">Autrement dit : la liste est connue un peu plus d'une heure après l'ouverture, et tout est figé le lendemain.</p>
 
-  <h2 id="donnees"><span class="n">2</span>Les données</h2>
+  <h2 id="donnees"><span class="n">3</span>Les données</h2>
   <ul>
     <li><b>Cours</b> : Alpaca, flux consolidé de toutes les bourses américaines (SIP), corrigé des divisions
       et dividendes. Cours quotidiens et à la minute. En direct : {{feed_delay}} minutes de retard (offre gratuite).</li>
@@ -100,7 +116,7 @@
   <p>Chaque source est mise en cache sur le disque ; une source qui ne répond pas est signalée, jamais remplacée par une estimation.</p>
   <p class="plain">Autrement dit : les chiffres viennent du courtier et du régulateur, pas d'un site tiers.</p>
 
-  <h2 id="selection"><span class="n">3</span>La sélection du jour</h2>
+  <h2 id="selection"><span class="n">4</span>Sélection « reprise après baisse » (stratégies 1 à 3)</h2>
   <p>Deux listes chaque séance, avec les mêmes critères, sauf le PER : <b>Sans PER</b> et <b>PER &lt; {{max_pe}}</b>.
   Depuis le 16 octobre 2026, toutes deux portent quatre règles de prudence : deux de tendance (7 bis, 8 bis) et deux contre l'achat au sommet (8 ter, 8 quater).
   Critères appliqués dans cet ordre ; la décision se fait en deux temps, à {{decision_time}} puis à {{confirm_decision_time}} :</p>
@@ -130,14 +146,44 @@
   Elles s'appliquent aux deux listes. Elles sont encore en réglage : leurs seuils peuvent changer dans les prochains jours.</p>
   <p class="plain">Autrement dit : on cherche des actions solides et calmes, tombées sur le mois, qui repartent depuis deux jours et encore ce matin, sans prendre deux fois le même pari , et sans acheter au sommet de la matinée.</p>
 
-  <h2 id="datation"><span class="n">4</span>Pas de donnée du futur</h2>
+  <h2 id="ouverture"><span class="n">5</span>Sélection « ouverture » (stratégies d'ouverture)</h2>
+  <p>Pour les stratégies qui achètent à l'ouverture. Décision à {{open_decision}} ({{open_decision_paris}} Paris), avant l'ouverture,
+  avec les prix de la veille et de la nuit (pré-ouverture comprise) :</p>
+  <ul>
+    <li>mêmes critères de base que plus haut (1 à 4 : univers, historique, prix, montant échangé) et marché en bonne forme ;</li>
+    <li><b>fin de séance en hausse</b> : la veille, le dernier prix dépasse celui du début de la dernière heure ({{open_last_hour}} minutes) ;</li>
+    <li><b>nuit en hausse modérée</b> : le dernier prix avant la décision est entre {{open_min_night}} % et {{open_max_night}} % au-dessus de la clôture
+      de la veille, avec au moins {{open_min_volume}} actions échangées en pré-ouverture (sinon ce prix n'a pas de sens) ;</li>
+    <li>PER &lt; {{max_pe}} pour la seconde liste ; classement par hausse de la dernière heure de la veille, puis diversification.</li>
+  </ul>
+  <p class="plain">Autrement dit : on achète à l'ouverture des actions qui ont fini fort la veille et continuent de monter pendant la nuit.</p>
+
+  <h2 id="fin-de-journee"><span class="n">6</span>Sélection « fin de journée » (stratégies de nuit)</h2>
+  <p>Pour les achats de nuit. Décision {{feed_delay}} minutes avant l'achat, avec les prix de la journée :</p>
+  <ul>
+    <li>mêmes critères de base (1 à 4) et marché en bonne forme ;</li>
+    <li><b>journée en hausse</b> : le prix à la décision est entre {{close_min_day}} % et {{close_max_day}} % au-dessus du premier prix de la séance ;</li>
+    <li><b>dernière heure en hausse</b> : le prix à la décision dépasse celui de {{close_last_hour}} minutes plus tôt ;</li>
+    <li><b>près du plus haut du jour</b> : au plus {{close_below_high}} % sous le plus haut atteint dans la journée ;</li>
+    <li>PER &lt; {{max_pe}} pour la seconde liste ; classement par hausse de la dernière heure, puis diversification.</li>
+  </ul>
+  <p class="plain">Autrement dit : on achète en fin de journée des actions fortes toute la journée, qui finissent près de leur plus haut.</p>
+
+  <h2 id="nuit"><span class="n">7</span>Achats de nuit</h2>
+  <p>Les actions sont achetées en fin de séance et gardées jusqu'au lendemain. Le soir, la simulation les valorise au prix de clôture
+  (« en cours ») ; dès que la vente du lendemain est connue, la séance est recalculée et son résultat est compté le jour de l'achat.
+  Elle devient définitive {{definitive_after}} heures après la vente. Un achat du vendredi est vendu le lundi. Le stop et l'objectif
+  continuent le lendemain matin : une action qui ouvre sous le stop est vendue à l'ouverture.</p>
+  <p class="plain">Autrement dit : le résultat d'un achat de nuit s'affiche le lendemain matin, rattaché au jour de l'achat.</p>
+
+  <h2 id="datation"><span class="n">8</span>Pas de donnée du futur</h2>
   <p>Toute fonction qui calcule un critère reçoit l'instant de décision et, dès sa première ligne, retire
   toute donnée qui n'était pas encore terminée à cet instant (une barre d'une minute n'est utilisable que
   quand sa minute est écoulée). Pour le PER, seules les déclarations déposées à la SEC avant le jour de
   décision comptent. Un test automatique le vérifie à chaque modification du code.</p>
   <p class="plain">Autrement dit : la liste d'un jour est exactement celle qu'on aurait pu obtenir ce jour-là, à cette heure-là.</p>
 
-  <h2 id="domaines"><span class="n">5</span>Les bulles par domaine</h2>
+  <h2 id="domaines"><span class="n">9</span>Les bulles par domaine</h2>
   <p>Une lecture du marché, <b>pas un critère de sélection</b>. Pour chaque domaine : moyenne simple des
   variations de tous ses titres liquides (critères 2 à 4). Mesures : journée (dernier prix / clôture
   précédente), première heure ({{decision_time}} / premier prix), 2 séances, 1 semaine ({{week_sessions}} séances)
@@ -147,7 +193,7 @@
   La « tendance sur un mois par domaine au moment du run » fige les bulles à l'heure de la liste.</p>
   <p class="plain">Autrement dit : les bulles disent quels secteurs montent ou baissent, elles ne choisissent rien.</p>
 
-  <h2 id="simulation"><span class="n">6</span>La simulation</h2>
+  <h2 id="simulation"><span class="n">10</span>La simulation</h2>
   <p>Pour chaque liste : {{amounts}} répartis à parts égales sur ses titres, achetés au premier échange à
   partir de {{entry_time}} (10 h 45 jusqu'au 15 octobre 2026), vendus au dernier échange avant {{exit_time}}. Gain suivi en direct, puis figé. <b>Vente anticipée</b> : chaque titre est vendu plus tôt dès qu'un cours minute passe {{stop_pct}} % sous son prix d'achat (stop, la perte est prise) ou {{target_pct}} % au-dessus (objectif, le gain est pris), au cours de cette minute ; les autres titres restent jusqu'à l'heure de vente. Dans la sélection, la colonne « Depuis l'achat » donne pour chaque titre dernier prix / prix d'achat − 1.</p>
   <div class="panel"><table>
@@ -163,7 +209,7 @@
   Alpaca ne prend pas de commission.</p>
   <p class="plain">Autrement dit : on mesure ce qu'un vrai achat à {{entry_time}} aurait rapporté, frais compris, et on le compare au marché.</p>
 
-  <h2 id="ordres"><span class="n">7</span>Les ordres à passer</h2>
+  <h2 id="ordres"><span class="n">11</span>Les ordres à passer</h2>
   <p>{{plan_amount}} répartis sur la liste PER &lt; {{max_pe}} : pour chaque titre, nombre entier d'actions
   (montant par titre / prix, arrondi à l'unité inférieure), prix à saisir, coût, et reste non investi.
   Pendant la séance, le prix est le dernier connu ; dans l'état de fin de séance, il est figé sur le prix d'achat de la simulation ({{entry_time}}).</p>
@@ -171,14 +217,14 @@
   préparent les ordres ; c'est toi qui les lances et les confirmes.</p>
   <p class="plain">Autrement dit : la page te dit quoi acheter et combien, mais la décision reste la tienne.</p>
 
-  <h2 id="fin"><span class="n">8</span>Fin de séance : provisoire puis définitif</h2>
+  <h2 id="fin"><span class="n">12</span>Fin de séance : provisoire puis définitif</h2>
   <p>Après la clôture, l'état de la séance (bulles, colonne « Ouverture → clôture », simulation, ordres) est
   reconstruit depuis l'historique minute d'Alpaca et figé, <b>provisoire</b>. Alpaca corrige parfois des
   échanges après coup ; {{definitive_after}} heures après la clôture, tout est recalculé et devient <b>définitif</b>,
   puis n'est plus jamais modifié. L'ancienne version est archivée, jamais effacée.</p>
   <p class="plain">Autrement dit : les chiffres du soir peuvent bouger un peu ; ceux du lendemain ne bougent plus.</p>
 
-  <h2 id="resultats"><span class="n">9</span>L'historique des résultats</h2>
+  <h2 id="resultats"><span class="n">13</span>L'historique des résultats</h2>
   <p>Chaque séance ajoute une ligne : rendement après frais de chaque liste et des deux repères. Les calculs
   passent tous par un seul module (<code>core/performance_metrics.py</code>).</p>
   <div class="panel"><table>
@@ -193,7 +239,7 @@
   Une étoile * marque une séance encore provisoire. Les séances faites avec des règles remplacées depuis (13, 14 et 15 octobre 2026) sont rangées à part, dans l'onglet Archive : les résultats et les comptages actuels repartent de zéro le 16 octobre.</p>
   <p class="plain">Autrement dit : c'est le carnet de notes de chaque liste, jour après jour.</p>
 
-  <h2 id="experience"><span class="n">10</span>L'expérience {{exp_id}}</h2>
+  <h2 id="experience"><span class="n">14</span>L'expérience {{exp_id}}</h2>
   <p>Question : la liste PER &lt; {{max_pe}} rapporte-t-elle plus que la liste sans PER, et plus que l'univers liquide ?
   La règle de jugement a été écrite et publiée sur GitHub <b>avant</b> les séances qui la jugent : elle ne
   peut pas être ajustée après coup pour donner la réponse voulue.</p>
@@ -212,7 +258,7 @@
   retirée avant toute donnée (décision 002.2) : les deux règles s'appliquent désormais aux deux listes.</p>
   <p class="plain">Autrement dit : quand les règles seront figées, un test écrit d'avance dira, en environ deux mois, si le filtre PER aide vraiment.</p>
 
-  <h2 id="passe"><span class="n">11</span>Le test sur le passé</h2>
+  <h2 id="passe"><span class="n">15</span>Le test sur le passé</h2>
   <p>Le même code rejoue les deux listes sur les 6 derniers mois et sur le dernier mois (deux tests affichés l'un sous l'autre), séance par séance, avec les seules données
   connues à {{decision_time}} chaque jour, les mêmes heures et les mêmes frais, comparées à SPY. Il rejoue aussi les deux listes d'avant les règles contre l'achat au sommet : la comparaison montre ce que ces règles auraient changé.</p>
   <p class="warn">Biais connu : seuls les titres encore cotés aujourd'hui sont testés. Ceux qui ont disparu
@@ -220,7 +266,7 @@
   il peut révéler un problème, il ne décide rien.</p>
   <p class="plain">Autrement dit : si la méthode perdait de l'argent dans le passé, on le saurait ; si elle en gagnait, ce n'est pas une promesse.</p>
 
-  <h2 id="limites"><span class="n">12</span>Limites connues</h2>
+  <h2 id="limites"><span class="n">16</span>Limites connues</h2>
   <ul>
     <li>Prix en direct avec {{feed_delay}} minutes de retard (offre gratuite d'Alpaca).</li>
     <li>« Volatilité basse » est relative : la moitié la plus calme ce jour-là, pas un seuil fixe.</li>
@@ -228,10 +274,28 @@
       en US GAAP (beaucoup d'étrangères, certaines banques) sont exclues de la version 2.</li>
     <li>La simulation suppose qu'on obtient le prix du premier échange affiché ; une grosse commande pourrait payer plus.</li>
     <li>Peu de séances observées pour l'instant : les moyennes bougeront beaucoup au début.</li>
+    <li>Les sélections « ouverture » et « fin de journée » et leurs seuils sont des propositions, pas encore rejouées sur le passé ; seule la sélection « reprise après baisse » l'est.</li>
+    <li>De nuit, une nouvelle publiée après la clôture peut faire ouvrir l'action très loin du stop : la perte peut dépasser 1,5 %.</li>
+    <li>Le stop et l'objectif sont vérifiés sur le dernier prix de chaque minute : un passage bref sous le seuil à l'intérieur d'une minute n'est pas vu.</li>
   </ul>
   <p class="plain">Autrement dit : les chiffres sont honnêtes, mais pas parfaits, et il faudra du temps pour qu'ils veuillent dire quelque chose.</p>
 
-  <h2 id="trace"><span class="n">13</span>Traçabilité</h2>
+  <h2 id="tableaux"><span class="n">17</span>Les tableaux de bord</h2>
+  <ul>
+    <li><b>Accueil « Mes stratégies »</b> (<code>accueil.html</code>) : une ligne par stratégie, avec ses heures (New York et Paris), le résultat du
+      jour et le cumul depuis le 16 octobre ; un clic ouvre son tableau de bord.</li>
+    <li><b>Tableau de bord d'une stratégie</b> : bandeau (heures d'achat et de vente), menu « Stratégie », onglets Aujourd'hui, Marché,
+      Détail de la sélection, Résultats, Tests d'un mois, Archive et Méthodologie. Les ordres à passer ne concernent que la stratégie principale.</li>
+    <li><b>Heures</b> : chaque heure de New York est suivie de l'heure de Paris, calculée pour la date (6 h d'écart la plupart de l'année,
+      5 h quelques semaines au printemps et en automne).</li>
+    <li><b>Listes</b> : le suivi en direct produit chaque liste dès que ses données sont prêtes (9 h 30 pour l'ouverture, 15 h 00 pour la nuit…) ;
+      la tâche planifiée de 17 h 02 (Paris) produit celles qui manquent et envoie l'historique sur GitHub.</li>
+    <li><b>Archive</b> : séances faites avec des règles remplacées (13 au 15 octobre 2026), à part des résultats actuels.
+      <b>Tests d'un mois</b> : un mois passé rejoué à montant fixe (25 000 $ ou 2 M$), par jour, par semaine et sur le mois.</li>
+  </ul>
+  <p class="plain">Autrement dit : l'accueil compare les stratégies, chaque tableau de bord détaille la sienne.</p>
+
+  <h2 id="trace"><span class="n">18</span>Traçabilité</h2>
   <p>Chaque liste est enregistrée dans <code>research/experiments/runs/reprise_apres_baisse/r00N/results.json</code>
   avec les critères, l'entonnoir, les sources et l'identifiant exact du code utilisé (<code>git_sha</code>) ;
   le programme refuse de tourner si le code n'est pas enregistré dans git. Les états de fin de séance sont
@@ -248,9 +312,13 @@
   from fooling ourselves. The values below are read from the code when the page is generated.</p>
 
   <nav><ol>
-    <li><a href="#day">A typical day</a></li>
+    <li><a href="#strategies">The strategies</a></li>
+    <li><a href="#day">A typical day (main strategy)</a></li>
     <li><a href="#data">The data</a></li>
-    <li><a href="#selection">The daily selection</a></li>
+    <li><a href="#selection">"Rebound after decline" selection (strategies 1 to 3)</a></li>
+    <li><a href="#opening">"Open" selection (open strategies)</a></li>
+    <li><a href="#end-of-day">"End of day" selection (overnight strategies)</a></li>
+    <li><a href="#overnight">Overnight purchases</a></li>
     <li><a href="#datation">No data from the future</a></li>
     <li><a href="#sectors">Sector bubbles</a></li>
     <li><a href="#simulation">The simulation</a></li>
@@ -260,10 +328,22 @@
     <li><a href="#experiment">Experiment {{exp_id}}</a></li>
     <li><a href="#past">The test on past data</a></li>
     <li><a href="#limits">Known limits</a></li>
+    <li><a href="#dashboards">The dashboards</a></li>
     <li><a href="#trace">Traceability</a></li>
   </ol></nav>
 
-  <h2 id="day"><span class="n">1</span>A typical day</h2>
+  <h2 id="strategies"><span class="n">1</span>The strategies</h2>
+  <p>{{n_strategies}} strategies are followed side by side, on paper, each with its own dashboard. They differ by their
+  buying and selling times, and by how stocks are chosen: three kinds of selection, described below. Each strategy makes
+  two lists: one without P/E, one with P/E &lt; {{max_pe}}.</p>
+  <div class="panel"><table>
+    {{strategies_table}}
+  </table></div>
+  <p>The decision comes {{feed_delay}} minutes before the purchase: that is the price delay of Alpaca's free plan. "Next day":
+  bought at the end of a session, sold at the next session (overnight purchases, below).</p>
+  <p class="plain">In other words: several ways of investing are compared side by side; none is proven yet.</p>
+
+  <h2 id="day"><span class="n">2</span>A typical day (main strategy)</h2>
   <p>New York times, with the Paris time in brackets for the day the page is generated (6 h apart most of the year, 5 h for a few weeks in spring and autumn).</p>
   <div class="panel" style="padding: 12px 16px"><div class="timeline">
     <b>9:30 AM <small>({{open_paris}} Paris)</small></b><span>Open. Live tracking starts: bubbles, prices.</span>
@@ -276,7 +356,7 @@
   </div></div>
   <p class="plain">In other words: the list is known a little over an hour after the open, and everything is final the next day.</p>
 
-  <h2 id="data"><span class="n">2</span>The data</h2>
+  <h2 id="data"><span class="n">3</span>The data</h2>
   <ul>
     <li><b>Prices</b>: Alpaca, consolidated feed of all US exchanges (SIP), adjusted for splits and dividends.
       Daily and minute prices. Live: {{feed_delay}}-minute delay (free plan).</li>
@@ -287,7 +367,7 @@
   <p>Every source is cached on disk; a source that does not answer is reported, never replaced by an estimate.</p>
   <p class="plain">In other words: the numbers come from the broker and the regulator, not from a third-party website.</p>
 
-  <h2 id="selection"><span class="n">3</span>The daily selection</h2>
+  <h2 id="selection"><span class="n">4</span>"Rebound after decline" selection (strategies 1 to 3)</h2>
   <p>Two lists every session, same criteria except P/E: <b>Without P/E</b> and <b>P/E &lt; {{max_pe}}</b>.
   Since October 16, 2026, both carry four caution rules: two on trends (7b, 8b) and two against buying at the top (8c, 8d).
   Criteria applied in this order; the decision is made in two steps, at {{decision_time}} then at {{confirm_decision_time}}:</p>
@@ -317,13 +397,43 @@
   They apply to both lists. They are still being tuned: their thresholds may change in the coming days.</p>
   <p class="plain">In other words: we look for solid, calm stocks that fell over the month, have been rebounding for two days and again this morning, without making the same bet twice, and without buying at the morning's top.</p>
 
-  <h2 id="datation"><span class="n">4</span>No data from the future</h2>
+  <h2 id="opening"><span class="n">5</span>"Open" selection (open strategies)</h2>
+  <p>For the strategies that buy at the open. Decision at {{open_decision}} ({{open_decision_paris}} Paris), before the open,
+  using prices from the previous day and overnight (pre-market included):</p>
+  <ul>
+    <li>same base criteria as above (1 to 4: universe, history, price, traded amount) and healthy market;</li>
+    <li><b>strong finish</b>: the day before, the last price is above the start of the last hour ({{open_last_hour}} minutes);</li>
+    <li><b>moderate overnight rise</b>: the last price before the decision is between {{open_min_night}}% and {{open_max_night}}% above the
+      previous close, with at least {{open_min_volume}} shares traded pre-market (otherwise that price means nothing);</li>
+    <li>P/E &lt; {{max_pe}} for the second list; ranked by the previous day's last-hour rise, then diversified.</li>
+  </ul>
+  <p class="plain">In other words: we buy at the open stocks that finished strong the day before and keep rising overnight.</p>
+
+  <h2 id="end-of-day"><span class="n">6</span>"End of day" selection (overnight strategies)</h2>
+  <p>For overnight purchases. Decision {{feed_delay}} minutes before the purchase, using the day's prices:</p>
+  <ul>
+    <li>same base criteria (1 to 4) and healthy market;</li>
+    <li><b>up on the day</b>: the price at decision time is between {{close_min_day}}% and {{close_max_day}}% above the session's first price;</li>
+    <li><b>last hour rising</b>: the price at decision time is above its level {{close_last_hour}} minutes earlier;</li>
+    <li><b>near the day's high</b>: at most {{close_below_high}}% below the highest price of the day;</li>
+    <li>P/E &lt; {{max_pe}} for the second list; ranked by last-hour rise, then diversified.</li>
+  </ul>
+  <p class="plain">In other words: we buy at the end of the day stocks that were strong all day and finish near their high.</p>
+
+  <h2 id="overnight"><span class="n">7</span>Overnight purchases</h2>
+  <p>Stocks are bought at the end of a session and held until the next one. In the evening, the simulation values them at the
+  closing price ("in progress"); as soon as the next day's sale is known, the session is recomputed and its result counted on the
+  purchase day. It becomes final {{definitive_after}} hours after the sale. A Friday purchase is sold on Monday. The stop and target
+  keep running the next morning: a stock that opens below the stop is sold at the open.</p>
+  <p class="plain">In other words: an overnight purchase's result shows the next morning, attached to the purchase day.</p>
+
+  <h2 id="datation"><span class="n">8</span>No data from the future</h2>
   <p>Every function that computes a criterion receives the decision time and, on its very first line, drops any
   data not yet complete at that moment (a one-minute bar is usable only once its minute is over). For P/E, only
   filings submitted to the SEC before the decision day count. An automated test checks this on every code change.</p>
   <p class="plain">In other words: a day's list is exactly the one you could have obtained on that day, at that time.</p>
 
-  <h2 id="sectors"><span class="n">5</span>Sector bubbles</h2>
+  <h2 id="sectors"><span class="n">9</span>Sector bubbles</h2>
   <p>A reading of the market, <b>not a selection criterion</b>. For each sector: simple average of the moves of all
   its liquid stocks (criteria 2 to 4). Measures: day (last price / previous close), first hour ({{decision_time}} /
   first price), 2 sessions, 1 week ({{week_sessions}} sessions) and 1 month ({{month_sessions}} sessions).
@@ -333,7 +443,7 @@
   freezes the bubbles at the time of the list.</p>
   <p class="plain">In other words: the bubbles show which sectors are rising or falling; they do not pick anything.</p>
 
-  <h2 id="simulation"><span class="n">6</span>The simulation</h2>
+  <h2 id="simulation"><span class="n">10</span>The simulation</h2>
   <p>For each list: {{amounts}} split equally across its stocks, bought at the first trade from {{entry_time}}
   (10:45 AM until October 15, 2026), sold at the last trade before {{exit_time}}. Gain tracked live, then frozen. <b>Early sale</b>: each stock is sold earlier as soon as a minute price goes {{stop_pct}}% below its purchase price (stop, the loss is taken) or {{target_pct}}% above (target, the gain is taken), at that minute's price; the other stocks stay until the selling time. In the selection, the "Since purchase" column gives each stock's last price / purchase price − 1.</p>
   <div class="panel"><table>
@@ -348,7 +458,7 @@
   cost stands for the bid-ask spread and slippage; Alpaca charges no commission.</p>
   <p class="plain">In other words: we measure what a real purchase at {{entry_time}} would have earned, costs included, and compare it with the market.</p>
 
-  <h2 id="orders"><span class="n">7</span>Orders to place</h2>
+  <h2 id="orders"><span class="n">11</span>Orders to place</h2>
   <p>{{plan_amount}} split across the P/E &lt; {{max_pe}} list: for each stock, a whole number of shares (amount per
   stock / price, rounded down), price to enter, cost, and uninvested remainder. During the session the price is
   the latest known; in the end-of-session state it is frozen at the simulation's purchase price ({{entry_time}}).</p>
@@ -356,14 +466,14 @@
   orders; you run and confirm them yourself.</p>
   <p class="plain">In other words: the page tells you what to buy and how much, but the decision stays yours.</p>
 
-  <h2 id="close"><span class="n">8</span>End of session: provisional, then final</h2>
+  <h2 id="close"><span class="n">12</span>End of session: provisional, then final</h2>
   <p>After the close, the session state (bubbles, "Open → close" column, simulation, orders) is rebuilt from Alpaca's
   minute history and frozen as <b>provisional</b>. Alpaca sometimes corrects trades after the fact; {{definitive_after}}
   hours after the close, everything is recomputed and becomes <b>final</b>, then never changes again. The previous
   version is archived, never deleted.</p>
   <p class="plain">In other words: the evening's numbers may move a little; the next day's numbers no longer move.</p>
 
-  <h2 id="results"><span class="n">9</span>Results history</h2>
+  <h2 id="results"><span class="n">13</span>Results history</h2>
   <p>Each session adds a row: after-cost return of each list and both benchmarks. All calculations go through a
   single module (<code>core/performance_metrics.py</code>).</p>
   <div class="panel"><table>
@@ -378,7 +488,7 @@
   An asterisk * marks a session that is still provisional. Sessions made with rules that have since been replaced (October 13, 14 and 15, 2026) are kept apart, in the Archive tab: the current results and counts start over from zero on October 16.</p>
   <p class="plain">In other words: it is each list's report card, day after day.</p>
 
-  <h2 id="experiment"><span class="n">10</span>Experiment {{exp_id}}</h2>
+  <h2 id="experiment"><span class="n">14</span>Experiment {{exp_id}}</h2>
   <p>Question: does the P/E &lt; {{max_pe}} list earn more than the list without P/E, and more than the liquid universe?
   The judging rule was written and published on GitHub <b>before</b> the sessions that judge it: it cannot be
   adjusted afterwards to give the desired answer.</p>
@@ -397,7 +507,7 @@
   before any data (decision 002.2): both rules now apply to both lists.</p>
   <p class="plain">In other words: once the rules are frozen, a test written in advance will say, in about two months, whether the P/E filter really helps.</p>
 
-  <h2 id="past"><span class="n">11</span>The test on past data</h2>
+  <h2 id="past"><span class="n">15</span>The test on past data</h2>
   <p>The same code replays both lists over the last 6 months and over the last month (two tests shown one below the other), session by session, using only data known at
   {{decision_time}} each day, with the same times and costs, compared with SPY. It also replays the two lists from before the rules against buying at the top: the comparison shows what those rules would have changed.</p>
   <p class="warn">Known bias: only stocks still listed today are tested. Those that disappeared (bankruptcies,
@@ -405,7 +515,7 @@
   a problem, it decides nothing.</p>
   <p class="plain">In other words: if the method lost money in the past, we would know; if it made money, that is not a promise.</p>
 
-  <h2 id="limits"><span class="n">12</span>Known limits</h2>
+  <h2 id="limits"><span class="n">16</span>Known limits</h2>
   <ul>
     <li>Live prices delayed by {{feed_delay}} minutes (Alpaca free plan).</li>
     <li>"Low volatility" is relative: the calmest half that day, not a fixed threshold.</li>
@@ -413,10 +523,28 @@
       companies, some banks) are excluded from version 2.</li>
     <li>The simulation assumes you get the first displayed trade price; a large order could pay more.</li>
     <li>Few sessions observed so far: averages will move a lot at first.</li>
+    <li>The "open" and "end of day" selections and their thresholds are proposals, not yet replayed on past data; only the "rebound after decline" selection is.</li>
+    <li>Overnight, news published after the close can make a stock open far beyond the stop: the loss can exceed 1.5%.</li>
+    <li>The stop and target are checked on each minute's last price: a brief dip below the threshold within a minute is not seen.</li>
   </ul>
   <p class="plain">In other words: the numbers are honest but not perfect, and it will take time for them to mean something.</p>
 
-  <h2 id="trace"><span class="n">13</span>Traceability</h2>
+  <h2 id="dashboards"><span class="n">17</span>The dashboards</h2>
+  <ul>
+    <li><b>"My strategies" home page</b> (<code>home.html</code>): one row per strategy, with its times (New York and Paris), today's
+      result and the total since October 16; a click opens its dashboard.</li>
+    <li><b>A strategy's dashboard</b>: banner (buying and selling times), "Strategy" menu, tabs Today, Market, Selection details,
+      Results, Monthly tests, Archive and Methodology. Orders to place only concern the main strategy.</li>
+    <li><b>Times</b>: each New York time is followed by the Paris time, computed for the date (6 h apart most of the year,
+      5 h for a few weeks in spring and autumn).</li>
+    <li><b>Lists</b>: live tracking produces each list as soon as its data is ready (9:30 AM for the open, 3:00 PM for overnight…);
+      the 5:02 PM (Paris) scheduled task produces any missing ones and pushes the history to GitHub.</li>
+    <li><b>Archive</b>: sessions made with replaced rules (October 13 to 15, 2026), kept apart from current results.
+      <b>Monthly tests</b>: a past month replayed at a fixed amount ($25,000 or $2M), per day, per week and for the month.</li>
+  </ul>
+  <p class="plain">In other words: the home page compares the strategies, each dashboard details its own.</p>
+
+  <h2 id="trace"><span class="n">18</span>Traceability</h2>
   <p>Each list is saved in <code>research/experiments/runs/reprise_apres_baisse/r00N/results.json</code> with the
   criteria, the funnel, the sources and the exact identifier of the code used (<code>git_sha</code>); the program
   refuses to run if the code is not committed to git. End-of-session states are in
