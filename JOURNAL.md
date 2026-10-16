@@ -401,3 +401,8 @@ test ; textes du tableau de bord et de la méthodologie ; décision T12. 65 test
 
 Autrement dit : une action qui fait du surplace entre 10 h 30 et 10 h 45 reste dans la liste ; seules celles qui
 retombent nettement sont écartées.
+
+**Ajout (même jour)** : à la demande du propriétaire, listes du 16 octobre refaites avec la tolérance (décision T13).
+Principale : 10 titres (PER < 25) et 15 (sans PER) au lieu de 3 et 6 ; achat à 10 h 30 : 6 et 11 au lieu de 2 et 4.
+
+Autrement dit : la journée d'aujourd'hui compte déjà avec la nouvelle règle, mais c'est une reconstitution après coup.

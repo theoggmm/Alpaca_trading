@@ -109,3 +109,12 @@ achat à 10 h 30, achat à 10 h 30 / vente à la clôture) : une action est gard
 pas plus de 0,2 % sous celui de la fin de la première période (avant : aucune baisse tolérée). Constat du
 16 octobre : 37 des 43 titres écartés par la confirmation, la plupart pour quelques centièmes de pour cent ;
 avec 0,2 % de tolérance, 18 titres auraient été gardés. Les listes du 16 octobre ne sont pas refaites.
+
+## T13 — 2026-10-16 — Tolérance de 0,2 % appliquée dès les listes du 16 octobre (propriétaire)
+
+Complète T12 : à la demande du propriétaire, la tolérance s'applique dès aujourd'hui. Les listes du 16 octobre des
+quatre stratégies « reprise » sont refaites après coup (17 h 35 Paris) avec les mêmes données, tronquées à la même
+heure de décision : principale r008/r009, vente_cloture, achat_10h30 et achat_10h30_vente_cloture r003/r004.
+Les anciennes listes (r006/r007, r001/r002) restent dans l'historique ; la plus récente fait foi. Les prix d'achat
+mis en cache pour 10 h 30 et 11 h 00 sont archivés (research/outputs/cache_superseded/) puis relus. Statut :
+diagnostic papier — ces listes n'ont pas été connues à l'heure d'achat.
