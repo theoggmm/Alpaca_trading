@@ -40,3 +40,15 @@ def test_strategies_de_la_famille():
     assert every["nuit_15h55_10h30"].exit_time(OPEN, CLOSE, monday) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
     assert isinstance(every["ouverture_1h"].criteria()["per12"], OpeningCriteria)
     assert isinstance(every["achat_10h30"].criteria()["per12"], Criteria)
+
+
+def test_cache_de_vente_distingue_le_jour(monkeypatch):
+    """Vente de nuit à 10 h 30 le lendemain et vente à 10 h 30 le jour même : deux lectures distinctes."""
+    from dashboard import live
+    keys = []
+    monkeypatch.setattr(live, "cached", lambda key, fetch: keys.append(key) or live.EMPTY_BARS)
+    same_day = datetime(2026, 10, 16, 14, 30, tzinfo=timezone.utc)
+    next_day = datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
+    live._exit_bars(None, "2026-10-16", "live", ["AAA"], same_day)
+    live._exit_bars(None, "2026-10-16", "live", ["AAA"], next_day)
+    assert len(set(keys)) == 2

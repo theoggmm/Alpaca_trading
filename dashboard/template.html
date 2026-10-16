@@ -1224,20 +1224,21 @@ function renderPositions() {
   const counts = rows.reduce((c, r) => ({ ...c, [r.state]: (c[r.state] || 0) + 1 }), {});
   status.replaceChildren(el("span", "pulse" + (counts.held && !SHOWN.final ? "" : " off")),
     el("span", "", TEXT.positions_counts(counts)));
+  // Situation, variation et gain d'abord (visibles sans faire défiler), puis les prix, l'heure et la société.
   const t = table([
     { label: TEXT.th.symbol, cls: "text symbol", value: r => r.symbol },
-    { label: TEXT.th.name, cls: "text name", value: r => r.name, title: r => r.name },
     { label: TEXT.positions_state, cls: "text", value: r => TEXT.position_states[r.state], tone: r => r.state === "objectif" ? 1 : r.state === "stop" ? -1 : 0 },
+    { label: TEXT.positions_change, value: r => r.return == null ? "—" : pct(r.return), tone: r => r.return ?? 0 },
+    { label: TEXT.positions_gain(usd(share)), value: r => money(gain(r)), tone: r => gain(r) ?? 0 },
     { label: TEXT.positions_entry, value: r => r.entry ? usd(r.entry) : "—" },
     { label: TEXT.positions_price, value: r => r.price ? usd(r.price) : "—" },
     { label: TEXT.positions_time, cls: "text", value: r => r.at ? shortTime(r.at) : "—" },
-    { label: TEXT.positions_change, value: r => r.return == null ? "—" : pct(r.return), tone: r => r.return ?? 0 },
-    { label: TEXT.positions_gain(usd(share)), value: r => money(gain(r)), tone: r => gain(r) ?? 0 },
+    { label: TEXT.th.name, cls: "text name", value: r => r.name, title: r => r.name },
   ], rows);
   const total = rows.reduce((sum, r) => sum + (gain(r) ?? 0), 0);
   const foot = t.createTFoot().insertRow();
-  foot.append(el("td", "text", TEXT.positions_total), el("td"), el("td"), el("td"), el("td"), el("td"), el("td"),
-              el("td", total > 0 ? "up" : total < 0 ? "down" : "", money(total)));
+  foot.append(el("td", "text", TEXT.positions_total), el("td"), el("td"),
+              el("td", total > 0 ? "up" : total < 0 ? "down" : "", money(total)), el("td"), el("td"), el("td"), el("td"));
   box.replaceChildren(t);
   note.textContent = TEXT.positions_note(usd(POSITIONS_AMOUNT));
 }

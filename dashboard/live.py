@@ -177,8 +177,11 @@ def _entry_bars(alpaca, key, stage, traded, entry_times, now):
 
 
 def _exit_bars(alpaca, key, stage, traded, exit_time):
-    """Barres de vente : EXIT_WINDOW minutes jusqu'à exit_time, lues une fois (cache nommé par l'heure de vente)."""
-    return cached(f"{key}/{stage}_exit_at_{exit_time.astimezone(NEW_YORK):%H%M}",
+    """
+    Barres de vente : EXIT_WINDOW minutes jusqu'à exit_time, lues une fois. Cache nommé par la date ET l'heure de
+    vente : une vente de nuit à 10 h 30 le lendemain ne doit pas reprendre les prix de 10 h 30 du jour d'achat.
+    """
+    return cached(f"{key}/{stage}_exit_on_{exit_time.astimezone(NEW_YORK):%Y%m%d_%H%M}",
                   lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
 
