@@ -353,7 +353,7 @@ const TEXT = {
     live_off: "Suivi en direct non lancé",
     live_launch: "Lance le suivi pendant la séance : /Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh",
     live_running: "Suivi en cours", live_stopped: d => `Suivi arrêté : dernier état du ${d}`,
-    prices_until: t => `prix jusqu'à ${t} (New York)`, no_prices: "aucun prix de la séance",
+    prices_until: t => `prix jusqu'à ${t}`, no_prices: "aucun prix de la séance",
     updated_at: t => `mis à jour à ${t}`, feed: "toutes bourses, 15 min de retard",
     col_domain: "Domaine", col_day: "Journée", col_first_hour: m => `${m} premières min`,
     col_sessions: n => `${n} séances`, col_week: "1 semaine", col_month: "1 mois",
@@ -373,15 +373,15 @@ const TEXT = {
     how_top_domain: (k, n) => `nombre de séances terminées où le titre a fini parmi les ${k} meilleurs de son domaine sur la journée (sur ${n} séances)`,
     sort_hint: "clique pour trier",
     in_selection: "dans la sélection du jour",
-    meta: r => [`Séance du ${r.session_date}`, `décision à ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
+    meta: r => [`Séance du ${r.session_date}`, `décision à ${nyTime(r.decision_time)}`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
     th: { rank: "#", symbol: "Symbole", name: "Société", domain: "Domaine", month: "1 mois", d2: "J-2", d1: "J-1", pe: "PER",
           first_hour: "1re heure", live: "Depuis l'ouverture (direct)", price: "Prix à la décision",
           vol: "Volatilité annuelle", volume: "Volume moyen / jour", times: "Fois retenu", last: "Dernière fois" },
-    live_cell: (p, t) => `dernier prix ${p} à ${t} (New York), 15 min de retard`,
+    live_cell: (p, t) => `dernier prix ${p} à ${t}, 15 min de retard`,
     open_to_close: "Ouverture → clôture",
     since_entry: t => `Depuis l'achat (${t})`, default_entry: "11 h 00",
     entry_col_note: " « Depuis l'achat » : dernier prix / prix d'achat de la simulation (premier échange à partir de 11 h 00, New York ; 10 h 45 jusqu'au 15 octobre), avant frais ; après la clôture, jusqu'au dernier échange avant 16 h 00.",
-    final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t} (New York)`,
+    final_cell: (p, t) => `dernier échange de la séance ${p}, minute finissant à ${t}`,
     final_col_note: " « Ouverture → clôture » : dernier échange avant 16 h 00 / premier prix de la séance, reconstitué depuis l'historique minute d'Alpaca.",
     final_state: d => `Fin de séance du ${d}`,
     opt_live: "en direct", opt_provisional: "fin de séance (provisoire)", opt_final: "fin de séance",
@@ -481,17 +481,17 @@ const TEXT = {
     bt_note: "Un t apparié d'au moins 1,7 sur beaucoup de séances suggère un écart réel ; en dessous, l'écart peut être dû au hasard. Autrement dit : ce tableau dit si la méthode semblait marcher avant, pas si elle marchera.",
     sim_amount: "Montant investi",
     sim_tax_note: r => `Après impôts : gain en actions entières après frais, moins ${r} d'impôt français sur les plus-values (prélèvement forfaitaire unique 2026, résident fiscal français, hors PEA ; taux relevé sur des sites spécialisés, à vérifier sur impots.gouv.fr). Une perte n'est pas imposée et réduit l'impôt sur tes autres gains de l'année. Conversion dollar-euro non comptée.`,
-    sim_waiting: t => `En attente : achat au premier échange à partir de ${t} (New York)`,
+    sim_waiting: t => `En attente : achat au premier échange à partir de ${t}`,
     sim_live: t => `En direct : valeur au dernier prix connu (${t}, New York)`,
-    sim_closed: t => `Figé : vendu au dernier échange avant ${t} (New York)`,
-    sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b} (New York)`,
+    sim_closed: t => `Figé : vendu au dernier échange avant ${t}`,
+    sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b}`,
     sim_no_list: "Pas encore de liste pour cette séance : la simulation commence quand elle est produite.",
     sim_missing: "Pas de simulation pour cette séance (fonction ajoutée le 15 octobre).",
     sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange à l'heure d'achat de la stratégie et vendu au dernier échange avant son heure de vente (bandeau en haut). Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
-    no_run_yet: "Les listes de cette séance seront produites à l'heure d'achat de la stratégie (voir le bandeau, heure de New York ; Paris : + 6 h).",
+    no_run_yet: "Les listes de cette séance seront produites à l'heure d'achat de la stratégie (voir le bandeau en haut, heures de New York et de Paris).",
     strategy_label: "Stratégie", home_link: "← Toutes les stratégies",
-    strategy_times: (b, s) => `Achat au premier échange à partir de ${b}, vente au dernier échange avant ${s} (New York ; Paris : + 6 h).`,
+    strategy_times: st => `Achat au premier échange à partir de ${st.buy} New York (${st.buy_paris} Paris), vente au dernier échange avant ${st.sell} New York (${st.sell_paris} Paris).`,
     th_last_hour: "Dernière heure (veille)", th_overnight: "Nuit (jusqu'à 9 h 15)",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
     final_definitive: "définitive",
@@ -562,7 +562,7 @@ const TEXT = {
     live_off: "Live tracking not started",
     live_launch: "Start tracking during the session: /Users/theodoremeyer/Documents/Alpaca_trading/live_bubbles.sh",
     live_running: "Tracking live", live_stopped: d => `Tracking stopped: last state of ${d}`,
-    prices_until: t => `prices up to ${t} (New York)`, no_prices: "no prices for this session",
+    prices_until: t => `prices up to ${t}`, no_prices: "no prices for this session",
     updated_at: t => `updated at ${t}`, feed: "all exchanges, 15-min delay",
     col_domain: "Sector", col_day: "Day", col_first_hour: m => `First ${m} min`,
     col_sessions: n => `${n} sessions`, col_week: "1 week", col_month: "1 month",
@@ -582,15 +582,15 @@ const TEXT = {
     how_top_domain: (k, n) => `completed sessions where the stock finished among its sector's ${k} best on the day (over ${n} sessions)`,
     sort_hint: "click to sort",
     in_selection: "in today's selection",
-    meta: r => [`Session of ${r.session_date}`, `decision at ${nyTime(r.decision_time)} (New York)`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
+    meta: r => [`Session of ${r.session_date}`, `decision at ${nyTime(r.decision_time)}`, `run ${r.run_id}`, `code ${r.git_sha.slice(0, 7)}`, `n = ${r.selection.length} / ${r.criteria.count}`],
     th: { rank: "#", symbol: "Symbol", name: "Company", domain: "Sector", month: "1 month", d2: "D-2", d1: "D-1", pe: "P/E",
           first_hour: "First hour", live: "Since open (live)", price: "Price at decision",
           vol: "Annual volatility", volume: "Avg volume / day", times: "Times selected", last: "Last time" },
-    live_cell: (p, t) => `last price ${p} at ${t} (New York), 15-min delay`,
+    live_cell: (p, t) => `last price ${p} at ${t}, 15-min delay`,
     open_to_close: "Open → close",
     since_entry: t => `Since purchase (${t})`, default_entry: "11:00 AM",
     entry_col_note: " \"Since purchase\": last price / the simulation's purchase price (first trade from 11:00 AM, New York; 10:45 AM until October 15), before costs; after the close, up to the last trade before 4:00 PM.",
-    final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t} (New York)`,
+    final_cell: (p, t) => `last trade of the session ${p}, minute ending at ${t}`,
     final_col_note: " \"Open → close\": last trade before 4:00 PM / first price of the session, rebuilt from Alpaca's minute history.",
     final_state: d => `End of session ${d}`,
     opt_live: "live", opt_provisional: "end of session (provisional)", opt_final: "end of session",
@@ -690,17 +690,17 @@ const TEXT = {
     bt_note: "A paired t of at least 1.7 over many sessions suggests a real gap; below that, the gap may be chance. In other words: this table says whether the method seemed to work before, not whether it will work.",
     sim_amount: "Amount invested",
     sim_tax_note: r => `After tax: whole-share gain after costs, minus ${r} French capital gains tax (2026 flat tax, French tax resident, outside a PEA; rate taken from specialist websites, to be confirmed on impots.gouv.fr). A loss is not taxed and reduces the tax on your other gains of the year. Dollar-euro conversion not included.`,
-    sim_waiting: t => `Waiting: bought at the first trade from ${t} (New York)`,
+    sim_waiting: t => `Waiting: bought at the first trade from ${t}`,
     sim_live: t => `Live: value at the latest known price (${t}, New York)`,
-    sim_closed: t => `Fixed: sold at the last trade before ${t} (New York)`,
-    sim_times: (a, b) => `bought from ${a}, sold before ${b} (New York)`,
+    sim_closed: t => `Fixed: sold at the last trade before ${t}`,
+    sim_times: (a, b) => `bought from ${a}, sold before ${b}`,
     sim_no_list: "No list for this session yet: the simulation starts once it is produced.",
     sim_missing: "No simulation for this session (feature added on October 15).",
     sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade at the strategy's buying time and sold at the last trade before its selling time (banner at the top). Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
-    no_run_yet: "This session's lists will be produced at the strategy's buying time (see the banner, New York time; Paris: + 6 h).",
+    no_run_yet: "This session's lists will be produced at the strategy's buying time (see the banner at the top, New York and Paris times).",
     strategy_label: "Strategy", home_link: "← All strategies",
-    strategy_times: (b, s) => `Bought at the first trade from ${b}, sold at the last trade before ${s} (New York; Paris: + 6 h).`,
+    strategy_times: st => `Bought at the first trade from ${st.buy} New York (${st.buy_paris} Paris), sold at the last trade before ${st.sell} New York (${st.sell_paris} Paris).`,
     th_last_hour: "Last hour (day before)", th_overnight: "Overnight (to 9:15 AM)",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
     final_definitive: "final",
@@ -762,7 +762,11 @@ const signed = v => v > 0 ? "up" : v < 0 ? "down" : "";
 const tone = v => v > 0 ? "up" : v < 0 ? "down" : "flat";
 const usd = s => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(Number(s));
 const musd = s => TEXT.millions(new Intl.NumberFormat(TEXT.locale, { maximumFractionDigits: 1 }).format(Number(s) / 1e6));
-const nyTime = iso => new Date(iso).toLocaleTimeString(TEXT.locale, { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit" });
+// Heure d'un instant à New York, suivie de l'heure de Paris (calculée pour la date : l'écart n'est pas toujours 6 h).
+const clock = (iso, zone) => new Date(iso).toLocaleTimeString(TEXT.locale, { timeZone: zone, hour: "2-digit", minute: "2-digit" });
+const nyTime = iso => `${clock(iso, "America/New_York")} New York (${clock(iso, "Europe/Paris")} Paris)`;
+// Version courte pour les graphiques.
+const shortTime = iso => `${clock(iso, "America/New_York")} · ${clock(iso, "Europe/Paris")} Paris`;
 
 function table(columns, rows) {
   const t = el("table");
@@ -846,7 +850,7 @@ function priceChart(item, closes, last, isFinal) {
   }
   const mid = Math.floor((points.length - 1) / 2);
   [[0, points[0].date], [mid, points[mid].date], [points.length - 1, points[points.length - 1].date],
-   [slots - 1, today === null ? TEXT.chart_today : (isFinal ? TEXT.chart_close : `${TEXT.chart_live} ${nyTime(last.at)}`)]]
+   [slots - 1, today === null ? TEXT.chart_today : (isFinal ? TEXT.chart_close : `${TEXT.chart_live} ${shortTime(last.at)}`)]]
     .forEach(([i, label]) => box.append(svg("text", { x: x(i), y: H - 8, class: "axis", "text-anchor": "middle" }, label)));
 
   const head = el("div", "chart-head");
@@ -909,7 +913,7 @@ function renderRun(run) {
   const entry = flat ? sinceEntry : sinceEntry?.[variantOf(run)];
   const entryAt = (inSession ? LIVE : FINALS[run.session_date])?.portfolio?.versions?.[variantOf(run)]?.entry_time;
   const entryColumn = entry && Object.keys(entry).length && {
-    label: TEXT.since_entry(entryAt ? nyTime(entryAt) : STRATEGY.buy), value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
+    label: TEXT.since_entry(entryAt ? nyTime(entryAt) : `${STRATEGY.buy} New York (${STRATEGY.buy_paris} Paris)`), value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
     tone: r => entry[r.symbol]?.change ?? 0,
     title: r => !entry[r.symbol] ? TEXT.no_live_price
       : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(entry[r.symbol].price), nyTime(entry[r.symbol].at)),
@@ -1488,7 +1492,7 @@ strategyPicker.addEventListener("change", () => { location.href = strategyPicker
 // Titre : celui de la famille pour la stratégie principale, sinon le nom de la stratégie.
 if (!STRATEGY.main) document.querySelector("h1").textContent = STRATEGY.name;
 document.getElementById("strategy-banner").replaceChildren(el("b", "", STRATEGY.name),
-  el("span", "", STRATEGY.description), el("span", "note", TEXT.strategy_times(STRATEGY.buy, STRATEGY.sell)));
+  el("span", "", STRATEGY.description), el("span", "note", TEXT.strategy_times(STRATEGY)));
 // Ordres à passer et tableau des versions : propres à la stratégie principale.
 if (!STRATEGY.main) {
   document.getElementById("plan-section").hidden = true;

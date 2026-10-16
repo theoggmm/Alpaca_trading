@@ -76,14 +76,14 @@
   </ol></nav>
 
   <h2 id="journee"><span class="n">1</span>Une journée type</h2>
-  <p>Heures de New York (Paris : + 6 h la plupart de l'année).</p>
+  <p>Heures de New York, et entre parenthèses l'heure de Paris le jour où la page est générée (6 h d'écart la plupart de l'année, 5 h quelques semaines au printemps et en automne).</p>
   <div class="panel" style="padding: 12px 16px"><div class="timeline">
-    <b>9 h 30</b><span>Ouverture. Le suivi en direct démarre : bulles, cours, prix des titres.</span>
-    <b>{{decision_time}}</b><span>Fin de la première heure : instant de décision. Seules les données connues à cet instant servent.</span>
-    <b>{{confirm_decision_time}}</b><span>Les prix de {{decision_time}} sont disponibles (offre gratuite : {{feed_delay}} min de retard). Règle « pas au sommet » vérifiée sur ces prix ; on attend {{confirm_decision_time}} pour la confirmation.</span>
-    <b>{{entry_time}}</b><span>Les prix de {{confirm_decision_time}} sont disponibles : règle « confirmation » vérifiée, les deux listes sont produites et la simulation les « achète » au premier échange à partir de cette heure.</span>
-    <b>{{exit_time}}</b><span>La simulation « vend » au dernier échange avant cette heure ({{exit_before}} min avant la clôture).</span>
-    <b>16 h 00</b><span>Clôture. L'état de fin de séance est figé, provisoire.</span>
+    <b>9 h 30 <small>({{open_paris}} Paris)</small></b><span>Ouverture. Le suivi en direct démarre : bulles, cours, prix des titres.</span>
+    <b>{{decision_time}} <small>({{decision_paris}} Paris)</small></b><span>Fin de la première heure : instant de décision. Seules les données connues à cet instant servent.</span>
+    <b>{{confirm_decision_time}} <small>({{confirm_paris}} Paris)</small></b><span>Les prix de {{decision_time}} sont disponibles (offre gratuite : {{feed_delay}} min de retard). Règle « pas au sommet » vérifiée sur ces prix ; on attend {{confirm_decision_time}} pour la confirmation.</span>
+    <b>{{entry_time}} <small>({{entry_paris}} Paris)</small></b><span>Les prix de {{confirm_decision_time}} sont disponibles : règle « confirmation » vérifiée, les deux listes sont produites et la simulation les « achète » au premier échange à partir de cette heure.</span>
+    <b>{{exit_time}} <small>({{exit_paris}} Paris)</small></b><span>La simulation « vend » au dernier échange avant cette heure ({{exit_before}} min avant la clôture).</span>
+    <b>16 h 00 <small>({{close_paris}} Paris)</small></b><span>Clôture. L'état de fin de séance est figé, provisoire.</span>
     <b>+ {{definitive_after}} h</b><span>L'état de fin de séance est recalculé avec les corrections d'Alpaca, puis n'est plus jamais modifié.</span>
   </div></div>
   <p class="plain">Autrement dit : la liste est connue un peu plus d'une heure après l'ouverture, et tout est figé le lendemain.</p>
@@ -264,14 +264,14 @@
   </ol></nav>
 
   <h2 id="day"><span class="n">1</span>A typical day</h2>
-  <p>New York times (Paris: + 6 h most of the year).</p>
+  <p>New York times, with the Paris time in brackets for the day the page is generated (6 h apart most of the year, 5 h for a few weeks in spring and autumn).</p>
   <div class="panel" style="padding: 12px 16px"><div class="timeline">
-    <b>9:30 AM</b><span>Open. Live tracking starts: bubbles, prices.</span>
-    <b>{{decision_time}}</b><span>End of the first hour: decision time. Only data known at that moment is used.</span>
-    <b>{{confirm_decision_time}}</b><span>{{decision_time}} prices become available (free plan: {{feed_delay}}-minute delay). The "not at the top" rule is checked on these prices; we wait until {{confirm_decision_time}} for the confirmation.</span>
-    <b>{{entry_time}}</b><span>{{confirm_decision_time}} prices become available: the "confirmation" rule is checked, both lists are produced and the simulation "buys" them at the first trade from this time.</span>
-    <b>{{exit_time}}</b><span>The simulation "sells" at the last trade before this time ({{exit_before}} min before the close).</span>
-    <b>4:00 PM</b><span>Close. The end-of-session state is frozen, provisional.</span>
+    <b>9:30 AM <small>({{open_paris}} Paris)</small></b><span>Open. Live tracking starts: bubbles, prices.</span>
+    <b>{{decision_time}} <small>({{decision_paris}} Paris)</small></b><span>End of the first hour: decision time. Only data known at that moment is used.</span>
+    <b>{{confirm_decision_time}} <small>({{confirm_paris}} Paris)</small></b><span>{{decision_time}} prices become available (free plan: {{feed_delay}}-minute delay). The "not at the top" rule is checked on these prices; we wait until {{confirm_decision_time}} for the confirmation.</span>
+    <b>{{entry_time}} <small>({{entry_paris}} Paris)</small></b><span>{{confirm_decision_time}} prices become available: the "confirmation" rule is checked, both lists are produced and the simulation "buys" them at the first trade from this time.</span>
+    <b>{{exit_time}} <small>({{exit_paris}} Paris)</small></b><span>The simulation "sells" at the last trade before this time ({{exit_before}} min before the close).</span>
+    <b>4:00 PM <small>({{close_paris}} Paris)</small></b><span>Close. The end-of-session state is frozen, provisional.</span>
     <b>+ {{definitive_after}} h</b><span>The end-of-session state is recomputed with Alpaca's corrections, then never changed again.</span>
   </div></div>
   <p class="plain">In other words: the list is known a little over an hour after the open, and everything is final the next day.</p>

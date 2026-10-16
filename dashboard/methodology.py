@@ -7,7 +7,9 @@ constantes du code au moment de la génération : la page décrit le code, elle 
 """
 
 import re
+from datetime import date, datetime
 from decimal import Decimal
+from zoneinfo import ZoneInfo
 
 from core.domains import WEEK_SESSIONS
 from core.fundamentals import MAX_STALENESS
@@ -39,6 +41,14 @@ def _usd(value, lang):
     return f"{whole.replace(',', ' ')} $" if lang == "fr" else f"${whole}"
 
 
+def _paris_time(minutes, lang):
+    """Même heure à Paris aujourd'hui (l'écart avec New York n'est pas toujours de 6 h)."""
+    day = date.today()
+    moment = datetime(day.year, day.month, day.day, minutes // 60, minutes % 60, tzinfo=ZoneInfo("America/New_York"))
+    paris = moment.astimezone(ZoneInfo("Europe/Paris"))
+    return f"{paris.hour} h {paris.minute:02d}" if lang == "fr" else paris.strftime("%H:%M")
+
+
 def _ny_time(minutes, lang):
     h, m = divmod(minutes, 60)
     if lang == "fr":
@@ -67,6 +77,9 @@ def _values(lang, experiment):
         "closes": base.required_sessions,
         # Décision en deux temps : fin de la première heure, puis confirmation ; achat quand la confirmation est servie.
         "decision_time": _ny_time(decision, lang), "confirm_decision_time": _ny_time(confirm_decision, lang),
+        "open_paris": _paris_time(NY_OPEN_MINUTES, lang), "close_paris": _paris_time(16 * 60, lang),
+        "decision_paris": _paris_time(decision, lang), "confirm_paris": _paris_time(confirm_decision, lang),
+        "entry_paris": _paris_time(confirm_decision + feed, lang), "exit_paris": _paris_time(16 * 60 - exit_before, lang),
         "entry_time": _ny_time(confirm_decision + feed, lang),
         "confirmation_minutes": base.confirmation_minutes,
         "gap_pct": _number(base.min_gap_below_high * 100, lang),

@@ -13,6 +13,7 @@ import sys
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
+from zoneinfo import ZoneInfo
 
 from core.domains import domain_trends
 from core.history import TOP_IN_DOMAIN, selection_counts, top_in_domain_counts
@@ -67,6 +68,13 @@ def _clock(minutes):
     return f"{minutes // 60:d}:{minutes % 60:02d}"
 
 
+def _paris(minutes, day=None):
+    """Même heure à Paris, pour la date donnée (aujourd'hui par défaut) : l'écart n'est pas toujours de 6 h."""
+    day = day or date.today()
+    moment = datetime(day.year, day.month, day.day, minutes // 60, minutes % 60, tzinfo=ZoneInfo("America/New_York"))
+    return moment.astimezone(ZoneInfo("Europe/Paris")).strftime("%H:%M")
+
+
 def _strategy_info(strategy):
     """Ce que la page affiche d'une stratégie : nom, description, heures d'achat et de vente (New York)."""
     open_minutes, close_minutes = 9 * 60 + 30, 16 * 60
@@ -75,7 +83,8 @@ def _strategy_info(strategy):
             else close_minutes - strategy.exit_before_close_minutes)
     page = pages(strategy)
     return {"id": strategy.id, "name": strategy.name, "description": strategy.description, "main": strategy.is_main,
-            "buy": _clock(buy), "sell": _clock(sell), "fr": page["fr"].name, "en": page["en"].name}
+            "buy": _clock(buy), "sell": _clock(sell), "buy_paris": _paris(buy), "sell_paris": _paris(sell),
+            "fr": page["fr"].name, "en": page["en"].name}
 
 
 def _embed(value):

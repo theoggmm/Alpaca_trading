@@ -60,15 +60,15 @@ const ROWS = __ROWS_JSON__;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
-    intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heure de New York ; Paris : + 6 h). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
-    head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · sans PER", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · sans PER", "Séances"],
+    intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
+    head: ["Stratégie", "Achat → vente (New York · Paris)", "Aujourd'hui · PER < 25", "Aujourd'hui · sans PER", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · sans PER", "Séances"],
     waiting: "en attente", none: "—", no_list: "pas de liste",
     note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
   },
   en: {
     title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
-    intro: "Each row is a way of following the lists, with its own buying and selling times (New York time; Paris: + 6 h). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
-    head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · without P/E", "Since Oct 16 · P/E < 25", "Since Oct 16 · without P/E", "Sessions"],
+    intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
+    head: ["Strategy", "Buy → sell (New York · Paris)", "Today · P/E < 25", "Today · without P/E", "Since Oct 16 · P/E < 25", "Since Oct 16 · without P/E", "Sessions"],
     waiting: "waiting", none: "—", no_list: "no list",
     note: "Today: live during the session (prices 15 min late), frozen at the selling time. All these strategies are paper diagnostics: no order is placed.",
   },
@@ -97,7 +97,7 @@ ROWS.forEach(r => {
   const a = document.createElement("a"); a.href = LANG === "fr" ? r.fr : r.en; a.textContent = r.name;
   const d = document.createElement("div"); d.className = "desc"; d.textContent = r.description;
   name.append(a, d); tr.appendChild(name);
-  const times = document.createElement("td"); times.className = "text num"; times.textContent = `${r.buy} → ${r.sell}`; tr.appendChild(times);
+  const times = document.createElement("td"); times.className = "text num"; times.textContent = `${r.buy} → ${r.sell} · ${r.buy_paris} → ${r.sell_paris}`; tr.appendChild(times);
   ["per12", "sans_per"].forEach(v => {
     const today = r.today[v];
     tr.appendChild(cell(today?.net ?? null, !today ? TEXT.none : today.n === 0 ? TEXT.no_list : TEXT.waiting));
