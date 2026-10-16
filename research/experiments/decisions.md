@@ -95,3 +95,9 @@ Toutes stratégies, toutes listes, en simulation : un titre est vendu dès qu'un
 passe 1,5 % sous son prix d'achat ou 3 % au-dessus, au cours de cette minute ; les autres titres restent jusqu'à
 l'heure de vente. Les repères (univers liquide, SPY) n'ont pas de vente anticipée. Les tests sur le passé déjà
 faits ne l'appliquent pas : à refaire.
+
+## T11 — 2026-10-16 — Deux stratégies de plus (propriétaire)
+
+« Achat à 10 h 30, vente à la clôture » (16 h 30 → 21 h 55, Paris : mêmes règles que « Achat à 10 h 30 », vente avant
+15 h 55 New York), placée après « Achat à 10 h 30 » ; « Nuit : achat 15 h 55, vente le lendemain 10 h 30 » (21 h 55 →
+16 h 30, Paris : sélection « fin de journée » décidée à 15 h 40 New York), placée en dernier. Dix stratégies en tout.

@@ -1,0 +1,9 @@
+{
+  "id": "achat_10h30_vente_cloture",
+  "order": 4,
+  "name": "Achat à 10 h 30, vente à la clôture",
+  "description": "Mêmes règles que « Achat à 10 h 30 » (décision à 10 h 00, confirmation à 10 h 15), achat à 10 h 30, vente avant 15 h 55, juste avant la clôture (New York).",
+  "name_en": "Buy at 10:30, sell at the close",
+  "description_en": "Same rules as \"Buy at 10:30\" (decision at 10:00 AM, confirmation at 10:15 AM), bought at 10:30 AM, sold before 3:55 PM, just before the close (New York).",
+  "exit_before_close_minutes": 5
+}
