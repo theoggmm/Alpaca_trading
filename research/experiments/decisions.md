@@ -79,3 +79,12 @@ clôture » (vente 15 h 55), et deux stratégies « ouverture » (autre logique 
 hausse de +0,5 % à +3 % avant 9 h 15, marché en bonne forme ; achat 9 h 30, vente après 1 h ou 2 h). Règles
 « ouverture » proposées par l'agent et retenues par défaut faute de réponse ; à tester sur le passé. Les ordres
 à passer restent calculés sur la stratégie principale seulement.
+
+## T9 — 2026-10-16 — Trois stratégies de nuit avec leur propre sélection (propriétaire)
+
+En papier, à partir du 16 octobre : achat 15 h 00 et vente le lendemain à 10 h 30 ; achat 15 h 00 et vente le
+lendemain à l'ouverture ; achat 15 h 55 et vente le lendemain à l'ouverture (New York). Sélection « fin de
+journée » (core/closing.py), demandée par le propriétaire et chiffrée par l'agent : journée en hausse de +0,5 %
+à +4 %, dernière heure avant la décision en hausse, au plus 1 % sous le plus haut du jour, marché en bonne forme,
+PER < 25 pour la seconde liste ; décision 15 min avant l'achat. Le résultat d'une séance est compté le jour de
+l'achat, une fois la vente du lendemain connue.

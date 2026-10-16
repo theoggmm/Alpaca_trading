@@ -306,3 +306,19 @@ Autrement dit : cinq façons de suivre les listes tournent en papier dès aujour
 **Points signalés** : PER suspects (BKNG 0,97, VIPS 1,41, WSE 0,24 : devise ou division d'actions) ; le test sur
 le passé ne sait pas encore rejouer les stratégies « ouverture » ; noms des stratégies en français sur les pages
 anglaises.
+
+## 2026-10-16 (suite) — Stratégies de nuit
+
+**Question posée** : acheter en fin de séance (1 h avant la clôture, ou juste avant) et vendre le lendemain
+(à l'ouverture, ou 1 h après), avec des règles de sélection propres : la journée et la dernière heure avant l'achat.
+
+**Fait** : `core/closing.py` (sélection « fin de journée », datation testée), `exit_next_open_minutes` dans
+strategy.json, états de fin de séance refaits dès la vente du lendemain (suivi en direct, rattrapage), définitifs
+12 h après la vente ; trois stratégies `nuit_*`. Décision T9. 61 tests verts. Essai sur le 15 octobre : 355 titres
+passent les règles, 20 retenus par liste.
+
+Autrement dit : trois façons de garder des actions pendant la nuit sont suivies dès ce soir ; leur premier
+résultat sera connu lundi matin.
+
+**Points signalés** : PER suspects (CHTR 2,85, BKNG 0,97, VIPS 1,41, WSE 0,24) ; tests sur le passé à adapter
+aux stratégies « ouverture » et « nuit ».
