@@ -27,12 +27,12 @@ from core.performance_metrics import paired_difference, summary
 from core.portfolio import AMOUNTS, simulate
 from core.screener import Criteria, daily_candidates, screen
 from core.universe import eligible_symbols
-from infra import nasdaq_symbols, sec
+from infra import nasdaq_symbols
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
 from infra.trace import RUNS_DIR, TraceError, committed_git_sha
-from research.algorithms.reprise_apres_baisse.run import ARCHIVED, DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, VARIANTS
+from research.algorithms.reprise_apres_baisse.run import ARCHIVED, DAILY_HISTORY, earnings, FAMILY, NEW_YORK, SIP_DELAY, VARIANTS
 
 BENCHMARK = "SPY"
 # Montants détaillés (actions entières) : ceux de la simulation, plus 2 M$ (onglet « Tests d'un mois »).
@@ -108,7 +108,7 @@ def run(months, first=None, last=None):
                                ignore_index=True)
         decisions = {variant: market_open + timedelta(minutes=c.decision_minutes) for variant, c in criteria.items()}
         lists = {variant: screen(daily, minute, market_open, decisions[variant], c,
-                                 earnings_for=lambda s: sec.eps(s, "backtest"), market_daily=market_daily)[0]
+                                 earnings_for=earnings(alpaca, "backtest"), market_daily=market_daily)[0]
                  for variant, c in criteria.items()}
         entries = {variant: decisions[variant] + SIP_DELAY for variant in criteria}
         # SPY acheté à l'heure d'achat des versions actuelles.

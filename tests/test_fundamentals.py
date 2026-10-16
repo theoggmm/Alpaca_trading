@@ -43,3 +43,14 @@ def test_per():
     assert price_to_earnings(Decimal("54"), Decimal("5.40")) == Decimal("10")
     assert price_to_earnings(Decimal("54"), Decimal("-1")) is None
     assert price_to_earnings(Decimal("54"), None) is None
+
+
+def test_benefice_ramene_aux_actions_d_aujourd_hui():
+    from core.fundamentals import split_adjusted
+    entries = [{"start": "2025-01-01", "end": "2025-12-31", "val": Decimal("165"), "filed": "2026-02-10"},
+               {"start": "2026-04-01", "end": "2026-06-30", "val": Decimal("2.5"), "filed": "2026-07-30"}]
+    # Division 25 pour 1 le 6 avril 2026 : seul l'exercice 2025 (clos avant) est divisé par 25.
+    adjusted = split_adjusted(entries, [{"ratio": Decimal("25"), "ex_date": "2026-04-06"}])
+    assert [e["val"] for e in adjusted] == [Decimal("6.6"), Decimal("2.5")]
+    # Regroupement 1 pour 10 (ratio 0,1) : le bénéfice ancien est multiplié par 10.
+    assert split_adjusted(entries[:1], [{"ratio": Decimal("0.1"), "ex_date": "2026-03-01"}])[0]["val"] == Decimal("1650")

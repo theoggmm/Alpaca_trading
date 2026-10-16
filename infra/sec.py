@@ -45,19 +45,27 @@ def _tickers(reader, day):
                   lambda: {v["ticker"]: int(v["cik_str"]) for v in reader.get(TICKERS_URL).json().values()})
 
 
+# Rapports annuels et trimestriels des sociétés américaines. Les sociétés étrangères (20-F, 40-F) sont écartées :
+# leur bénéfice « USD/shares » peut être en devise locale ou par action ordinaire et non par ADR (VIPS, WSE).
+DOMESTIC_FORMS = {"10-K", "10-K/A", "10-Q", "10-Q/A"}
+
+
 def _eps_declarations(reader, cik):
-    """Bénéfice dilué par action déclaré en dollars (normes US) : [{"start", "end", "val", "filed"}]."""
+    """
+    Bénéfice dilué par action déclaré en dollars (normes US) dans un 10-K ou un 10-Q :
+    [{"start", "end", "val", "filed", "form"}].
+    """
     response = reader.get(CONCEPT_URL.format(cik=cik), missing_ok=True)
     if response is None:
         return []
     data = json.loads(response.text, parse_float=Decimal)
-    return [{"start": e["start"], "end": e["end"], "val": Decimal(str(e["val"])), "filed": e["filed"]}
-            for e in data.get("units", {}).get("USD/shares", []) if "start" in e]
+    return [{"start": e["start"], "end": e["end"], "val": Decimal(str(e["val"])), "filed": e["filed"], "form": e["form"]}
+            for e in data.get("units", {}).get("USD/shares", []) if "start" in e and e.get("form") in DOMESTIC_FORMS]
 
 
 def eps(symbols, day):
     """
-    symbole -> déclarations de bénéfice dilué par action (SEC, US GAAP, en dollars), lues le jour day.
+    symbole -> déclarations de bénéfice dilué par action (SEC, US GAAP, en dollars, 10-K / 10-Q), lues le jour day.
     Un symbole inconnu de la SEC ou sans ces déclarations reçoit une liste vide.
     """
     reader = _reader()
@@ -65,7 +73,8 @@ def eps(symbols, day):
     result = {}
     for symbol in symbols:
         cik = tickers.get(symbol.replace(".", "-"))
-        result[symbol] = [] if cik is None else cached(f"{day}/sec_eps/{cik:010d}", lambda: _eps_declarations(reader, cik))
+        # « sec_eps_us » : cache des déclarations 10-K / 10-Q seulement (l'ancien « sec_eps » gardait tous les formulaires).
+        result[symbol] = [] if cik is None else cached(f"{day}/sec_eps_us/{cik:010d}", lambda: _eps_declarations(reader, cik))
     return result
 
 

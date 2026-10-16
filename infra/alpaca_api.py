@@ -60,6 +60,23 @@ class AlpacaReader:
                                         {"status": "active", "asset_class": "us_equity"}))
         return [{k: a[k] for k in ("symbol", "name", "class", "status", "tradable", "exchange")} for a in assets]
 
+    def splits(self, start, end):
+        """
+        Divisions et regroupements d'actions de tous les titres entre deux dates :
+        [{"symbol", "ratio" (nouvelles actions pour une ancienne, Decimal), "ex_date" (ISO)}].
+        """
+        params = {"types": "forward_split,reverse_split", "start": start.isoformat(), "end": end.isoformat(),
+                  "limit": 1000}
+        rows = []
+        while True:
+            page = _json(self._reader.get(f"{DATA_URL}/v1/corporate-actions", params))
+            for kind in ("forward_splits", "reverse_splits"):
+                rows += [{"symbol": x["symbol"], "ratio": Decimal(str(x["new_rate"])) / Decimal(str(x["old_rate"])),
+                          "ex_date": x["ex_date"]} for x in (page.get("corporate_actions") or {}).get(kind, [])]
+            if not page.get("next_page_token"):
+                return rows
+            params["page_token"] = page["next_page_token"]
+
     def latest_trades(self, symbols, feed):
         """
         symbole -> (horodatage UTC, prix Decimal) du dernier échange connu.

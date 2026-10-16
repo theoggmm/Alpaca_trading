@@ -7,6 +7,7 @@ de décision sont utilisables (règle 1 de CLAUDE.md).
 """
 
 from datetime import date, timedelta
+from decimal import Decimal
 
 ANNUAL_DAYS = range(350, 381)       # un exercice
 QUARTER_DAYS = range(80, 101)       # un trimestre
@@ -54,6 +55,23 @@ def ttm_eps(entries, decision_date):
     if not previous_year or not same_period_last_year:
         return None
     return previous_year[0] + current - same_period_last_year[0]
+
+
+def split_adjusted(entries, splits):
+    """
+    Déclarations ramenées au nombre d'actions d'aujourd'hui : bénéfice par action divisé par le ratio de chaque
+    division (nouvelles actions pour une ancienne) intervenue après la fin de sa période. Les prix d'Alpaca sont
+    ajustés de la même façon (adjustment=all) : le PER compare des grandeurs de même unité, quelle que soit la date.
+    splits : [{"ratio", "ex_date"}] du titre.
+    """
+    def factor(end):
+        result = Decimal(1)
+        for split in splits:
+            if split["ex_date"] > end:
+                result *= split["ratio"]
+        return result
+
+    return [{**e, "val": e["val"] / factor(e["end"])} for e in entries]
 
 
 def price_to_earnings(price, eps):

@@ -65,7 +65,9 @@ même produite et l'erreur est enregistrée dans le run.
 
 ## Sources
 
-- **Bénéfices (PER)** : SEC, `https://data.sec.gov/api/xbrl/companyconcept/CIK##########/us-gaap/EarningsPerShareDiluted.json`. 12 mois glissants = dernier exercice, ou exercice précédent + cumul de l'exercice en cours − même cumul un an plus tôt. Les sociétés qui ne déposent pas ce poste en US GAAP (sociétés étrangères, certaines banques, fonds) sont exclues.
+- **Bénéfices (PER)** : seulement les rapports 10-K et 10-Q (sociétés américaines ; 20-F et 40-F exclus, devise
+  incertaine), ramenés au nombre d'actions d'aujourd'hui avec les divisions d'actions d'Alpaca (`/v1/corporate-actions`).
+  SEC, `https://data.sec.gov/api/xbrl/companyconcept/CIK##########/us-gaap/EarningsPerShareDiluted.json`. 12 mois glissants = dernier exercice, ou exercice précédent + cumul de l'exercice en cours − même cumul un an plus tôt. Les sociétés qui ne déposent pas ce poste en US GAAP (sociétés étrangères, certaines banques, fonds) sont exclues.
 
 - **Cours** : Alpaca, données consolidées (feed `sip`), ajustées des splits et dividendes. Offre gratuite :
   les 15 dernières minutes ne sont pas servies, d'où un run au plus tôt à 10 h 45 (New York).

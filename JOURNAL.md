@@ -322,3 +322,15 @@ résultat sera connu lundi matin.
 
 **Points signalés** : PER suspects (CHTR 2,85, BKNG 0,97, VIPS 1,41, WSE 0,24) ; tests sur le passé à adapter
 aux stratégies « ouverture » et « nuit ».
+
+## 2026-10-16 (suite) — PER corrigé
+
+**Question posée** : corriger les PER aberrants (BKNG 0,97, VIPS 1,41, WSE 0,24, CHTR 2,85).
+
+**Fait** : causes trouvées une par une. BKNG : division d'actions 25 pour 1 le 6 avril 2026, bénéfices d'avant et
+d'après mélangés ; VIPS, WSE : sociétés étrangères (20-F), bénéfice en devise locale étiqueté dollars ; CHTR : chiffre
+juste (cours très bas). Correctifs : bénéfices des seuls 10-K / 10-Q (`infra/sec.py`, cache `sec_eps_us`), ramenés aux
+actions d'aujourd'hui avec les divisions d'Alpaca (`infra/alpaca_api.py` `splits`, `core/fundamentals.py`
+`split_adjusted`, `run.earnings`, utilisé aussi par le test sur le passé). BKNG 15,9 ; VIPS et WSE exclus. 62 tests verts.
+
+Autrement dit : la liste avec PER ne retient plus de titres à cause d'une erreur de calcul.

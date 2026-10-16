@@ -7,14 +7,15 @@ Depuis la racine du dépôt :
 
 import sys
 import time
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from core.domains import domain_trends
-from core.screener import Criteria, daily_candidates, liquid_universe, screen
 from core.closing import ClosingCriteria, screen_closing
+from core.domains import domain_trends
+from core.fundamentals import split_adjusted
 from core.opening import OpeningCriteria, screen_opening
+from core.screener import Criteria, daily_candidates, liquid_universe, screen
 from core.strategy import load_strategies
 from core.universe import eligible_symbols
 from infra import nasdaq_symbols, sec
@@ -39,6 +40,25 @@ SIP_DELAY = timedelta(minutes=15)
 MAX_WAIT = timedelta(minutes=20)
 # Couvre largement les 61 séances nécessaires aux critères (jours fériés compris).
 DAILY_HISTORY = timedelta(days=130)
+
+
+# Divisions d'actions lues depuis cette date (bien avant les plus anciens bénéfices utiles, 12 mois + 200 jours).
+SPLITS_SINCE = date(2015, 1, 1)
+
+
+def earnings(alpaca, key):
+    """
+    earnings_for des sélections : symboles -> déclarations de bénéfice (10-K / 10-Q) ramenées au nombre d'actions
+    d'aujourd'hui (divisions d'actions d'Alpaca, lues une fois par jour de cache key).
+    """
+    def lookup(symbols):
+        splits = cached(f"{key}/splits", lambda: alpaca.splits(SPLITS_SINCE, datetime.now(timezone.utc).date()))
+        by_symbol = {}
+        for split in splits:
+            by_symbol.setdefault(split["symbol"], []).append(split)
+        return {s: split_adjusted(entries, by_symbol.get(s, [])) for s, entries in sec.eps(symbols, key).items()}
+
+    return lookup
 
 
 def _pct(value):
@@ -73,7 +93,7 @@ def _produce_opening(alpaca, criteria, session_date, market_open, key):
         f"{key}/market_daily_bars_{criteria.market_symbol}_open",
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
     selection, funnel = screen_opening(daily, minute, market_open, previous_close, decision_time, criteria,
-                                       earnings_for=lambda s: sec.eps(s, key), market_daily=market_daily)
+                                       earnings_for=earnings(alpaca, key), market_daily=market_daily)
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 
@@ -95,7 +115,7 @@ def _produce_closing(alpaca, criteria, session_date, market_open, key):
         f"{key}/market_daily_bars_{criteria.market_symbol}",
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
     selection, funnel = screen_closing(daily, minute, market_open, decision_time, criteria,
-                                       earnings_for=lambda s: sec.eps(s, key), market_daily=market_daily)
+                                       earnings_for=earnings(alpaca, key), market_daily=market_daily)
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 
@@ -126,7 +146,7 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
         f"{key}/market_daily_bars_{criteria.market_symbol}",
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
     selection, funnel = screen(daily, minute, market_open, decision_time, criteria,
-                               earnings_for=lambda symbols: sec.eps(symbols, key), market_daily=market_daily)
+                               earnings_for=earnings(alpaca, key), market_daily=market_daily)
     return _payload(alpaca, criteria, key, market_open, decision_time, now, git_sha, daily, listings,
                     listings_created, universe_funnel, funnel, selection)
 
