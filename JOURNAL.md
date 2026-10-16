@@ -374,3 +374,20 @@ Autrement dit : les dix stratégies produisent leurs listes, leurs simulations e
 séance : vérification prévue à l'ouverture. Détails d'affichage : heure de vente « 9:31 » pour « à l'ouverture » dans
 la simulation, formats d'heure mêlés (15:00 / 03:00 PM) sur les pages anglaises, texte d'introduction de la sélection
 qui parle de « première heure » pour toutes les stratégies.
+
+## 2026-10-16 (suite) — Suivi des positions ; prix de vente de nuit corrigés
+
+**Question posée** : sous la sélection, une section qui dit pour chaque action si elle est encore détenue ou vendue,
+et combien elle a rapporté ou coûté.
+
+**Fait** : `simulate` garde la situation de chaque titre des listes (`positions`) ; section « Suivi des positions »
+(onglet Aujourd'hui) : situation, variation, gain ou perte après frais sur la part de 10 000 $, prix d'achat, dernier
+prix ou prix de vente, heure (New York, Paris), total. Méthodologie complétée.
+
+**Défaut trouvé et corrigé** : les prix de vente étaient gardés en cache sous la seule heure (« 10 h 30 ») : une vente
+de nuit à 10 h 30 le lendemain reprenait les prix de 10 h 30 du jour d'achat (ceux de la stratégie « ouverture 1 h »).
+Cache désormais nommé par la date et l'heure ; test ajouté. Exemple (14 octobre, essai) : nuit 15 h 00 → 10 h 30,
+PER < 25, +1,47 % faux, +2,18 % juste. 64 tests verts. Suivi en direct relancé avec ce code avant l'ouverture.
+
+Autrement dit : tu vois action par action ce qui est encore en jeu et ce que chaque vente a rapporté, et les ventes de
+nuit sont maintenant au bon prix.
