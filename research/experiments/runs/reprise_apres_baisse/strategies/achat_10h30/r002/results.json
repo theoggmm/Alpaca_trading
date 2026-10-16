@@ -1,0 +1,209 @@
+{
+  "run_id": "r002",
+  "variant": "sans_per",
+  "strategy": "achat_10h30",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-16",
+  "market_open": "2026-10-16T13:30:00+00:00",
+  "decision_time": "2026-10-16T14:15:00+00:00",
+  "created_at": "2026-10-16T14:35:14.647591+00:00",
+  "git_sha": "d016bf799c8f74759ff6ee8f79c8dfb8dac6abc0",
+  "criteria": {
+    "version": 5,
+    "count": 20,
+    "month_sessions": 21,
+    "up_days": 2,
+    "first_hour_minutes": 30,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "max_pe": null,
+    "min_gap_below_high": "0.002",
+    "confirmation_minutes": 15,
+    "max_below_ma": "0.05",
+    "ma_sessions": 50,
+    "market_symbol": "SPY",
+    "market_ma_sessions": 50
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1016202606:00",
+      "otherlisted": "1016202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13522,
+    "cotes_sur_une_bourse_us": 12773,
+    "hors_etf_et_titres_de_test": 6993,
+    "avec_barres_quotidiennes": 6992,
+    "historique_complet": 6820,
+    "prix_minimum": 4715,
+    "volume_echange_minimum": 2088,
+    "volatilite_basse": 1044,
+    "en_baisse_sur_un_mois": 548,
+    "hausse_des_derniers_jours": 129,
+    "marche_en_bonne_forme": 129,
+    "hausse_premiere_heure": 97,
+    "pas_en_chute": 78,
+    "pas_au_sommet": 39,
+    "confirmation": 6,
+    "selection_diversifiee": 4
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 269,
+        "mean_return": 0.02697880434859864
+      },
+      {
+        "domain": "Technology",
+        "n": 308,
+        "mean_return": 0.017567350503442693
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 195,
+        "mean_return": 0.0069120030093218696
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.003923803032658306
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 354,
+        "mean_return": -0.009523437583626018
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 309,
+        "mean_return": -0.017490607285790206
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 173,
+        "mean_return": -0.020010122597163314
+      },
+      {
+        "domain": "Finance",
+        "n": 254,
+        "mean_return": -0.030540424458134232
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 171,
+        "mean_return": -0.03165831121698961
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "LYB",
+      "prev_close": "62.67",
+      "open_today": "63.24",
+      "price_at_decision": "63.45",
+      "return_month": -0.03436055469953775,
+      "return_day_minus_2": 0.019330111648058656,
+      "return_day_minus_1": 0.024521824423737126,
+      "return_first_hour": 0.003320683111954459,
+      "volatility_annualized": 0.33908681460526574,
+      "avg_dollar_volume": "211943526",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "gap_below_high": 0.0036118090452261307,
+      "below_ma": -0.020953275900353674,
+      "price_at_confirmation": "63.915",
+      "return_confirmation": 0.007328605200945627,
+      "name": "LyondellBasell Industries NV Ordinary Shares Class A (Netherlands)",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Industrial Organic Chemicals"
+    },
+    {
+      "rank": 2,
+      "symbol": "BPOP",
+      "prev_close": "157.37",
+      "open_today": "158.05",
+      "price_at_decision": "159.38",
+      "return_month": -0.022303677932405567,
+      "return_day_minus_2": 0.000834295982543961,
+      "return_day_minus_1": 0.009105482526450786,
+      "return_first_hour": 0.00841505852578298,
+      "volatility_annualized": 0.16138806454486362,
+      "avg_dollar_volume": "79681015",
+      "max_correlation_with_previous": -0.12347773221566094,
+      "pe_ttm": null,
+      "gap_below_high": 0.0065449105528891105,
+      "below_ma": 0.032781532912008485,
+      "price_at_confirmation": "159.47",
+      "return_confirmation": 0.0005646881666457522,
+      "name": "Popular, Inc. - Common Stock",
+      "domain": "Finance",
+      "sic_description": "State Commercial Banks"
+    },
+    {
+      "rank": 3,
+      "symbol": "AQN",
+      "prev_close": "5.2",
+      "open_today": "5.22",
+      "price_at_decision": "5.2412",
+      "return_month": -0.011594753849078121,
+      "return_day_minus_2": 0.003898635477582846,
+      "return_day_minus_1": 0.009708737864077669,
+      "return_first_hour": 0.004061302681992337,
+      "volatility_annualized": 0.1868335602935554,
+      "avg_dollar_volume": "21888007",
+      "max_correlation_with_previous": 0.12318932121242163,
+      "pe_ttm": null,
+      "gap_below_high": 0.0035741444866920153,
+      "below_ma": 0.026729110106701034,
+      "price_at_confirmation": "5.245",
+      "return_confirmation": 0.000725024803480119,
+      "name": "Algonquin Power & Utilities Corp. Common Shares",
+      "domain": "Energy & Transportation",
+      "sic_description": "Electric Services"
+    },
+    {
+      "rank": 4,
+      "symbol": "LTH",
+      "prev_close": "40.56",
+      "open_today": "40.51",
+      "price_at_decision": "41.095",
+      "return_month": -0.004173827645470169,
+      "return_day_minus_2": 0.014120020171457387,
+      "return_day_minus_1": 0.008453505718547987,
+      "return_first_hour": 0.01444087879535917,
+      "volatility_annualized": 0.2985079782165374,
+      "avg_dollar_volume": "144503267",
+      "max_correlation_with_previous": 0.35772025816784786,
+      "pe_ttm": null,
+      "gap_below_high": 0.005204550956184943,
+      "below_ma": 0.022697113395197078,
+      "price_at_confirmation": "41.44",
+      "return_confirmation": 0.008395181895607739,
+      "name": "Life Time Group Holdings, Inc. Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Services-Membership Sports & Recreation Clubs"
+    }
+  ]
+}

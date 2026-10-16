@@ -256,13 +256,14 @@ def _order_plan(runs, prices, basis):
 
 
 def _state(storage, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, opening,
-           runs, opens):
+           runs, opens, trends=None):
     """
     État affiché par le tableau de bord, calculé avec les seules données connues à now.
     opening : barres minute du début de séance, d'où le premier prix de chaque titre.
     """
-    measures, liquid, values = live_domain_trends(daily, trades, minute, market_open, market_close, now,
-                                                  criteria, domains)
+    # trends : bulles par domaine déjà calculées pour cet instant (identiques pour toutes les stratégies).
+    measures, liquid, values = trends or live_domain_trends(daily, trades, minute, market_open, market_close, now,
+                                                            criteria, domains)
     in_session = session_trades(trades, market_open, market_close, now)
     day_opens = session_open_prices(opening, market_open, now)
     return {
@@ -578,12 +579,14 @@ def run(family):
             continue
 
         last_prices = {s: price for s, (_, price) in session_trades(trades, market_open, market_close, now).items()}
+        # Bulles par domaine : une fois par passage, communes à toutes les stratégies.
+        trends = live_domain_trends(daily, trades, minute, market_open, market_close, now, criteria, domains)
         for strategy in every:
             today_runs, opens = selections[strategy.id]
             entry_time, exit_time = _trade_times(strategy, market_open, market_close, today_runs, next_open)
             # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
             state = _state(strategy.storage, criteria, key, market_open, market_close, now, daily, domains, names,
-                           trades, minute, minute if not minute.empty else opening, today_runs, opens)
+                           trades, minute, minute if not minute.empty else opening, today_runs, opens, trends)
             state["portfolio"] = _portfolio(today_runs, symbols, entry_bars, exits.get(exit_time, EMPTY_BARS), trades,
                                             market_open, entry_time, exit_time, now, path_bars)
             state["month_trend"] = month_trend
@@ -596,8 +599,10 @@ def run(family):
         build(family)
         day = state["measures"]["day"]["bubbles"]
         up = sum(1 for b in day if b["mean_return"] > 0)
+        took = (datetime.now(timezone.utc) - now).total_seconds()
         print(f"{now.astimezone(NEW_YORK):%H:%M} (New York) — journée : "
-              f"{up} domaines en hausse, {len(day) - up} en baisse · {len(every)} stratégies suivies")
+              f"{up} domaines en hausse, {len(day) - up} en baisse · {len(every)} stratégies suivies · passage {took:.0f} s"
+              + (" (LENT)" if took > 120 else ""))
         time.sleep(REFRESH_S)
 
 

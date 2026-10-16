@@ -1,0 +1,188 @@
+{
+  "run_id": "r001",
+  "variant": "per12",
+  "strategy": "vente_cloture",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-16",
+  "market_open": "2026-10-16T13:30:00+00:00",
+  "decision_time": "2026-10-16T14:45:00+00:00",
+  "created_at": "2026-10-16T15:17:26.322128+00:00",
+  "git_sha": "d016bf799c8f74759ff6ee8f79c8dfb8dac6abc0",
+  "criteria": {
+    "version": 6,
+    "count": 20,
+    "month_sessions": 21,
+    "up_days": 2,
+    "first_hour_minutes": 60,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "max_pe": "25",
+    "min_gap_below_high": "0.002",
+    "confirmation_minutes": 15,
+    "max_below_ma": "0.05",
+    "ma_sessions": 50,
+    "market_symbol": "SPY",
+    "market_ma_sessions": 50
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1016202606:00",
+      "otherlisted": "1016202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13522,
+    "cotes_sur_une_bourse_us": 12773,
+    "hors_etf_et_titres_de_test": 6993,
+    "avec_barres_quotidiennes": 6992,
+    "historique_complet": 6820,
+    "prix_minimum": 4715,
+    "volume_echange_minimum": 2088,
+    "volatilite_basse": 1044,
+    "en_baisse_sur_un_mois": 548,
+    "hausse_des_derniers_jours": 129,
+    "marche_en_bonne_forme": 129,
+    "hausse_premiere_heure": 84,
+    "pas_en_chute": 66,
+    "pas_au_sommet": 43,
+    "confirmation": 6,
+    "per_maximum": 3,
+    "selection_diversifiee": 3
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 269,
+        "mean_return": 0.02697880434859864
+      },
+      {
+        "domain": "Technology",
+        "n": 308,
+        "mean_return": 0.017567350503442693
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 195,
+        "mean_return": 0.0069120030093218696
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.003923803032658306
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 354,
+        "mean_return": -0.009523437583626018
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 309,
+        "mean_return": -0.017490607285790206
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 173,
+        "mean_return": -0.020010122597163314
+      },
+      {
+        "domain": "Finance",
+        "n": 254,
+        "mean_return": -0.030540424458134232
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 171,
+        "mean_return": -0.03165831121698961
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "PLMR",
+      "prev_close": "137.61",
+      "open_today": "137.8",
+      "price_at_decision": "138.41",
+      "return_month": -0.022517403040204574,
+      "return_day_minus_2": 0.02488196057858053,
+      "return_day_minus_1": 0.0062888482632541135,
+      "return_first_hour": 0.0044267053701015965,
+      "volatility_annualized": 0.3282143997483446,
+      "avg_dollar_volume": "31083080",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "18.60",
+      "gap_below_high": 0.004924691757431971,
+      "below_ma": -0.05642537283244274,
+      "price_at_confirmation": "138.65",
+      "return_confirmation": 0.0017339787587602052,
+      "name": "Palomar Holdings, Inc. - Common stock",
+      "domain": "Finance",
+      "sic_description": "Fire, Marine & Casualty Insurance"
+    },
+    {
+      "rank": 2,
+      "symbol": "FDX",
+      "prev_close": "295.54",
+      "open_today": "296.54",
+      "price_at_decision": "297.145",
+      "return_month": -0.020482566618056475,
+      "return_day_minus_2": 0.0023744795072094703,
+      "return_day_minus_1": 0.014625102993683053,
+      "return_first_hour": 0.00204019693801848,
+      "volatility_annualized": 0.22730348714638918,
+      "avg_dollar_volume": "456889237",
+      "max_correlation_with_previous": 0.17129064367260358,
+      "pe_ttm": "16.02",
+      "gap_below_high": 0.004539363484087102,
+      "below_ma": 0.03889135068522394,
+      "price_at_confirmation": "297.84",
+      "return_confirmation": 0.002338925440441535,
+      "name": "FedEx Corporation Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Air Courier Services"
+    },
+    {
+      "rank": 3,
+      "symbol": "NRIX",
+      "prev_close": "24.95",
+      "open_today": "24.89",
+      "price_at_decision": "25.175",
+      "return_month": -0.007952286282306162,
+      "return_day_minus_2": 0.06958879349299593,
+      "return_day_minus_1": 0.05407689057879172,
+      "return_first_hour": 0.011450381679389313,
+      "volatility_annualized": 0.36609501016619567,
+      "avg_dollar_volume": "49350846",
+      "max_correlation_with_previous": 0.21010628122111294,
+      "pe_ttm": "10.36",
+      "gap_below_high": 0.007099191480970223,
+      "below_ma": -0.002460857238424414,
+      "price_at_confirmation": "25.27",
+      "return_confirmation": 0.0037735849056603774,
+      "name": "Nurix Therapeutics, Inc. - Common stock",
+      "domain": "Life Sciences",
+      "sic_description": "Pharmaceutical Preparations"
+    }
+  ]
+}
