@@ -128,6 +128,15 @@ def test_vente_anticipee_stop_et_objectif():
     assert result["early_exits"]["UP"]["reason"] == "objectif"
     # Rendement : DOWN −1,6 %, UP +3,2 %, FLAT +1 % (vendu à l'heure de vente) ; le rebond de DOWN ne compte pas.
     assert result["mean_return"] == pytest.approx((-0.016 + 0.032 + 0.01) / 3)
+    # Suivi des positions : deux titres vendus plus tôt, le troisième à l'heure de vente.
+    positions = result["positions"]
+    assert {k: v["state"] for k, v in positions.items()} == {"DOWN": "stop", "UP": "objectif", "FLAT": "sold"}
+    assert positions["FLAT"]["return"] == pytest.approx(0.01) and positions["DOWN"]["price"] == "98.4"
+    # Pendant la séance : FLAT encore détenu, valorisé au dernier échange connu.
+    live = simulate(["DOWN", "UP", "FLAT"], entry, exit_, {"FLAT": (entry_t + timedelta(minutes=70), Decimal("100.5"))},
+                    entry_t, exit_t, entry_t + timedelta(minutes=75), path_bars=path)
+    assert live["positions"]["FLAT"]["state"] == "held" and live["positions"]["FLAT"]["price"] == "100.5"
+    assert live["positions"]["UP"]["state"] == "objectif"
     # Sans trajet (repères) : pas de vente anticipée.
     plain = simulate(["DOWN", "UP", "FLAT"], entry, exit_, {}, entry_t, exit_t, after)
     assert plain["early_exits"] == {} and plain["mean_return"] == pytest.approx((0.1 - 0.1 + 0.01) / 3)

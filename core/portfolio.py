@@ -86,8 +86,10 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
     early = {} if path_bars is None else early_exits(path_bars, entry, entry_time, exit_time, now)
     current.update({s: e["price"] for s, e in early.items()})
     held = [s for s in symbols if s in entry and s in current]
+    positions = None if path_bars is None else _positions(symbols, entry, current, early, status, last_trades, exit_bars)
     if not symbols or not held:
-        return {"status": "waiting", "n": len(symbols), "priced": 0, "mean_return": None, "gains": {}, "early_exits": {}}
+        return {"status": "waiting", "n": len(symbols), "priced": 0, "mean_return": None, "gains": {}, "early_exits": {},
+                **({"positions": positions} if positions is not None else {})}
 
     returns = [current[s] / entry[s] - 1 for s in held]
     mean = sum(returns) / len(held)
@@ -109,7 +111,35 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
         # Titres vendus avant l'heure de vente (stop ou objectif) et leur rendement brut.
         "early_exits": {s: {"at": e["at"], "price": str(e["price"]), "reason": e["reason"],
                             "return": float(e["price"] / entry[s] - 1)} for s, e in early.items()},
+        # Listes seulement (path_bars donné) : situation de chaque titre (suivi des positions).
+        **({"positions": positions} if positions is not None else {}),
     }
+
+
+def _positions(symbols, entry, current, early, status, last_trades, exit_bars):
+    """
+    Situation de chaque titre de la liste : « not_bought » (pas encore acheté), « held » (encore détenu, valeur au
+    dernier prix connu), « stop » / « objectif » (vendu plus tôt), « sold » (vendu à l'heure de vente). Avec le prix
+    d'achat, le dernier prix ou le prix de vente, son heure, la variation brute et après frais.
+    """
+    cost = COST_BPS / Decimal("10000")
+    exit_times = {sym: bars["timestamp"].max() for sym, bars in exit_bars.groupby("symbol")} if not exit_bars.empty else {}
+    result = {}
+    for s in symbols:
+        if s not in entry:
+            result[s] = {"state": "not_bought"}
+            continue
+        if s in early:
+            state, at = early[s]["reason"], early[s]["at"]
+        elif status == "closed":
+            state, at = "sold", exit_times[s].isoformat() if s in exit_times else None
+        else:
+            state, at = "held", last_trades[s][0].isoformat() if s in last_trades else None
+        price = current.get(s)
+        result[s] = {"state": state, "entry": str(entry[s]), "price": None if price is None else str(price), "at": at,
+                     "return": None if price is None else float(price / entry[s] - 1),
+                     "net_return": None if price is None else float(price * (1 - cost) / (entry[s] * (1 + cost)) - 1)}
+    return result
 
 
 def after_tax(gains):

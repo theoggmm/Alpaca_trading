@@ -198,6 +198,14 @@
       <p class="note" id="selection-note"></p>
     </section>
 
+    <section id="positions-section">
+      <h2 data-t="positions_title"></h2>
+      <p class="intro" data-t="intro_positions"></p>
+      <div class="live-status" id="positions-status"></div>
+      <div class="panel" id="positions"></div>
+      <p class="note" id="positions-note"></p>
+    </section>
+
     <section id="plan-section">
       <h2 data-t="plan_title"></h2>
       <p class="intro" data-t="intro_plan"></p>
@@ -433,6 +441,17 @@ const TEXT = {
     archive_lists_title: "Listes archivées",
     intro_archive_lists: "Les actions retenues chaque séance archivée, par version de la liste.",
     archive_n: "Titres", archive_symbols: "Symboles", series_old_per12: "PER < 12", pe_label: x => `PER < ${Number(x)}`, opt_archive: "Archive (anciennes règles)",
+    positions_title: "Suivi des positions",
+    intro_positions: "Où en est chaque action de la liste affichée (menu « Version ») : encore détenue, ou déjà vendue — au stop (baisse de 1,5 %), à l'objectif (hausse de 3 %) ou à l'heure de vente de la stratégie. La dernière colonne donne le gain ou la perte, frais compris, si tu avais réparti 10 000 $ à parts égales entre les actions de la liste.",
+    positions_no_list: "Pas encore de liste pour cette séance : le suivi commence à l'heure d'achat de la stratégie.",
+    positions_missing: "Suivi détaillé indisponible pour cette séance (fonction ajoutée le 16 octobre 2026).",
+    positions_state: "Situation", positions_entry: "Prix d'achat", positions_price: "Dernier prix ou prix de vente",
+    positions_time: "Heure (New York · Paris)", positions_change: "Variation", positions_gain: s => `Gain ou perte (part de ${s})`,
+    positions_total: "Total de la liste",
+    position_states: { held: "En cours", stop: "Vendue au stop (−1,5 %)", objectif: "Vendue à l'objectif (+3 %)",
+                       sold: "Vendue à l'heure de vente", not_bought: "Pas encore achetée" },
+    positions_counts: c => `${c.held || 0} en cours · ${c.stop || 0} au stop · ${c.objectif || 0} à l'objectif · ${c.sold || 0} à l'heure de vente` + (c.not_bought ? ` · ${c.not_bought} pas encore achetée(s)` : ""),
+    positions_note: a => `Gain ou perte après 0,05 % de frais à l'achat et à la vente, sur la part de chaque action quand ${a} sont répartis à parts égales (fractions d'action admises), avant impôts. Une action encore en cours est valorisée à son dernier prix connu (15 min de retard).`,
     versions_title: "Les deux versions de la liste",
     intro_versions: "Chaque jour, le programme fait deux listes. Elles partagent les mêmes critères de base (actions calmes, en baisse sur un mois, qui remontent depuis deux jours et pendant la première heure) et quatre règles de prudence (deux de tendance, deux contre l'achat au sommet) ; seule la seconde ajoute le PER. Le menu « Version » en haut de page choisit la liste affichée.",
     versions_head: ["Version", "Règles", "Liste et achat (New York)", "Depuis"],
@@ -645,6 +664,17 @@ const TEXT = {
     archive_lists_title: "Archived lists",
     intro_archive_lists: "The stocks picked in each archived session, by version of the list.",
     archive_n: "Stocks", archive_symbols: "Symbols", series_old_per12: "P/E < 12", pe_label: x => `P/E < ${Number(x)}`, opt_archive: "Archive (old rules)",
+    positions_title: "Position tracking",
+    intro_positions: "Where each stock of the displayed list stands (\"Version\" menu): still held, or already sold — at the stop (1.5% drop), at the target (3% rise) or at the strategy's selling time. The last column gives the gain or loss, costs included, if you had split $10,000 equally across the list's stocks.",
+    positions_no_list: "No list for this session yet: tracking starts at the strategy's buying time.",
+    positions_missing: "Detailed tracking unavailable for this session (feature added on October 16, 2026).",
+    positions_state: "Status", positions_entry: "Purchase price", positions_price: "Latest or sale price",
+    positions_time: "Time (New York · Paris)", positions_change: "Change", positions_gain: s => `Gain or loss (share of ${s})`,
+    positions_total: "List total",
+    position_states: { held: "Still held", stop: "Sold at the stop (−1.5%)", objectif: "Sold at the target (+3%)",
+                       sold: "Sold at the selling time", not_bought: "Not bought yet" },
+    positions_counts: c => `${c.held || 0} still held · ${c.stop || 0} at the stop · ${c.objectif || 0} at the target · ${c.sold || 0} at the selling time` + (c.not_bought ? ` · ${c.not_bought} not bought yet` : ""),
+    positions_note: a => `Gain or loss after 0.05% costs on buying and selling, on each stock's share when ${a} is split equally (fractional shares allowed), before tax. A stock still held is valued at its latest known price (15-min delay).`,
     versions_title: "The two versions of the list",
     intro_versions: "Every day, the program makes two lists. They share the same base criteria (calm stocks, down over a month, rising for two days and during the first hour) and four caution rules (two on trends, two against buying at the top); only the second adds the P/E. The \"Version\" menu at the top of the page chooses which list is shown.",
     versions_head: ["Version", "Rules", "List and purchase (New York)", "Since"],
@@ -1079,6 +1109,7 @@ function renderLive() {
     box.replaceChildren(el("div", "empty", TEXT.live_launch));
     renderSim();
     renderPlan();
+    renderPositions();
     return;
   }
   const running = !SHOWN.final && Date.now() - new Date(SHOWN.observed_at).getTime() < LIVE_STALE_MS;
@@ -1165,6 +1196,50 @@ function renderLive() {
   document.getElementById("live-note").textContent = TEXT.live_note(SHOWN.universe, SHOWN.first_hour_minutes);
   renderSim();
   renderPlan();
+  renderPositions();
+}
+
+// Suivi des positions : chaque titre de la liste affichée, encore détenu ou vendu (stop, objectif, heure de vente),
+// gain ou perte après frais sur sa part de POSITIONS_AMOUNT réparti à parts égales.
+const POSITIONS_AMOUNT = 10000;
+function renderPositions() {
+  const box = document.getElementById("positions");
+  const status = document.getElementById("positions-status");
+  const note = document.getElementById("positions-note");
+  const version = SHOWN?.portfolio?.versions?.[VARIANT];
+  const run = runFor(picker.value);
+  const positions = version?.positions;
+  if (!run || !positions) {
+    status.replaceChildren();
+    note.textContent = "";
+    box.replaceChildren(el("div", "empty", !run ? TEXT.positions_no_list : TEXT.positions_missing));
+    return;
+  }
+  const names = Object.fromEntries(run.selection.map(i => [i.symbol, i.name]));
+  const symbols = run.selection.map(i => i.symbol);
+  const share = POSITIONS_AMOUNT / Math.max(symbols.length, 1);
+  const rows = symbols.map(sym => ({ symbol: sym, name: names[sym], ...(positions[sym] || { state: "not_bought" }) }));
+  const gain = r => r.net_return == null ? null : share * r.net_return;
+  const money = v => v == null ? "—" : `${v > 0 ? "+" : ""}${usd(v)}`;
+  const counts = rows.reduce((c, r) => ({ ...c, [r.state]: (c[r.state] || 0) + 1 }), {});
+  status.replaceChildren(el("span", "pulse" + (counts.held && !SHOWN.final ? "" : " off")),
+    el("span", "", TEXT.positions_counts(counts)));
+  const t = table([
+    { label: TEXT.th.symbol, cls: "text symbol", value: r => r.symbol },
+    { label: TEXT.th.name, cls: "text name", value: r => r.name, title: r => r.name },
+    { label: TEXT.positions_state, cls: "text", value: r => TEXT.position_states[r.state], tone: r => r.state === "objectif" ? 1 : r.state === "stop" ? -1 : 0 },
+    { label: TEXT.positions_entry, value: r => r.entry ? usd(r.entry) : "—" },
+    { label: TEXT.positions_price, value: r => r.price ? usd(r.price) : "—" },
+    { label: TEXT.positions_time, cls: "text", value: r => r.at ? shortTime(r.at) : "—" },
+    { label: TEXT.positions_change, value: r => r.return == null ? "—" : pct(r.return), tone: r => r.return ?? 0 },
+    { label: TEXT.positions_gain(usd(share)), value: r => money(gain(r)), tone: r => gain(r) ?? 0 },
+  ], rows);
+  const total = rows.reduce((sum, r) => sum + (gain(r) ?? 0), 0);
+  const foot = t.createTFoot().insertRow();
+  foot.append(el("td", "text", TEXT.positions_total), el("td"), el("td"), el("td"), el("td"), el("td"), el("td"),
+              el("td", total > 0 ? "up" : total < 0 ? "down" : "", money(total)));
+  box.replaceChildren(t);
+  note.textContent = TEXT.positions_note(usd(POSITIONS_AMOUNT));
 }
 
 // Ordres à passer : nombre entier d'actions et prix à saisir pour la liste avec PER.
