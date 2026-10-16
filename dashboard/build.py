@@ -359,8 +359,11 @@ def _build_strategy(strategy, infos):
         out.write_text(page.replace("__LANG__", lang).replace("__METHODOLOGY__", methodology.embedded(lang, EXPERIMENT)),
                        encoding="utf-8")
     # Ligne de l'accueil : résultat du jour (en direct ou figé) et cumul depuis le début, par liste.
+    # « Aujourd'hui » : seulement l'état de la séance du jour (New York), pas celui d'une séance précédente.
+    session_today = datetime.now(ZoneInfo("America/New_York")).date().isoformat()
+    current = live if live and live.get("session_date") == session_today else None
     today = {v: {"status": row.get("status"), "net": row.get("net_mean_return"), "n": row.get("n")}
-             for v, row in ((live or {}).get("portfolio") or {}).get("versions", {}).items()}
+             for v, row in ((current or {}).get("portfolio") or {}).get("versions", {}).items()}
     return {**info, "session_date": (live or {}).get("session_date"), "today": today,
             "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "spy")}}
 
