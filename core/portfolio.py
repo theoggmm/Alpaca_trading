@@ -81,6 +81,10 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
     # fenêtre de vente est écarté de la répartition (comme un titre sans échange à l'achat).
     if now >= exit_time:
         status, current = "closed", _last_close(exit_bars)
+        if exit_bars.empty:
+            # Prix de vente pas encore servis (15 min de retard) : dernier échange connu avant l'heure de vente,
+            # sinon seuls les titres vendus au stop ou à l'objectif seraient comptés pendant ces minutes.
+            current = {s: price for s, (_, price) in last_trades.items()}
     else:
         status, current = "live", {s: price for s, (_, price) in last_trades.items()}
     early = {} if path_bars is None else early_exits(path_bars, entry, entry_time, exit_time, now)

@@ -167,3 +167,20 @@ def test_comparaison_sans_stop_ni_objectif():
     assert positions["FLAT"]["hold_net_return"] == pytest.approx(positions["FLAT"]["net_return"])
     # Repères (sans trajet) : pas de comparaison.
     assert "hold_mean_return" not in simulate(["FLAT"], entry, exit_, {}, entry_t, exit_t, exit_t + timedelta(minutes=30))
+
+
+def test_apres_heure_de_vente_avant_les_prix_de_vente():
+    """Entre l'heure de vente et l'arrivée des barres de vente : dernier échange connu, pas seulement les stops."""
+    from datetime import datetime, timedelta, timezone
+    from core.portfolio import simulate
+    entry_t = datetime(2026, 10, 16, 15, 0, tzinfo=timezone.utc)
+    exit_t = datetime(2026, 10, 16, 19, 30, tzinfo=timezone.utc)
+    cols = ["symbol", "timestamp", "open", "close", "volume"]
+    entry = pd.DataFrame([(s, entry_t, Decimal("100"), Decimal("100"), 1) for s in ("DOWN", "FLAT")], columns=cols)
+    path = pd.DataFrame([("DOWN", entry_t + timedelta(minutes=20), Decimal("98.4"), Decimal("98.4"), 1)], columns=cols)
+    no_exit = pd.DataFrame(columns=cols)
+    trades = {"FLAT": (exit_t - timedelta(minutes=2), Decimal("101")), "DOWN": (exit_t - timedelta(minutes=2), Decimal("99"))}
+    result = simulate(["DOWN", "FLAT"], entry, no_exit, trades, entry_t, exit_t, exit_t + timedelta(minutes=5), path_bars=path)
+    assert result["status"] == "closed" and result["priced"] == 2
+    assert result["mean_return"] == pytest.approx((-0.016 + 0.01) / 2)
+    assert result["hold_mean_return"] == pytest.approx((-0.01 + 0.01) / 2)
