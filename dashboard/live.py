@@ -519,10 +519,6 @@ def run(family):
             for path in catch_up(family):
                 print(f"État de fin de séance : {path}")
             return 0
-        if now < market_open + FEED_DELAY:
-            print(f"En attente des premiers prix (à {(market_open + FEED_DELAY).astimezone(NEW_YORK):%H:%M}, New York).")
-            time.sleep(REFRESH_S)
-            continue
         # Listes prêtes et pas encore produites : le suivi les produit lui-même (une liste « ouverture » sort à
         # 9 h 30, avant la tâche planifiée). La tâche planifiée commite et envoie l'historique ensuite.
         if _missing_lists(every, key, market_open, now):
@@ -530,6 +526,10 @@ def run(family):
                 screener.run(wait=False)
             except (FetchError, TraceError, ValueError) as e:
                 print(f"{now.astimezone(NEW_YORK):%H:%M} — listes non produites, nouvel essai dans {REFRESH_S} s : {e}")
+        if now < market_open + FEED_DELAY:
+            print(f"En attente des premiers prix (à {(market_open + FEED_DELAY).astimezone(NEW_YORK):%H:%M}, New York).")
+            time.sleep(REFRESH_S)
+            continue
         while overnight_sales and now >= overnight_sales[0]:
             overnight_sales.pop(0)
             try:
