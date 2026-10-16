@@ -357,3 +357,20 @@ d'un mois) ; limites des nouvelles stratégies et du stop ; sommaire et numérot
 stop / objectif (simulation), PER corrigé (critère PER).
 
 Autrement dit : la page Méthodologie décrit maintenant toutes les stratégies et toutes les règles en vigueur.
+
+## 2026-10-16 (suite) — Essai complet du tableau de bord
+
+**Question posée** : vérifier que tout fonctionne dans l'ensemble du tableau de bord.
+
+**Fait** : 63 tests verts ; séance du 14 octobre rejouée de bout en bout dans un dossier temporaire (historique
+réel intact) : 20 listes (10 stratégies × 2), états de fin de séance, ventes de nuit le 15, stop et objectif,
+22 pages ; chaque page affichée dans Chrome, tous les onglets ouverts : aucune erreur JavaScript, aucune valeur
+manquante, pages anglaises sans français. Deux défauts trouvés et corrigés : achats de 15 h 55 restés « en attente »
+(prix d'achat demandés trop tôt dans l'état de fin de séance) ; titre de l'onglet de la méthodologie anglaise.
+
+Autrement dit : les dix stratégies produisent leurs listes, leurs simulations et leurs pages sans erreur.
+
+**Points signalés** : le suivi en direct proprement dit (minute par minute pendant la séance) ne peut s'essayer qu'en
+séance : vérification prévue à l'ouverture. Détails d'affichage : heure de vente « 9:31 » pour « à l'ouverture » dans
+la simulation, formats d'heure mêlés (15:00 / 03:00 PM) sur les pages anglaises, texte d'introduction de la sélection
+qui parle de « première heure » pour toutes les stratégies.

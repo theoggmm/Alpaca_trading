@@ -102,6 +102,7 @@ def _values(lang, experiment):
     opening = next(c for s in every for c in s.criteria().values() if isinstance(c, OpeningCriteria))
     closing = next(c for s in every for c in s.criteria().values() if isinstance(c, ClosingCriteria))
     return {
+        "page_title": "Méthodologie" if lang == "fr" else "Methodology",
         "strategies_table": _strategies_table(lang, feed), "n_strategies": len(every),
         "open_last_hour": opening.last_hour_minutes, "open_min_night": _number(opening.min_overnight * 100, lang),
         "open_max_night": _number(opening.max_overnight * 100, lang), "open_min_volume": opening.min_premarket_volume,
