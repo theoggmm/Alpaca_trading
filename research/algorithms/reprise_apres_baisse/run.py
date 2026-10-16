@@ -13,6 +13,7 @@ from zoneinfo import ZoneInfo
 
 from core.domains import domain_trends
 from core.screener import Criteria, daily_candidates, liquid_universe, screen
+from core.closing import ClosingCriteria, screen_closing
 from core.opening import OpeningCriteria, screen_opening
 from core.strategy import load_strategies
 from core.universe import eligible_symbols
@@ -76,14 +77,37 @@ def _produce_opening(alpaca, criteria, session_date, market_open, key):
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 
+def _produce_closing(alpaca, criteria, session_date, market_open, key):
+    """
+    Liste « fin de journée » : barres minute de la séance du jour des titres liquides, jusqu'à la décision.
+    Retourne (décision, sélection, entonnoir, cotes Nasdaq, date de l'annuaire, univers, quotidien).
+    """
+    decision_time = market_open + timedelta(minutes=criteria.decision_minutes)
+    listings, listings_created = cached(f"{key}/nasdaq_listings", nasdaq_symbols.listings)
+    assets = cached(f"{key}/alpaca_assets", alpaca.assets)
+    symbols, universe_funnel = eligible_symbols(assets, listings)
+    daily = cached(f"{key}/daily_bars",
+                   lambda: alpaca.bars(symbols, "1Day", decision_time - DAILY_HISTORY, decision_time))
+    liquid, _ = liquid_universe(daily, decision_time, criteria)
+    minute = cached(f"{key}/day_bars_{decision_time.astimezone(NEW_YORK):%H%M}",
+                    lambda: alpaca.bars([s.symbol for s in liquid], "1Min", market_open, decision_time))
+    market_daily = None if criteria.market_symbol is None else cached(
+        f"{key}/market_daily_bars_{criteria.market_symbol}",
+        lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
+    selection, funnel = screen_closing(daily, minute, market_open, decision_time, criteria,
+                                       earnings_for=lambda s: sec.eps(s, key), market_daily=market_daily)
+    return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
+
+
 def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     """
     Calcule le run d'une séance (sans l'enregistrer) : sélection, entonnoir, domaines, sources.
     Toutes les données sont tronquées à l'instant de décision (ouverture + première heure, + confirmation).
     """
     key = session_date.isoformat()
-    if isinstance(criteria, OpeningCriteria):
-        decision_time, selection, funnel, listings, listings_created, universe_funnel, daily = _produce_opening(
+    if isinstance(criteria, (OpeningCriteria, ClosingCriteria)):
+        special = _produce_opening if isinstance(criteria, OpeningCriteria) else _produce_closing
+        decision_time, selection, funnel, listings, listings_created, universe_funnel, daily = special(
             alpaca, criteria, session_date, market_open, key)
         return _payload(alpaca, criteria, key, market_open, decision_time, now, git_sha, daily, listings,
                         listings_created, universe_funnel, funnel, selection)
@@ -159,7 +183,9 @@ def _report(payload, criteria, path):
         pe = f"  PER {item['pe_ttm']}" if item.get("pe_ttm") else ""
         # Liste « reprise » : première heure ; liste « ouverture » : dernière heure de la veille et nuit.
         signal = (f"1re heure {_pct(item['return_first_hour'])}" if "return_first_hour" in item else
-                  f"fin de veille {_pct(item['return_last_hour'])}  nuit {_pct(item['return_overnight'])}")
+                  f"fin de veille {_pct(item['return_last_hour'])}  nuit {_pct(item['return_overnight'])}"
+                  if "return_overnight" in item else
+                  f"journée {_pct(item['return_day'])}  dernière heure {_pct(item['return_last_hour'])}")
         print(f"{item['rank']:>3}. {item['symbol']:<6} {item['name'][:40]:<40} "
               f"mois {_pct(item['return_month'])}  J-2 {_pct(item['return_day_minus_2'])}  "
               f"J-1 {_pct(item['return_day_minus_1'])}  {signal}{pe}")

@@ -1,0 +1,8 @@
+{
+  "id": "nuit_15h55_ouverture",
+  "name": "Nuit : achat 15 h 55, vente le lendemain à l'ouverture",
+  "description": "Fin de journée : mêmes règles, choisies à 15 h 40. Achat juste avant la clôture (15 h 55), vente le lendemain à l'ouverture (9 h 30, New York).",
+  "name_en": "Overnight: buy 3:55 PM, sell next day at the open",
+  "description_en": "End of day: same rules, chosen at 3:40 PM. Bought just before the close (3:55 PM), sold the next day at the open (9:30 AM, New York).",
+  "exit_next_open_minutes": 0
+}

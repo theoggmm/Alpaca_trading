@@ -491,8 +491,9 @@ const TEXT = {
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
     no_run_yet: "Les listes de cette séance seront produites à l'heure d'achat de la stratégie (voir le bandeau en haut, heures de New York et de Paris).",
     strategy_label: "Stratégie", home_link: "← Toutes les stratégies",
-    strategy_times: st => `Achat au premier échange à partir de ${st.buy} New York (${st.buy_paris} Paris), vente au dernier échange avant ${st.sell} New York (${st.sell_paris} Paris).`,
+    strategy_times: st => `Achat au premier échange à partir de ${st.buy} New York (${st.buy_paris} Paris), vente ${st.next_day ? "la séance suivante, " : ""}au dernier échange avant ${st.sell} New York (${st.sell_paris} Paris)${st.next_day ? " : les actions sont gardées pendant la nuit, le résultat d'une séance est connu le lendemain matin" : ""}.`,
     th_last_hour: "Dernière heure (veille)", th_overnight: "Nuit (jusqu'à 9 h 15)",
+    th_day: "Journée (jusqu'à la décision)", th_hour_before: "Dernière heure avant la décision",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
     final_definitive: "définitive",
     final_source: "dernier échange avant 16 h 00 (New York), historique minute toutes bourses",
@@ -700,8 +701,9 @@ const TEXT = {
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
     no_run_yet: "This session's lists will be produced at the strategy's buying time (see the banner at the top, New York and Paris times).",
     strategy_label: "Strategy", home_link: "← All strategies",
-    strategy_times: st => `Bought at the first trade from ${st.buy} New York (${st.buy_paris} Paris), sold at the last trade before ${st.sell} New York (${st.sell_paris} Paris).`,
+    strategy_times: st => `Bought at the first trade from ${st.buy} New York (${st.buy_paris} Paris), sold ${st.next_day ? "the next session, " : ""}at the last trade before ${st.sell} New York (${st.sell_paris} Paris)${st.next_day ? ": the stocks are held overnight, a session's result is known the next morning" : ""}.`,
     th_last_hour: "Last hour (day before)", th_overnight: "Overnight (to 9:15 AM)",
+    th_day: "Day (up to the decision)", th_hour_before: "Last hour before the decision",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
     final_definitive: "final",
     final_source: "last trade before 4:00 PM (New York), all-exchange minute history",
@@ -929,8 +931,11 @@ function renderRun(run) {
     { label: th.d1, value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
     ...(run.selection.some(r => r.return_first_hour != null)
       ? [{ label: th.first_hour, value: r => pct(r.return_first_hour), tone: r => r.return_first_hour }]
-      : [{ label: TEXT.th_last_hour, value: r => pct(r.return_last_hour), tone: r => r.return_last_hour },
-         { label: TEXT.th_overnight, value: r => pct(r.return_overnight), tone: r => r.return_overnight }]),
+      : run.selection.some(r => r.return_overnight != null)
+      ? [{ label: TEXT.th_last_hour, value: r => pct(r.return_last_hour), tone: r => r.return_last_hour },
+         { label: TEXT.th_overnight, value: r => pct(r.return_overnight), tone: r => r.return_overnight }]
+      : [{ label: TEXT.th_day, value: r => pct(r.return_day), tone: r => r.return_day },
+         { label: TEXT.th_hour_before, value: r => pct(r.return_last_hour), tone: r => r.return_last_hour }]),
     ...(run.criteria.max_pe ? [{ label: th.pe, value: r => r.pe_ttm == null ? "—" : Number(r.pe_ttm).toFixed(1) }] : []),
     ...(liveColumn ? [liveColumn] : []),
     ...(entryColumn ? [entryColumn] : []),

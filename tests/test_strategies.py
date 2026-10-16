@@ -26,6 +26,12 @@ def test_strategies_de_la_famille():
     # Décisions : 10 h 45 (principale), 10 h 15 (achat 10 h 30), 9 h 15 (ouverture : avant l'ouverture).
     decisions = {k: min(c.decision_minutes for c in s.criteria().values()) for k, s in every.items()}
     assert decisions == {"principale": 75, "achat_10h30": 45, "ouverture_1h": -15, "ouverture_2h": -15,
-                         "vente_cloture": 75}
+                         "vente_cloture": 75, "nuit_15h_10h30": 315, "nuit_15h_ouverture": 315,
+                         "nuit_15h55_ouverture": 370}
+    # De nuit : achat en fin de séance, vente la séance suivante (« à l'ouverture » = fin de la première minute).
+    monday = datetime(2026, 10, 19, 13, 30, tzinfo=timezone.utc)
+    assert every["nuit_15h_10h30"].exit_time(OPEN, CLOSE, monday) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
+    assert every["nuit_15h55_ouverture"].exit_time(OPEN, CLOSE, monday) == datetime(2026, 10, 19, 13, 31, tzinfo=timezone.utc)
+    assert every["nuit_15h_ouverture"].overnight and not every["principale"].overnight
     assert isinstance(every["ouverture_1h"].criteria()["per12"], OpeningCriteria)
     assert isinstance(every["achat_10h30"].criteria()["per12"], Criteria)

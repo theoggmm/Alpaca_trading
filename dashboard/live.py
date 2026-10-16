@@ -125,7 +125,20 @@ def _month_trend(daily, market_open, criteria, domains):
     return {"bubbles": bubbles, "unclassified": unclassified}
 
 
-def _trade_times(strategy, market_open, market_close, runs=()):
+def _next_open(alpaca, session_date):
+    """Ouverture (UTC) de la séance qui suit session_date (calendrier Alpaca)."""
+    later = [s for s in alpaca.sessions(session_date, session_date + timedelta(days=10)) if s[0] > session_date]
+    day, open_time, _ = later[0]
+    return datetime.combine(day, open_time, NEW_YORK).astimezone(timezone.utc)
+
+
+def _settled(final):
+    """Toutes les listes d'un état de fin de séance sont vendues (simulation « closed ») ou vides."""
+    versions = ((final.get("portfolio") or {}).get("versions") or {}).values()
+    return all(v.get("status") == "closed" or not v.get("n") for v in versions)
+
+
+def _trade_times(strategy, market_open, market_close, runs=(), next_open=None):
     """
     (achat des repères, vente) d'une stratégie : achat à l'heure d'achat la plus tôt des listes de la séance
     (leurs critères enregistrés), à défaut celle des critères actuels de la stratégie (décision + 15 min) ;
@@ -134,7 +147,7 @@ def _trade_times(strategy, market_open, market_close, runs=()):
     minutes = min(c.decision_minutes for c in strategy.criteria().values())
     default = market_open + timedelta(minutes=minutes) + FEED_DELAY
     return (min((_entry_time(r, market_open) for r in runs), default=default),
-            strategy.exit_time(market_open, market_close))
+            strategy.exit_time(market_open, market_close, next_open))
 
 
 def _entry_time(run, market_open):
@@ -260,20 +273,25 @@ def is_definitive(now, market_close):
     return now >= market_close + DEFINITIVE_AFTER
 
 
-def finalize(strategy, alpaca, criteria, session_date, open_time, close_time):
+def finalize(strategy, alpaca, criteria, session_date, open_time, close_time, next_open=None):
     """
     État de fin de séance d'une stratégie, reconstitué depuis l'historique minute : dernier échange de chaque
     titre avant la clôture (l'enchère de clôture n'est pas comptée). Écrit research/experiments/final/<stockage>/.
     Provisoire s'il est calculé moins de DEFINITIVE_AFTER après la clôture ; l'état définitif relit
     les barres minute à neuf (cache distinct), pour intégrer les corrections d'Alpaca.
     criteria : critères de l'univers liquide (communs aux stratégies).
+    Stratégie de nuit (vente la séance suivante, ouverture next_open) : tant que la vente n'est pas connue,
+    la simulation reste « en cours », valorisée à la clôture ; refaite après la vente ; définitive 12 h après.
     """
     key = session_date.isoformat()
     market_open, market_close = _times(session_date, open_time, close_time)
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
     git_sha = committed_git_sha()
     now = datetime.now(timezone.utc)
-    stage = "definitive" if is_definitive(now, market_close) else "provisional"
+    if strategy.overnight and next_open is None:
+        next_open = _next_open(alpaca, session_date)
+    settle = max(market_close, strategy.exit_time(market_open, market_close, next_open))
+    stage = "definitive" if is_definitive(now, settle) else "provisional"
 
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
     runs, opens = _selection(strategy.storage, key)
@@ -283,15 +301,18 @@ def finalize(strategy, alpaca, criteria, session_date, open_time, close_time):
     closing = cached(f"{key}/{stage}_closing_bars",
                      lambda: alpaca.bars(tracked, "1Min", market_close - CLOSING_WINDOW, market_close))
     trades = last_session_prices(closing, market_close)
-    entry_time, exit_time = _trade_times(strategy, market_open, market_close, runs)
+    entry_time, exit_time = _trade_times(strategy, market_open, market_close, runs, next_open)
     traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
     entry_bars = _entry_bars(alpaca, key, stage, traded, _entry_times(strategy, market_open, runs), market_close)
-    exit_bars = _exit_bars(alpaca, key, stage, traded, exit_time)
+    # Vente connue seulement une fois servie (de nuit : le lendemain matin) ; sinon valeur à la clôture.
+    sold = now >= exit_time + FEED_DELAY
+    exit_bars = _exit_bars(alpaca, key, stage, traded, exit_time) if sold else EMPTY_BARS
+    observed = exit_time if sold else market_close
 
     state = _state(strategy.storage, criteria, key, market_open, market_close, market_close,
                    daily, domains, names, trades, minute, minute, runs, opens)
     state["portfolio"] = _portfolio(runs, symbols, entry_bars, exit_bars, trades, market_open, entry_time, exit_time,
-                                    market_close)
+                                    observed)
     state["month_trend"] = _month_trend(daily, market_open, criteria, domains)
     state["order_plan"] = (_order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry")
                            if strategy.is_main else None)
@@ -319,12 +340,14 @@ def finalize(strategy, alpaca, criteria, session_date, open_time, close_time):
 
 def catch_up(family):
     """
-    Pour chaque stratégie : produit l'état de fin de séance de chaque séance terminée qui n'en a pas, et remplace
-    par l'état définitif tout état provisoire dès que DEFINITIVE_AFTER est passé. Depuis son premier run.
+    Pour chaque stratégie : produit l'état de fin de séance de chaque séance terminée qui n'en a pas ; refait
+    l'état d'une stratégie de nuit dès que sa vente du lendemain est connue ; remplace par l'état définitif tout
+    état provisoire DEFINITIVE_AFTER après la clôture (ou après la vente, de nuit). Depuis le premier run.
     """
     criteria = _criteria(family)
     alpaca = None
     now = datetime.now(timezone.utc)
+    today = now.astimezone(NEW_YORK).date()
     done = []
     for strategy in strategies(family):
         runs = load_runs(strategy.storage)
@@ -332,13 +355,20 @@ def catch_up(family):
             continue
         alpaca = alpaca or AlpacaReader()
         first = datetime.fromisoformat(runs[0]["session_date"]).date()
-        for session_date, open_time, close_time in alpaca.sessions(first, now.astimezone(NEW_YORK).date()):
-            _, market_close = _times(session_date, open_time, close_time)
+        calendar = alpaca.sessions(first, today + timedelta(days=10))
+        for i, (session_date, open_time, close_time) in enumerate(calendar):
+            if session_date > today or i + 1 >= len(calendar):
+                break
+            market_open, market_close = _times(session_date, open_time, close_time)
+            next_open = _times(*calendar[i + 1])[0]
+            exit_time = strategy.exit_time(market_open, market_close, next_open)
             path = FINALS_DIR / strategy.storage / f"{session_date}.json"
-            missing = now >= market_close + FEED_DELAY and not path.exists()
-            provisional = path.exists() and json.loads(path.read_text(encoding="utf-8")).get("provisional", True)
-            if missing or (provisional and is_definitive(now, market_close)):
-                done.append(finalize(strategy, alpaca, criteria, session_date, open_time, close_time))
+            final = json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+            missing = final is None and now >= market_close + FEED_DELAY
+            unsold = strategy.overnight and final is not None and not _settled(final) and now >= exit_time + FEED_DELAY
+            provisional = final is not None and final.get("provisional", True) and is_definitive(now, max(market_close, exit_time))
+            if missing or unsold or provisional:
+                done.append(finalize(strategy, alpaca, criteria, session_date, open_time, close_time, next_open))
     if done:
         build(family)
     return done
@@ -446,7 +476,11 @@ def run(family):
     # Prix d'achat et de vente de tous les titres liquides et du SPY (les listes en font partie), lus une fois
     # par heure d'achat et par heure de vente, partagés par les stratégies qui ont la même heure.
     traded = sorted(set(symbols) | {BENCHMARK})
-    plans = {s.id: _trade_times(s, market_open, market_close) for s in every}
+    next_open = _next_open(alpaca, session_date)
+    plans = {s.id: _trade_times(s, market_open, market_close, next_open=next_open) for s in every}
+    # Ventes de nuit de la veille, ce matin : l'état de la veille est refait dès qu'elles sont servies.
+    overnight_sales = sorted({market_open + timedelta(minutes=max(s.exit_next_open_minutes, 1)) + FEED_DELAY
+                              for s in every if s.overnight})
     entry_times = sorted({at for s in every for at in _entry_times(s, market_open)})
     exits = {}
 
@@ -468,6 +502,13 @@ def run(family):
                 screener.run(wait=False)
             except (FetchError, TraceError, ValueError) as e:
                 print(f"{now.astimezone(NEW_YORK):%H:%M} — listes non produites, nouvel essai dans {REFRESH_S} s : {e}")
+        while overnight_sales and now >= overnight_sales[0]:
+            overnight_sales.pop(0)
+            try:
+                for path in catch_up(family):
+                    print(f"{now.astimezone(NEW_YORK):%H:%M} — vente de nuit connue, état refait : {path}")
+            except (FetchError, TraceError, ValueError) as e:
+                print(f"{now.astimezone(NEW_YORK):%H:%M} — état de la veille non refait : {e}")
         selections = {s.id: _selection(s.storage, key) for s in every}
         opens_all = {sym for _, opens in selections.values() for sym in opens}
         try:
@@ -490,7 +531,7 @@ def run(family):
         last_prices = {s: price for s, (_, price) in session_trades(trades, market_open, market_close, now).items()}
         for strategy in every:
             today_runs, opens = selections[strategy.id]
-            entry_time, exit_time = _trade_times(strategy, market_open, market_close, today_runs)
+            entry_time, exit_time = _trade_times(strategy, market_open, market_close, today_runs, next_open)
             # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
             state = _state(strategy.storage, criteria, key, market_open, market_close, now, daily, domains, names,
                            trades, minute, minute if not minute.empty else opening, today_runs, opens)

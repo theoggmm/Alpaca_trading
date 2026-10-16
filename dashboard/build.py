@@ -79,12 +79,17 @@ def _strategy_info(strategy):
     """Ce que la page affiche d'une stratégie : nom, description, heures d'achat et de vente (New York)."""
     open_minutes, close_minutes = 9 * 60 + 30, 16 * 60
     buy = open_minutes + min(c.decision_minutes for c in strategy.criteria().values()) + 15
-    sell = (open_minutes + strategy.exit_after_open_minutes if strategy.exit_after_open_minutes is not None
-            else close_minutes - strategy.exit_before_close_minutes)
+    if strategy.overnight:   # vente la séance suivante (0 = à l'ouverture)
+        sell = open_minutes + strategy.exit_next_open_minutes
+    elif strategy.exit_after_open_minutes is not None:
+        sell = open_minutes + strategy.exit_after_open_minutes
+    else:
+        sell = close_minutes - strategy.exit_before_close_minutes
     page = pages(strategy)
     return {"id": strategy.id, "name": strategy.name, "description": strategy.description, "name_en": strategy.name_en,
             "description_en": strategy.description_en, "main": strategy.is_main,
             "buy": _clock(buy), "sell": _clock(sell), "buy_paris": _paris(buy), "sell_paris": _paris(sell),
+            "next_day": strategy.overnight,
             "fr": page["fr"].name, "en": page["en"].name}
 
 
