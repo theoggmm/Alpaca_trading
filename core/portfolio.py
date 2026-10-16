@@ -84,9 +84,11 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
     else:
         status, current = "live", {s: price for s, (_, price) in last_trades.items()}
     early = {} if path_bars is None else early_exits(path_bars, entry, entry_time, exit_time, now)
+    hold = dict(current)  # prix sans la règle stop / objectif : chaque titre gardé jusqu'à l'heure de vente
     current.update({s: e["price"] for s, e in early.items()})
     held = [s for s in symbols if s in entry and s in current]
-    positions = None if path_bars is None else _positions(symbols, entry, current, early, status, last_trades, exit_bars)
+    positions = None if path_bars is None else _positions(symbols, entry, current, early, status, last_trades, exit_bars,
+                                                          hold)
     if not symbols or not held:
         return {"status": "waiting", "n": len(symbols), "priced": 0, "mean_return": None, "gains": {}, "early_exits": {},
                 **({"positions": positions} if positions is not None else {})}
@@ -113,10 +115,23 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
                             "return": float(e["price"] / entry[s] - 1)} for s, e in early.items()},
         # Listes seulement (path_bars donné) : situation de chaque titre (suivi des positions).
         **({"positions": positions} if positions is not None else {}),
+        # Listes seulement : le même calcul sans la règle stop / objectif (comparaison, rien n'est vendu autrement).
+        **({} if path_bars is None else _without_rule(symbols, entry, hold, cost, amounts)),
     }
 
 
-def _positions(symbols, entry, current, early, status, last_trades, exit_bars):
+def _without_rule(symbols, entry, hold, cost, amounts):
+    """Rendement moyen brut et après frais si chaque titre est gardé jusqu'à l'heure de vente (sans stop ni objectif)."""
+    held = [s for s in symbols if s in entry and s in hold]
+    if not held:
+        return {}
+    mean = sum(hold[s] / entry[s] - 1 for s in held) / len(held)
+    net = sum(hold[s] * (1 - cost) / (entry[s] * (1 + cost)) - 1 for s in held) / len(held)
+    return {"hold_mean_return": float(mean), "hold_net_mean_return": float(net),
+            "hold_net_gains": {str(amount): str((amount * net).quantize(Decimal("0.01"))) for amount in amounts}}
+
+
+def _positions(symbols, entry, current, early, status, last_trades, exit_bars, hold=None):
     """
     Situation de chaque titre de la liste : « not_bought » (pas encore acheté), « held » (encore détenu, valeur au
     dernier prix connu), « stop » / « objectif » (vendu plus tôt), « sold » (vendu à l'heure de vente). Avec le prix
@@ -139,6 +154,10 @@ def _positions(symbols, entry, current, early, status, last_trades, exit_bars):
         result[s] = {"state": state, "entry": str(entry[s]), "price": None if price is None else str(price), "at": at,
                      "return": None if price is None else float(price / entry[s] - 1),
                      "net_return": None if price is None else float(price * (1 - cost) / (entry[s] * (1 + cost)) - 1)}
+        # Sans la règle stop / objectif : même titre gardé jusqu'à l'heure de vente (ou dernier prix connu).
+        kept = (hold or {}).get(s)
+        result[s]["hold_net_return"] = (None if kept is None
+                                        else float(kept * (1 - cost) / (entry[s] * (1 + cost)) - 1))
     return result
 
 

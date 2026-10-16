@@ -118,3 +118,10 @@ heure de décision : principale r008/r009, vente_cloture, achat_10h30 et achat_1
 Les anciennes listes (r006/r007, r001/r002) restent dans l'historique ; la plus récente fait foi. Les prix d'achat
 mis en cache pour 10 h 30 et 11 h 00 sont archivés (research/outputs/cache_superseded/) puis relus. Statut :
 diagnostic papier — ces listes n'ont pas été connues à l'heure d'achat.
+
+## T14 — 2026-10-16 — Comparaison « sans stop/objectif » (propriétaire)
+
+Affichage seulement, aucune règle ne change : à côté de chaque résultat avec la vente à −1,5 % / +3 %, le même
+calcul si chaque titre était gardé jusqu'à l'heure de vente (après frais) — accueil (aujourd'hui et depuis le
+16 octobre, par liste), simulation, suivi des positions, historique des résultats. Séries `per12_sans_regle`,
+`sans_per_sans_regle`. But : voir si la règle rapporte ou coûte.

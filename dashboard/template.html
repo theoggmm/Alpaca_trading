@@ -403,10 +403,10 @@ const TEXT = {
     plan_no_list: "La liste avec PER de cette séance n'existe pas encore : elle est produite vers 17 h 00 (Paris).",
     plan_note: "Nombre entier d'actions, arrondi vers le bas pour ne jamais dépasser la part de chaque titre ; le reste n'est pas investi. Le prix à saisir est le dernier prix connu : comme limite d'un ordre à cours limité, l'ordre peut ne pas s'exécuter si le prix monte. Pour investir exactement le montant (fractions d'action), utilise buy-list.",
     sim_title: "Simulation : gain ou perte du jour selon le montant investi",
-    sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais", sim_tax: "Après impôts : ce que tu gardes",
+    sim_gross: "Brut", sim_net: "Après frais", sim_whole: "Actions entières, après frais", sim_tax: "Après impôts : ce que tu gardes", sim_hold: "Sans stop/objectif, après frais",
     sim_version: (v, n, t) => `${v} · ${n} titre(s) · achat à partir de ${t}`,
     sim_bench: s => `Repères du jour, mêmes règles, après frais : ${s}.`,
-    series: { per12: "PER < 25", sans_per: "Sans PER", per12_v2: "PER < 12 (avant les règles)", sans_per_v1: "Sans PER (avant les règles)", per12_confirmation: "PER < 12 + confirmation seule", per12_pas_au_sommet: "PER < 12 + pas au sommet seul", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
+    series: { per12: "PER < 25", sans_per: "Sans PER", per12_sans_regle: "PER < 25 sans stop/objectif", sans_per_sans_regle: "Sans PER sans stop/objectif", per12_v2: "PER < 12 (avant les règles)", sans_per_v1: "Sans PER (avant les règles)", per12_confirmation: "PER < 12 + confirmation seule", per12_pas_au_sommet: "PER < 12 + pas au sommet seul", univers: "Univers liquide", spy: "S&P 500 (SPY)" },
     results_title: "Historique des résultats (simulation après frais)",
     exp_title: id => `Expérience ${id} : liste avec PER face à sans PER et à l'univers liquide`,
     exp_progress: (n, total, start, pending) => `${n} séance(s) comptée(s) sur ${total}, à partir du ${start} : une séance compte dès la clôture (tout est vendu à 15 h 30)${pending ? ` ; ${pending} encore provisoire(s), vérifiée(s) la nuit suivante avec les corrections d'Alpaca` : ""}. Le verdict n'est rendu qu'après la ${total}e séance.`,
@@ -446,12 +446,12 @@ const TEXT = {
     positions_no_list: "Pas encore de liste pour cette séance : le suivi commence à l'heure d'achat de la stratégie.",
     positions_missing: "Suivi détaillé indisponible pour cette séance (fonction ajoutée le 16 octobre 2026).",
     positions_state: "Situation", positions_entry: "Prix d'achat", positions_price: "Dernier prix ou prix de vente",
-    positions_time: "Heure (New York · Paris)", positions_change: "Variation", positions_gain: s => `Gain ou perte (part de ${s})`,
+    positions_time: "Heure (New York · Paris)", positions_change: "Variation", positions_gain: s => `Gain ou perte (part de ${s})`, positions_hold: "Sans stop/objectif",
     positions_total: "Total de la liste",
     position_states: { held: "En cours", stop: "Vendue au stop (−1,5 %)", objectif: "Vendue à l'objectif (+3 %)",
                        sold: "Vendue à l'heure de vente", not_bought: "Pas encore achetée" },
     positions_counts: c => `${c.held || 0} en cours · ${c.stop || 0} au stop · ${c.objectif || 0} à l'objectif · ${c.sold || 0} à l'heure de vente` + (c.not_bought ? ` · ${c.not_bought} pas encore achetée(s)` : ""),
-    positions_note: a => `Gain ou perte après 0,05 % de frais à l'achat et à la vente, sur la part de chaque action quand ${a} sont répartis à parts égales (fractions d'action admises), avant impôts. Une action encore en cours est valorisée à son dernier prix connu (15 min de retard).`,
+    positions_note: a => `Gain ou perte après 0,05 % de frais à l'achat et à la vente, sur la part de chaque action quand ${a} sont répartis à parts égales (fractions d'action admises), avant impôts. Une action encore en cours est valorisée à son dernier prix connu (15 min de retard). Colonne « Sans stop/objectif » : ce que la même action aurait donné gardée jusqu'à l'heure de vente, sans la vente à −1,5 % ni à +3 %.`,
     criteria_open: c => [
       `Actions cotées aux États-Unis, hors ETF ; prix d'au moins ${c.min_price_usd} $ et au moins ${Number(c.min_avg_dollar_volume_usd) / 1e6} M$ échangés par jour en moyenne sur ${c.liquidity_sessions} séances.`,
       ...(c.market_ma_sessions ? [`Marché en bonne forme : la veille, ${c.market_symbol} au-dessus de sa moyenne des ${c.market_ma_sessions} dernières séances.`] : []),
@@ -645,10 +645,10 @@ const TEXT = {
     plan_no_list: "This session's P/E list doesn't exist yet: it is produced around 5:00 PM (Paris).",
     plan_note: "Whole shares, rounded down so each stock never exceeds its share; the rest stays uninvested. The price to enter is the latest known price: as the limit of a limit order, the order may not fill if the price rises. To invest the exact amount (fractional shares), use buy-list.",
     sim_title: "Simulation: the day's gain or loss by amount invested",
-    sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs", sim_tax: "After tax: what you keep",
+    sim_gross: "Gross", sim_net: "After costs", sim_whole: "Whole shares, after costs", sim_tax: "After tax: what you keep", sim_hold: "No stop/target, after costs",
     sim_version: (v, n, t) => `${v} · ${n} stock(s) · bought from ${t}`,
     sim_bench: s => `Today's benchmarks, same rules, after costs: ${s}.`,
-    series: { per12: "P/E < 25", sans_per: "Without P/E", per12_v2: "P/E < 12 (before the rules)", sans_per_v1: "Without P/E (before the rules)", per12_confirmation: "P/E < 12 + confirmation only", per12_pas_au_sommet: "P/E < 12 + not at the top only", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
+    series: { per12: "P/E < 25", sans_per: "Without P/E", per12_sans_regle: "P/E < 25 no stop/target", sans_per_sans_regle: "Without P/E no stop/target", per12_v2: "P/E < 12 (before the rules)", sans_per_v1: "Without P/E (before the rules)", per12_confirmation: "P/E < 12 + confirmation only", per12_pas_au_sommet: "P/E < 12 + not at the top only", univers: "Liquid universe", spy: "S&P 500 (SPY)" },
     results_title: "Results history (simulation after costs)",
     exp_title: id => `Experiment ${id}: P/E list vs without P/E and the liquid universe`,
     exp_progress: (n, total, start, pending) => `${n} session(s) counted out of ${total}, from ${start}: a session counts as soon as the market closes (everything is sold at 3:30 PM)${pending ? `; ${pending} still provisional, checked the following night with Alpaca's corrections` : ""}. The verdict is only given after session ${total}.`,
@@ -688,12 +688,12 @@ const TEXT = {
     positions_no_list: "No list for this session yet: tracking starts at the strategy's buying time.",
     positions_missing: "Detailed tracking unavailable for this session (feature added on October 16, 2026).",
     positions_state: "Status", positions_entry: "Purchase price", positions_price: "Latest or sale price",
-    positions_time: "Time (New York · Paris)", positions_change: "Change", positions_gain: s => `Gain or loss (share of ${s})`,
+    positions_time: "Time (New York · Paris)", positions_change: "Change", positions_gain: s => `Gain or loss (share of ${s})`, positions_hold: "No stop/target",
     positions_total: "List total",
     position_states: { held: "Still held", stop: "Sold at the stop (−1.5%)", objectif: "Sold at the target (+3%)",
                        sold: "Sold at the selling time", not_bought: "Not bought yet" },
     positions_counts: c => `${c.held || 0} still held · ${c.stop || 0} at the stop · ${c.objectif || 0} at the target · ${c.sold || 0} at the selling time` + (c.not_bought ? ` · ${c.not_bought} not bought yet` : ""),
-    positions_note: a => `Gain or loss after 0.05% costs on buying and selling, on each stock's share when ${a} is split equally (fractional shares allowed), before tax. A stock still held is valued at its latest known price (15-min delay).`,
+    positions_note: a => `Gain or loss after 0.05% costs on buying and selling, on each stock's share when ${a} is split equally (fractional shares allowed), before tax. A stock still held is valued at its latest known price (15-min delay). "No stop/target" column: what the same stock would have given if kept until the selling time, without the −1.5% or +3% sale.`,
     criteria_open: c => [
       `US-listed stocks, excluding ETFs; price of at least $${c.min_price_usd} and at least $${Number(c.min_avg_dollar_volume_usd) / 1e6}M traded per day on average over ${c.liquidity_sessions} sessions.`,
       ...(c.market_ma_sessions ? [`Healthy market: the day before, ${c.market_symbol} above its average of the last ${c.market_ma_sessions} sessions.`] : []),
@@ -1259,6 +1259,7 @@ function renderPositions() {
   const share = POSITIONS_AMOUNT / Math.max(symbols.length, 1);
   const rows = symbols.map(sym => ({ symbol: sym, name: names[sym], ...(positions[sym] || { state: "not_bought" }) }));
   const gain = r => r.net_return == null ? null : share * r.net_return;
+  const holdGain = r => r.hold_net_return == null ? null : share * r.hold_net_return;
   const money = v => v == null ? "—" : `${v > 0 ? "+" : ""}${usd(v)}`;
   const counts = rows.reduce((c, r) => ({ ...c, [r.state]: (c[r.state] || 0) + 1 }), {});
   status.replaceChildren(el("span", "pulse" + (counts.held && !SHOWN.final ? "" : " off")),
@@ -1269,15 +1270,19 @@ function renderPositions() {
     { label: TEXT.positions_state, cls: "text", value: r => TEXT.position_states[r.state], tone: r => r.state === "objectif" ? 1 : r.state === "stop" ? -1 : 0 },
     { label: TEXT.positions_change, value: r => r.return == null ? "—" : pct(r.return), tone: r => r.return ?? 0 },
     { label: TEXT.positions_gain(usd(share)), value: r => money(gain(r)), tone: r => gain(r) ?? 0 },
+    { label: TEXT.positions_hold, value: r => r.hold_net_return == null ? "—" : `${money(holdGain(r))} (${pct(r.hold_net_return)})`,
+      tone: r => holdGain(r) ?? 0 },
     { label: TEXT.positions_entry, value: r => r.entry ? usd(r.entry) : "—" },
     { label: TEXT.positions_price, value: r => r.price ? usd(r.price) : "—" },
     { label: TEXT.positions_time, cls: "text", value: r => r.at ? shortTime(r.at) : "—" },
     { label: TEXT.th.name, cls: "text name", value: r => r.name, title: r => r.name },
   ], rows);
   const total = rows.reduce((sum, r) => sum + (gain(r) ?? 0), 0);
+  const holdTotal = rows.reduce((sum, r) => sum + (holdGain(r) ?? 0), 0);
   const foot = t.createTFoot().insertRow();
   foot.append(el("td", "text", TEXT.positions_total), el("td"), el("td"),
-              el("td", total > 0 ? "up" : total < 0 ? "down" : "", money(total)), el("td"), el("td"), el("td"), el("td"));
+              el("td", total > 0 ? "up" : total < 0 ? "down" : "", money(total)),
+              el("td", holdTotal > 0 ? "up" : holdTotal < 0 ? "down" : "", money(holdTotal)), el("td"), el("td"), el("td"), el("td"));
   box.replaceChildren(t);
   note.textContent = TEXT.positions_note(usd(POSITIONS_AMOUNT));
 }
@@ -1414,7 +1419,7 @@ function renderBacktest() {
 function renderResults() {
   const res = HISTORY.results;
   const exp = res.experiment;
-  const series = [...VARIANTS, "univers", "spy"];
+  const series = [...VARIANTS, ...VARIANTS.map(v => v + "_sans_regle"), "univers", "spy"];
   document.getElementById("experiment").replaceChildren(
     el("b", "", TEXT.exp_title(exp.id)),
     el("span", "", exp.suspended ? TEXT.exp_suspended : TEXT.exp_progress(exp.observed, exp.sessions, exp.start, exp.pending)),
@@ -1543,7 +1548,9 @@ function renderSim() {
 
   const amounts = ["10000", "25000", "50000", "100000", "1000000"];
   // Pour chaque version : brut, après frais, et en actions entières après frais (colonnes ajoutées le 15 octobre).
+  // « Sans stop/objectif » : même liste gardée jusqu'à l'heure de vente (comparaison avec la règle −1,5 % / +3 %).
   const kinds = [["gains", "mean_return", TEXT.sim_gross], ["net_gains", "net_mean_return", TEXT.sim_net],
+                 ["hold_net_gains", "hold_net_mean_return", TEXT.sim_hold],
                  ["whole_gains", null, TEXT.sim_whole], ["after_tax_gains", null, TEXT.sim_tax]];
   const money = (value, rate) => value === undefined ? "—"
     : `${Number(value) >= 0 ? "+" : ""}${usd(value)}` + (rate == null ? "" : ` (${pct(rate)})`);

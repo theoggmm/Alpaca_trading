@@ -406,3 +406,8 @@ retombent nettement sont écartées.
 Principale : 10 titres (PER < 25) et 15 (sans PER) au lieu de 3 et 6 ; achat à 10 h 30 : 6 et 11 au lieu de 2 et 4.
 
 Autrement dit : la journée d'aujourd'hui compte déjà avec la nouvelle règle, mais c'est une reconstitution après coup.
+
+**Ajout (même jour)** : question posée — voir ce que j'aurais gagné sans la règle −1,5 % / +3 %. Colonnes
+« sans stop/objectif » à l'accueil et dans chaque tableau de bord (décision T14), en direct. 66 tests verts.
+
+Autrement dit : chaque jour, on voit côte à côte le résultat avec la règle et sans elle.

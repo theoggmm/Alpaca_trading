@@ -42,6 +42,8 @@
   /* Mise en page d'origine : la colonne des stratégies garde sa largeur ; une situation (pas encore de chiffre)
      s'affiche en petit, en gris, et peut passer à la ligne. */
   td.text:first-child { min-width: 260px; }
+  /* Colonnes « sans stop/objectif » : fond légèrement grisé, pour les distinguer d'un coup d'œil. */
+  th.alt, td.alt { background: color-mix(in srgb, var(--line) 35%, transparent); }
   td.state { font-family: var(--font-ui); font-size: 12px; color: var(--muted); white-space: normal; min-width: 70px; }
   tr:last-child td { border-bottom: none; }
   .up { color: var(--up); } .down { color: var(--down); }
@@ -67,20 +69,20 @@ const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
     intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
-    head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · sans PER", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · sans PER", "Séances"],
+    head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · PER < 25 · sans stop/objectif", "Aujourd'hui · sans PER", "Aujourd'hui · sans PER · sans stop/objectif", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · PER < 25 · sans stop/objectif", "Depuis le 16 oct. · sans PER", "Depuis le 16 oct. · sans PER · sans stop/objectif", "Séances"],
     waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)",
     updated: t => `Mise à jour à ${t} (Paris) — la page se recharge toute seule chaque minute pendant la séance.`,
     list_at: t => `liste ${t}`, bought_at: t => `prix attendu`, sold: "vendu",
-    note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
+    note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Colonnes « sans stop/objectif » (en gris) : le même résultat si chaque titre était gardé jusqu'à l'heure de vente, sans la vente à −1,5 % ni à +3 % — pour voir ce que la règle rapporte ou coûte. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
   },
   en: {
     title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
     intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
-    head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · without P/E", "Since Oct 16 · P/E < 25", "Since Oct 16 · without P/E", "Sessions"],
+    head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · P/E < 25 · no stop/target", "Today · without P/E", "Today · without P/E · no stop/target", "Since Oct 16 · P/E < 25", "Since Oct 16 · P/E < 25 · no stop/target", "Since Oct 16 · without P/E", "Since Oct 16 · without P/E · no stop/target", "Sessions"],
     waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)",
     updated: t => `Updated at ${t} (Paris) — the page reloads itself every minute during the session.`,
     list_at: t => `list ${t}`, bought_at: t => `price pending`, sold: "sold",
-    note: "Today: live during the session (prices 15 min late), frozen at the selling time. All these strategies are paper diagnostics: no order is placed.",
+    note: "Today: live during the session (prices 15 min late), frozen at the selling time. \"No stop/target\" columns (grey background): the same result if every stock were kept until the selling time, without the −1.5% or +3% sale — to see what the rule gains or costs. All these strategies are paper diagnostics: no order is placed.",
   },
 }[LANG];
 const pct = v => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(v);
@@ -101,7 +103,7 @@ document.getElementById("updated").textContent = TEXT.updated(
   new Date(BUILT_AT).toLocaleTimeString(TEXT.locale, { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" }));
 const t = document.getElementById("rows");
 const head = t.createTHead().insertRow();
-TEXT.head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i < 2) th.className = "text"; head.appendChild(th); });
+TEXT.head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; th.className = i < 2 ? "text" : i < 10 && i % 2 === 1 ? "alt" : ""; head.appendChild(th); });
 const body = t.createTBody();
 ROWS.forEach(r => {
   const tr = body.insertRow();
@@ -124,8 +126,12 @@ ROWS.forEach(r => {
       n === undefined ? TEXT.list_at(r.buy_paris) : n === 0 ? TEXT.no_list : TEXT.bought_at(r.buy_paris));
     if (today?.net != null && today.status === "closed") td.textContent += ` · ${TEXT.sold}`;
     tr.appendChild(td);
+    const alt = cell(today?.net_no_rule ?? null, TEXT.none); alt.classList.add("alt"); tr.appendChild(alt);
   });
-  ["per12", "sans_per"].forEach(v => tr.appendChild(cell(r.totals[v]?.total ?? null, TEXT.none)));
+  ["per12", "sans_per"].forEach(v => {
+    tr.appendChild(cell(r.totals[v]?.total ?? null, TEXT.none));
+    const alt = cell(r.totals[v + "_sans_regle"]?.total ?? null, TEXT.none); alt.classList.add("alt"); tr.appendChild(alt);
+  });
   const n = document.createElement("td"); n.className = "num"; n.textContent = r.totals.per12?.n ?? r.totals.sans_per?.n ?? 0; tr.appendChild(n);
 });
 </script>

@@ -190,7 +190,8 @@ RULES_SINCE = "2026-10-16"
 # Suspendue (décision 001.3) : les règles sont en réglage ; repartira de zéro quand elles seront figées.
 EXPERIMENT = {"id": "001", "start": "2026-10-15", "sessions": 40, "suspended": True,
               "file": "research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md"}
-SERIES = ("per12", "sans_per", "univers", "spy")
+SERIES = ("per12", "sans_per", "per12_sans_regle", "sans_per_sans_regle", "univers", "spy")
+NO_RULE = "_sans_regle"  # même liste sans la règle stop / objectif (comparaison)
 
 
 def _results(finals):
@@ -211,6 +212,10 @@ def _results(finals):
                 series[name][final["session_date"]] = row["net_mean_return"]
             elif row.get("n") == 0:
                 series[name][final["session_date"]] = 0.0
+            if row.get("hold_net_mean_return") is not None:
+                series[name + NO_RULE][final["session_date"]] = row["hold_net_mean_return"]
+            elif row.get("n") == 0 and name + NO_RULE in series:
+                series[name + NO_RULE][final["session_date"]] = 0.0
     provisional = [f["session_date"] for f in finals if f.get("provisional", True) and f["session_date"] not in skipped]
     recomputed = [f["session_date"] for f in finals if "supplement" in f]
     return {
@@ -368,13 +373,15 @@ def _build_strategy(strategy, infos):
     # « Aujourd'hui » : seulement l'état de la séance du jour (New York), pas celui d'une séance précédente.
     session_today = datetime.now(ZoneInfo("America/New_York")).date().isoformat()
     current = live if live and live.get("session_date") == session_today else None
-    today = {v: {"status": row.get("status"), "net": row.get("net_mean_return"), "n": row.get("n")}
+    today = {v: {"status": row.get("status"), "net": row.get("net_mean_return"), "n": row.get("n"),
+                 "net_no_rule": row.get("hold_net_mean_return")}
              for v, row in ((current or {}).get("portfolio") or {}).get("versions", {}).items()}
     # Listes du jour déjà produites (même avant que l'état en direct existe) : nombre de titres par version.
     lists_today = {variant_of(r): len(r["selection"]) for r in latest_per_session(runs) if r["session_date"] == session_today}
     return {**info, "session_date": (live or {}).get("session_date"), "today": today, "lists_today": lists_today,
             "observed_at": (current or {}).get("observed_at"),
-            "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "spy")}}
+            "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "spy", "per12" + NO_RULE,
+                                                                "sans_per" + NO_RULE)}}
 
 
 def build(family):

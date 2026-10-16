@@ -195,7 +195,7 @@
 
   <h2 id="simulation"><span class="n">10</span>La simulation</h2>
   <p>Pour chaque liste : {{amounts}} répartis à parts égales sur ses titres, achetés au premier échange à
-  partir de {{entry_time}} (10 h 45 jusqu'au 15 octobre 2026), vendus au dernier échange avant {{exit_time}}. Gain suivi en direct, puis figé. <b>Vente anticipée</b> : chaque titre est vendu plus tôt dès qu'un cours minute passe {{stop_pct}} % sous son prix d'achat (stop, la perte est prise) ou {{target_pct}} % au-dessus (objectif, le gain est pris), au cours de cette minute ; les autres titres restent jusqu'à l'heure de vente. Dans la sélection, la colonne « Depuis l'achat » donne pour chaque titre dernier prix / prix d'achat − 1.</p>
+  partir de {{entry_time}} (10 h 45 jusqu'au 15 octobre 2026), vendus au dernier échange avant {{exit_time}}. Gain suivi en direct, puis figé. <b>Vente anticipée</b> : chaque titre est vendu plus tôt dès qu'un cours minute passe {{stop_pct}} % sous son prix d'achat (stop, la perte est prise) ou {{target_pct}} % au-dessus (objectif, le gain est pris), au cours de cette minute ; les autres titres restent jusqu'à l'heure de vente. <b>Sans stop/objectif</b> (depuis le 16 octobre 2026) : à côté, le même calcul si chaque titre était gardé jusqu'à l'heure de vente (prix de vente ou dernier prix connu, mêmes frais) — dans la simulation, le suivi des positions, l'historique des résultats et l'accueil ; c'est une comparaison, rien n'est vendu autrement. Dans la sélection, la colonne « Depuis l'achat » donne pour chaque titre dernier prix / prix d'achat − 1.</p>
   <div class="panel"><table>
     <tr><th>Colonne</th><th>Calcul</th></tr>
     <tr><td>Brut</td><td>Moyenne des rendements des titres (prix de vente / prix d'achat − 1)</td></tr>
@@ -446,7 +446,7 @@
 
   <h2 id="simulation"><span class="n">10</span>The simulation</h2>
   <p>For each list: {{amounts}} split equally across its stocks, bought at the first trade from {{entry_time}}
-  (10:45 AM until October 15, 2026), sold at the last trade before {{exit_time}}. Gain tracked live, then frozen. <b>Early sale</b>: each stock is sold earlier as soon as a minute price goes {{stop_pct}}% below its purchase price (stop, the loss is taken) or {{target_pct}}% above (target, the gain is taken), at that minute's price; the other stocks stay until the selling time. In the selection, the "Since purchase" column gives each stock's last price / purchase price − 1.</p>
+  (10:45 AM until October 15, 2026), sold at the last trade before {{exit_time}}. Gain tracked live, then frozen. <b>Early sale</b>: each stock is sold earlier as soon as a minute price goes {{stop_pct}}% below its purchase price (stop, the loss is taken) or {{target_pct}}% above (target, the gain is taken), at that minute's price; the other stocks stay until the selling time. <b>No stop/target</b> (since October 16, 2026): alongside, the same calculation if every stock were kept until the selling time (selling price or latest known price, same costs) — in the simulation, position tracking, results history and home page; it is a comparison, nothing is sold differently. In the selection, the "Since purchase" column gives each stock's last price / purchase price − 1.</p>
   <div class="panel"><table>
     <tr><th>Column</th><th>Calculation</th></tr>
     <tr><td>Gross</td><td>Average of the stocks' returns (sell price / buy price − 1)</td></tr>

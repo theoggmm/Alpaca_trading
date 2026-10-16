@@ -143,3 +143,27 @@ def test_vente_anticipee_stop_et_objectif():
     # Pendant la séance, une minute pas encore terminée n'est pas connue.
     assert simulate(["DOWN"], entry, exit_, {}, entry_t, exit_t, entry_t + timedelta(minutes=20),
                     path_bars=path)["early_exits"] == {}
+
+
+def test_comparaison_sans_stop_ni_objectif():
+    """Le même calcul sans la règle : chaque titre gardé jusqu'à l'heure de vente (DOWN 110, UP 90, FLAT 101)."""
+    from datetime import datetime, timedelta, timezone
+    from core.portfolio import simulate
+    entry_t = datetime(2026, 10, 16, 15, 0, tzinfo=timezone.utc)
+    exit_t = datetime(2026, 10, 16, 19, 30, tzinfo=timezone.utc)
+    cols = ["symbol", "timestamp", "open", "close", "volume"]
+    entry = pd.DataFrame([(s, entry_t, Decimal("100"), Decimal("100"), 1) for s in ("DOWN", "UP", "FLAT")], columns=cols)
+    exit_ = pd.DataFrame([(s, exit_t - timedelta(minutes=1), Decimal(p), Decimal(p), 1)
+                          for s, p in (("DOWN", "110"), ("UP", "90"), ("FLAT", "101"))], columns=cols)
+    path = pd.DataFrame([("DOWN", entry_t + timedelta(minutes=20), Decimal("98.4"), Decimal("98.4"), 1),
+                         ("UP", entry_t + timedelta(minutes=60), Decimal("103.2"), Decimal("103.2"), 1)], columns=cols)
+    result = simulate(["DOWN", "UP", "FLAT"], entry, exit_, {}, entry_t, exit_t, exit_t + timedelta(minutes=30),
+                      path_bars=path)
+    assert result["hold_mean_return"] == pytest.approx((0.1 - 0.1 + 0.01) / 3)
+    assert result["mean_return"] == pytest.approx((-0.016 + 0.032 + 0.01) / 3)   # la règle, inchangée
+    assert result["hold_net_mean_return"] < result["hold_mean_return"]          # frais déduits
+    positions = result["positions"]
+    assert positions["DOWN"]["hold_net_return"] > 0.09 and positions["UP"]["hold_net_return"] < -0.09
+    assert positions["FLAT"]["hold_net_return"] == pytest.approx(positions["FLAT"]["net_return"])
+    # Repères (sans trajet) : pas de comparaison.
+    assert "hold_mean_return" not in simulate(["FLAT"], entry, exit_, {}, entry_t, exit_t, exit_t + timedelta(minutes=30))
