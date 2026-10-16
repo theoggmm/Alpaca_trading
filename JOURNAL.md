@@ -411,3 +411,11 @@ Autrement dit : la journée d'aujourd'hui compte déjà avec la nouvelle règle,
 « sans stop/objectif » à l'accueil et dans chaque tableau de bord (décision T14), en direct. 66 tests verts.
 
 Autrement dit : chaque jour, on voit côte à côte le résultat avec la règle et sans elle.
+
+**Ajout (même jour)** : question posée — pourquoi certaines cases « Depuis l'ouverture » / « Depuis l'achat » étaient
+vides. Le Mac s'est endormi de 18 h 20 à 18 h 58 (Paris) au milieu d'un passage du suivi ; au réveil, les derniers
+prix lus étaient plus récents que l'heure de début du passage et ont été écartés comme « venant du futur » (règle
+de datation). Correction : l'heure de référence est prise après la lecture des prix. Le passage suivant (19 h 00)
+avait déjà tout rempli.
+
+Autrement dit : rien n'était faux, il manquait seulement des prix pendant quelques minutes à cause de la mise en veille.

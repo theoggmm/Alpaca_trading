@@ -578,6 +578,9 @@ def run(family):
             time.sleep(REFRESH_S)
             continue
 
+        # Heure de la lecture, pas du début du passage : si l'ordinateur s'est endormi pendant le passage, les
+        # derniers échanges lus au réveil sont postérieurs au « now » de départ et seraient écartés comme futurs.
+        now = max(now, datetime.now(timezone.utc))
         last_prices = {s: price for s, (_, price) in session_trades(trades, market_open, market_close, now).items()}
         # Bulles par domaine : une fois par passage, communes à toutes les stratégies.
         trends = live_domain_trends(daily, trades, minute, market_open, market_close, now, criteria, domains)
