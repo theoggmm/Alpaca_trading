@@ -170,9 +170,15 @@ def _entry_bars(alpaca, key, stage, traded, entry_times, now):
     Barres d'achat (TRADE_WINDOW minutes) à chaque heure d'achat dont la fenêtre est terminée et servie à now,
     lues une fois chacune (cache nommé par l'heure : partagé par les stratégies) puis réunies.
     """
-    frames = [cached(f"{key}/{stage}_entry_at_{at.astimezone(NEW_YORK):%H%M}",
-                     lambda: alpaca.bars(traded, "1Min", at, at + TRADE_WINDOW))
-              for at in entry_times if now >= at + TRADE_WINDOW + FEED_DELAY]
+    frames = []
+    for at in entry_times:
+        if now >= at + TRADE_WINDOW + FEED_DELAY:
+            frames.append(cached(f"{key}/{stage}_entry_at_{at.astimezone(NEW_YORK):%H%M}",
+                                 lambda: alpaca.bars(traded, "1Min", at, at + TRADE_WINDOW)))
+        elif now >= at + timedelta(minutes=1) + FEED_DELAY:
+            # Fenêtre d'achat pas encore complète : minutes déjà servies, relues à chaque passage (pas de cache),
+            # pour que la simulation démarre dès la première minute d'achat connue.
+            frames.append(alpaca.bars(traded, "1Min", at, now - FEED_DELAY))
     return pd.concat(frames, ignore_index=True) if frames else EMPTY_BARS
 
 
