@@ -4,6 +4,7 @@ from datetime import timedelta
 from decimal import Decimal
 
 import pandas as pd
+import pytest
 
 from core.portfolio import simulate
 from tests.synthetic import MARKET_OPEN
@@ -104,3 +105,32 @@ def test_titre_sans_prix_de_vente_ecarte_sans_bloquer_les_autres():
     result = simulate(["AAA", "BBB"], entry, exit_, {}, entry_t, exit_t, exit_t + timedelta(minutes=30))
     assert result["status"] == "closed" and result["priced"] == 1 and result["n"] == 2
     assert result["mean_return"] == 0.1
+
+
+def test_vente_anticipee_stop_et_objectif():
+    from datetime import datetime, timedelta, timezone
+    from core.portfolio import simulate
+    entry_t = datetime(2026, 10, 16, 15, 0, tzinfo=timezone.utc)
+    exit_t = datetime(2026, 10, 16, 19, 30, tzinfo=timezone.utc)
+    cols = ["symbol", "timestamp", "open", "close", "volume"]
+    entry = pd.DataFrame([(s, entry_t, Decimal("100"), Decimal("100"), 1) for s in ("DOWN", "UP", "FLAT")], columns=cols)
+    exit_ = pd.DataFrame([(s, exit_t - timedelta(minutes=1), Decimal(p), Decimal(p), 1)
+                          for s, p in (("DOWN", "110"), ("UP", "90"), ("FLAT", "101"))], columns=cols)
+    # Trajet : DOWN tombe à 98,4 (−1,6 %) à 11 h 20 puis remonte ; UP touche 103,2 (+3,2 %) à 12 h 00 puis chute.
+    path = pd.DataFrame([("DOWN", entry_t + timedelta(minutes=20), Decimal("98.4"), Decimal("98.4"), 1),
+                         ("DOWN", entry_t + timedelta(minutes=10), Decimal("99"), Decimal("99"), 1),
+                         ("UP", entry_t + timedelta(minutes=60), Decimal("103.2"), Decimal("103.2"), 1),
+                         ("FLAT", entry_t + timedelta(minutes=60), Decimal("99"), Decimal("99"), 1)], columns=cols)
+    after = exit_t + timedelta(minutes=30)
+    result = simulate(["DOWN", "UP", "FLAT"], entry, exit_, {}, entry_t, exit_t, after, path_bars=path)
+    assert set(result["early_exits"]) == {"DOWN", "UP"}
+    assert result["early_exits"]["DOWN"]["reason"] == "stop" and result["early_exits"]["DOWN"]["price"] == "98.4"
+    assert result["early_exits"]["UP"]["reason"] == "objectif"
+    # Rendement : DOWN −1,6 %, UP +3,2 %, FLAT +1 % (vendu à l'heure de vente) ; le rebond de DOWN ne compte pas.
+    assert result["mean_return"] == pytest.approx((-0.016 + 0.032 + 0.01) / 3)
+    # Sans trajet (repères) : pas de vente anticipée.
+    plain = simulate(["DOWN", "UP", "FLAT"], entry, exit_, {}, entry_t, exit_t, after)
+    assert plain["early_exits"] == {} and plain["mean_return"] == pytest.approx((0.1 - 0.1 + 0.01) / 3)
+    # Pendant la séance, une minute pas encore terminée n'est pas connue.
+    assert simulate(["DOWN"], entry, exit_, {}, entry_t, exit_t, entry_t + timedelta(minutes=20),
+                    path_bars=path)["early_exits"] == {}

@@ -88,3 +88,10 @@ journée » (core/closing.py), demandée par le propriétaire et chiffrée par l
 à +4 %, dernière heure avant la décision en hausse, au plus 1 % sous le plus haut du jour, marché en bonne forme,
 PER < 25 pour la seconde liste ; décision 15 min avant l'achat. Le résultat d'une séance est compté le jour de
 l'achat, une fois la vente du lendemain connue.
+
+## T10 — 2026-10-16 — Vente anticipée de chaque titre : stop −1,5 %, objectif +3 % (propriétaire)
+
+Toutes stratégies, toutes listes, en simulation : un titre est vendu dès qu'un cours minute (séance régulière)
+passe 1,5 % sous son prix d'achat ou 3 % au-dessus, au cours de cette minute ; les autres titres restent jusqu'à
+l'heure de vente. Les repères (univers liquide, SPY) n'ont pas de vente anticipée. Les tests sur le passé déjà
+faits ne l'appliquent pas : à refaire.

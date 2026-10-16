@@ -334,3 +334,14 @@ actions d'aujourd'hui avec les divisions d'Alpaca (`infra/alpaca_api.py` `splits
 `split_adjusted`, `run.earnings`, utilisé aussi par le test sur le passé). BKNG 15,9 ; VIPS et WSE exclus. 62 tests verts.
 
 Autrement dit : la liste avec PER ne retient plus de titres à cause d'une erreur de calcul.
+
+## 2026-10-16 (suite) — Stop et objectif par titre
+
+**Question posée** : dans la simulation, vendre chaque titre dès qu'il perd 1,5 % ou gagne 3 %.
+
+**Fait** : `core/portfolio.py` (`early_exits`, `STOP_LOSS`, `TAKE_PROFIT`, paramètre `path_bars` de `simulate`) ;
+trajet minute des titres des listes lu au fil de la séance par le suivi, à la fin de séance et, de nuit, le
+lendemain jusqu'à la vente ; test sur le passé ; colonne « Depuis l'achat » et note de la simulation ; méthodologie ;
+décision T10. 63 tests verts. Essai sur le 15 octobre : 4 et 2 titres vendus au stop, résultat quasi inchangé.
+
+Autrement dit : une action qui chute de 1,5 % ou monte de 3 % est vendue tout de suite dans la simulation.

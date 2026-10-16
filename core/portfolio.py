@@ -21,6 +21,11 @@ COST_BPS = Decimal("5")
 # Taux relevé le 15 octobre 2026 sur des sites spécialisés (socic.fr, dougs.fr, sinvestir.fr), NON
 # confirmé sur impots.gouv.fr (règle 10). Hors simulation figée de l'expérience 001 : affichage seulement.
 TAX_RATE = Decimal("0.314")
+# Vente anticipée de chaque titre des listes (toutes stratégies, décision du propriétaire du 16 octobre 2026) :
+# dès qu'un cours minute passe 1,5 % sous le prix d'achat (stop) ou 3 % au-dessus (objectif), le titre est vendu
+# à ce cours ; le reste de la liste continue jusqu'à l'heure de vente.
+STOP_LOSS = Decimal("0.015")
+TAKE_PROFIT = Decimal("0.03")
 
 
 def _first_open(bars, start):
@@ -35,13 +40,37 @@ def _last_close(bars):
     return {symbol: group["close"].iloc[-1] for symbol, group in ordered.groupby("symbol", sort=True)}
 
 
-def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time, now, amounts=AMOUNTS):
+def early_exits(path_bars, entry, entry_time, exit_time, now, stop_loss=STOP_LOSS, take_profit=TAKE_PROFIT):
+    """
+    Ventes anticipées : symbole -> {"at", "price", "reason"} au premier cours minute (clôture de la minute,
+    séance régulière) entre l'achat et la vente qui atteint le stop (prix d'achat × (1 - stop_loss)) ou
+    l'objectif (× (1 + take_profit)), connu à now. Vente à ce cours : de quoi compter le glissement au-delà du seuil.
+    """
+    path_bars = usable_bars(path_bars, MINUTE, min(now, exit_time))
+
+    path_bars = path_bars[(path_bars["timestamp"] >= entry_time) & path_bars["symbol"].isin(list(entry))]
+    result = {}
+    for symbol, bars in path_bars.sort_values("timestamp").groupby("symbol", sort=True):
+        low, high = entry[symbol] * (1 - stop_loss), entry[symbol] * (1 + take_profit)
+        hit = bars[(bars["close"] <= low) | (bars["close"] >= high)]
+        if not hit.empty:
+            price = hit["close"].iloc[0]
+            result[symbol] = {"at": hit["timestamp"].iloc[0].isoformat(), "price": price,
+                              "reason": "stop" if price <= low else "objectif"}
+    return result
+
+
+def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time, now, amounts=AMOUNTS,
+             path_bars=None):
     """
     symbols     : titres de la liste.
     entry_bars  : barres minute à partir de entry_time (prix d'achat).
     exit_bars   : barres minute jusqu'à exit_time (prix de vente).
     last_trades : symbole -> (horodatage, prix), pour la valeur en cours entre l'achat et la vente.
-    Retourne {"status": "waiting" | "live" | "closed", "n", "mean_return", "gains": {montant: gain}}.
+    path_bars   : barres minute entre l'achat et la vente (séance régulière) : si elles sont données, chaque
+                  titre est vendu plus tôt s'il touche le stop ou l'objectif (early_exits). Sans elles
+                  (repères), pas de vente anticipée.
+    Retourne {"status": "waiting" | "live" | "closed", "n", "mean_return", "gains": {montant: gain}, ...}.
     """
     entry_bars = usable_bars(entry_bars, MINUTE, now)
     exit_bars = usable_bars(exit_bars, MINUTE, min(now, exit_time))
@@ -54,9 +83,11 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
         status, current = "closed", _last_close(exit_bars)
     else:
         status, current = "live", {s: price for s, (_, price) in last_trades.items()}
+    early = {} if path_bars is None else early_exits(path_bars, entry, entry_time, exit_time, now)
+    current.update({s: e["price"] for s, e in early.items()})
     held = [s for s in symbols if s in entry and s in current]
     if not symbols or not held:
-        return {"status": "waiting", "n": len(symbols), "priced": 0, "mean_return": None, "gains": {}}
+        return {"status": "waiting", "n": len(symbols), "priced": 0, "mean_return": None, "gains": {}, "early_exits": {}}
 
     returns = [current[s] / entry[s] - 1 for s in held]
     mean = sum(returns) / len(held)
@@ -75,6 +106,9 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
         "net_gains": {str(amount): str((amount * net).quantize(Decimal("0.01"))) for amount in amounts},
         # Actions entières (arrondies vers le bas) au prix d'achat, après frais ; le reste n'est pas investi.
         "whole_gains": {str(amount): str(_whole_shares_gain(amount, held, entry, current, cost)) for amount in amounts},
+        # Titres vendus avant l'heure de vente (stop ou objectif) et leur rendement brut.
+        "early_exits": {s: {"at": e["at"], "price": str(e["price"]), "reason": e["reason"],
+                            "return": float(e["price"] / entry[s] - 1)} for s, e in early.items()},
     }
 
 

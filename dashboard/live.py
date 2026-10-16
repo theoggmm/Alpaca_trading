@@ -182,35 +182,51 @@ def _exit_bars(alpaca, key, stage, traded, exit_time):
                   lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
 
-def _portfolio(runs, universe, entry_bars, exit_bars, trades, market_open, entry_time, exit_time, now):
+def _path_bars(alpaca, cache_key, symbols, windows):
+    """Barres minute des titres des listes sur des fenêtres (début, fin) de séance régulière, lues une fois, réunies."""
+    if not symbols:
+        return EMPTY_BARS
+    frames = [cached(f"{cache_key}_{start.astimezone(NEW_YORK):%Y%m%d%H%M}_{end.astimezone(NEW_YORK):%Y%m%d%H%M}",
+                     lambda: alpaca.bars(sorted(symbols), "1Min", start, end)) for start, end in windows if end > start]
+    return pd.concat(frames, ignore_index=True).drop_duplicates(["symbol", "timestamp"]) if frames else EMPTY_BARS
+
+
+def _portfolio(runs, universe, entry_bars, exit_bars, trades, market_open, entry_time, exit_time, now, path_bars=None):
     """
-    Simulation par version de la liste : achat à l'heure d'achat de la version (10 h 45, ou 11 h 00 avec
-    confirmation), valeur en cours ou vente ; repères (univers liquide à parts égales, SPY) achetés à entry_time.
+    Simulation par version de la liste : achat à l'heure d'achat de la version, valeur en cours ou vente, vente
+    anticipée d'un titre au stop ou à l'objectif (path_bars : trajet minute des titres des listes) ; repères
+    (univers liquide à parts égales, SPY) achetés à entry_time, sans vente anticipée.
     """
-    def run(symbols, at):
-        return simulate(symbols, entry_bars, exit_bars, trades, at, exit_time, now)
+    def run(symbols, at, path=None):
+        return simulate(symbols, entry_bars, exit_bars, trades, at, exit_time, now, path_bars=path)
 
     return {
         "entry_time": entry_time.isoformat(),
         "exit_time": exit_time.isoformat(),
         "versions": {variant_of(r): {"run_id": r["run_id"], "entry_time": _entry_time(r, market_open).isoformat(),
-                                     **run([i["symbol"] for i in r["selection"]], _entry_time(r, market_open))}
+                                     **run([i["symbol"] for i in r["selection"]], _entry_time(r, market_open),
+                                           EMPTY_BARS if path_bars is None else path_bars)}
                      for r in runs},
         "benchmarks": {"univers": run(universe, entry_time), "spy": run([BENCHMARK], entry_time)},
     }
 
 
-def _since_entry(runs, entry_bars, trades, market_open, market_close, now):
+def _since_entry(runs, entry_bars, trades, market_open, market_close, now, portfolio=None):
     """
     Par version : variation de chaque titre de sa liste depuis l'achat de la simulation, dernier prix / prix
-    d'achat - 1 (premier échange à partir de l'heure d'achat de la version). Vide tant que l'achat n'est pas connu.
+    d'achat - 1 (premier échange à partir de l'heure d'achat de la version). Un titre vendu plus tôt (stop ou
+    objectif, portfolio) garde sa variation à la vente, marquée « early ». Vide tant que l'achat n'est pas connu.
     """
     result = {}
     for r in runs:
         prices = entry_prices(entry_bars, _entry_time(r, market_open), now)
         symbols = {i["symbol"] for i in r["selection"]}
-        result[variant_of(r)] = changes_since_open({s: prices[s] for s in symbols if s in prices}, trades,
-                                                   market_open, market_close, now)
+        changes = changes_since_open({s: prices[s] for s in symbols if s in prices}, trades,
+                                     market_open, market_close, now)
+        early = (((portfolio or {}).get("versions") or {}).get(variant_of(r)) or {}).get("early_exits", {})
+        for s, e in early.items():
+            changes[s] = {"change": e["return"], "price": e["price"], "at": e["at"], "early": e["reason"]}
+        result[variant_of(r)] = changes
     return result
 
 
@@ -308,15 +324,22 @@ def finalize(strategy, alpaca, criteria, session_date, open_time, close_time, ne
     sold = now >= exit_time + FEED_DELAY
     exit_bars = _exit_bars(alpaca, key, stage, traded, exit_time) if sold else EMPTY_BARS
     observed = exit_time if sold else market_close
+    # Trajet minute des titres des listes pour les ventes anticipées : de l'achat à la vente (ou à la clôture),
+    # plus, de nuit, de l'ouverture suivante à la vente une fois celle-ci connue.
+    windows = [(min((_entry_time(r, market_open) for r in runs), default=entry_time), min(exit_time, market_close))]
+    if strategy.overnight and sold:
+        windows.append((next_open, exit_time))
+    path_bars = _path_bars(alpaca, f"{key}/{stage}_path_{strategy.id}", set(opens), windows)
 
     state = _state(strategy.storage, criteria, key, market_open, market_close, market_close,
                    daily, domains, names, trades, minute, minute, runs, opens)
     state["portfolio"] = _portfolio(runs, symbols, entry_bars, exit_bars, trades, market_open, entry_time, exit_time,
-                                    observed)
+                                    observed, path_bars)
     state["month_trend"] = _month_trend(daily, market_open, criteria, domains)
     state["order_plan"] = (_order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry")
                            if strategy.is_main else None)
-    state["selection"]["since_entry"] = _since_entry(runs, entry_bars, trades, market_open, market_close, market_close)
+    state["selection"]["since_entry"] = _since_entry(runs, entry_bars, trades, market_open, market_close, market_close,
+                                                     state["portfolio"])
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
     path = FINALS_DIR / strategy.storage / f"{key}.json"
@@ -483,6 +506,7 @@ def run(family):
                               for s in every if s.overnight})
     entry_times = sorted({at for s in every for at in _entry_times(s, market_open)})
     exits = {}
+    path_frames, path_symbols, path_until = [], set(), None
 
     while True:
         now = datetime.now(timezone.utc)
@@ -523,6 +547,20 @@ def run(family):
                 if exit_time not in exits and now >= exit_time + FEED_DELAY:
                     exits[exit_time] = _exit_bars(alpaca, key, "live", traded, exit_time)
             trades = alpaca.latest_trades(sorted(set(traded) | opens_all), FEED)
+            # Trajet minute des titres des listes (ventes anticipées) : nouveaux titres depuis le premier achat,
+            # puis, pour tous, les minutes servies depuis la lecture précédente.
+            served = (now - FEED_DELAY).replace(second=0, microsecond=0)
+            first_entry = min(entry_times)
+            new = opens_all - path_symbols
+            if new and served > first_entry:
+                path_frames.append(alpaca.bars(sorted(new), "1Min", first_entry, served))
+                path_symbols |= new
+                path_until = path_until or served
+            if path_symbols and path_until and served > path_until:
+                path_frames.append(alpaca.bars(sorted(path_symbols), "1Min", path_until, served))
+                path_until = served
+            path_bars = (pd.concat(path_frames, ignore_index=True).drop_duplicates(["symbol", "timestamp"])
+                         if path_frames else EMPTY_BARS)
         except FetchError as e:
             print(f"{now.astimezone(NEW_YORK):%H:%M} — lecture impossible, nouvel essai dans {REFRESH_S} s : {e}")
             time.sleep(REFRESH_S)
@@ -536,10 +574,11 @@ def run(family):
             state = _state(strategy.storage, criteria, key, market_open, market_close, now, daily, domains, names,
                            trades, minute, minute if not minute.empty else opening, today_runs, opens)
             state["portfolio"] = _portfolio(today_runs, symbols, entry_bars, exits.get(exit_time, EMPTY_BARS), trades,
-                                            market_open, entry_time, exit_time, now)
+                                            market_open, entry_time, exit_time, now, path_bars)
             state["month_trend"] = month_trend
             state["order_plan"] = _order_plan(today_runs, last_prices, "live") if strategy.is_main else None
-            state["selection"]["since_entry"] = _since_entry(today_runs, entry_bars, trades, market_open, market_close, now)
+            state["selection"]["since_entry"] = _since_entry(today_runs, entry_bars, trades, market_open, market_close, now,
+                                                             state["portfolio"])
             path = live_file(strategy)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")

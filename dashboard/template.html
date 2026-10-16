@@ -487,13 +487,15 @@ const TEXT = {
     sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b}`,
     sim_no_list: "Pas encore de liste pour cette séance : la simulation commence quand elle est produite.",
     sim_missing: "Pas de simulation pour cette séance (fonction ajoutée le 15 octobre).",
-    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange à l'heure d'achat de la stratégie et vendu au dernier échange avant son heure de vente (bandeau en haut). Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
+    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange à l'heure d'achat de la stratégie et vendu au dernier échange avant son heure de vente (bandeau en haut) ; un titre est vendu plus tôt dès que son cours passe 1,5 % sous son prix d'achat (stop) ou 3 % au-dessus (objectif). Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
     no_run_yet: "Les listes de cette séance seront produites à l'heure d'achat de la stratégie (voir le bandeau en haut, heures de New York et de Paris).",
     strategy_label: "Stratégie", home_link: "← Toutes les stratégies",
     strategy_times: st => `Achat au premier échange à partir de ${st.buy} New York (${st.buy_paris} Paris), vente ${st.next_day ? "la séance suivante, " : ""}au dernier échange avant ${st.sell} New York (${st.sell_paris} Paris)${st.next_day ? " : les actions sont gardées pendant la nuit, le résultat d'une séance est connu le lendemain matin" : ""}.`,
     th_last_hour: "Dernière heure (veille)", th_overnight: "Nuit (jusqu'à 9 h 15)",
     th_day: "Journée (jusqu'à la décision)", th_hour_before: "Dernière heure avant la décision",
+    sold_early: { stop: "vendu au stop (−1,5 %)", objectif: "vendu à l'objectif (+3 %)" },
+    sim_early: (stops, targets) => `Vendus avant l'heure de vente : ${stops} au stop (baisse de 1,5 %), ${targets} à l'objectif (hausse de 3 %).`,
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
     final_definitive: "définitive",
     final_source: "dernier échange avant 16 h 00 (New York), historique minute toutes bourses",
@@ -697,13 +699,15 @@ const TEXT = {
     sim_times: (a, b) => `bought from ${a}, sold before ${b}`,
     sim_no_list: "No list for this session yet: the simulation starts once it is produced.",
     sim_missing: "No simulation for this session (feature added on October 15).",
-    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade at the strategy's buying time and sold at the last trade before its selling time (banner at the top). Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
+    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade at the strategy's buying time and sold at the last trade before its selling time (banner at the top); a stock is sold earlier as soon as its price goes 1.5% below its purchase price (stop) or 3% above (target). Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
     no_run_yet: "This session's lists will be produced at the strategy's buying time (see the banner at the top, New York and Paris times).",
     strategy_label: "Strategy", home_link: "← All strategies",
     strategy_times: st => `Bought at the first trade from ${st.buy} New York (${st.buy_paris} Paris), sold ${st.next_day ? "the next session, " : ""}at the last trade before ${st.sell} New York (${st.sell_paris} Paris)${st.next_day ? ": the stocks are held overnight, a session's result is known the next morning" : ""}.`,
     th_last_hour: "Last hour (day before)", th_overnight: "Overnight (to 9:15 AM)",
     th_day: "Day (up to the decision)", th_hour_before: "Last hour before the decision",
+    sold_early: { stop: "sold at the stop (−1.5%)", objectif: "sold at the target (+3%)" },
+    sim_early: (stops, targets) => `Sold before the selling time: ${stops} at the stop (1.5% drop), ${targets} at the target (3% rise).`,
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
     final_definitive: "final",
     final_source: "last trade before 4:00 PM (New York), all-exchange minute history",
@@ -915,7 +919,8 @@ function renderRun(run) {
   const entry = flat ? sinceEntry : sinceEntry?.[variantOf(run)];
   const entryAt = (inSession ? LIVE : FINALS[run.session_date])?.portfolio?.versions?.[variantOf(run)]?.entry_time;
   const entryColumn = entry && Object.keys(entry).length && {
-    label: TEXT.since_entry(entryAt ? nyTime(entryAt) : `${STRATEGY.buy} New York (${STRATEGY.buy_paris} Paris)`), value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
+    label: TEXT.since_entry(entryAt ? nyTime(entryAt) : `${STRATEGY.buy} New York (${STRATEGY.buy_paris} Paris)`),
+    value: r => !entry[r.symbol] ? "—" : pct(entry[r.symbol].change) + (entry[r.symbol].early ? ` · ${TEXT.sold_early[entry[r.symbol].early]}` : ""),
     tone: r => entry[r.symbol]?.change ?? 0,
     title: r => !entry[r.symbol] ? TEXT.no_live_price
       : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(entry[r.symbol].price), nyTime(entry[r.symbol].at)),
@@ -1433,6 +1438,9 @@ function renderSim() {
     const shown = kinds.filter(([field]) => field === "gains" || r[field]);
     const block = el("div", "sim-block");
     block.appendChild(el("h3", "", TEXT.sim_version(TEXT.variants[v], r.n, nyTime(r.entry_time || sim.entry_time))));
+    const early = Object.values(r.early_exits || {});
+    if (early.length) block.appendChild(el("p", "note", TEXT.sim_early(early.filter(e => e.reason === "stop").length,
+                                                                       early.filter(e => e.reason === "objectif").length)));
     const t = el("table");
     const head = t.createTHead().insertRow();
     head.appendChild(el("th", "text", TEXT.sim_amount));

@@ -16,6 +16,7 @@ Depuis la racine du dépôt :
 """
 
 import argparse
+import hashlib
 import json
 import sys
 from datetime import date, datetime, timedelta, timezone
@@ -122,10 +123,16 @@ def run(months, first=None, last=None):
         entry_bars = pd.concat(frames, ignore_index=True)
         exit_bars = cached(f"{day_key}/exit_bars_candidates", lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
+        # Trajet minute des titres retenus (ventes anticipées au stop ou à l'objectif), de l'achat à la vente.
+        picked = sorted({i["symbol"] for name, items in lists.items() if name != "spy" for i in items})
+        start = min(entries.values())
+        path_bars = cached(f"{day_key}/path_{hashlib.sha1(','.join(picked).encode()).hexdigest()[:12]}",
+                           lambda: alpaca.bars(picked, "1Min", start, exit_time)) if picked else None
         record = {"date": session_date.isoformat()}
         for name, items in lists.items():
             result = simulate([i["symbol"] for i in items], entry_bars, exit_bars, {}, entries[name], exit_time,
-                              market_close, amounts=TESTED_AMOUNTS)
+                              market_close, amounts=TESTED_AMOUNTS,
+                              path_bars=None if name == "spy" or path_bars is None else path_bars)
             record[name] = 0.0 if not items else result.get("net_mean_return")
             record[f"{name}_n"] = len(items)
             # Détail par montant (liste vide : rien d'investi, 0) : brut, après frais, actions entières après frais.
