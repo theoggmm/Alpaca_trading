@@ -1486,13 +1486,15 @@ const home = document.getElementById("home-link");
 home.textContent = TEXT.home_link;
 home.href = LANG === "fr" ? "accueil.html" : "home.html";
 const strategyPicker = document.getElementById("strategy");
-STRATEGIES.forEach(s => strategyPicker.add(new Option(s.name, LANG === "fr" ? s.fr : s.en)));
+// Nom et description dans la langue de la page.
+const named = st => LANG === "fr" ? st.name : st.name_en;
+STRATEGIES.forEach(s => strategyPicker.add(new Option(named(s), LANG === "fr" ? s.fr : s.en)));
 strategyPicker.value = LANG === "fr" ? STRATEGY.fr : STRATEGY.en;
 strategyPicker.addEventListener("change", () => { location.href = strategyPicker.value; });
 // Titre : celui de la famille pour la stratégie principale, sinon le nom de la stratégie.
-if (!STRATEGY.main) document.querySelector("h1").textContent = STRATEGY.name;
-document.getElementById("strategy-banner").replaceChildren(el("b", "", STRATEGY.name),
-  el("span", "", STRATEGY.description), el("span", "note", TEXT.strategy_times(STRATEGY)));
+if (!STRATEGY.main) document.querySelector("h1").textContent = named(STRATEGY);
+document.getElementById("strategy-banner").replaceChildren(el("b", "", named(STRATEGY)),
+  el("span", "", LANG === "fr" ? STRATEGY.description : STRATEGY.description_en), el("span", "note", TEXT.strategy_times(STRATEGY)));
 // Ordres à passer et tableau des versions : propres à la stratégie principale.
 if (!STRATEGY.main) {
   document.getElementById("plan-section").hidden = true;

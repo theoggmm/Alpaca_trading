@@ -2,5 +2,7 @@
   "id": "ouverture_1h",
   "name": "Ouverture, vente après 1 h",
   "description": "Autre logique : actions qui ont fini la veille en hausse et montent modérément pendant la nuit (+0,5 % à +3 % avant 9 h 15). Achat à l'ouverture (9 h 30), vente 1 h après (10 h 30, New York).",
+  "name_en": "Open, sell after 1 h",
+  "description_en": "Different logic: stocks that finished the previous day rising and rise moderately overnight (+0.5% to +3% before 9:15 AM). Bought at the open (9:30 AM), sold 1 h later (10:30 AM, New York).",
   "exit_after_open_minutes": 60
 }

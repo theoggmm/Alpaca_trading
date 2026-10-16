@@ -94,8 +94,8 @@ const body = t.createTBody();
 ROWS.forEach(r => {
   const tr = body.insertRow();
   const name = document.createElement("td"); name.className = "text";
-  const a = document.createElement("a"); a.href = LANG === "fr" ? r.fr : r.en; a.textContent = r.name;
-  const d = document.createElement("div"); d.className = "desc"; d.textContent = r.description;
+  const a = document.createElement("a"); a.href = LANG === "fr" ? r.fr : r.en; a.textContent = LANG === "fr" ? r.name : r.name_en;
+  const d = document.createElement("div"); d.className = "desc"; d.textContent = LANG === "fr" ? r.description : r.description_en;
   name.append(a, d); tr.appendChild(name);
   const times = document.createElement("td"); times.className = "text num"; times.textContent = `${r.buy} → ${r.sell} · ${r.buy_paris} → ${r.sell_paris}`; tr.appendChild(times);
   ["per12", "sans_per"].forEach(v => {

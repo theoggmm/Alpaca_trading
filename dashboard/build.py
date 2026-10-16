@@ -82,7 +82,8 @@ def _strategy_info(strategy):
     sell = (open_minutes + strategy.exit_after_open_minutes if strategy.exit_after_open_minutes is not None
             else close_minutes - strategy.exit_before_close_minutes)
     page = pages(strategy)
-    return {"id": strategy.id, "name": strategy.name, "description": strategy.description, "main": strategy.is_main,
+    return {"id": strategy.id, "name": strategy.name, "description": strategy.description, "name_en": strategy.name_en,
+            "description_en": strategy.description_en, "main": strategy.is_main,
             "buy": _clock(buy), "sell": _clock(sell), "buy_paris": _paris(buy), "sell_paris": _paris(sell),
             "fr": page["fr"].name, "en": page["en"].name}
 

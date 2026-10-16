@@ -1,7 +1,7 @@
 """
 Stratégies d'une famille : règles de sélection, heures d'achat et de vente propres à chacune.
 
-Une stratégie = un dossier contenant `strategy.json` (nom, description, vente N minutes avant la clôture
+Une stratégie = un dossier contenant `strategy.json` (nom et description en français et en anglais, vente N minutes avant la clôture
 ou N minutes après l'ouverture) et les fichiers de critères de ses listes (`criteres_<version>.json`).
 L'heure d'achat découle des critères : décision + retard des données. Deux sortes de critères : « reprise
 après baisse » (core/screener.py) et « ouverture » (core/opening.py, champ "signal": "ouverture").
@@ -28,6 +28,8 @@ class Strategy:
     id: str
     name: str
     description: str
+    name_en: str
+    description_en: str
     family: str
     folder: Path                    # dossier des fichiers de critères et de strategy.json
     exit_before_close_minutes: int  # vente : dernier échange avant clôture - N minutes (ou None)
@@ -69,10 +71,11 @@ def load_criteria(path):
 def _load(folder, family):
     raw = json.loads((folder / "strategy.json").read_text(encoding="utf-8"))
     exits = {"exit_before_close_minutes", "exit_after_open_minutes"} & set(raw)
-    if set(raw) - exits != {"id", "name", "description"} or len(exits) != 1:
-        raise ValueError(f"{folder / 'strategy.json'} : id, name, description et une seule heure de vente "
+    if set(raw) - exits != {"id", "name", "description", "name_en", "description_en"} or len(exits) != 1:
+        raise ValueError(f"{folder / 'strategy.json'} : id, name, description, name_en, description_en et une seule heure de vente "
                          f"(exit_before_close_minutes ou exit_after_open_minutes) ; reçues : {sorted(raw)}")
-    return Strategy(id=raw["id"], name=raw["name"], description=raw["description"], family=family, folder=folder,
+    return Strategy(id=raw["id"], name=raw["name"], description=raw["description"], name_en=raw["name_en"],
+                    description_en=raw["description_en"], family=family, folder=folder,
                     exit_before_close_minutes=raw.get("exit_before_close_minutes"),
                     exit_after_open_minutes=raw.get("exit_after_open_minutes"))
 

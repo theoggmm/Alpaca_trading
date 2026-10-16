@@ -2,5 +2,7 @@
   "id": "principale",
   "name": "Principale",
   "description": "Décision à 10 h 30 puis confirmation à 10 h 45, achat à 11 h 00, vente avant 15 h 30 (New York).",
+  "name_en": "Main",
+  "description_en": "Decision at 10:30 AM, then confirmation at 10:45 AM, bought at 11:00 AM, sold before 3:30 PM (New York).",
   "exit_before_close_minutes": 30
 }

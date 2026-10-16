@@ -2,5 +2,7 @@
   "id": "achat_10h30",
   "name": "Achat à 10 h 30",
   "description": "Mêmes règles, mais sur la première demi-heure : décision à 10 h 00 puis confirmation à 10 h 15, achat à 10 h 30, vente avant 15 h 30 (New York).",
+  "name_en": "Buy at 10:30",
+  "description_en": "Same rules, but on the first half hour: decision at 10:00 AM, then confirmation at 10:15 AM, bought at 10:30 AM, sold before 3:30 PM (New York).",
   "exit_before_close_minutes": 30
 }
