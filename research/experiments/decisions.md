@@ -101,3 +101,11 @@ faits ne l'appliquent pas : à refaire.
 « Achat à 10 h 30, vente à la clôture » (16 h 30 → 21 h 55, Paris : mêmes règles que « Achat à 10 h 30 », vente avant
 15 h 55 New York), placée après « Achat à 10 h 30 » ; « Nuit : achat 15 h 55, vente le lendemain 10 h 30 » (21 h 55 →
 16 h 30, Paris : sélection « fin de journée » décidée à 15 h 40 New York), placée en dernier. Dix stratégies en tout.
+
+## T12 — 2026-10-16 — Confirmation : baisse de 0,2 % tolérée (propriétaire)
+
+À partir du 19 octobre, pour les quatre stratégies « reprise après baisse » (principale, vente à la clôture,
+achat à 10 h 30, achat à 10 h 30 / vente à la clôture) : une action est gardée si son prix à la confirmation n'est
+pas plus de 0,2 % sous celui de la fin de la première période (avant : aucune baisse tolérée). Constat du
+16 octobre : 37 des 43 titres écartés par la confirmation, la plupart pour quelques centièmes de pour cent ;
+avec 0,2 % de tolérance, 18 titres auraient été gardés. Les listes du 16 octobre ne sont pas refaites.

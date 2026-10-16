@@ -391,3 +391,13 @@ PER < 25, +1,47 % faux, +2,18 % juste. 64 tests verts. Suivi en direct relancé 
 
 Autrement dit : tu vois action par action ce qui est encore en jeu et ce que chaque vente a rapporté, et les ventes de
 nuit sont maintenant au bon prix.
+
+## 2026-10-16 (suite) — Confirmation plus tolérante
+
+**Question posée** : la liste principale du jour n'a que 6 titres sur 20 ; appliquer la tolérance de 0,2 %.
+
+**Fait** : `confirmation_tolerance` (core/screener.py), 0,002 dans les critères des quatre stratégies « reprise » ;
+test ; textes du tableau de bord et de la méthodologie ; décision T12. 65 tests verts. Dès le 19 octobre.
+
+Autrement dit : une action qui fait du surplace entre 10 h 30 et 10 h 45 reste dans la liste ; seules celles qui
+retombent nettement sont écartées.

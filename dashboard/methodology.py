@@ -125,6 +125,7 @@ def _values(lang, experiment):
         "entry_paris": _paris_time(confirm_decision + feed, lang), "exit_paris": _paris_time(16 * 60 - exit_before, lang),
         "entry_time": _ny_time(confirm_decision + feed, lang),
         "confirmation_minutes": base.confirmation_minutes,
+        "confirm_tolerance": _number((base.confirmation_tolerance or 0) * 100, lang),
         "gap_pct": _number(base.min_gap_below_high * 100, lang),
         "ma_pct": _number(base.max_below_ma * 100, lang), "ma_sessions": base.ma_sessions,
         "market_symbol": base.market_symbol, "market_ma_sessions": base.market_ma_sessions,

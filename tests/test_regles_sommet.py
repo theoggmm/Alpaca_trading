@@ -80,3 +80,16 @@ def test_confirmation_datation():
     # La décision ne peut pas être prise à 10 h 30 avec une règle de confirmation.
     with pytest.raises(ValueError):
         screen(daily, minute, MARKET_OPEN, DECISION_TIME, CONFIRM)
+
+
+def test_confirmation_tolere_une_petite_baisse():
+    daily, minute = market()
+    # Données synthétiques : prix à 10 h 30 = dernier × 1,0001^59 ; après, dernier / 2. Facteurs pour
+    # DOWN2 à 0,1 % sous son prix de 10 h 30 à 10 h 45, DOWN3 à 0,5 % dessous.
+    at_1030 = Decimal("1.0001") ** 59
+    minute = _set(minute, "DOWN2", range(60, 75), 2 * at_1030 * Decimal("0.999"))
+    minute = _set(minute, "DOWN3", range(60, 75), 2 * at_1030 * Decimal("0.995"))
+    strict, _ = screen(daily, minute, MARKET_OPEN, CONFIRM_TIME, CONFIRM)
+    tolerant, _ = screen(daily, minute, MARKET_OPEN, CONFIRM_TIME, replace(CONFIRM, confirmation_tolerance=Decimal("0.002")))
+    assert "DOWN2" not in {i["symbol"] for i in strict}
+    assert "DOWN2" in {i["symbol"] for i in tolerant} and "DOWN3" not in {i["symbol"] for i in tolerant}

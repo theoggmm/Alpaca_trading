@@ -16,5 +16,6 @@
   "max_below_ma": "0.05",
   "ma_sessions": 50,
   "market_symbol": "SPY",
-  "market_ma_sessions": 50
+  "market_ma_sessions": 50,
+  "confirmation_tolerance": "0.002"
 }

@@ -51,6 +51,8 @@ class Criteria:
     # Optionnel (variante « confirmation ») : décision repoussée de ce nombre de minutes après la première
     # heure ; le dernier prix à la décision ne doit pas être sous celui de la fin de la première heure.
     confirmation_minutes: int = None
+    # Optionnel : baisse tolérée entre la fin de la première heure et la confirmation (0,002 = 0,2 %) ; absent = aucune.
+    confirmation_tolerance: Decimal = None
     # Optionnel (règle « pas en chute ») : à la fin de la première heure, le prix doit être au plus à cette
     # fraction sous la moyenne des ma_sessions dernières clôtures ; absent = pas de filtre.
     max_below_ma: Decimal = None
@@ -307,7 +309,8 @@ def screen(daily, minute, market_open, decision_time, criteria, earnings_for=Non
     if criteria.confirmation_minutes is not None:
         latest = {symbol: last for symbol, (_, last) in first_hour_prices(minute, market_open).items()}
         confirmation = {s.symbol: (latest[s.symbol], latest[s.symbol] / price - 1) for s, _, price in rising}
-        rising = [r for r in rising if confirmation[r[0].symbol][1] >= 0]
+        floor = -(criteria.confirmation_tolerance or 0)
+        rising = [r for r in rising if confirmation[r[0].symbol][1] >= floor]
         funnel["confirmation"] = len(rising)
 
     pe = {}
