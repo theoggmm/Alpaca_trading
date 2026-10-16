@@ -14,6 +14,9 @@ CLOSE = datetime(2026, 10, 16, 20, 0, tzinfo=timezone.utc)
 
 def test_strategies_de_la_famille():
     every = {s.id: s for s in load_strategies(FAMILY_DIR, "reprise_apres_baisse")}
+    # Ordre voulu par le propriétaire (accueil, menu « Stratégie »).
+    assert list(every) == ["principale", "vente_cloture", "achat_10h30", "ouverture_1h", "ouverture_2h",
+                           "nuit_15h_ouverture", "nuit_15h_10h30", "nuit_15h55_ouverture"]
     assert list(every)[0] == "principale" and every["principale"].storage == "reprise_apres_baisse"
     assert every["ouverture_1h"].storage == "reprise_apres_baisse/strategies/ouverture_1h"
     for s in every.values():

@@ -1,5 +1,6 @@
 {
   "id": "ouverture_2h",
+  "order": 5,
   "name": "Ouverture, vente après 2 h",
   "description": "Autre logique : actions qui ont fini la veille en hausse et montent modérément pendant la nuit (+0,5 % à +3 % avant 9 h 15). Achat à l'ouverture (9 h 30), vente 2 h après (11 h 30, New York).",
   "name_en": "Open, sell after 2 h",

@@ -84,7 +84,7 @@ ses fichiers de critères) ; les autres sont dans `strategies/<id>/`. `strategy.
 et l'heure de vente (`exit_before_close_minutes` ou `exit_after_open_minutes`) ; l'heure d'achat découle des
 critères (décision + 15 min). Deux sortes de critères : « reprise après baisse » (`core/screener.py`) et
 « ouverture » (`core/opening.py`, `"signal": "ouverture"`). Pour ajouter une stratégie : copier un dossier,
-changer l'identifiant, le nom et les heures. Le suivi en direct produit chaque liste dès que ses données sont
+changer l'identifiant, la place (`order` : 1 en premier sur l'accueil et dans le menu), le nom et les heures. Le suivi en direct produit chaque liste dès que ses données sont
 prêtes ; ses runs vont dans `research/experiments/runs/reprise_apres_baisse/strategies/<id>/`.
 
 ## Bulles en direct

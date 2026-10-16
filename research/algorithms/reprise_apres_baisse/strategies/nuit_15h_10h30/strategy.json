@@ -1,5 +1,6 @@
 {
   "id": "nuit_15h_10h30",
+  "order": 7,
   "name": "Nuit : achat 15 h 00, vente le lendemain 10 h 30",
   "description": "Fin de journée : actions en hausse sur la journée (+0,5 % à +4 %), en hausse sur la dernière heure et à moins de 1 % de leur plus haut du jour, choisies à 14 h 45. Achat à 15 h 00, vente le lendemain 1 h après l'ouverture (10 h 30, New York).",
   "name_en": "Overnight: buy 3:00 PM, sell next day 10:30 AM",

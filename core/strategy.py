@@ -28,6 +28,7 @@ STRATEGIES_DIR = "strategies"
 @dataclass(frozen=True)
 class Strategy:
     id: str
+    order: int                      # place sur l'accueil et dans le menu « Stratégie »
     name: str
     description: str
     name_en: str
@@ -87,10 +88,10 @@ def load_criteria(path):
 def _load(folder, family):
     raw = json.loads((folder / "strategy.json").read_text(encoding="utf-8"))
     exits = {"exit_before_close_minutes", "exit_after_open_minutes", "exit_next_open_minutes"} & set(raw)
-    if set(raw) - exits != {"id", "name", "description", "name_en", "description_en"} or len(exits) != 1:
-        raise ValueError(f"{folder / 'strategy.json'} : id, name, description, name_en, description_en et une seule heure de vente "
+    if set(raw) - exits != {"id", "order", "name", "description", "name_en", "description_en"} or len(exits) != 1:
+        raise ValueError(f"{folder / 'strategy.json'} : id, order, name, description, name_en, description_en et une seule heure de vente "
                          f"(exit_before_close_minutes, exit_after_open_minutes ou exit_next_open_minutes) ; reçues : {sorted(raw)}")
-    return Strategy(id=raw["id"], name=raw["name"], description=raw["description"], name_en=raw["name_en"],
+    return Strategy(id=raw["id"], order=int(raw["order"]), name=raw["name"], description=raw["description"], name_en=raw["name_en"],
                     description_en=raw["description_en"], family=family, folder=folder,
                     exit_before_close_minutes=raw.get("exit_before_close_minutes"),
                     exit_after_open_minutes=raw.get("exit_after_open_minutes"),
@@ -98,13 +99,13 @@ def _load(folder, family):
 
 
 def load_strategies(family_dir, family):
-    """La stratégie principale (dossier de la famille), puis les variantes de strategies/, par ordre alphabétique."""
+    """La stratégie principale (dossier de la famille), puis les variantes de strategies/, dans l'ordre de leur champ « order »."""
     family_dir = Path(family_dir)
     main = _load(family_dir, family)
     if not main.is_main:
         raise ValueError(f"{family_dir / 'strategy.json'} doit porter l'identifiant « {MAIN} »")
-    others = [_load(folder, family) for folder in sorted((family_dir / STRATEGIES_DIR).glob("*/"))
-              if (folder / "strategy.json").exists()]
+    others = sorted((_load(folder, family) for folder in (family_dir / STRATEGIES_DIR).glob("*/")
+                     if (folder / "strategy.json").exists()), key=lambda s: (s.order, s.id))
     if len({s.id for s in [main, *others]}) != len(others) + 1:
         raise ValueError("Deux stratégies portent le même identifiant")
     return [main, *others]
