@@ -524,6 +524,7 @@ def run(family):
         if _missing_lists(every, key, market_open, now):
             try:
                 screener.run(wait=False)
+                build(family)   # la liste apparaît tout de suite, même avant les premiers prix de la séance
             except (FetchError, TraceError, ValueError) as e:
                 print(f"{now.astimezone(NEW_YORK):%H:%M} — listes non produites, nouvel essai dans {REFRESH_S} s : {e}")
         if now < market_open + FEED_DELAY:

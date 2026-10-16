@@ -452,6 +452,23 @@ const TEXT = {
                        sold: "Vendue à l'heure de vente", not_bought: "Pas encore achetée" },
     positions_counts: c => `${c.held || 0} en cours · ${c.stop || 0} au stop · ${c.objectif || 0} à l'objectif · ${c.sold || 0} à l'heure de vente` + (c.not_bought ? ` · ${c.not_bought} pas encore achetée(s)` : ""),
     positions_note: a => `Gain ou perte après 0,05 % de frais à l'achat et à la vente, sur la part de chaque action quand ${a} sont répartis à parts égales (fractions d'action admises), avant impôts. Une action encore en cours est valorisée à son dernier prix connu (15 min de retard).`,
+    criteria_open: c => [
+      `Actions cotées aux États-Unis, hors ETF ; prix d'au moins ${c.min_price_usd} $ et au moins ${Number(c.min_avg_dollar_volume_usd) / 1e6} M$ échangés par jour en moyenne sur ${c.liquidity_sessions} séances.`,
+      ...(c.market_ma_sessions ? [`Marché en bonne forme : la veille, ${c.market_symbol} au-dessus de sa moyenne des ${c.market_ma_sessions} dernières séances.`] : []),
+      `Veille finie en hausse : dernier prix de la veille au-dessus de celui du début de sa dernière heure (${c.last_hour_minutes} min).`,
+      `Nuit en hausse modérée : prix avant la décision entre +${Number(c.min_overnight) * 100} % et +${Number(c.max_overnight) * 100} % au-dessus de la clôture de la veille, avec au moins ${c.min_premarket_volume} actions échangées en pré-ouverture.`,
+      ...(c.max_pe ? [`PER sur 12 mois glissants inférieur à ${c.max_pe}.`] : []),
+      `Classement par hausse de la dernière heure de la veille, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu ; au plus ${c.count} titres.`,
+    ],
+    criteria_close: c => [
+      `Actions cotées aux États-Unis, hors ETF ; prix d'au moins ${c.min_price_usd} $ et au moins ${Number(c.min_avg_dollar_volume_usd) / 1e6} M$ échangés par jour en moyenne sur ${c.liquidity_sessions} séances.`,
+      ...(c.market_ma_sessions ? [`Marché en bonne forme : la veille, ${c.market_symbol} au-dessus de sa moyenne des ${c.market_ma_sessions} dernières séances.`] : []),
+      `Journée en hausse : prix à la décision entre +${Number(c.min_day_gain) * 100} % et +${Number(c.max_day_gain) * 100} % au-dessus du premier prix de la séance.`,
+      `Dernière heure en hausse : prix à la décision au-dessus de celui de ${c.last_hour_minutes} minutes plus tôt.`,
+      `Près du plus haut du jour : au plus ${Number(c.max_below_day_high) * 100} % sous le plus haut de la journée.`,
+      ...(c.max_pe ? [`PER sur 12 mois glissants inférieur à ${c.max_pe}.`] : []),
+      `Classement par hausse de la dernière heure, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu ; au plus ${c.count} titres.`,
+    ],
     versions_title: "Les deux versions de la liste",
     intro_versions: "Chaque jour, le programme fait deux listes. Elles partagent les mêmes critères de base (actions calmes, en baisse sur un mois, qui remontent depuis deux jours et pendant la première heure) et quatre règles de prudence (deux de tendance, deux contre l'achat au sommet) ; seule la seconde ajoute le PER. Le menu « Version » en haut de page choisit la liste affichée.",
     versions_head: ["Version", "Règles", "Liste et achat (New York)", "Depuis"],
@@ -555,6 +572,8 @@ const TEXT = {
       volatilite_basse: "Volatilité basse", en_baisse_sur_un_mois: "En baisse sur un mois",
       hausse_des_derniers_jours: "Hausse des 2 derniers jours", hausse_premiere_heure: "Hausse 1re heure",
       marche_en_bonne_forme: "Marché en bonne forme", pas_en_chute: "Pas en chute",
+      fin_de_seance_en_hausse: "Veille finie en hausse", nuit_en_hausse_moderee: "Nuit en hausse modérée",
+      journee_en_hausse: "Journée en hausse", derniere_heure_en_hausse: "Dernière heure en hausse", pres_du_plus_haut: "Près du plus haut du jour",
       pas_au_sommet: "Pas au sommet de la 1re heure", confirmation: "Confirmée à 10 h 45",
       per_maximum: "PER sous le seuil",
       selection_diversifiee: "Sélection diversifiée",
@@ -675,6 +694,23 @@ const TEXT = {
                        sold: "Sold at the selling time", not_bought: "Not bought yet" },
     positions_counts: c => `${c.held || 0} still held · ${c.stop || 0} at the stop · ${c.objectif || 0} at the target · ${c.sold || 0} at the selling time` + (c.not_bought ? ` · ${c.not_bought} not bought yet` : ""),
     positions_note: a => `Gain or loss after 0.05% costs on buying and selling, on each stock's share when ${a} is split equally (fractional shares allowed), before tax. A stock still held is valued at its latest known price (15-min delay).`,
+    criteria_open: c => [
+      `US-listed stocks, excluding ETFs; price of at least $${c.min_price_usd} and at least $${Number(c.min_avg_dollar_volume_usd) / 1e6}M traded per day on average over ${c.liquidity_sessions} sessions.`,
+      ...(c.market_ma_sessions ? [`Healthy market: the day before, ${c.market_symbol} above its average of the last ${c.market_ma_sessions} sessions.`] : []),
+      `Previous day finished rising: last price of the day before above its level at the start of its last hour (${c.last_hour_minutes} min).`,
+      `Moderate overnight rise: price before the decision between +${Number(c.min_overnight) * 100}% and +${Number(c.max_overnight) * 100}% above the previous close, with at least ${c.min_premarket_volume} shares traded pre-market.`,
+      ...(c.max_pe ? [`Trailing 12-month P/E below ${c.max_pe}.`] : []),
+      `Ranked by the previous day's last-hour rise, then at most ${c.max_pairwise_correlation} correlation with each stock already selected; at most ${c.count} stocks.`,
+    ],
+    criteria_close: c => [
+      `US-listed stocks, excluding ETFs; price of at least $${c.min_price_usd} and at least $${Number(c.min_avg_dollar_volume_usd) / 1e6}M traded per day on average over ${c.liquidity_sessions} sessions.`,
+      ...(c.market_ma_sessions ? [`Healthy market: the day before, ${c.market_symbol} above its average of the last ${c.market_ma_sessions} sessions.`] : []),
+      `Up on the day: price at decision time between +${Number(c.min_day_gain) * 100}% and +${Number(c.max_day_gain) * 100}% above the session's first price.`,
+      `Last hour rising: price at decision time above its level ${c.last_hour_minutes} minutes earlier.`,
+      `Near the day's high: at most ${Number(c.max_below_day_high) * 100}% below the day's high.`,
+      ...(c.max_pe ? [`Trailing 12-month P/E below ${c.max_pe}.`] : []),
+      `Ranked by last-hour rise, then at most ${c.max_pairwise_correlation} correlation with each stock already selected; at most ${c.count} stocks.`,
+    ],
     versions_title: "The two versions of the list",
     intro_versions: "Every day, the program makes two lists. They share the same base criteria (calm stocks, down over a month, rising for two days and during the first hour) and four caution rules (two on trends, two against buying at the top); only the second adds the P/E. The \"Version\" menu at the top of the page chooses which list is shown.",
     versions_head: ["Version", "Rules", "List and purchase (New York)", "Since"],
@@ -778,6 +814,8 @@ const TEXT = {
       volatilite_basse: "Low volatility", en_baisse_sur_un_mois: "Down over a month",
       hausse_des_derniers_jours: "Up the last 2 days", hausse_premiere_heure: "Up in the first hour",
       marche_en_bonne_forme: "Healthy market", pas_en_chute: "Not a falling knife",
+      fin_de_seance_en_hausse: "Previous day finished rising", nuit_en_hausse_moderee: "Moderate overnight rise",
+      journee_en_hausse: "Up on the day", derniere_heure_en_hausse: "Last hour rising", pres_du_plus_haut: "Near the day's high",
       pas_au_sommet: "Not at the first-hour top", confirmation: "Confirmed at 10:45 AM",
       per_maximum: "P/E below threshold",
       selection_diversifiee: "Diversified selection",
@@ -996,7 +1034,8 @@ function renderRun(run) {
     return step;
   }));
 
-  document.getElementById("criteria").replaceChildren(...TEXT.criteria(run.criteria).map(t => el("li", "", t)));
+  const criteriaText = run.criteria.signal === "ouverture" ? TEXT.criteria_open : run.criteria.signal === "fin_de_journee" ? TEXT.criteria_close : TEXT.criteria;
+  document.getElementById("criteria").replaceChildren(...criteriaText(run.criteria).map(t => el("li", "", t)));
 }
 
 // Tendance sur un mois par domaine : celle du run s'il existe, sinon celle de la séance (clôture de la veille).
