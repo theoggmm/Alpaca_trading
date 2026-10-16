@@ -319,7 +319,8 @@ def finalize(strategy, alpaca, criteria, session_date, open_time, close_time, ne
     trades = last_session_prices(closing, market_close)
     entry_time, exit_time = _trade_times(strategy, market_open, market_close, runs, next_open)
     traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
-    entry_bars = _entry_bars(alpaca, key, stage, traded, _entry_times(strategy, market_open, runs), market_close)
+    # Prix d'achat servis à l'heure réelle du calcul (un achat de 15 h 55 n'est servi qu'après 16 h 10, New York).
+    entry_bars = _entry_bars(alpaca, key, stage, traded, _entry_times(strategy, market_open, runs), now)
     # Vente connue seulement une fois servie (de nuit : le lendemain matin) ; sinon valeur à la clôture.
     sold = now >= exit_time + FEED_DELAY
     exit_bars = _exit_bars(alpaca, key, stage, traded, exit_time) if sold else EMPTY_BARS
