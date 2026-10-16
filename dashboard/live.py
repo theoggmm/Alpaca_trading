@@ -6,8 +6,11 @@ la journée, la première heure, 2 séances, 1 semaine et 1 mois, variation depu
 chaque titre de la sélection du jour, puis régénération du tableau de bord (qui se recharge seul).
 
 Après la clôture (ou au réveil du Mac après la clôture), l'état de fin de séance est reconstitué
-depuis l'historique minute d'Alpaca et gardé dans research/experiments/final/<famille>/<date>.json.
+depuis l'historique minute d'Alpaca et gardé dans research/experiments/final/<stockage>/<date>.json.
 catch_up() refait cet état pour toute séance terminée qui n'en a pas.
+
+Toutes les stratégies de la famille (heures d'achat et de vente différentes) sont suivies ensemble : les
+prix lus servent à toutes, chaque stratégie a son état en direct, ses fins de séance et son tableau de bord.
 
 Depuis la racine du dépôt :
     .venv/bin/python -m dashboard.live reprise_apres_baisse
@@ -27,13 +30,15 @@ from core.domains import LIVE_MEASURES, WEEK_SESSIONS, domain_trends, live_domai
 from core.portfolio import entry_prices, order_plan, simulate
 from core.screener import (Criteria, changes_since_open, last_session_prices, liquid_universe, recent_closes,
                            session_open_prices, session_trades)
+from core.strategy import criteria_from_json, load_strategies
 from core.universe import eligible_symbols
-from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, SUPPLEMENTS, build
+from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, SUPPLEMENTS, build, live_file
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
-from infra.trace import ROOT, committed_git_sha, latest_per_session, load_runs, variant_of
+from infra.trace import ROOT, TraceError, committed_git_sha, latest_per_session, load_runs, variant_of
+from research.algorithms.reprise_apres_baisse import run as screener
 
 NEW_YORK = ZoneInfo("America/New_York")
 FEED = "delayed_sip"
@@ -45,9 +50,8 @@ DAILY_HISTORY = timedelta(days=130)
 CLOSING_WINDOW = timedelta(minutes=30)
 # Fenêtre lue après l'ouverture pour connaître le premier prix de chaque titre (graphiques « depuis l'ouverture »).
 OPENING_WINDOW = timedelta(minutes=5)
-# Simulation d'investissement (tableau du bas) : achat dès que la liste est disponible (décision + 15 min),
-# vente 30 min avant la clôture. Fenêtres lues pour trouver le premier et le dernier échange.
-EXIT_BEFORE_CLOSE = timedelta(minutes=30)
+# Simulation d'investissement : achat dès que la liste est disponible (décision + 15 min), vente N minutes
+# avant la clôture (N propre à chaque stratégie). Fenêtres lues pour trouver le premier et le dernier échange.
 TRADE_WINDOW = timedelta(minutes=5)
 EXIT_WINDOW = timedelta(minutes=30)
 # Section « Ordres à passer » : montant réparti en actions entières sur la liste avec PER.
@@ -60,6 +64,11 @@ BENCHMARK = "SPY"
 DEFINITIVE_AFTER = timedelta(hours=12)
 SUPERSEDED_DIR = ROOT / "research" / "outputs" / "final_superseded"
 EMPTY_BARS = pd.DataFrame(columns=["symbol", "timestamp", "open", "close", "volume"])
+
+
+def strategies(family):
+    """Stratégies de la famille : la principale, puis ses variantes d'heures."""
+    return load_strategies(ROOT / "research" / "algorithms" / family, family)
 
 
 def _criteria(family):
@@ -116,28 +125,29 @@ def _month_trend(daily, market_open, criteria, domains):
     return {"bubbles": bubbles, "unclassified": unclassified}
 
 
-def _trade_times(criteria, market_open, market_close, runs=()):
+def _trade_times(strategy, market_open, market_close, runs=()):
     """
-    (achat des repères, vente) : achat à l'heure d'achat la plus tôt des listes de la séance (leurs critères
-    enregistrés : 10 h 45 jusqu'au 15 octobre 2026, 11 h 00 ensuite), à défaut celle des critères actuels
-    (décision + 15 min) ; vente 30 min avant la clôture.
+    (achat des repères, vente) d'une stratégie : achat à l'heure d'achat la plus tôt des listes de la séance
+    (leurs critères enregistrés), à défaut celle des critères actuels de la stratégie (décision + 15 min) ;
+    vente à l'heure de la stratégie (avant la clôture ou après l'ouverture).
     """
-    default = market_open + timedelta(minutes=criteria.decision_minutes) + FEED_DELAY
-    return (min((_entry_time(r, market_open) for r in runs), default=default), market_close - EXIT_BEFORE_CLOSE)
+    minutes = min(c.decision_minutes for c in strategy.criteria().values())
+    default = market_open + timedelta(minutes=minutes) + FEED_DELAY
+    return (min((_entry_time(r, market_open) for r in runs), default=default),
+            strategy.exit_time(market_open, market_close))
 
 
 def _entry_time(run, market_open):
     """Heure d'achat d'une liste : sa décision (première heure, + confirmation éventuelle) + retard des données."""
-    return market_open + timedelta(minutes=Criteria.from_json(run["criteria"], run["run_id"]).decision_minutes) + FEED_DELAY
+    return market_open + timedelta(minutes=criteria_from_json(run["criteria"], run["run_id"]).decision_minutes) + FEED_DELAY
 
 
-def _entry_times(family, market_open, runs=()):
+def _entry_times(strategy, market_open, runs=()):
     """
-    Heures d'achat de la séance, de la plus tôt à la plus tard : celles des listes déjà produites (critères
-    enregistrés dans chaque run) et celles des fichiers de critères actuels (listes pas encore produites).
+    Heures d'achat d'une stratégie pour la séance, de la plus tôt à la plus tard : celles des listes déjà
+    produites (critères enregistrés dans chaque run) et celles de ses fichiers de critères (listes à venir).
     """
-    minutes = {Criteria.from_file(path).decision_minutes
-               for path in (ROOT / "research" / "algorithms" / family).glob("criteres_*.json")}
+    minutes = {c.decision_minutes for c in strategy.criteria().values()}
     return sorted({market_open + timedelta(minutes=m) + FEED_DELAY for m in minutes}
                   | {_entry_time(r, market_open) for r in runs})
 
@@ -145,16 +155,18 @@ def _entry_times(family, market_open, runs=()):
 def _entry_bars(alpaca, key, stage, traded, entry_times, now):
     """
     Barres d'achat (TRADE_WINDOW minutes) à chaque heure d'achat dont la fenêtre est terminée et servie à now,
-    lues une fois chacune puis réunies. La première heure d'achat garde le nom de cache d'avant les variantes.
+    lues une fois chacune (cache nommé par l'heure : partagé par les stratégies) puis réunies.
     """
-    frames = []
-    for i, at in enumerate(entry_times):
-        if now < at + TRADE_WINDOW + FEED_DELAY:
-            continue
-        suffix = "" if i == 0 else f"_{at.astimezone(NEW_YORK):%H%M}"
-        frames.append(cached(f"{key}/{stage}_entry_bars_all{suffix}",
-                             lambda: alpaca.bars(traded, "1Min", at, at + TRADE_WINDOW)))
+    frames = [cached(f"{key}/{stage}_entry_at_{at.astimezone(NEW_YORK):%H%M}",
+                     lambda: alpaca.bars(traded, "1Min", at, at + TRADE_WINDOW))
+              for at in entry_times if now >= at + TRADE_WINDOW + FEED_DELAY]
     return pd.concat(frames, ignore_index=True) if frames else EMPTY_BARS
+
+
+def _exit_bars(alpaca, key, stage, traded, exit_time):
+    """Barres de vente : EXIT_WINDOW minutes jusqu'à exit_time, lues une fois (cache nommé par l'heure de vente)."""
+    return cached(f"{key}/{stage}_exit_at_{exit_time.astimezone(NEW_YORK):%H%M}",
+                  lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
 
 
 def _portfolio(runs, universe, entry_bars, exit_bars, trades, market_open, entry_time, exit_time, now):
@@ -205,7 +217,7 @@ def _order_plan(runs, prices, basis):
             "basis": basis, **plan}
 
 
-def _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, opening,
+def _state(storage, criteria, key, market_open, market_close, now, daily, domains, names, trades, minute, opening,
            runs, opens):
     """
     État affiché par le tableau de bord, calculé avec les seules données connues à now.
@@ -216,7 +228,7 @@ def _state(family, criteria, key, market_open, market_close, now, daily, domains
     in_session = session_trades(trades, market_open, market_close, now)
     day_opens = session_open_prices(opening, market_open, now)
     return {
-        "family": family,
+        "family": storage,
         "session_date": key,
         "observed_at": now.isoformat(),
         "prices_until": max(ts for ts, _ in in_session.values()).isoformat() if in_session else None,
@@ -248,12 +260,13 @@ def is_definitive(now, market_close):
     return now >= market_close + DEFINITIVE_AFTER
 
 
-def finalize(family, alpaca, criteria, session_date, open_time, close_time):
+def finalize(strategy, alpaca, criteria, session_date, open_time, close_time):
     """
-    État de fin de séance reconstitué depuis l'historique minute : dernier échange de chaque titre
-    avant la clôture (l'enchère de clôture n'est pas comptée). Écrit research/experiments/final/.
+    État de fin de séance d'une stratégie, reconstitué depuis l'historique minute : dernier échange de chaque
+    titre avant la clôture (l'enchère de clôture n'est pas comptée). Écrit research/experiments/final/<stockage>/.
     Provisoire s'il est calculé moins de DEFINITIVE_AFTER après la clôture ; l'état définitif relit
     les barres minute à neuf (cache distinct), pour intégrer les corrections d'Alpaca.
+    criteria : critères de l'univers liquide (communs aux stratégies).
     """
     key = session_date.isoformat()
     market_open, market_close = _times(session_date, open_time, close_time)
@@ -263,63 +276,69 @@ def finalize(family, alpaca, criteria, session_date, open_time, close_time):
     stage = "definitive" if is_definitive(now, market_close) else "provisional"
 
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
-    runs, opens = _selection(family, key)
+    runs, opens = _selection(strategy.storage, key)
+    # Les listes sont tirées de l'univers liquide : mêmes titres lus pour toutes les stratégies (caches partagés).
     tracked = sorted(set(symbols) | set(opens))
     minute = cached(f"{key}/{stage}_first_hour_bars", lambda: alpaca.bars(symbols, "1Min", market_open, first_hour_end))
     closing = cached(f"{key}/{stage}_closing_bars",
                      lambda: alpaca.bars(tracked, "1Min", market_close - CLOSING_WINDOW, market_close))
     trades = last_session_prices(closing, market_close)
-    entry_time, exit_time = _trade_times(criteria, market_open, market_close, runs)
+    entry_time, exit_time = _trade_times(strategy, market_open, market_close, runs)
     traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
-    entry_bars = _entry_bars(alpaca, key, stage, traded, _entry_times(family, market_open, runs), market_close)
-    exit_bars = cached(f"{key}/{stage}_exit_bars_all",
-                       lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
+    entry_bars = _entry_bars(alpaca, key, stage, traded, _entry_times(strategy, market_open, runs), market_close)
+    exit_bars = _exit_bars(alpaca, key, stage, traded, exit_time)
 
-    state = _state(family, criteria, key, market_open, market_close, market_close,
+    state = _state(strategy.storage, criteria, key, market_open, market_close, market_close,
                    daily, domains, names, trades, minute, minute, runs, opens)
     state["portfolio"] = _portfolio(runs, symbols, entry_bars, exit_bars, trades, market_open, entry_time, exit_time,
                                     market_close)
     state["month_trend"] = _month_trend(daily, market_open, criteria, domains)
-    state["order_plan"] = _order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry")
+    state["order_plan"] = (_order_plan(runs, entry_prices(entry_bars, entry_time, market_close), "entry")
+                           if strategy.is_main else None)
     state["selection"]["since_entry"] = _since_entry(runs, entry_bars, trades, market_open, market_close, market_close)
     state.update(final=True, provisional=stage == "provisional", computed_at=now.isoformat(), git_sha=git_sha,
                  source="historique minute Alpaca (toutes bourses), dernière barre terminée à la clôture")
-    path = FINALS_DIR / family / f"{key}.json"
+    path = FINALS_DIR / strategy.storage / f"{key}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists():  # archive avant remplacement
-        previous = SUPERSEDED_DIR / family / f"{key}_{json.loads(path.read_text(encoding='utf-8'))['computed_at']}.json"
+        previous = (SUPERSEDED_DIR / strategy.storage /
+                    f"{key}_{json.loads(path.read_text(encoding='utf-8'))['computed_at']}.json")
         previous.parent.mkdir(parents=True, exist_ok=True)
         path.rename(previous)
     path.write_text(json.dumps(state, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     # Le dernier état affiché devient l'état final s'il porte sur cette séance ou une plus ancienne.
-    live = json.loads(LIVE_FILE.read_text(encoding="utf-8")) if LIVE_FILE.exists() else None
+    live_path = live_file(strategy)
+    live = json.loads(live_path.read_text(encoding="utf-8")) if live_path.exists() else None
     if live is None or live["session_date"] <= key:
-        _write_chart_data(daily, market_open, symbols, criteria, key)
-        LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        if strategy.is_main:
+            _write_chart_data(daily, market_open, symbols, criteria, key)
+        live_path.parent.mkdir(parents=True, exist_ok=True)
+        live_path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
     return path
 
 
 def catch_up(family):
     """
-    Produit l'état de fin de séance de chaque séance terminée qui n'en a pas, et remplace par l'état
-    définitif tout état provisoire dès que DEFINITIVE_AFTER est passé. Depuis le premier run.
+    Pour chaque stratégie : produit l'état de fin de séance de chaque séance terminée qui n'en a pas, et remplace
+    par l'état définitif tout état provisoire dès que DEFINITIVE_AFTER est passé. Depuis son premier run.
     """
-    runs = load_runs(family)
-    if not runs:
-        return []
     criteria = _criteria(family)
-    alpaca = AlpacaReader()
+    alpaca = None
     now = datetime.now(timezone.utc)
-    first = datetime.fromisoformat(runs[0]["session_date"]).date()
     done = []
-    for session_date, open_time, close_time in alpaca.sessions(first, now.astimezone(NEW_YORK).date()):
-        _, market_close = _times(session_date, open_time, close_time)
-        path = FINALS_DIR / family / f"{session_date}.json"
-        missing = now >= market_close + FEED_DELAY and not path.exists()
-        provisional = path.exists() and json.loads(path.read_text(encoding="utf-8")).get("provisional", True)
-        if missing or (provisional and is_definitive(now, market_close)):
-            done.append(finalize(family, alpaca, criteria, session_date, open_time, close_time))
+    for strategy in strategies(family):
+        runs = load_runs(strategy.storage)
+        if not runs:
+            continue
+        alpaca = alpaca or AlpacaReader()
+        first = datetime.fromisoformat(runs[0]["session_date"]).date()
+        for session_date, open_time, close_time in alpaca.sessions(first, now.astimezone(NEW_YORK).date()):
+            _, market_close = _times(session_date, open_time, close_time)
+            path = FINALS_DIR / strategy.storage / f"{session_date}.json"
+            missing = now >= market_close + FEED_DELAY and not path.exists()
+            provisional = path.exists() and json.loads(path.read_text(encoding="utf-8")).get("provisional", True)
+            if missing or (provisional and is_definitive(now, market_close)):
+                done.append(finalize(strategy, alpaca, criteria, session_date, open_time, close_time))
     if done:
         build(family)
     return done
@@ -334,6 +353,7 @@ def supplement(family):
     Statut diagnostic : calculé après lecture de la séance. Un complément existant n'est jamais réécrit.
     """
     criteria = _criteria(family)
+    main = strategies(family)[0]
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
     done = []
@@ -348,11 +368,10 @@ def supplement(family):
         market_open, market_close = _times(session_date, open_time, close_time)
         daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
         runs, opens = _selection(family, key)
-        entry_time, exit_time = _trade_times(criteria, market_open, market_close, runs)
+        entry_time, exit_time = _trade_times(main, market_open, market_close, runs)
         traded = sorted(set(symbols) | set(opens) | {BENCHMARK})
-        entry_bars = _entry_bars(alpaca, key, "supplement", traded, _entry_times(family, market_open, runs), market_close)
-        exit_bars = cached(f"{key}/supplement_exit_bars_all",
-                           lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
+        entry_bars = _entry_bars(alpaca, key, "supplement", traded, _entry_times(main, market_open, runs), market_close)
+        exit_bars = _exit_bars(alpaca, key, "supplement", traded, exit_time)
         closing = cached(f"{key}/supplement_closing_bars",
                          lambda: alpaca.bars(sorted(opens), "1Min", market_close - CLOSING_WINDOW, market_close))
         trades = last_session_prices(closing, market_close)
@@ -376,6 +395,17 @@ def supplement(family):
     return done
 
 
+def _missing_lists(every, key, market_open, now):
+    """Vrai si une liste de la séance est prête (décision + retard des données) mais pas encore produite."""
+    for strategy in every:
+        done = {variant_of(r) for r in load_runs(strategy.storage) if r["session_date"] == key}
+        for variant, criteria in strategy.criteria().items():
+            ready = market_open + timedelta(minutes=criteria.decision_minutes) + FEED_DELAY
+            if now >= ready and variant not in done:
+                return True
+    return False
+
+
 def _single_instance():
     """Verrou tenu tant que le processus vit : un seul suivi à la fois. None si un autre tourne déjà."""
     LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -394,6 +424,7 @@ def run(family):
         print("Le suivi en direct tourne déjà : rien à faire.")
         return 0
     criteria = _criteria(family)
+    every = strategies(family)
     alpaca = AlpacaReader()
     session_date = datetime.now(timezone.utc).astimezone(NEW_YORK).date()
     key = session_date.isoformat()
@@ -412,16 +443,17 @@ def run(family):
     month_trend = _month_trend(daily, market_open, criteria, domains)
     minute = EMPTY_BARS
     opening = EMPTY_BARS
-    entry_time, exit_time = _trade_times(criteria, market_open, market_close)
-    # Prix d'achat et de vente de tous les titres liquides et du SPY (les listes en font partie) : lus une fois.
+    # Prix d'achat et de vente de tous les titres liquides et du SPY (les listes en font partie), lus une fois
+    # par heure d'achat et par heure de vente, partagés par les stratégies qui ont la même heure.
     traded = sorted(set(symbols) | {BENCHMARK})
-    entry_bars, exit_bars = EMPTY_BARS, EMPTY_BARS
-    entry_times = _entry_times(family, market_open)
+    plans = {s.id: _trade_times(s, market_open, market_close) for s in every}
+    entry_times = sorted({at for s in every for at in _entry_times(s, market_open)})
+    exits = {}
 
     while True:
         now = datetime.now(timezone.utc)
         if now >= stop_at:
-            print("Clôture passée : état de fin de séance reconstitué depuis l'historique minute…")
+            print("Clôture passée : états de fin de séance reconstitués depuis l'historique minute…")
             for path in catch_up(family):
                 print(f"État de fin de séance : {path}")
             return 0
@@ -429,8 +461,15 @@ def run(family):
             print(f"En attente des premiers prix (à {(market_open + FEED_DELAY).astimezone(NEW_YORK):%H:%M}, New York).")
             time.sleep(REFRESH_S)
             continue
-        # La sélection du jour existe une fois le run du screener produit (après 10 h 45, New York).
-        today_runs, opens = _selection(family, key)
+        # Listes prêtes et pas encore produites : le suivi les produit lui-même (une liste « ouverture » sort à
+        # 9 h 30, avant la tâche planifiée). La tâche planifiée commite et envoie l'historique ensuite.
+        if _missing_lists(every, key, market_open, now):
+            try:
+                screener.run(wait=False)
+            except (FetchError, TraceError, ValueError) as e:
+                print(f"{now.astimezone(NEW_YORK):%H:%M} — listes non produites, nouvel essai dans {REFRESH_S} s : {e}")
+        selections = {s.id: _selection(s.storage, key) for s in every}
+        opens_all = {sym for _, opens in selections.values() for sym in opens}
         try:
             if minute.empty and now >= first_hour_end + FEED_DELAY:
                 minute = cached(f"{key}/live_first_hour_bars",
@@ -439,31 +478,35 @@ def run(family):
                 opening = cached(f"{key}/opening_bars",
                                  lambda: alpaca.bars(symbols, "1Min", market_open, market_open + OPENING_WINDOW))
             entry_bars = _entry_bars(alpaca, key, "live", traded, entry_times, now)
-            if exit_bars.empty and now >= exit_time + FEED_DELAY:
-                exit_bars = cached(f"{key}/live_exit_bars_all",
-                                   lambda: alpaca.bars(traded, "1Min", exit_time - EXIT_WINDOW, exit_time))
-            trades = alpaca.latest_trades(sorted(set(traded) | set(opens)), FEED)
+            for _, exit_time in plans.values():
+                if exit_time not in exits and now >= exit_time + FEED_DELAY:
+                    exits[exit_time] = _exit_bars(alpaca, key, "live", traded, exit_time)
+            trades = alpaca.latest_trades(sorted(set(traded) | opens_all), FEED)
         except FetchError as e:
             print(f"{now.astimezone(NEW_YORK):%H:%M} — lecture impossible, nouvel essai dans {REFRESH_S} s : {e}")
             time.sleep(REFRESH_S)
             continue
 
-        # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
-        state = _state(family, criteria, key, market_open, market_close, now, daily, domains, names, trades,
-                       minute, minute if not minute.empty else opening, today_runs, opens)
-        state["portfolio"] = _portfolio(today_runs, symbols, entry_bars, exit_bars, trades, market_open, entry_time,
-                                        exit_time, now)
-        state["month_trend"] = month_trend
         last_prices = {s: price for s, (_, price) in session_trades(trades, market_open, market_close, now).items()}
-        state["order_plan"] = _order_plan(today_runs, last_prices, "live")
-        state["selection"]["since_entry"] = _since_entry(today_runs, entry_bars, trades, market_open, market_close, now)
-        LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
-        LIVE_FILE.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        for strategy in every:
+            today_runs, opens = selections[strategy.id]
+            entry_time, exit_time = _trade_times(strategy, market_open, market_close, today_runs)
+            # Premier prix de chaque titre : la première heure entière dès qu'elle est lue, sinon les 5 premières minutes.
+            state = _state(strategy.storage, criteria, key, market_open, market_close, now, daily, domains, names,
+                           trades, minute, minute if not minute.empty else opening, today_runs, opens)
+            state["portfolio"] = _portfolio(today_runs, symbols, entry_bars, exits.get(exit_time, EMPTY_BARS), trades,
+                                            market_open, entry_time, exit_time, now)
+            state["month_trend"] = month_trend
+            state["order_plan"] = _order_plan(today_runs, last_prices, "live") if strategy.is_main else None
+            state["selection"]["since_entry"] = _since_entry(today_runs, entry_bars, trades, market_open, market_close, now)
+            path = live_file(strategy)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)
         day = state["measures"]["day"]["bubbles"]
         up = sum(1 for b in day if b["mean_return"] > 0)
         print(f"{now.astimezone(NEW_YORK):%H:%M} (New York) — journée : "
-              f"{up} domaines en hausse, {len(day) - up} en baisse")
+              f"{up} domaines en hausse, {len(day) - up} en baisse · {len(every)} stratégies suivies")
         time.sleep(REFRESH_S)
 
 

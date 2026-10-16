@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="__LANG__">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Régénérée chaque minute par le suivi en direct, comme les tableaux de bord : elle se recharge seule. -->
+<meta http-equiv="refresh" content="60">
+<title>Stratégies</title>
+<!-- Généré par dashboard/build.py : une ligne par stratégie de la famille. -->
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --ink: #17202b; --muted: #5d6877; --line: #dde1e7;
+    --accent: #2b5d8c; --up: #1d7a4c; --down: #b23a3a;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+      --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+    --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+  main { max-width: 1280px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 20px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+  h1 { margin: 0; font-size: 26px; flex: 1 1 auto; }
+  header a { color: var(--accent); font-weight: 600; }
+  .intro { margin: 0; max-width: 85ch; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  th.text, td.text { text-align: left; }
+  td.num { font-family: var(--font-data); white-space: nowrap; }
+  td a { color: var(--accent); font-weight: 700; text-decoration: none; }
+  td .desc { color: var(--muted); font-size: 13px; max-width: 46ch; }
+  tr:last-child td { border-bottom: none; }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .note { color: var(--muted); font-size: 13px; margin: 0; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title"></h1>
+    <a id="other"></a>
+  </header>
+  <p class="intro" id="intro"></p>
+  <div class="panel"><table id="rows"></table></div>
+  <p class="note" id="note"></p>
+</main>
+<script>
+const LANG = "__LANG__";
+const ROWS = __ROWS_JSON__;
+const TEXT = {
+  fr: {
+    title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
+    intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heure de New York ; Paris : + 6 h). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
+    head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · sans PER", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · sans PER", "Séances"],
+    waiting: "en attente", none: "—", no_list: "pas de liste",
+    note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
+  },
+  en: {
+    title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
+    intro: "Each row is a way of following the lists, with its own buying and selling times (New York time; Paris: + 6 h). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
+    head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · without P/E", "Since Oct 16 · P/E < 25", "Since Oct 16 · without P/E", "Sessions"],
+    waiting: "waiting", none: "—", no_list: "no list",
+    note: "Today: live during the session (prices 15 min late), frozen at the selling time. All these strategies are paper diagnostics: no order is placed.",
+  },
+}[LANG];
+const pct = v => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(v);
+const cell = (v, extra) => {
+  const td = document.createElement("td");
+  td.className = "num" + (v == null ? "" : v > 0 ? " up" : v < 0 ? " down" : "");
+  td.textContent = v == null ? extra : pct(v);
+  return td;
+};
+document.documentElement.lang = LANG;
+document.title = TEXT.title;
+document.getElementById("title").textContent = TEXT.title;
+const other = document.getElementById("other");
+other.textContent = TEXT.other; other.href = TEXT.other_href;
+document.getElementById("intro").textContent = TEXT.intro;
+document.getElementById("note").textContent = TEXT.note;
+const t = document.getElementById("rows");
+const head = t.createTHead().insertRow();
+TEXT.head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i < 2) th.className = "text"; head.appendChild(th); });
+const body = t.createTBody();
+ROWS.forEach(r => {
+  const tr = body.insertRow();
+  const name = document.createElement("td"); name.className = "text";
+  const a = document.createElement("a"); a.href = LANG === "fr" ? r.fr : r.en; a.textContent = r.name;
+  const d = document.createElement("div"); d.className = "desc"; d.textContent = r.description;
+  name.append(a, d); tr.appendChild(name);
+  const times = document.createElement("td"); times.className = "text num"; times.textContent = `${r.buy} → ${r.sell}`; tr.appendChild(times);
+  ["per12", "sans_per"].forEach(v => {
+    const today = r.today[v];
+    tr.appendChild(cell(today?.net ?? null, !today ? TEXT.none : today.n === 0 ? TEXT.no_list : TEXT.waiting));
+  });
+  ["per12", "sans_per"].forEach(v => tr.appendChild(cell(r.totals[v]?.total ?? null, TEXT.none)));
+  const n = document.createElement("td"); n.className = "num"; n.textContent = r.totals.per12?.n ?? r.totals.sans_per?.n ?? 0; tr.appendChild(n);
+});
+</script>
+</body>
+</html>

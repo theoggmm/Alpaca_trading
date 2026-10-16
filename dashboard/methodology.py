@@ -15,7 +15,8 @@ from core.history import TOP_IN_DOMAIN
 from core.performance_metrics import TRADING_DAYS_PER_YEAR
 from core.portfolio import AMOUNTS, COST_BPS, TAX_RATE
 from core.screener import Criteria
-from dashboard.live import (DEFINITIVE_AFTER, EXIT_BEFORE_CLOSE, FEED_DELAY, ORDER_PLAN_AMOUNT, ROOT)
+from core.strategy import load_strategies
+from dashboard.live import DEFINITIVE_AFTER, FEED_DELAY, ORDER_PLAN_AMOUNT, ROOT
 
 HERE = ROOT / "dashboard"
 TEMPLATE = HERE / "methodology_template.html"
@@ -51,7 +52,8 @@ def _values(lang, experiment):
     if per12.to_json() | {"max_pe": None, "version": None} != base.to_json() | {"max_pe": None, "version": None}:
         raise ValueError("Les deux fichiers de critères diffèrent ailleurs que sur le PER : la page serait fausse.")
     feed = int(FEED_DELAY.total_seconds() // 60)
-    exit_before = int(EXIT_BEFORE_CLOSE.total_seconds() // 60)
+    # Page de la stratégie principale : sa vente (N minutes avant la clôture).
+    exit_before = load_strategies(CRITERIA_DIR, "reprise_apres_baisse")[0].exit_before_close_minutes
     decision = NY_OPEN_MINUTES + base.first_hour_minutes
     confirm_decision = NY_OPEN_MINUTES + base.decision_minutes
     return {

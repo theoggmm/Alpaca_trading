@@ -1,7 +1,8 @@
 """
-Génère dashboard/index.html (et index_en.html) à partir de l'historique des runs d'une famille,
-des états de fin de séance (research/experiments/final/) et du dernier état du suivi en direct
-(research/outputs/live/latest.json, volatil), s'il existe.
+Génère un tableau de bord par stratégie de la famille, à partir de ses runs, de ses états de fin de séance
+(research/experiments/final/<stockage>/) et de son dernier état en direct (research/outputs/live/, volatil),
+plus une page d'accueil qui les compare : dashboard/accueil.html (anglais : home.html).
+Stratégie principale : dashboard/index.html et index_en.html ; autres : dashboard/<id>.html et <id>_en.html.
 
 Depuis la racine du dépôt :
     .venv/bin/python -m dashboard.build reprise_apres_baisse
@@ -17,7 +18,8 @@ from core.domains import domain_trends
 from core.history import TOP_IN_DOMAIN, selection_counts, top_in_domain_counts
 from core.performance_metrics import cumulative, summary
 from core.portfolio import TAX_RATE, after_tax
-from core.screener import Criteria, liquid_universe
+from core.screener import liquid_universe
+from core.strategy import criteria_from_json, load_strategies
 from infra import sec
 from infra.cache import read_cached
 from infra.http import FetchError
@@ -25,8 +27,10 @@ from infra.trace import ROOT, RUNS_DIR, latest_per_session, load_runs, variant_o
 
 HERE = Path(__file__).resolve().parent
 TEMPLATE = HERE / "template.html"
-# Une page par langue, générées depuis le même gabarit.
+HOME_TEMPLATE = HERE / "home_template.html"
+# Une page par langue et par stratégie, générées depuis le même gabarit ; accueil commun.
 OUTPUTS = {"fr": HERE / "index.html", "en": HERE / "index_en.html"}
+HOME = {"fr": HERE / "accueil.html", "en": HERE / "home.html"}
 LIVE_FILE = ROOT / "research" / "outputs" / "live" / "latest.json"
 # Clôtures du dernier mois de tout l'univers, écrites une fois par séance par le suivi en direct.
 CHARTS_FILE = HERE / "charts_data.js"
@@ -36,6 +40,42 @@ SESSIONS_DIR = HERE / "sessions"
 FINALS_DIR = ROOT / "research" / "experiments" / "final"
 # Compléments d'une séance définitive (simulation recalculée après coup), à côté de l'état, jamais dedans.
 SUPPLEMENTS = "supplements"
+
+
+def strategies(family):
+    return load_strategies(ROOT / "research" / "algorithms" / family, family)
+
+
+def pages(strategy):
+    """Pages (français, anglais) d'une stratégie."""
+    if strategy.is_main:
+        return OUTPUTS
+    return {"fr": HERE / f"{strategy.id}.html", "en": HERE / f"{strategy.id}_en.html"}
+
+
+def live_file(strategy):
+    """Dernier état en direct d'une stratégie (volatil)."""
+    return LIVE_FILE if strategy.is_main else LIVE_FILE.with_name(f"latest_{strategy.id}.json")
+
+
+def sessions_dir(strategy):
+    return SESSIONS_DIR if strategy.is_main else SESSIONS_DIR / strategy.id
+
+
+def _clock(minutes):
+    """Minutes depuis minuit -> « HH:MM » (heure de New York, séance habituelle 9 h 30 – 16 h 00)."""
+    return f"{minutes // 60:d}:{minutes % 60:02d}"
+
+
+def _strategy_info(strategy):
+    """Ce que la page affiche d'une stratégie : nom, description, heures d'achat et de vente (New York)."""
+    open_minutes, close_minutes = 9 * 60 + 30, 16 * 60
+    buy = open_minutes + min(c.decision_minutes for c in strategy.criteria().values()) + 15
+    sell = (open_minutes + strategy.exit_after_open_minutes if strategy.exit_after_open_minutes is not None
+            else close_minutes - strategy.exit_before_close_minutes)
+    page = pages(strategy)
+    return {"id": strategy.id, "name": strategy.name, "description": strategy.description, "main": strategy.is_main,
+            "buy": _clock(buy), "sell": _clock(sell), "fr": page["fr"].name, "en": page["en"].name}
 
 
 def _embed(value):
@@ -71,17 +111,17 @@ def _with_tax(state):
     return state
 
 
-def _load_finals(family):
+def _load_finals(storage):
     """
     États de fin de séance, par date ; un complément (supplements/<date>.json) remplace à l'affichage la
     simulation, les ordres et « Depuis l'achat » de l'état, qui reste intact sur le disque.
     Retourne [(état, date de modification la plus récente)].
     """
     finals = []
-    for path in sorted((FINALS_DIR / family).glob("*.json")):
+    for path in sorted((FINALS_DIR / storage).glob("*.json")):
         final = json.loads(path.read_text(encoding="utf-8"))
         mtime = path.stat().st_mtime
-        extra = FINALS_DIR / family / SUPPLEMENTS / path.name
+        extra = FINALS_DIR / storage / SUPPLEMENTS / path.name
         if extra.exists():
             sup = json.loads(extra.read_text(encoding="utf-8"))
             final.update(portfolio=sup["portfolio"], order_plan=sup["order_plan"],
@@ -92,11 +132,11 @@ def _load_finals(family):
     return finals
 
 
-def _write_session_files(finals):
-    """sessions/<date>.js pour chaque état de fin de séance, réécrit seulement s'il a changé."""
-    SESSIONS_DIR.mkdir(exist_ok=True)
+def _write_session_files(finals, folder):
+    """<dossier>/<date>.js pour chaque état de fin de séance, réécrit seulement s'il a changé."""
+    folder.mkdir(parents=True, exist_ok=True)
     for final, mtime in finals:
-        target = SESSIONS_DIR / f"{final['session_date']}.js"
+        target = folder / f"{final['session_date']}.js"
         if target.exists() and target.stat().st_mtime >= mtime:
             continue
         state = json.dumps(final, ensure_ascii=False)
@@ -115,7 +155,7 @@ def _fill_month_trend(runs):
         daily = None if "domains" in run else read_cached(f"{run['session_date']}/daily_bars")
         if daily is None:
             continue
-        criteria = Criteria.from_json(run["criteria"], run["run_id"])
+        criteria = criteria_from_json(run["criteria"], run["run_id"])
         decision_time = datetime.fromisoformat(run["decision_time"])
         liquid, _ = liquid_universe(daily, decision_time, criteria)
         try:
@@ -175,13 +215,13 @@ def _results(finals):
     }
 
 
-def _backtests(family):
+def _backtests(storage):
     """
     Dernier test sur le passé de chaque durée (6 mois, 1 mois…), de la plus longue à la plus courte
     (diagnostic) : résumés, cumuls, écarts appariés. Liste vide s'il n'y en a pas.
     """
     latest = {}
-    for path in sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+    for path in sorted((RUNS_DIR / storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
         # Une durée glissante (6 mois, 1 mois) ou une période datée (« février 2025 ») : dernier résultat de chacune.
         latest[result["period"]["months"] or result["period"]["start"]] = result
@@ -202,7 +242,7 @@ MONTH_TEST_AMOUNTS = (Decimal("25000"), Decimal("2000000"))
 MONTH_TEST_LISTS = ("per12", "sans_per")
 
 
-def _month_tests(family):
+def _month_tests(storage):
     """
     Tests sur le passé d'une période datée (un mois) : pour chaque montant et chaque liste, gain par séance,
     par semaine et sur la période — brut, après frais, actions entières après frais, et ce qui reste après
@@ -238,7 +278,7 @@ def _month_tests(family):
         return lists
 
     tests = []
-    for path in sorted((RUNS_DIR / family / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+    for path in sorted((RUNS_DIR / storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
         if result["period"]["months"] or "per12_gross" not in result["days"][0]:
             continue
@@ -256,23 +296,24 @@ def _month_tests(family):
     return [latest[k] for k in sorted(latest, reverse=True)]
 
 
-def build(family):
-    runs = load_runs(family)
+def _build_strategy(strategy, infos):
+    """Tableau de bord d'une stratégie ; retourne sa ligne de l'accueil."""
+    runs = load_runs(strategy.storage)
     _fill_domains(runs)
     _fill_month_trend(runs)
-    live = _with_tax(json.loads(LIVE_FILE.read_text(encoding="utf-8"))) if LIVE_FILE.exists() else None
-    if live and live["family"] != family:
+    path = live_file(strategy)
+    live = _with_tax(json.loads(path.read_text(encoding="utf-8"))) if path.exists() else None
+    if live and live["family"] != strategy.storage:
         live = None
-    loaded = _load_finals(family)
+    loaded = _load_finals(strategy.storage)
     finals = [final for final, _ in loaded]
-    # La page n'embarque que les comptages et la colonne « ouverture → clôture » de chaque séance,
-    # pas la liste complète des titres de chaque fin de séance.
     current_runs = [r for r in runs if r["session_date"] >= RULES_SINCE]
     current_finals = [f for f in finals if f["session_date"] >= RULES_SINCE]
     archived_runs = [r for r in latest_per_session(runs) if r["session_date"] < RULES_SINCE]
     archived_finals = [f for f in finals if f["session_date"] < RULES_SINCE]
     # La page n'embarque que les comptages et la colonne « ouverture → clôture » de chaque séance,
     # pas la liste complète des titres de chaque fin de séance. Comptages et résultats : règles actuelles.
+    results = _results(current_finals)
     history = {
         "runs": len(current_runs),
         "finals": sum("stocks" in f for f in current_finals),
@@ -281,9 +322,9 @@ def build(family):
         "in_selection": {variant: selection_counts([r for r in latest_per_session(current_runs) if variant_of(r) == variant])
                          for variant in {variant_of(r) for r in current_runs}},
         "top_in_domain": top_in_domain_counts(current_finals),
-        "results": _results(current_finals),
-        "backtests": _backtests(family),
-        "month_tests": _month_tests(family),
+        "results": results,
+        "backtests": _backtests(strategy.storage),
+        "month_tests": _month_tests(strategy.storage),
         "archive": {
             "since": RULES_SINCE,
             "results": _results(archived_finals),
@@ -291,25 +332,45 @@ def build(family):
                        "symbols": [i["symbol"] for i in r["selection"]]} for r in archived_runs],
         },
     }
+    info = next(i for i in infos if i["id"] == strategy.id)
     page = (TEMPLATE.read_text(encoding="utf-8")
             .replace("__RUNS_JSON__", _embed(runs))
             .replace("__LIVE_JSON__", _embed(live))
             .replace("__FINALS_JSON__", _embed({f["session_date"]: {"selection": f.get("selection"), "charts": f.get("charts"),
                                                                     "provisional": f.get("provisional", True)}
                                                 for f in finals}))
-            .replace("__HISTORY_JSON__", _embed(history)))
-    _write_session_files(loaded)
+            .replace("__HISTORY_JSON__", _embed(history))
+            .replace("__STRATEGY_JSON__", _embed(info))
+            .replace("__STRATEGIES_JSON__", _embed(infos))
+            .replace("__SESSIONS_DIR__", sessions_dir(strategy).relative_to(HERE).as_posix() + "/"))
+    _write_session_files(loaded, sessions_dir(strategy))
     # Import tardif : dashboard.methodology lit les constantes de dashboard.live, qui importe ce module.
     from dashboard import methodology
-    for lang, path in OUTPUTS.items():
-        path.write_text(page.replace("__LANG__", lang).replace("__METHODOLOGY__", methodology.embedded(lang, EXPERIMENT)),
-                        encoding="utf-8")
+    for lang, out in pages(strategy).items():
+        out.write_text(page.replace("__LANG__", lang).replace("__METHODOLOGY__", methodology.embedded(lang, EXPERIMENT)),
+                       encoding="utf-8")
+    # Ligne de l'accueil : résultat du jour (en direct ou figé) et cumul depuis le début, par liste.
+    today = {v: {"status": row.get("status"), "net": row.get("net_mean_return"), "n": row.get("n")}
+             for v, row in ((live or {}).get("portfolio") or {}).get("versions", {}).items()}
+    return {**info, "session_date": (live or {}).get("session_date"), "today": today,
+            "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "spy")}}
+
+
+def build(family):
+    """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
+    every = strategies(family)
+    infos = [_strategy_info(s) for s in every]
+    rows = [_build_strategy(s, infos) for s in every]
+    home = HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
+    for lang, out in HOME.items():
+        out.write_text(home.replace("__LANG__", lang), encoding="utf-8")
+    from dashboard import methodology
     methodology.write(EXPERIMENT)
-    return OUTPUTS, len(runs)
+    return OUTPUTS, sum(len(load_runs(s.storage)) for s in every)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         sys.exit("Usage : python -m dashboard.build <famille>")
     paths, n = build(sys.argv[1])
-    print(f"Tableau de bord ({n} run(s)) : {paths['fr']} · English: {paths['en']}")
+    print(f"Tableaux de bord ({n} run(s)) : accueil {HOME['fr']} · principale {paths['fr']} · English: {HOME['en']}")

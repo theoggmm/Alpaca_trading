@@ -1,0 +1,6 @@
+{
+  "id": "principale",
+  "name": "Principale",
+  "description": "Décision à 10 h 30 puis confirmation à 10 h 45, achat à 11 h 00, vente avant 15 h 30 (New York).",
+  "exit_before_close_minutes": 30
+}

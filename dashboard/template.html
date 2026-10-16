@@ -108,6 +108,10 @@
   .bt-period:first-child { margin-top: 0; }
   .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 8px; }
   .warn-line { color: var(--down); }
+  [hidden] { display: none !important; }
+  .strategy-banner { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 8px; padding: 10px 14px; display: grid; gap: 2px; font-size: 14px; }
+  .strategy-banner b { font-size: 16px; }
   .sim-tables { display: grid; gap: 16px; }
   .sim-block h3 { margin: 0 0 6px; font-size: 15px; }
   .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 28px; }
@@ -169,12 +173,17 @@
     <h1 data-t="title"></h1>
     <span class="chip" id="status"></span>
     <span class="spacer"></span>
+    <a id="home-link"></a>
+    <label for="strategy" data-t="strategy_label"></label>
+    <select id="strategy"></select>
     <a id="other-lang"></a>
     <label for="run" data-t="session"></label>
     <select id="run"></select>
     <label for="variant" data-t="version"></label>
     <select id="variant"></select>
   </header>
+
+  <div class="strategy-banner" id="strategy-banner"></div>
 
   <nav class="tabs" role="tablist" id="tabs"></nav>
 
@@ -189,7 +198,7 @@
       <p class="note" id="selection-note"></p>
     </section>
 
-    <section>
+    <section id="plan-section">
       <h2 data-t="plan_title"></h2>
       <p class="intro" data-t="intro_plan"></p>
       <div class="live-status" id="plan-status"></div>
@@ -217,7 +226,7 @@
   </div>
 
   <div class="tab-panel" id="tab-details" role="tabpanel" aria-labelledby="tabbtn-details" hidden>
-    <section>
+    <section id="versions-section">
       <h2 data-t="versions_title"></h2>
       <p class="intro" data-t="intro_versions"></p>
       <div class="panel" id="versions"></div>
@@ -314,6 +323,9 @@
 <script src="charts_data.js"></script>
 <script>
 const LANG = "__LANG__";
+// Stratégie de cette page (heures d'achat et de vente, New York) et liste de toutes les stratégies.
+const STRATEGY = __STRATEGY_JSON__;
+const STRATEGIES = __STRATEGIES_JSON__;
 const RUNS = __RUNS_JSON__;
 const LIVE = __LIVE_JSON__;
 // Séance affichée : l'état en direct pour la séance du jour, l'état figé de fin de séance sinon.
@@ -331,7 +343,7 @@ const TEXT = {
     title: "Reprise après baisse", session: "Séance", version: "Version",
     variants: { per12: "PER < 25", sans_per: "Sans PER" }, not_judged: "non jugé",
     live_title: "En direct : tendance par domaine",
-    disclaimer: "Ces titres remplissent, une heure et quart après l'ouverture, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
+    disclaimer: "Ces titres remplissent, à l'heure de décision de la stratégie, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
     run_bubbles_title: "Tendance sur un mois par domaine, au moment du run (clôture de la veille)",
     selection_title: "Sélection", funnel_title: "Entonnoir des critères",
     funnel_note: "Chaque case donne le nombre de titres encore en lice après ce critère.",
@@ -398,7 +410,7 @@ const TEXT = {
     res_suspect: "Plus de 100 % annualisé : résultat suspect (règle 6), à expliquer.",
     res_empty: "Pas encore de séance avec les règles actuelles : la première sera celle du 16 octobre, après la clôture. Les séances précédentes sont dans l'onglet Archive.",
     res_chart_soon: "La courbe apparaît à partir de deux séances.", res_chart_aria: "Rendements cumulés par série",
-    res_note: "Chaque séance : achat à parts égales au premier échange à partir de 11 h 00 (10 h 45 jusqu'au 15 octobre), vente au dernier échange avant 15 h 30 (New York), 0,05 % de frais par ordre. Liste vide : 0 %.",
+    res_note: "Chaque séance : achat à parts égales aux heures de la stratégie (bandeau en haut ; stratégie principale : 10 h 45 jusqu'au 15 octobre, 11 h 00 ensuite), 0,05 % de frais par ordre. Liste vide : 0 %.",
     res_skipped: s => `Non comptées (simulation antérieure aux frais et aux repères) : ${s}.`,
     res_provisional: "* : séance encore provisoire, recalculée le lendemain avec les corrections d'Alpaca.",
     res_recomputed: "† : séance antérieure aux frais et aux repères, simulation recalculée après coup avec les règles actuelles (diagnostic, hors expérience 001). Le 13 octobre, seule la liste sans PER existait.",
@@ -444,7 +456,7 @@ const TEXT = {
     intro_funnel: "Le programme part de toutes les actions américaines et applique ses règles une par une. Chaque ligne montre combien d'actions restent après chaque étape : comme un entonnoir, on passe de plusieurs milliers d'actions à une vingtaine au plus.",
     intro_criteria: "Les règles exactes utilisées pour faire la liste de cette séance, dans l'ordre où elles sont appliquées.",
     intro_history: "Les actions qui reviennent le plus souvent dans les listes depuis le début, avec le nombre de jours où chacune a été retenue.",
-    intro_sim: "Que se serait-il passé si tu avais investi aujourd'hui ? Chaque tableau prend une liste, répartit la somme de la première colonne à parts égales entre ses actions, achète à 11 h 00 et revend à 15 h 30 (heure de New York). De gauche à droite, le résultat est de plus en plus réaliste : sans frais, avec frais, en actions entières, puis après impôts.",
+    intro_sim: "Que se serait-il passé si tu avais investi aujourd'hui ? Chaque tableau prend une liste, répartit la somme de la première colonne à parts égales entre ses actions, l'achète à l'heure d'achat de la stratégie et la revend à son heure de vente (heure de New York, voir le bandeau en haut). De gauche à droite, le résultat est de plus en plus réaliste : sans frais, avec frais, en actions entières, puis après impôts.",
     intro_results: "Le bilan jour après jour depuis le début. L'encadré suit le test officiel qui dira, après 40 séances, si le filtre PER aide vraiment.",
     intro_summary: "Le résumé de chaque liste, comparée au marché (« Univers liquide » : toutes les actions assez échangées ; « S&P 500 » : les 500 plus grandes entreprises américaines). Tout est après frais. La colonne la plus parlante est « Total cumulé » : ce qu'aurait rapporté le fait de suivre la liste chaque jour.",
     intro_chart: "Le même total cumulé, dessiné jour après jour. Chaque ligne est une liste ou un repère du marché ; plus elle finit haut, plus elle a rapporté. La ligne en pointillés est le zéro : au-dessus on gagne, en dessous on perd.",
@@ -475,9 +487,12 @@ const TEXT = {
     sim_times: (a, b) => `achat à partir de ${a}, vente avant ${b} (New York)`,
     sim_no_list: "Pas encore de liste pour cette séance : la simulation commence quand elle est produite.",
     sim_missing: "Pas de simulation pour cette séance (fonction ajoutée le 15 octobre).",
-    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange quand la liste est disponible (une heure et demie après l'ouverture ; une heure et quart jusqu'au 15 octobre) et vendu au dernier échange 30 minutes avant la clôture. Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
+    sim_note: "Chaque montant est réparti à parts égales entre les titres de la liste (fractions d'action admises), acheté au premier échange à l'heure d'achat de la stratégie et vendu au dernier échange avant son heure de vente (bandeau en haut). Brut : sans frais. Après frais : 0,05 % à l'achat et 0,05 % à la vente. Actions entières : nombre d'actions arrondi à l'unité inférieure, le reste n'est pas investi. Un titre sans échange au moment de l'achat est écarté de la répartition.",
     no_run_variant: v => `Pas de liste « ${v} » pour cette séance : cette version n'existait pas encore. Choisis l'autre version.`,
-    no_run_yet: "Les listes de cette séance seront produites vers 17 h 00 (Paris), une heure et demie après l'ouverture.",
+    no_run_yet: "Les listes de cette séance seront produites à l'heure d'achat de la stratégie (voir le bandeau, heure de New York ; Paris : + 6 h).",
+    strategy_label: "Stratégie", home_link: "← Toutes les stratégies",
+    strategy_times: (b, s) => `Achat au premier échange à partir de ${b}, vente au dernier échange avant ${s} (New York ; Paris : + 6 h).`,
+    th_last_hour: "Dernière heure (veille)", th_overnight: "Nuit (jusqu'à 9 h 15)",
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
     final_definitive: "définitive",
     final_source: "dernier échange avant 16 h 00 (New York), historique minute toutes bourses",
@@ -510,7 +525,7 @@ const TEXT = {
       `Classement par baisse sur un mois, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu (${c.correlation_sessions} séances).`,
     ],
     no_history: "Pas encore d'historique.",
-    no_runs: "Aucun run enregistré. Le premier sera produit le prochain jour de bourse, une heure après l'ouverture.",
+    no_runs: "Aucun run enregistré. Le premier sera produit le prochain jour de bourse, à l'heure de décision de la stratégie (bandeau en haut).",
     steps: {
       actifs_negociables: "Actions négociables chez Alpaca", cotes_sur_une_bourse_us: "Cotées sur une bourse US",
       hors_etf_et_titres_de_test: "Hors ETF", avec_barres_quotidiennes: "Avec cours quotidiens",
@@ -537,7 +552,7 @@ const TEXT = {
     title: "Rebound after decline", session: "Session", version: "Version",
     variants: { per12: "P/E < 25", sans_per: "Without P/E" }, not_judged: "not judged",
     live_title: "Live: trend by sector",
-    disclaimer: "These stocks meet, an hour and a quarter after the open, criteria set in advance. This is a list, not buy advice: the decision is yours.",
+    disclaimer: "These stocks meet, at the strategy's decision time, criteria set in advance. This is a list, not buy advice: the decision is yours.",
     run_bubbles_title: "One-month trend by sector at run time (previous close)",
     selection_title: "Selection", funnel_title: "Criteria funnel",
     funnel_note: "Each box gives the number of stocks still in the running after that criterion.",
@@ -604,7 +619,7 @@ const TEXT = {
     res_suspect: "Over 100% annualized: suspicious result (rule 6), to be explained.",
     res_empty: "No session with the current rules yet: the first will be October 16, after the close. Earlier sessions are in the Archive tab.",
     res_chart_soon: "The chart appears from two sessions on.", res_chart_aria: "Cumulative returns by series",
-    res_note: "Each session: equal amounts bought at the first trade from 11:00 AM (10:45 AM until October 15), sold at the last trade before 3:30 PM (New York), 0.05% cost per order. Empty list: 0%.",
+    res_note: "Each session: equal amounts bought and sold at the strategy's times (banner at the top; main strategy: 10:45 AM until October 15, 11:00 AM afterwards), 0.05% cost per order. Empty list: 0%.",
     res_skipped: s => `Not counted (simulation from before costs and benchmarks): ${s}.`,
     res_provisional: "*: session still provisional, recalculated the next day with Alpaca's corrections.",
     res_recomputed: "†: session from before costs and benchmarks; simulation recomputed afterwards with the current rules (diagnostic, outside experiment 001). On October 13, only the list without P/E existed.",
@@ -650,7 +665,7 @@ const TEXT = {
     intro_funnel: "The program starts from all US stocks and applies its rules one by one. Each row shows how many stocks remain after each step: like a funnel, it goes from several thousand stocks to twenty at most.",
     intro_criteria: "The exact rules used to build this session's list, in the order they are applied.",
     intro_history: "The stocks that come back most often in the lists since the start, with the number of days each one was picked.",
-    intro_sim: "What would have happened if you had invested today? Each table takes one list, splits the amount in the first column equally across its stocks, buys at 11:00 AM and sells at 3:30 PM (New York time). From left to right, the result gets more and more realistic: without costs, with costs, in whole shares, then after tax.",
+    intro_sim: "What would have happened if you had invested today? Each table takes one list, splits the amount in the first column equally across its stocks, buys it at the strategy's buying time and sells it at its selling time (New York time, see the banner at the top). From left to right, the result gets more and more realistic: without costs, with costs, in whole shares, then after tax.",
     intro_results: "The day-by-day record since the start. The box follows the official test that will say, after 40 sessions, whether the P/E filter really helps.",
     intro_summary: "A summary of each list, compared with the market (\"Liquid universe\": all sufficiently traded stocks; \"S&P 500\": the 500 largest US companies). Everything is after costs. The most telling column is \"Cumulative total\": what following the list every day would have earned.",
     intro_chart: "The same cumulative total, drawn day by day. Each line is a list or a market benchmark; the higher it ends, the more it earned. The dashed line is zero: above it you gain, below it you lose.",
@@ -681,9 +696,12 @@ const TEXT = {
     sim_times: (a, b) => `bought from ${a}, sold before ${b} (New York)`,
     sim_no_list: "No list for this session yet: the simulation starts once it is produced.",
     sim_missing: "No simulation for this session (feature added on October 15).",
-    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade once the list is available (an hour and a half after the open; an hour and a quarter until October 15) and sold at the last trade 30 minutes before the close. Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
+    sim_note: "Each amount is split equally across the list's stocks (fractional shares allowed), bought at the first trade at the strategy's buying time and sold at the last trade before its selling time (banner at the top). Gross: without costs. After costs: 0.05% on buying and 0.05% on selling. Whole shares: share count rounded down, the remainder is not invested. A stock with no trade at buying time is left out of the split.",
     no_run_variant: v => `No "${v}" list for this session: this version did not exist yet. Pick the other version.`,
-    no_run_yet: "This session's lists will be produced around 5:00 PM (Paris), an hour and a half after the open.",
+    no_run_yet: "This session's lists will be produced at the strategy's buying time (see the banner, New York time; Paris: + 6 h).",
+    strategy_label: "Strategy", home_link: "← All strategies",
+    strategy_times: (b, s) => `Bought at the first trade from ${b}, sold at the last trade before ${s} (New York; Paris: + 6 h).`,
+    th_last_hour: "Last hour (day before)", th_overnight: "Overnight (to 9:15 AM)",
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
     final_definitive: "final",
     final_source: "last trade before 4:00 PM (New York), all-exchange minute history",
@@ -716,7 +734,7 @@ const TEXT = {
       `Ranked by one-month decline, then at most ${c.max_pairwise_correlation} correlation with each stock already selected (${c.correlation_sessions} sessions).`,
     ],
     no_history: "No history yet.",
-    no_runs: "No run recorded. The first one will be produced on the next trading day, one hour after the open.",
+    no_runs: "No run recorded. The first one will be produced on the next trading day, at the strategy's decision time (banner at the top).",
     steps: {
       actifs_negociables: "Tradable at Alpaca", cotes_sur_une_bourse_us: "Listed on a US exchange",
       hors_etf_et_titres_de_test: "Excluding ETFs", avec_barres_quotidiennes: "With daily prices",
@@ -891,7 +909,7 @@ function renderRun(run) {
   const entry = flat ? sinceEntry : sinceEntry?.[variantOf(run)];
   const entryAt = (inSession ? LIVE : FINALS[run.session_date])?.portfolio?.versions?.[variantOf(run)]?.entry_time;
   const entryColumn = entry && Object.keys(entry).length && {
-    label: TEXT.since_entry(entryAt ? nyTime(entryAt) : TEXT.default_entry), value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
+    label: TEXT.since_entry(entryAt ? nyTime(entryAt) : STRATEGY.buy), value: r => entry[r.symbol] ? pct(entry[r.symbol].change) : "—",
     tone: r => entry[r.symbol]?.change ?? 0,
     title: r => !entry[r.symbol] ? TEXT.no_live_price
       : (inSession ? TEXT.live_cell : TEXT.final_cell)(usd(entry[r.symbol].price), nyTime(entry[r.symbol].at)),
@@ -905,7 +923,10 @@ function renderRun(run) {
     { label: th.month, value: r => pct(r.return_month), tone: r => r.return_month },
     { label: th.d2, value: r => pct(r.return_day_minus_2), tone: r => r.return_day_minus_2 },
     { label: th.d1, value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
-    { label: th.first_hour, value: r => pct(r.return_first_hour), tone: r => r.return_first_hour },
+    ...(run.selection.some(r => r.return_first_hour != null)
+      ? [{ label: th.first_hour, value: r => pct(r.return_first_hour), tone: r => r.return_first_hour }]
+      : [{ label: TEXT.th_last_hour, value: r => pct(r.return_last_hour), tone: r => r.return_last_hour },
+         { label: TEXT.th_overnight, value: r => pct(r.return_overnight), tone: r => r.return_overnight }]),
     ...(run.criteria.max_pe ? [{ label: th.pe, value: r => r.pe_ttm == null ? "—" : Number(r.pe_ttm).toFixed(1) }] : []),
     ...(liveColumn ? [liveColumn] : []),
     ...(entryColumn ? [entryColumn] : []),
@@ -1456,7 +1477,23 @@ document.title = TEXT.title;
 document.querySelectorAll("[data-t]").forEach(node => { node.textContent = TEXT[node.dataset.t]; });
 const other = document.getElementById("other-lang");
 other.textContent = TEXT.other;
-other.href = TEXT.other_href;
+other.href = LANG === "fr" ? STRATEGY.en : STRATEGY.fr;
+const home = document.getElementById("home-link");
+home.textContent = TEXT.home_link;
+home.href = LANG === "fr" ? "accueil.html" : "home.html";
+const strategyPicker = document.getElementById("strategy");
+STRATEGIES.forEach(s => strategyPicker.add(new Option(s.name, LANG === "fr" ? s.fr : s.en)));
+strategyPicker.value = LANG === "fr" ? STRATEGY.fr : STRATEGY.en;
+strategyPicker.addEventListener("change", () => { location.href = strategyPicker.value; });
+// Titre : celui de la famille pour la stratégie principale, sinon le nom de la stratégie.
+if (!STRATEGY.main) document.querySelector("h1").textContent = STRATEGY.name;
+document.getElementById("strategy-banner").replaceChildren(el("b", "", STRATEGY.name),
+  el("span", "", STRATEGY.description), el("span", "note", TEXT.strategy_times(STRATEGY.buy, STRATEGY.sell)));
+// Ordres à passer et tableau des versions : propres à la stratégie principale.
+if (!STRATEGY.main) {
+  document.getElementById("plan-section").hidden = true;
+  document.getElementById("versions-section").hidden = true;
+}
 
 // Onglets : un bouton par panneau ; l'onglet ouvert est gardé dans VIEW (la page se recharge chaque minute).
 function showTab(id) {
@@ -1498,7 +1535,7 @@ function withState(date, then) {
   if (LIVE?.session_date === date) return then(LIVE);
   if (window.SESSION_STATES[date] || !FINALS[date]) return then(window.SESSION_STATES[date] || null);
   const script = document.createElement("script");
-  script.src = `sessions/${date}.js`;
+  script.src = `__SESSIONS_DIR__${date}.js`;
   script.onload = () => then(window.SESSION_STATES[date] || null);
   script.onerror = () => then(null);
   document.head.appendChild(script);

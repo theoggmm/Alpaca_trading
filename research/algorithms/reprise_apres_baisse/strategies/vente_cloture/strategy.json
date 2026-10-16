@@ -1,0 +1,6 @@
+{
+  "id": "vente_cloture",
+  "name": "Vente à la clôture",
+  "description": "Mêmes règles et même achat (11 h 00), mais vente avant 15 h 55, juste avant la clôture (New York).",
+  "exit_before_close_minutes": 5
+}
