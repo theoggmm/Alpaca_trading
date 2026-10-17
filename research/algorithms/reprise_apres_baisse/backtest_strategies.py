@@ -37,7 +37,7 @@ from core.screener import daily_candidates, liquid_universe, screen
 from core.universe import eligible_symbols
 from infra import nasdaq_symbols
 from infra.alpaca_api import BAR_COLUMNS, AlpacaReader
-from infra.cache import cached
+from infra.cache import cached, read_cached
 from infra.http import FetchError
 from infra.trace import RUNS_DIR, TraceError, committed_git_sha
 from research.algorithms.reprise_apres_baisse.backtest import BIASES, TESTED_AMOUNTS
@@ -193,10 +193,14 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, n
 _CONTEXT = {}
 
 
+def _init(daily_key, spy_key, sessions, criteria_hash):
+    """Au démarrage de chaque processus : cours quotidiens relus du cache disque, lecteur Alpaca propre."""
+    _CONTEXT.update(daily=read_cached(daily_key), market_daily=read_cached(spy_key), sessions=sessions,
+                    criteria_hash=criteria_hash, alpaca=AlpacaReader())
+
+
 def _one_day(i):
     """Résultats de toutes les stratégies pour la séance d'indice i (dans un processus du pool)."""
-    if "alpaca" not in _CONTEXT:
-        _CONTEXT["alpaca"] = AlpacaReader()
     alpaca, sessions = _CONTEXT["alpaca"], _CONTEXT["sessions"]
     day, open_at, close_at = sessions[i]
     market_open, market_close = _utc(day, open_at), _utc(day, close_at)
@@ -231,18 +235,19 @@ def run():
     first_open = _utc(*sessions[days[0]][:2])
     last_close = _utc(sessions[days[-1] + 1][0], sessions[days[-1] + 1][2])
     print("Lecture des cours quotidiens (une fois)…")
-    daily = cached(_key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}"), lambda: alpaca.bars(symbols, "1Day", first_open - DAILY_HISTORY, last_close))
-    market_daily = cached(_key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}"),
-                          lambda: alpaca.bars([BENCHMARK], "1Day", first_open - DAILY_HISTORY, last_close))
+    daily_key = _key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
+    spy_key = _key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
+    cached(daily_key, lambda: alpaca.bars(symbols, "1Day", first_open - DAILY_HISTORY, last_close))
+    cached(spy_key, lambda: alpaca.bars([BENCHMARK], "1Day", first_open - DAILY_HISTORY, last_close))
 
     # Divisions d'actions lues une fois avant les fils (cache partagé).
     earnings(alpaca, "backtest")([])
 
     # Plusieurs séances en parallèle, dans des processus séparés (le calcul occupe un cœur chacun) qui héritent des
     # cours quotidiens déjà lus ; chaque séance a ses propres fichiers de cache.
-    _CONTEXT.update(sessions=sessions, daily=daily, market_daily=market_daily, criteria_hash=criteria_hash)
     results = {}
-    with ProcessPoolExecutor(max_workers=WORKERS, mp_context=multiprocessing.get_context("fork")) as pool:
+    with ProcessPoolExecutor(max_workers=WORKERS, mp_context=multiprocessing.get_context("spawn"), initializer=_init,
+                             initargs=(daily_key, spy_key, sessions, criteria_hash)) as pool:
         for n, (day, records) in enumerate(pool.map(_one_day, days), start=1):
             results[day] = records
             print(f"  [{n}/{len(days)}] {day} : " + " · ".join(
