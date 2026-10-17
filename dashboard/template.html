@@ -286,40 +286,6 @@
       <p class="note" id="results-note"></p>
     </section>
 
-    <section>
-      <h2 data-t="bt_title"></h2>
-      <p class="intro" data-t="intro_bt"></p>
-      <div id="backtest" style="display: grid; gap: 4px;"></div>
-    </section>
-  </div>
-
-  <div class="tab-panel" id="tab-months" role="tabpanel" aria-labelledby="tabbtn-months" hidden>
-    <section>
-      <h2 data-t="months_title"></h2>
-      <p class="intro" data-t="intro_months"></p>
-      <div class="pickers"><label><span data-t="months_pick"></span> <select id="month-test"></select></label>
-      <label><span data-t="months_amount"></span> <select id="month-amount"></select></label></div>
-      <div id="month-detail" style="display: grid; gap: 4px;"></div>
-    </section>
-  </div>
-
-  <div class="tab-panel" id="tab-archive" role="tabpanel" aria-labelledby="tabbtn-archive" hidden>
-    <section>
-      <h2 data-t="archive_title"></h2>
-      <p class="intro" id="archive-intro"></p>
-      <p class="intro" data-t="intro_summary"></p>
-      <div class="panel" id="archive-summary"></div>
-      <p class="intro" data-t="intro_chart"></p>
-      <div class="panel" id="archive-chart"></div>
-      <p class="intro" data-t="intro_daily"></p>
-      <div class="panel" id="archive-daily"></div>
-      <p class="note" id="archive-note"></p>
-    </section>
-    <section>
-      <h2 data-t="archive_lists_title"></h2>
-      <p class="intro" data-t="intro_archive_lists"></p>
-      <div class="panel" id="archive-lists"></div>
-    </section>
   </div>
 
   <div class="tab-panel" id="tab-method" role="tabpanel" aria-labelledby="tabbtn-method" hidden>
@@ -346,7 +312,7 @@ const LIVE_STALE_MS = 3 * 60 * 1000;
 // Tous les textes de la page, en français et en anglais. Une fonction reçoit les valeurs à insérer.
 const TEXT = {
   fr: {
-    tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", months: "Tests d'un mois", archive: "Archive", method: "Méthodologie" },
+    tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", method: "Méthodologie" },
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
     variants: { per12: "PER < 25", sans_per: "Sans PER" }, not_judged: "non jugé",
@@ -493,7 +459,7 @@ const TEXT = {
     intro_criteria: "Les règles exactes utilisées pour faire la liste de cette séance, dans l'ordre où elles sont appliquées.",
     intro_history: "Les actions qui reviennent le plus souvent dans les listes depuis le début, avec le nombre de jours où chacune a été retenue.",
     intro_sim: "Que se serait-il passé si tu avais investi aujourd'hui ? Chaque tableau prend une liste, répartit la somme de la première colonne à parts égales entre ses actions, l'achète à l'heure d'achat de la stratégie et la revend à son heure de vente (heure de New York, voir le bandeau en haut). De gauche à droite, le résultat est de plus en plus réaliste : sans frais, avec frais, en actions entières, puis après impôts.",
-    intro_results: "Le bilan jour après jour depuis le début. L'encadré suit le test officiel qui dira, après 40 séances, si le filtre PER aide vraiment.",
+    intro_results: "Le bilan jour après jour depuis le 16 octobre 2026 (règles actuelles) ; les séances plus anciennes et les tests sur les années passées ne sont plus affichés. L'encadré suit le test officiel qui dira, après 40 séances, si le filtre PER aide vraiment.",
     intro_summary: "Le résumé de chaque liste, comparée au marché (« Univers liquide » : toutes les actions assez échangées ; « S&P 500 » : les 500 plus grandes entreprises américaines). Tout est après frais. La colonne la plus parlante est « Total cumulé » : ce qu'aurait rapporté le fait de suivre la liste chaque jour.",
     intro_chart: "Le même total cumulé, dessiné jour après jour. Chaque ligne est une liste ou un repère du marché ; plus elle finit haut, plus elle a rapporté. La ligne en pointillés est le zéro : au-dessus on gagne, en dessous on perd.",
     intro_daily: "Le détail jour par jour : le gain ou la perte de chaque liste et du marché sur chaque séance, après frais.",
@@ -588,7 +554,7 @@ const TEXT = {
     },
   },
   en: {
-    tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", months: "Monthly tests", archive: "Archive", method: "Methodology" },
+    tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", method: "Methodology" },
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
     variants: { per12: "P/E < 25", sans_per: "Without P/E" }, not_judged: "not judged",
@@ -735,7 +701,7 @@ const TEXT = {
     intro_criteria: "The exact rules used to build this session's list, in the order they are applied.",
     intro_history: "The stocks that come back most often in the lists since the start, with the number of days each one was picked.",
     intro_sim: "What would have happened if you had invested today? Each table takes one list, splits the amount in the first column equally across its stocks, buys it at the strategy's buying time and sells it at its selling time (New York time, see the banner at the top). From left to right, the result gets more and more realistic: without costs, with costs, in whole shares, then after tax.",
-    intro_results: "The day-by-day record since the start. The box follows the official test that will say, after 40 sessions, whether the P/E filter really helps.",
+    intro_results: "The day-by-day record since October 16, 2026 (current rules); earlier sessions and past-year tests are no longer shown. The box follows the official test that will say, after 40 sessions, whether the P/E filter really helps.",
     intro_summary: "A summary of each list, compared with the market (\"Liquid universe\": all sufficiently traded stocks; \"S&P 500\": the 500 largest US companies). Everything is after costs. The most telling column is \"Cumulative total\": what following the list every day would have earned.",
     intro_chart: "The same cumulative total, drawn day by day. Each line is a list or a market benchmark; the higher it ends, the more it earned. The dashed line is zero: above it you gain, below it you lose.",
     intro_daily: "The day-by-day detail: each list's and the market's gain or loss for each session, after costs.",
@@ -1667,8 +1633,9 @@ variantPicker.addEventListener("change", () => {
   renderSession(picker.value);
   renderHistory();
 });
+// Séances affichées : seulement depuis le 16 octobre 2026 (règles actuelles) ; les plus anciennes restent sur disque.
 const SESSION_DATES = [...new Set([...Object.keys(FINALS), ...RUNS.map(r => r.session_date),
-                                   ...(LIVE ? [LIVE.session_date] : [])])].sort().reverse();
+                                   ...(LIVE ? [LIVE.session_date] : [])])].filter(d => d >= HISTORY.archive.since).sort().reverse();
 window.SESSION_STATES = window.SESSION_STATES || {};
 
 // État d'une séance : en direct (embarqué), ou figé, chargé à la demande depuis sessions/<date>.js.
@@ -1727,13 +1694,10 @@ if (!SESSION_DATES.length) {
 }
 renderHistory();
 renderResults();
-renderArchive();
-renderMonthTests();
 // Les versions de la liste (onglet Détail de la sélection) : texte fixe, indépendant de la séance affichée.
 const fixedTable = (head, rows) => table(head.map((label, i) => ({ label, cls: "text wrap", value: row => row[i] })), rows);
 document.getElementById("versions").replaceChildren(fixedTable(TEXT.versions_head, TEXT.versions_rows));
 document.getElementById("top-rules").replaceChildren(fixedTable(TEXT.rules_head, TEXT.rules_rows));
-renderBacktest();
 </script>
 </body>
 </html>

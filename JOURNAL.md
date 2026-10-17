@@ -419,3 +419,14 @@ de datation). Correction : l'heure de référence est prise après la lecture de
 avait déjà tout rempli.
 
 Autrement dit : rien n'était faux, il manquait seulement des prix pendant quelques minutes à cause de la mise en veille.
+
+## 2026-10-18 — Tableau de bord épuré
+
+**Question posée** : n'afficher que les résultats du jour et ceux depuis le 16 octobre 2026, sans les tests sur les
+années passées.
+
+**Fait** : onglets « Tests d'un mois » et « Archive » retirés, section des tests sur le passé retirée de « Résultats »,
+menu des séances limité aux séances depuis le 16 octobre. Rien n'est supprimé : runs, tests et états restent sur
+disque (research/experiments/) et peuvent être réaffichés.
+
+Autrement dit : le tableau de bord ne montre plus que ce qui a été fait avec les règles actuelles.
