@@ -22,6 +22,7 @@ Depuis la racine du dépôt :
 import hashlib
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -34,7 +35,7 @@ from core.portfolio import simulate
 from core.screener import daily_candidates, liquid_universe, screen
 from core.universe import eligible_symbols
 from infra import nasdaq_symbols
-from infra.alpaca_api import AlpacaReader
+from infra.alpaca_api import BAR_COLUMNS, AlpacaReader
 from infra.cache import cached
 from infra.http import FetchError
 from infra.trace import RUNS_DIR, TraceError, committed_git_sha
@@ -56,6 +57,7 @@ EXIT_WINDOW = timedelta(minutes=30)
 FIRST_WINDOW = timedelta(minutes=15)   # minutes d'ouverture lues pour le premier prix (préfiltre « fin de journée »)
 # Change quand le calcul change : les séances déjà rejouées (cache) sont alors refaites.
 VERSION = 1
+WORKERS = 4
 EXTRA_BIASES = [
     "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant "
     "la décision, est écarté (en direct il serait jugé sur ses premiers et derniers échanges) — rare pour des "
@@ -78,14 +80,14 @@ def _utc(day, at):
 def _bars(alpaca, key, symbols, start, end):
     """Barres minute de symbols entre start et end, lues une fois (cache nommé par la liste de titres)."""
     if not symbols or end <= start:
-        return pd.DataFrame(columns=["symbol", "timestamp", "open", "high", "low", "close", "volume"])
+        return pd.DataFrame(columns=BAR_COLUMNS)
     return cached(f"{key}_{_symbols_hash(symbols)}", lambda: alpaca.bars(sorted(symbols), "1Min", start, end))
 
 
 def _concat(frames):
     frames = [f for f in frames if not f.empty]
     return (pd.concat(frames, ignore_index=True).drop_duplicates(["symbol", "timestamp"]) if frames
-            else pd.DataFrame(columns=["symbol", "timestamp", "open", "high", "low", "close", "volume"]))
+            else pd.DataFrame(columns=BAR_COLUMNS))
 
 
 def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close):
@@ -207,8 +209,10 @@ def run():
     market_daily = cached(_key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}"),
                           lambda: alpaca.bars([BENCHMARK], "1Day", first_open - DAILY_HISTORY, last_close))
 
-    by_strategy = {s.id: [] for s in STRATEGIES}
-    for n, i in enumerate(days, start=1):
+    # Divisions d'actions lues une fois avant les fils (cache partagé).
+    earnings(alpaca, "backtest")([])
+
+    def one_day(i):
         day, open_at, close_at = sessions[i]
         market_open, market_close = _utc(day, open_at), _utc(day, close_at)
         previous_close = _utc(sessions[i - 1][0], sessions[i - 1][2])
@@ -221,13 +225,16 @@ def run():
             lists, decisions = _lists_for_day(alpaca, window(daily), window(market_daily), day, market_open, previous_close)
             return _results_for_day(alpaca, lists, decisions, day, market_open, market_close, next_open, next_close)
 
-        records = cached(_key(day, f"resultats_v{VERSION}_{criteria_hash}"), compute)
-        for sid, record in records.items():
-            by_strategy[sid].append(record)
-        main = records[STRATEGIES[0].id]
-        print(f"  [{n}/{len(days)}] {day} : " + " · ".join(
-            f"{sid} {r['per12_n']}/{r['sans_per_n']} {_pct(r['per12'])}" for sid, r in list(records.items())[:10]),
-            flush=True)
+        return day, cached(_key(day, f"resultats_v{VERSION}_{criteria_hash}"), compute)
+
+    # Plusieurs séances en parallèle (l'attente est surtout réseau) ; chaque séance a ses propres fichiers de cache.
+    results = {}
+    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
+        for n, (day, records) in enumerate(pool.map(one_day, days), start=1):
+            results[day] = records
+            print(f"  [{n}/{len(days)}] {day} : " + " · ".join(
+                f"{sid} {r['per12_n']}/{r['sans_per_n']} {_pct(r['per12'])}" for sid, r in records.items()), flush=True)
+    by_strategy = {s.id: [results[day][s.id] for day in sorted(results)] for s in STRATEGIES}
 
     written = []
     for strategy in STRATEGIES:

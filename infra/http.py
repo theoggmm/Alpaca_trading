@@ -2,6 +2,7 @@
 Requêtes HTTP en lecture (GET) : délai court, User-Agent identifié, cadence bornée (règle 10).
 """
 
+import threading
 import time
 
 import requests
@@ -24,14 +25,16 @@ class Reader:
         self._session.headers.update({"User-Agent": USER_AGENT, **(headers or {})})
         self._min_interval_s = min_interval_s
         self._last_request = 0.0
+        self._lock = threading.Lock()   # cadence respectée aussi quand plusieurs fils lisent en même temps
 
     def get(self, url, params=None, missing_ok=False):
         """Retourne la réponse (statut 200 exigé) ; None si 404 et missing_ok ; lève FetchError sinon."""
         for attempt in range(1, ATTEMPTS + 1):
-            wait = self._min_interval_s - (time.monotonic() - self._last_request)
-            if wait > 0:
-                time.sleep(wait)
-            self._last_request = time.monotonic()
+            with self._lock:
+                wait = self._min_interval_s - (time.monotonic() - self._last_request)
+                if wait > 0:
+                    time.sleep(wait)
+                self._last_request = time.monotonic()
             try:
                 response = self._session.get(url, params=params, timeout=TIMEOUT_S)
             except requests.RequestException as e:

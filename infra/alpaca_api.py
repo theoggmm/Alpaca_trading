@@ -20,7 +20,7 @@ DATA_URL = "https://data.alpaca.markets"
 MIN_INTERVAL_S = 0.34
 SYMBOLS_PER_REQUEST = 500
 # Une page de 10 000 barres minute met jusqu'à ~10 s à arriver (délai maximal de infra/http.py) : 5 000.
-BARS_PER_PAGE = 5000
+BARS_PER_PAGE = 10000   # maximum servi par Alpaca : deux fois moins de pages
 BAR_COLUMNS = ["symbol", "timestamp", "open", "close", "volume"]
 
 

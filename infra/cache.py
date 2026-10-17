@@ -2,7 +2,9 @@
 Cache disque des réponses réseau (règle 10). Volatil : research/outputs/ est ignoré par git.
 """
 
+import os
 import pickle
+import threading
 import time
 from pathlib import Path
 
@@ -25,5 +27,8 @@ def cached(key, fetch, max_age=None):
         return pickle.loads(path.read_bytes())
     value = fetch()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(pickle.dumps(value))
+    # Écriture atomique : un autre fil (ou processus) ne lit jamais un fichier à moitié écrit.
+    tmp = path.with_name(f"{path.name}.{os.getpid()}.{threading.get_ident()}.tmp")
+    tmp.write_bytes(pickle.dumps(value))
+    os.replace(tmp, path)
     return value
