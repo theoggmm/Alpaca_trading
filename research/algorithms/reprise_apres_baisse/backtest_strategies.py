@@ -95,6 +95,20 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
     """Listes de toutes les stratégies pour la séance : {stratégie: {version: [symboles]}}, et la décision de chacune."""
     lists, decisions = {}, {}
     pe = earnings(alpaca, "backtest")
+    memo = {}
+
+    def liquid(decision, c):
+        key = ("liquid", decision, c.required_sessions, c.liquidity_sessions, c.min_price_usd, c.min_avg_dollar_volume_usd)
+        if key not in memo:
+            memo[key] = [s.symbol for s in liquid_universe(daily, decision, c)[0]]
+        return memo[key]
+
+    def candidates(cut, c):
+        key = ("candidates", cut, json.dumps({k: v for k, v in c.to_json().items() if k not in ("max_pe", "version")},
+                                             sort_keys=True, default=str))
+        if key not in memo:
+            memo[key] = {x.symbol for x in daily_candidates(daily, cut, c)[0]}
+        return memo[key]
     kinds = {s.id: s.criteria() for s in STRATEGIES}
 
     # « Reprise après baisse » : candidats quotidiens, puis minutes de 9 h 30 jusqu'à la décision la plus tardive.
@@ -105,7 +119,7 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
         for cs in rebound.values():
             for c in cs.values():
                 cut = market_open + timedelta(minutes=c.first_hour_minutes)
-                wanted |= {x.symbol for x in daily_candidates(daily, cut, c)[0]}
+                wanted |= candidates(cut, c)
         minute = _bars(alpaca, _key(day, f"rebound_0930_{last}"), wanted, market_open,
                        market_open + timedelta(minutes=last))
         for sid, cs in rebound.items():
@@ -120,9 +134,9 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
     for sid, cs in opening.items():
         for variant, c in cs.items():
             decision = market_open + timedelta(minutes=c.decision_minutes)
-            liquid = [s.symbol for s in liquid_universe(daily, decision, c)[0]]
+            symbols = liquid(decision, c)
             start = previous_close - timedelta(minutes=c.last_hour_minutes)
-            hour = _bars(alpaca, _key(day, f"veille_derniere_heure_{c.last_hour_minutes}"), liquid, start, previous_close)
+            hour = _bars(alpaca, _key(day, f"veille_derniere_heure_{c.last_hour_minutes}"), symbols, start, previous_close)
             rising = [s for s, b in hour.sort_values("timestamp").groupby("symbol")
                       if b["close"].iloc[-1] > b["open"].iloc[0]]
             night = _bars(alpaca, _key(day, f"nuit_{decision.astimezone(NEW_YORK):%H%M}"), rising, previous_close, decision)
@@ -137,9 +151,9 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
     for sid, cs in closing.items():
         for variant, c in cs.items():
             decision = market_open + timedelta(minutes=c.decision_minutes)
-            liquid = [s.symbol for s in liquid_universe(daily, decision, c)[0]]
-            first = _bars(alpaca, _key(day, "ouverture_15min"), liquid, market_open, market_open + FIRST_WINDOW)
-            late = _bars(alpaca, _key(day, f"avant_{decision.astimezone(NEW_YORK):%H%M}"), liquid,
+            symbols = liquid(decision, c)
+            first = _bars(alpaca, _key(day, "ouverture_15min"), symbols, market_open, market_open + FIRST_WINDOW)
+            late = _bars(alpaca, _key(day, f"avant_{decision.astimezone(NEW_YORK):%H%M}"), symbols,
                          decision - FIRST_WINDOW, decision)
             opens = {s: b["open"].iloc[0] for s, b in first.sort_values("timestamp").groupby("symbol")}
             prices = {s: b["close"].iloc[-1] for s, b in late.sort_values("timestamp").groupby("symbol")}
