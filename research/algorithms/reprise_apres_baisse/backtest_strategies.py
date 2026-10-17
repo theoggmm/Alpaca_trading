@@ -203,8 +203,8 @@ def run():
     first_open = _utc(*sessions[days[0]][:2])
     last_close = _utc(sessions[days[-1] + 1][0], sessions[days[-1] + 1][2])
     print("Lecture des cours quotidiens (une fois)…")
-    daily = cached(_key("daily_bars_2025"), lambda: alpaca.bars(symbols, "1Day", first_open - DAILY_HISTORY, last_close))
-    market_daily = cached(_key("spy_daily_2025"),
+    daily = cached(_key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}"), lambda: alpaca.bars(symbols, "1Day", first_open - DAILY_HISTORY, last_close))
+    market_daily = cached(_key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}"),
                           lambda: alpaca.bars([BENCHMARK], "1Day", first_open - DAILY_HISTORY, last_close))
 
     by_strategy = {s.id: [] for s in STRATEGIES}
