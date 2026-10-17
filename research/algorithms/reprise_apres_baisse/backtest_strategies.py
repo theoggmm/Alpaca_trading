@@ -22,7 +22,8 @@ Depuis la racine du dépôt :
 import hashlib
 import json
 import sys
-from concurrent.futures import ThreadPoolExecutor
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 
@@ -57,7 +58,7 @@ EXIT_WINDOW = timedelta(minutes=30)
 FIRST_WINDOW = timedelta(minutes=15)   # minutes d'ouverture lues pour le premier prix (préfiltre « fin de journée »)
 # Change quand le calcul change : les séances déjà rejouées (cache) sont alors refaites.
 VERSION = 1
-WORKERS = 4
+WORKERS = 5
 EXTRA_BIASES = [
     "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant "
     "la décision, est écarté (en direct il serait jugé sur ses premiers et derniers échanges) — rare pour des "
@@ -189,6 +190,31 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, n
     return records
 
 
+_CONTEXT = {}
+
+
+def _one_day(i):
+    """Résultats de toutes les stratégies pour la séance d'indice i (dans un processus du pool)."""
+    if "alpaca" not in _CONTEXT:
+        _CONTEXT["alpaca"] = AlpacaReader()
+    alpaca, sessions = _CONTEXT["alpaca"], _CONTEXT["sessions"]
+    day, open_at, close_at = sessions[i]
+    market_open, market_close = _utc(day, open_at), _utc(day, close_at)
+    previous_close = _utc(sessions[i - 1][0], sessions[i - 1][2])
+    next_open = _utc(sessions[i + 1][0], sessions[i + 1][1])
+    next_close = _utc(sessions[i + 1][0], sessions[i + 1][2])
+
+    def compute():
+        # Seulement l'historique utile à cette séance (plus rapide ; chaque règle retronque à sa décision).
+        def window(bars):
+            return bars[(bars["timestamp"] >= market_open - DAILY_HISTORY) & (bars["timestamp"] < market_close)]
+        lists, decisions = _lists_for_day(alpaca, window(_CONTEXT["daily"]), window(_CONTEXT["market_daily"]), day,
+                                          market_open, previous_close)
+        return _results_for_day(alpaca, lists, decisions, day, market_open, market_close, next_open, next_close)
+
+    return day, cached(_key(day, f"resultats_v{VERSION}_{_CONTEXT['criteria_hash']}"), compute)
+
+
 def run():
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
@@ -212,25 +238,12 @@ def run():
     # Divisions d'actions lues une fois avant les fils (cache partagé).
     earnings(alpaca, "backtest")([])
 
-    def one_day(i):
-        day, open_at, close_at = sessions[i]
-        market_open, market_close = _utc(day, open_at), _utc(day, close_at)
-        previous_close = _utc(sessions[i - 1][0], sessions[i - 1][2])
-        next_open = _utc(sessions[i + 1][0], sessions[i + 1][1])
-        next_close = _utc(sessions[i + 1][0], sessions[i + 1][2])
-
-        def compute():
-            # Seulement l'historique utile à cette séance (plus rapide ; chaque règle retronque à sa décision).
-            window = lambda bars: bars[(bars["timestamp"] >= market_open - DAILY_HISTORY) & (bars["timestamp"] < market_close)]
-            lists, decisions = _lists_for_day(alpaca, window(daily), window(market_daily), day, market_open, previous_close)
-            return _results_for_day(alpaca, lists, decisions, day, market_open, market_close, next_open, next_close)
-
-        return day, cached(_key(day, f"resultats_v{VERSION}_{criteria_hash}"), compute)
-
-    # Plusieurs séances en parallèle (l'attente est surtout réseau) ; chaque séance a ses propres fichiers de cache.
+    # Plusieurs séances en parallèle, dans des processus séparés (le calcul occupe un cœur chacun) qui héritent des
+    # cours quotidiens déjà lus ; chaque séance a ses propres fichiers de cache.
+    _CONTEXT.update(sessions=sessions, daily=daily, market_daily=market_daily, criteria_hash=criteria_hash)
     results = {}
-    with ThreadPoolExecutor(max_workers=WORKERS) as pool:
-        for n, (day, records) in enumerate(pool.map(one_day, days), start=1):
+    with ProcessPoolExecutor(max_workers=WORKERS, mp_context=multiprocessing.get_context("fork")) as pool:
+        for n, (day, records) in enumerate(pool.map(_one_day, days), start=1):
             results[day] = records
             print(f"  [{n}/{len(days)}] {day} : " + " · ".join(
                 f"{sid} {r['per12_n']}/{r['sans_per_n']} {_pct(r['per12'])}" for sid, r in records.items()), flush=True)
