@@ -82,6 +82,8 @@
   .tabs button:hover { color: var(--ink); }
   .tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
   .tab-panel { display: grid; gap: 28px; }
+  /* Colonne « sans stop/objectif » : fond légèrement grisé, comme à l'accueil. */
+  th.alt, td.alt { background: color-mix(in srgb, var(--line) 35%, transparent); }
   .tab-panel[hidden] { display: none; }
   /* Méthodologie intégrée : texte de lecture, pas de tableaux de chiffres. */
   .method { max-width: 860px; line-height: 1.6; }
@@ -288,6 +290,16 @@
 
   </div>
 
+  <div class="tab-panel" id="tab-tests" role="tabpanel" aria-labelledby="tabbtn-tests" hidden>
+    <section>
+      <h2 data-t="months_title"></h2>
+      <p class="intro" data-t="intro_months"></p>
+      <div class="pickers"><label><span data-t="months_pick"></span> <select id="month-test"></select></label>
+      <label><span data-t="months_amount"></span> <select id="month-amount"></select></label></div>
+      <div id="month-detail" style="display: grid; gap: 4px;"></div>
+    </section>
+  </div>
+
   <div class="tab-panel" id="tab-method" role="tabpanel" aria-labelledby="tabbtn-method" hidden>
     <div class="method">__METHODOLOGY__</div>
   </div>
@@ -312,7 +324,7 @@ const LIVE_STALE_MS = 3 * 60 * 1000;
 // Tous les textes de la page, en français et en anglais. Une fonction reçoit les valeurs à insérer.
 const TEXT = {
   fr: {
-    tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", method: "Méthodologie" },
+    tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", tests: "Tests", method: "Méthodologie" },
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
     variants: { per12: "PER < 25", sans_per: "Sans PER" }, not_judged: "non jugé",
@@ -390,18 +402,18 @@ const TEXT = {
     res_recomputed: "† : séance antérieure aux frais et aux repères, simulation recalculée après coup avec les règles actuelles (diagnostic, hors expérience 001). Le 13 octobre, seule la liste sans PER existait.",
     sim_recomputed: d => `Séance antérieure aux frais : simulation recalculée le ${d} avec les règles actuelles (diagnostic).`,
     bt_title: "Test sur le passé (diagnostic)",
-    months_title: "Tests d'un mois avec les règles actuelles",
-    intro_months: "Que se serait-il passé si tu avais suivi les deux listes, avec les règles actuelles, pendant tout un mois passé, en investissant la même somme chaque jour ? Choisis le mois dans le menu. Pour chaque liste : le résultat jour par jour, puis semaine par semaine et sur le mois, de plus en plus réaliste de gauche à droite.",
-    months_pick: "Mois testé :", months_amount: "Montant investi chaque séance :", months_empty: "Aucun mois testé pour l'instant.",
+    months_title: "Tests sur 2025 avec les règles actuelles", tests_labels: { mars_2025: "Mars 2025 — mois de baisse du S&P 500 (−5,6 %)", janvier_juin_2025: "Janvier à juin 2025 (6 mois)", annee_2025: "Toute l'année 2025" },
+    intro_months: "Que se serait-il passé si tu avais suivi les deux listes de cette stratégie, avec les règles actuelles (stop −1,5 % / objectif +3 % compris), en investissant la même somme chaque jour ? Trois périodes de 2025 : mars (le mois où le S&P 500 a le plus baissé), janvier à juin, et toute l'année. Pour chaque liste : mois par mois, semaine par semaine, et jour par jour pour le mois de mars ; de plus en plus réaliste de gauche à droite, et à droite le même calcul sans le stop ni l'objectif.",
+    months_pick: "Période testée :", months_amount: "Montant investi chaque séance :", months_empty: "Tests en cours de calcul : ils apparaîtront ici.",
     months_big: "Attention : avec un tel montant, sur 1 à 5 actions, ton ordre pèserait lourd face aux échanges de quelques minutes ; le prix bougerait contre toi et les frais réels seraient bien plus que 0,05 %. Ces chiffres sont donc trop optimistes.",
     months_label: p => `${new Date(`${p.start}T12:00:00Z`).toLocaleDateString("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" })} (${p.sessions} séances)`,
     months_head: (p, a) => `Du ${p.start} au ${p.end} : ${p.sessions} séances, ${usd(a)} investis chaque séance dans chaque liste`,
-    months_spy: s => `Pour comparer : le S&P 500 (SPY) acheté et revendu aux mêmes heures, avec la même somme, aurait donné ${s} sur le mois (après frais).`,
-    months_total: s => `ce que tu aurais gardé sur le mois : ${s}`,
+    months_spy: s => `Pour comparer : le S&P 500 (SPY) acheté et revendu aux mêmes heures, avec la même somme, aurait donné ${s} sur la période (après frais).`,
+    months_total: s => `ce que tu aurais gardé sur la période : ${s}`, months_month: "Mois", months_months_intro: "Mois par mois, puis toute la période (dernière ligne). L'impôt d'un mois ou de la période porte sur son total.", months_hold: "Sans stop/objectif, après frais",
     months_days_intro: "Jour par jour : ce que la liste aurait rapporté ou coûté ce jour-là. « Aucune liste » : rien n'était acheté (marché en mauvaise forme, ou aucune action ne passait les règles).",
     months_weeks_intro: "Semaine par semaine, puis le mois entier (dernière ligne). L'impôt d'une semaine ou du mois porte sur son total : les jours perdants compensent les jours gagnants.",
-    months_week: "Semaine", months_whole_month: "Mois entier", months_no_list: "aucune liste",
-    months_note: "Mêmes règles que le test sur le passé : seules les données connues à 10 h 30 et 10 h 45 servent, achat à 11 h 00, vente avant 15 h 30 (New York), 0,05 % de frais par ordre, impôt de 31,4 % sur un gain. Les titres disparus depuis (faillites, rachats) manquent : le passé paraît un peu meilleur qu'il n'était. Conversion dollar-euro non comptée.",
+    months_week: "Semaine", months_whole_month: "Toute la période", months_no_list: "aucune liste",
+    months_note: "Mêmes règles que les listes en direct de cette stratégie : seules les données connues à l'heure de décision servent, achat 15 minutes après la décision, vente à l'heure de vente de la stratégie (ou plus tôt au stop −1,5 % / à l'objectif +3 %), 0,05 % de frais par ordre, impôt de 31,4 % sur un gain. Jours sans liste : le marché était en mauvaise forme (S&P 500 sous sa moyenne de 50 séances) ou aucune action ne passait les règles. Les titres disparus depuis (faillites, rachats) manquent : le passé paraît un peu meilleur qu'il n'était. Conversion dollar-euro non comptée.",
     archive_title: "Archive : séances faites avec les anciennes règles",
     intro_archive: (dates, since) => `Les séances du ${dates.join(", ")} ont été faites avec des règles remplacées depuis (sans « pas au sommet » ni « confirmation », achat à 10 h 45). Elles sont rangées ici pour ne pas se mélanger aux résultats actuels, qui repartent de zéro le ${since}. Rien n'a été effacé : chaque séance reste aussi consultable dans le menu « Séance », groupe « Archive ».`,
     archive_lists_title: "Listes archivées",
@@ -554,7 +566,7 @@ const TEXT = {
     },
   },
   en: {
-    tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", method: "Methodology" },
+    tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", tests: "Tests", method: "Methodology" },
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
     variants: { per12: "P/E < 25", sans_per: "Without P/E" }, not_judged: "not judged",
@@ -632,18 +644,18 @@ const TEXT = {
     res_recomputed: "†: session from before costs and benchmarks; simulation recomputed afterwards with the current rules (diagnostic, outside experiment 001). On October 13, only the list without P/E existed.",
     sim_recomputed: d => `Session from before costs: simulation recomputed on ${d} with the current rules (diagnostic).`,
     bt_title: "Test on past data (diagnostic)",
-    months_title: "One-month tests with the current rules",
-    intro_months: "What would have happened if you had followed both lists, with the current rules, for a whole past month, investing the same amount every day? Pick the month in the menu. For each list: the result day by day, then week by week and for the month, more and more realistic from left to right.",
-    months_pick: "Month tested:", months_amount: "Amount invested each session:", months_empty: "No month tested yet.",
+    months_title: "Tests on 2025 with the current rules", tests_labels: { mars_2025: "March 2025 — S&P 500 down month (−5.6%)", janvier_juin_2025: "January to June 2025 (6 months)", annee_2025: "All of 2025" },
+    intro_months: "What would have happened if you had followed this strategy's two lists, with the current rules (−1.5% stop / +3% target included), investing the same amount every day? Three periods of 2025: March (the month the S&P 500 fell most), January to June, and the whole year. For each list: month by month, week by week, and day by day for March; more and more realistic from left to right, and on the right the same calculation without the stop or target.",
+    months_pick: "Period tested:", months_amount: "Amount invested each session:", months_empty: "Tests being computed: they will appear here.",
     months_big: "Warning: with such an amount, on 1 to 5 stocks, your order would weigh heavily against a few minutes of trading; the price would move against you and real costs would be well above 0.05%. These figures are therefore too optimistic.",
     months_label: p => `${new Date(`${p.start}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })} (${p.sessions} sessions)`,
     months_head: (p, a) => `From ${p.start} to ${p.end}: ${p.sessions} sessions, ${usd(a)} invested every session in each list`,
-    months_spy: s => `For comparison: the S&P 500 (SPY) bought and sold at the same times, with the same amount, would have given ${s} over the month (after costs).`,
-    months_total: s => `what you would have kept over the month: ${s}`,
+    months_spy: s => `For comparison: the S&P 500 (SPY) bought and sold at the same times, with the same amount, would have given ${s} over the period (after costs).`,
+    months_total: s => `what you would have kept over the period: ${s}`, months_month: "Month", months_months_intro: "Month by month, then the whole period (last row). The tax on a month or the period applies to its total.", months_hold: "No stop/target, after costs",
     months_days_intro: "Day by day: what the list would have earned or cost that day. \"no list\": nothing was bought (market in poor shape, or no stock passed the rules).",
     months_weeks_intro: "Week by week, then the whole month (last row). The tax on a week or the month applies to its total: losing days offset winning days.",
-    months_week: "Week", months_whole_month: "Whole month", months_no_list: "no list",
-    months_note: "Same rules as the test on past data: only data known at 10:30 and 10:45 AM is used, bought at 11:00 AM, sold before 3:30 PM (New York), 0.05% cost per order, 31.4% tax on a gain. Stocks that have since disappeared (bankruptcies, buyouts) are missing: the past looks a bit better than it was. Dollar-euro conversion not included.",
+    months_week: "Week", months_whole_month: "Whole period", months_no_list: "no list",
+    months_note: "Same rules as this strategy's live lists: only data known at the decision time is used, bought 15 minutes after the decision, sold at the strategy's selling time (or earlier at the −1.5% stop / +3% target), 0.05% cost per order, 31.4% tax on a gain. Days without a list: the market was in poor shape (S&P 500 below its 50-session average) or no stock passed the rules. Stocks that have since disappeared (bankruptcies, buyouts) are missing: the past looks a bit better than it was. Dollar-euro conversion not included.",
     archive_title: "Archive: sessions made with the old rules",
     intro_archive: (dates, since) => `The sessions of ${dates.join(", ")} were made with rules that have since been replaced (no "not at the top" or "confirmation", bought at 10:45 AM). They are kept here so they do not mix with the current results, which start over from zero on ${since}. Nothing was deleted: each session can still be opened from the "Session" menu, "Archive" group.`,
     archive_lists_title: "Archived lists",
@@ -1426,7 +1438,7 @@ function renderMonthTests() {
     box.replaceChildren(el("div", "empty", TEXT.months_empty));
     return;
   }
-  picker.replaceChildren(...tests.map(t => new Option(TEXT.months_label(t.period), t.id)));
+  picker.replaceChildren(...tests.map(t => new Option(`${TEXT.tests_labels[t.label] || TEXT.months_label(t.period)} · ${t.period.sessions} ${LANG === "fr" ? "séances" : "sessions"}`, t.id)));
   picker.value = tests.some(t => t.id === VIEW.monthTest) ? VIEW.monthTest : tests[0].id;
   const amountPicker = document.getElementById("month-amount");
   const usdSigned = v => `${Number(v) > 0 ? "+" : ""}${usd(v)}`;
@@ -1435,6 +1447,7 @@ function renderMonthTests() {
     { label: TEXT.sim_net, value: r => usdSigned(r.net), tone: r => Number(r.net) },
     { label: TEXT.sim_whole, value: r => usdSigned(r.whole), tone: r => Number(r.whole) },
     { label: TEXT.sim_tax, value: r => usdSigned(r.kept), tone: r => Number(r.kept) },
+    { label: TEXT.months_hold, cls: "alt", value: r => r.hold == null ? "—" : usdSigned(r.hold), tone: r => Number(r.hold ?? 0) },
   ];
   const draw = () => {
     const t = tests.find(x => x.id === picker.value);
@@ -1450,15 +1463,25 @@ function renderMonthTests() {
     VARIANTS.filter(v => a.lists[v]).forEach(v => {
       const l = a.lists[v];
       const panel = (node) => { const p = el("div", "panel"); p.appendChild(node); return p; };
-      blocks.push(el("h3", "bt-period", `${v === "per12" && t.max_pe ? TEXT.pe_label(t.max_pe) : TEXT.variants[v]} · ${TEXT.months_total(usdSigned(l.total.kept))}`),
-        el("p", "intro", TEXT.months_days_intro),
-        panel(table([{ label: TEXT.res_date, cls: "text", value: r => longDate(r.date) },
-                     { label: TEXT.archive_n, value: r => r.n || TEXT.months_no_list }, ...moneyCols], l.days)),
-        el("p", "intro", TEXT.months_weeks_intro),
+      blocks.push(el("h3", "bt-period", `${v === "per12" && t.max_pe ? TEXT.pe_label(t.max_pe) : TEXT.variants[v]} · ${TEXT.months_total(usdSigned(l.total.kept))}`));
+      const monthName = m => new Date(`${m}-15T12:00:00Z`).toLocaleDateString(TEXT.locale, { month: "long", year: "numeric", timeZone: "UTC" });
+      if ((l.months || []).length > 1) {
+        blocks.push(el("p", "intro", TEXT.months_months_intro),
+          panel(table([{ label: TEXT.months_month, cls: "text", value: r => r.label },
+                       { label: TEXT.res_n, value: r => r.sessions }, ...moneyCols],
+                      [...l.months.map(m => ({ ...m, label: monthName(m.month) })), { ...l.total, label: TEXT.months_whole_month }])));
+      }
+      blocks.push(el("p", "intro", TEXT.months_weeks_intro),
         panel(table([{ label: TEXT.months_week, cls: "text", value: r => r.label },
                      { label: TEXT.res_n, value: r => r.sessions }, ...moneyCols],
                     [...l.weeks.map(w => ({ ...w, label: `${longDate(w.start)} → ${longDate(w.end)}` })),
                      { ...l.total, label: TEXT.months_whole_month }])));
+      // Jour par jour : seulement pour une période d'un mois (une année ferait 250 lignes).
+      if (l.days.length <= 31) {
+        blocks.push(el("p", "intro", TEXT.months_days_intro),
+          panel(table([{ label: TEXT.res_date, cls: "text", value: r => longDate(r.date) },
+                       { label: TEXT.archive_n, value: r => r.n || TEXT.months_no_list }, ...moneyCols], l.days)));
+      }
     });
     blocks.push(el("p", "note", TEXT.months_note));
     box.replaceChildren(...blocks);
@@ -1694,6 +1717,7 @@ if (!SESSION_DATES.length) {
 }
 renderHistory();
 renderResults();
+renderMonthTests();
 // Les versions de la liste (onglet Détail de la sélection) : texte fixe, indépendant de la séance affichée.
 const fixedTable = (head, rows) => table(head.map((label, i) => ({ label, cls: "text wrap", value: row => row[i] })), rows);
 document.getElementById("versions").replaceChildren(fixedTable(TEXT.versions_head, TEXT.versions_rows));

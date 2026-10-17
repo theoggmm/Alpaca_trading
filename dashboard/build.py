@@ -265,6 +265,7 @@ def _backtests(storage):
 # Onglet « Tests d'un mois » : montants proposés (investis chaque séance dans chaque liste), si le test les a calculés.
 MONTH_TEST_AMOUNTS = (Decimal("25000"), Decimal("2000000"))
 MONTH_TEST_LISTS = ("per12", "sans_per")
+TESTS_SUITE = "tests_2025"   # tests des 10 stratégies sur 2025 (backtest_strategies.py)
 
 
 def _month_tests(storage):
@@ -280,7 +281,8 @@ def _month_tests(storage):
     def totals(rows):
         whole = sum(Decimal(r["whole"]) for r in rows)
         return {"sessions": len(rows), "gross": str(sum(Decimal(r["gross"]) for r in rows)),
-                "net": str(sum(Decimal(r["net"]) for r in rows)), "whole": str(whole), "kept": kept(whole)}
+                "net": str(sum(Decimal(r["net"]) for r in rows)), "hold": str(sum(Decimal(r["hold"]) for r in rows)),
+                "whole": str(whole), "kept": kept(whole)}
 
     def lists_for(result, amount):
         lists = {}
@@ -291,34 +293,41 @@ def _month_tests(storage):
                 gross = Decimal(0) if empty else (amount * Decimal(str(d[f"{name}_gross"]))).quantize(Decimal("0.01"))
                 net = Decimal(0) if empty else (amount * Decimal(str(d[name]))).quantize(Decimal("0.01"))
                 whole = Decimal(d[f"{name}_whole_gains"].get(str(amount), "0"))
+                # Sans la règle stop / objectif (après frais) : même liste gardée jusqu'à l'heure de vente.
+                hold = Decimal(0) if empty else (amount * Decimal(str(d.get(f"{name}_hold", d[name])))).quantize(Decimal("0.01"))
                 days.append({"date": d["date"], "n": d[f"{name}_n"], "gross": str(gross), "net": str(net),
-                             "whole": str(whole), "kept": kept(whole)})
-            weeks = {}
+                             "hold": str(hold), "whole": str(whole), "kept": kept(whole)})
+            weeks, months = {}, {}
             for row in days:
                 weeks.setdefault(tuple(date.fromisoformat(row["date"]).isocalendar()[:2]), []).append(row)
+                months.setdefault(row["date"][:7], []).append(row)
             lists[name] = {"days": days,
                            "weeks": [{"start": rows[0]["date"], "end": rows[-1]["date"], **totals(rows)}
                                      for rows in weeks.values()],
+                           "months": [{"month": m, "start": rows[0]["date"], "end": rows[-1]["date"], **totals(rows)}
+                                      for m, rows in months.items()],
                            "total": totals(days)}
         return lists
 
     tests = []
     for path in sorted((RUNS_DIR / storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
-        if result["period"]["months"] or "per12_gross" not in result["days"][0]:
+        # Seulement la série de tests en cours (onglet « Tests ») ; les anciens tests restent sur disque.
+        if result.get("suite") != TESTS_SUITE:
             continue
         # Montants calculés en actions entières par ce test (un ancien test n'a pas 2 M$).
         computed = {k for d in result["days"] for n in MONTH_TEST_LISTS for k in d[f"{n}_whole_gains"]}
         empty_month = not computed
         spy = sum(Decimal(str(d["spy"])) for d in result["days"] if d["spy"] is not None)
         tests.append({"id": result["backtest_id"], "git_sha": result["git_sha"], "period": result["period"],
+                      "label": result.get("label"),
                       "max_pe": result["criteria"].get("per12", {}).get("max_pe"),
                       "amounts": {str(a): {"lists": lists_for(result, a),
                                            "spy_net": str((a * spy).quantize(Decimal("0.01")))}
                                   for a in MONTH_TEST_AMOUNTS if empty_month or str(a) in computed}})
-    # Le plus récent test de chaque période seulement.
-    latest = {t["period"]["start"]: t for t in tests}
-    return [latest[k] for k in sorted(latest, reverse=True)]
+    # Le plus récent test de chaque période seulement, du plus court au plus long (le mois, six mois, l'année).
+    latest = {(t["period"]["start"], t["period"]["end"]): t for t in tests}
+    return sorted(latest.values(), key=lambda t: (t["period"]["sessions"], t["period"]["start"]))
 
 
 def _build_strategy(strategy, infos):
