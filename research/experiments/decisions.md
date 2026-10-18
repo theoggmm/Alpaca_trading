@@ -182,3 +182,11 @@ bonne forme. Plus de filtres largeur, publications, secteur. Règles trouvées s
 en 2024 et 2025, chacune vraie dans les deux années (diagnostic, pas une preuve) : +36,1 % (2024) et +62,7 % (2025)
 contre +19,8 % et +55,5 % ; séances perdantes 62 et 47 contre 91 et 72 ; pire séance −3,3 % et −4,1 %. Contrôle hors
 échantillon : 2021-2023 (tests en cours), puis les séances futures. Statut : diagnostic, papier, aucun ordre.
+
+## T20 — 2026-10-18 — La règle en vigueur devient une stratégie (propriétaire)
+
+« Règle en vigueur (version 2) » (strategies/regle_en_vigueur, ordre 0, en tête de l'accueil) : critères de la
+stratégie 14 avec count 7, skip_weekdays [0] et market_max_fear_move 0,03 (VIXY) dans la liste elle-même, mesurés à
+chaque heure de décision (14 h 45 ou 15 h 40). Même règle que T19, une seule implémentation (règle 8) : la sélection
+du jour en direct (dashboard/daily_pick.py) et sa page sont archivées (dashboard/archive/). Tests 2024, 2025 et
+semaine du 12 octobre lancés ; 2021-2023 avec les autres stratégies. Statut : diagnostic, papier, aucun ordre.
