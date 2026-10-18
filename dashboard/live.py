@@ -32,6 +32,7 @@ from core.screener import (Criteria, changes_since_open, last_session_prices, li
                            session_open_prices, session_trades)
 from core.strategy import MAX_HOLD_SESSIONS, criteria_from_json, load_strategies
 from core.universe import eligible_symbols
+from dashboard import daily_pick
 from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, SUPPLEMENTS, build, live_file
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
@@ -627,6 +628,13 @@ def run(family):
             path = live_file(strategy)
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
+        # Sélection du jour (14 h 45, New York) : stratégies retenues et leurs actions, enregistrées.
+        try:
+            daily_pick.update(alpaca, family, every, key, market_open, now, trades,
+                              session_open_prices(minute if not minute.empty else opening, market_open, now),
+                              domains, committed_git_sha())
+        except (FetchError, TraceError, ValueError) as e:
+            print(f"{now.astimezone(NEW_YORK):%H:%M} — sélection du jour non faite : {e}")
         build(family)
         day = state["measures"]["day"]["bubbles"]
         up = sum(1 for b in day if b["mean_return"] > 0)
