@@ -49,6 +49,12 @@
   tr:last-child td { border-bottom: none; }
   .up { color: var(--up); } .down { color: var(--down); }
   .note { color: var(--muted); font-size: 13px; margin: 0; }
+  .best { display: grid; gap: 12px; }
+  .best h2 { margin: 12px 0 0; font-size: 20px; }
+  .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; }
+  .pickers select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  #best-table td.text { min-width: 0; }
+  #best-table tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
 </style>
 </head>
 <body>
@@ -61,11 +67,23 @@
   <p class="note" id="updated"></p>
   <div class="panel"><table id="rows"></table></div>
   <p class="note" id="note"></p>
+
+  <section class="best">
+    <h2 id="best-title"></h2>
+    <p class="intro" id="best-intro"></p>
+    <div class="pickers">
+      <label><span id="best-year-label"></span> <select id="best-year"></select></label>
+      <label><span id="best-amount-label"></span> <select id="best-amount"></select></label>
+    </div>
+    <div class="panel"><table id="best-table"></table></div>
+    <p class="note" id="best-note"></p>
+  </section>
 </main>
 <script>
 const LANG = "__LANG__";
 const ROWS = __ROWS_JSON__;
 const BUILT_AT = __BUILT_AT__;
+const BEST = __BEST_MONTHS_JSON__;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
@@ -74,6 +92,14 @@ const TEXT = {
     waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)", later: k => ` (${k} séances plus tard)`, or_at: "ou",
     updated: t => `Mise à jour à ${t} (Paris) — la page se recharge toute seule chaque minute pendant la séance.`,
     list_at: t => `liste ${t}`, bought_at: t => `prix attendu`, sold: "vendu",
+    best_title: "La meilleure stratégie de chaque mois",
+    best_intro: "Pour chaque mois testé, la stratégie (et sa liste) qui a le plus rapporté après frais : à gauche avec ses règles de vente (stop et objectif), à droite sans stop ni objectif. Le montant est investi à chaque achat ; une stratégie gardée plusieurs séances le partage en tranches.",
+    best_year: "Année :", best_amount: "Montant :",
+    best_head: ["Mois", "Avec limites (stop / objectif)", "Rendement", "Gain", "Sans limites", "Rendement", "Gain"],
+    best_list: { per12: "PER < 25", sans_per: "sans PER" }, best_days: (d, n) => `${d}/${n} séances avec une liste`,
+    best_total: "Toute l'année, en passant chaque mois à la gagnante",
+    best_note: "Attention : la gagnante de chaque mois n'est connue qu'après coup. Elle change presque chaque mois, et plusieurs gagnantes d'un mois perdent sur l'année : la dernière ligne n'est pas atteignable en réalité. Diagnostic sur le passé, avant impôts.",
+    best_big: " Avec 1 million $, les ordres pèseraient lourd face aux échanges de quelques minutes : les frais réels seraient bien plus élevés.",
     note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Colonnes « sans stop/objectif » (en gris) : le même résultat si chaque titre était gardé jusqu'à l'heure de vente, sans la vente à −1,5 % ni à +3 % — pour voir ce que la règle rapporte ou coûte. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
   },
   en: {
@@ -83,6 +109,14 @@ const TEXT = {
     waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)", later: k => ` (${k} sessions later)`, or_at: "or",
     updated: t => `Updated at ${t} (Paris) — the page reloads itself every minute during the session.`,
     list_at: t => `list ${t}`, bought_at: t => `price pending`, sold: "sold",
+    best_title: "The best strategy each month",
+    best_intro: "For each month tested, the strategy (and its list) that made the most after costs: on the left with its selling rules (stop and target), on the right with no stop or target. The amount is invested at each purchase; a strategy held several sessions splits it into slices.",
+    best_year: "Year:", best_amount: "Amount:",
+    best_head: ["Month", "With limits (stop / target)", "Return", "Gain", "Without limits", "Return", "Gain"],
+    best_list: { per12: "P/E < 25", sans_per: "without P/E" }, best_days: (d, n) => `${d}/${n} sessions with a list`,
+    best_total: "Whole year, switching each month to the winner",
+    best_note: "Warning: each month's winner is only known afterwards. It changes almost every month, and several monthly winners lose over the year: the last row cannot be reached in reality. Diagnostic on past data, before tax.",
+    best_big: " With $1 million, the orders would weigh heavily against a few minutes of trading: real costs would be much higher.",
     note: "Today: live during the session (prices 15 min late), frozen at the selling time. \"No stop/target\" columns (grey background): the same result if every stock were kept until the selling time, without the −1.5% or +3% sale — to see what the rule gains or costs. All these strategies are paper diagnostics: no order is placed.",
   },
 }[LANG];
@@ -137,6 +171,64 @@ ROWS.forEach(r => {
   });
   const n = document.createElement("td"); n.className = "num"; n.textContent = r.totals.per12?.n ?? r.totals.sans_per?.n ?? 0; tr.appendChild(n);
 });
+
+// La meilleure stratégie de chaque mois (tests sur le passé) : année et montant choisis, gardés dans ce navigateur.
+(() => {
+  const years = Object.keys(BEST).sort().reverse();   // la plus récente d'abord
+  if (!years.length) { document.querySelector(".best").hidden = true; return; }
+  const amounts = [10000, 25000, 100000, 1000000];
+  const usd = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0, signDisplay: "exceptZero" }).format(v);
+  const remember = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+  const recall = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const year = document.getElementById("best-year"), amount = document.getElementById("best-amount");
+  years.forEach(y => year.add(new Option(y, y)));
+  amounts.forEach(a => amount.add(new Option(usd(a).replace("+", ""), a)));
+  year.value = years.includes(recall("best-year")) ? recall("best-year") : years[0];
+  amount.value = amounts.map(String).includes(recall("best-amount")) ? recall("best-amount") : "10000";
+  ["title", "intro"].forEach(k => document.getElementById(`best-${k}`).textContent = TEXT[`best_${k}`]);
+  document.getElementById("best-year-label").textContent = TEXT.best_year;
+  document.getElementById("best-amount-label").textContent = TEXT.best_amount;
+  const pages = Object.fromEntries(ROWS.map(r => [r.id, LANG === "fr" ? r.fr : r.en]));
+  const draw = () => {
+    const a = Number(amount.value), rows = BEST[year.value];
+    const t = document.getElementById("best-table");
+    t.replaceChildren();
+    const head = t.createTHead().insertRow();
+    TEXT.best_head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; th.className = [0, 1, 4].includes(i) ? "text" : ""; head.appendChild(th); });
+    const body = t.createTBody();
+    const cells = (tr, pick) => {
+      const name = document.createElement("td"); name.className = "text";
+      const link = document.createElement("a"); link.href = pages[pick.strategy] || "#";
+      link.textContent = `${pick.order}. ${LANG === "fr" ? pick.name : pick.name_en}`;
+      const d = document.createElement("div"); d.className = "desc";
+      d.textContent = `${TEXT.best_list[pick.list]} · ${TEXT.best_days(pick.days, pick.sessions)}`;
+      name.append(link, d); tr.appendChild(name);
+      tr.appendChild(cell(pick.return, TEXT.none));
+      const gain = document.createElement("td"); gain.className = "num " + (pick.return > 0 ? "up" : pick.return < 0 ? "down" : "");
+      gain.textContent = usd(a * pick.return); tr.appendChild(gain);
+    };
+    let withTotal = 1, withoutTotal = 1;
+    rows.forEach(r => {
+      const tr = body.insertRow();
+      const m = document.createElement("td"); m.className = "text";
+      m.textContent = new Date(`${r.month}-15T12:00:00Z`).toLocaleDateString(TEXT.locale, { month: "long", timeZone: "UTC" });
+      tr.appendChild(m);
+      cells(tr, r.with); cells(tr, r.without);
+      withTotal *= 1 + r.with.return; withoutTotal *= 1 + r.without.return;
+    });
+    const tr = body.insertRow(); tr.className = "total";
+    const label = document.createElement("td"); label.className = "text"; label.textContent = TEXT.best_total; tr.appendChild(label);
+    [withTotal - 1, withoutTotal - 1].forEach(v => {
+      tr.appendChild(document.createElement("td"));
+      tr.appendChild(cell(v, TEXT.none));
+      const gain = document.createElement("td"); gain.className = "num " + (v > 0 ? "up" : "down"); gain.textContent = usd(a * v); tr.appendChild(gain);
+    });
+    document.getElementById("best-note").textContent = TEXT.best_note + (a >= 1000000 ? TEXT.best_big : "");
+  };
+  year.onchange = () => { remember("best-year", year.value); draw(); };
+  amount.onchange = () => { remember("best-amount", amount.value); draw(); };
+  draw();
+})();
 </script>
 </body>
 </html>

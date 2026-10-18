@@ -413,12 +413,51 @@ def _build_strategy(strategy, infos):
                                                                 "sans_per" + NO_RULE)}}
 
 
+BEST_MONTH_YEARS = ("annee_2025", "annee_2024")
+
+
+def _best_by_month(every):
+    """
+    Pour chaque année testée et chaque mois : la stratégie (et la liste) qui a le plus rapporté après frais, avec ses
+    règles de vente (« avec limites ») et sans stop ni objectif (« sans limites »). Rendement du mois composé séance
+    par séance (une tranche du capital par séance d'achat pour une garde de plusieurs séances). Choix fait après coup.
+    """
+    by_year = {}
+    for strategy in every:
+        for path in sorted((RUNS_DIR / strategy.storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+            result = json.loads(path.read_text(encoding="utf-8"))
+            if result.get("label") not in BEST_MONTH_YEARS:
+                continue
+            slices = result.get("capital_slices") or 1
+            for variant in MONTH_TEST_LISTS:
+                months = {}
+                for day in result["days"]:
+                    m = months.setdefault(day["date"][:7], {"with": 1.0, "without": 1.0, "days": 0, "sessions": 0})
+                    if day.get(variant) is not None:
+                        m["with"] *= 1 + day[variant] / slices
+                    if day.get(f"{variant}_hold") is not None:
+                        m["without"] *= 1 + day[f"{variant}_hold"] / slices
+                    m["days"] += 1 if day.get(f"{variant}_n") else 0
+                    m["sessions"] += 1
+                for month, m in months.items():
+                    for kind in ("with", "without"):
+                        best = by_year.setdefault(result["label"][-4:], {}).setdefault(month, {}).get(kind)
+                        if best is None or m[kind] - 1 > best["return"]:
+                            by_year[result["label"][-4:]][month][kind] = {
+                                "strategy": strategy.id, "order": strategy.order, "name": strategy.name,
+                                "name_en": strategy.name_en, "list": variant, "return": m[kind] - 1,
+                                "days": m["days"], "sessions": m["sessions"]}
+    return {year: [{"month": month, **picks} for month, picks in sorted(months.items())]
+            for year, months in sorted(by_year.items(), reverse=True)}
+
+
 def build(family):
     """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
     every = strategies(family)
     infos = [_strategy_info(s) for s in every]
     rows = [_build_strategy(s, infos) for s in every]
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
+            .replace("__BEST_MONTHS_JSON__", _embed(_best_by_month(every)))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")
