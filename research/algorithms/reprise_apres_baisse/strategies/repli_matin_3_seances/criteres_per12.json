@@ -1,0 +1,22 @@
+{
+  "signal": "repli_tendance",
+  "version": 1,
+  "count": 20,
+  "liquidity_sessions": 20,
+  "min_price_usd": "5",
+  "min_avg_dollar_volume_usd": "20000000",
+  "volatility_sessions": 60,
+  "max_volatility_quantile": 0.5,
+  "month_sessions": 21,
+  "correlation_sessions": 60,
+  "max_pairwise_correlation": 0.6,
+  "decision_after_open_minutes": 45,
+  "short_trend_sessions": 20,
+  "trend_sessions": 50,
+  "high_sessions": 10,
+  "min_pullback": "0.03",
+  "max_pullback": "0.10",
+  "market_symbol": "SPY",
+  "market_ma_sessions": 50,
+  "max_pe": "25"
+}

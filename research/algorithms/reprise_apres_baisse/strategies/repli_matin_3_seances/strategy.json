@@ -1,0 +1,12 @@
+{
+  "id": "repli_matin_3_seances",
+  "order": 22,
+  "name": "Nouvelle 12 — Repli du matin dans une tendance, 3 séances",
+  "description": "Règles du repli dans une tendance (actions calmes en tendance haussière, 3 à 10 % sous leur plus haut de 10 séances, en baisse aujourd'hui), choisies à 10 h 15. Achat 10 h 30, vente 3 séances plus tard à 15 h 55. Stop −3 %, objectif +3 %.",
+  "name_en": "New 12 — Morning dip in an uptrend, 3 sessions",
+  "description_en": "Dip-in-an-uptrend rules (calm stocks in an uptrend, 3 to 10% below their 10-session high, down today), chosen at 10:15 AM. Bought at 10:30 AM, sold 3 sessions later at 3:55 PM. −3% stop, +3% target.",
+  "exit_before_close_minutes": 5,
+  "exit_after_sessions": 3,
+  "stop_loss": "0.03",
+  "take_profit": "0.03"
+}

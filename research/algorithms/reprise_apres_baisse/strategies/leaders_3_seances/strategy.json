@@ -1,0 +1,12 @@
+{
+  "id": "leaders_3_seances",
+  "order": 23,
+  "name": "Nouvelle 13 — Leaders de la semaine, 3 séances",
+  "description": "À 14 h 45, si le S&P 500 tient : actions en hausse de 3 à 12 % sur 5 séances, encore en hausse aujourd'hui et près de leur plus haut. Achat 15 h 00, vente 3 séances plus tard à 15 h 55. Stop −3 %, pas d'objectif (la hausse peut continuer).",
+  "name_en": "New 13 — This week's leaders, 3 sessions",
+  "description_en": "At 2:45 PM, if the S&P 500 holds: stocks up 3 to 12% over 5 sessions, still up today and near their high. Bought at 3:00 PM, sold 3 sessions later at 3:55 PM. −3% stop, no target (the rise can continue).",
+  "exit_before_close_minutes": 5,
+  "exit_after_sessions": 3,
+  "stop_loss": "0.03",
+  "take_profit": null
+}

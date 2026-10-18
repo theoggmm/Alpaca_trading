@@ -1,0 +1,12 @@
+{
+  "id": "reprise_2_seances",
+  "order": 21,
+  "name": "Nouvelle 11 — Reprise du matin, gardée 2 séances",
+  "description": "Liste principale (actions calmes en baisse sur un mois qui remontent, décision 10 h 30 puis confirmation 10 h 45). Achat 11 h 00, gardée la journée et deux nuits, vente 2 séances plus tard à 15 h 55. Stop −3 %, objectif +3 %.",
+  "name_en": "New 11 — Morning rebound, held 2 sessions",
+  "description_en": "Main list (calm stocks down over a month that are recovering, decision at 10:30 AM then confirmation at 10:45 AM). Bought at 11:00 AM, held through the day and two nights, sold 2 sessions later at 3:55 PM. −3% stop, +3% target.",
+  "exit_before_close_minutes": 5,
+  "exit_after_sessions": 2,
+  "stop_loss": "0.03",
+  "take_profit": "0.03"
+}
