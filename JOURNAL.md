@@ -488,3 +488,9 @@ plus, choix quotidien d'après les dernières 24 h puis les 2-3 derniers jours.
 
 Autrement dit : la règle demandée est en place et suivie chaque jour, mais sur 2024-2025 elle gagne moins que la
 stratégie 14 seule ; les années 2021 à 2023 diront si cela se confirme.
+
+**Ajout** : question posée — adapter les règles pour perdre le moins souvent possible. Version 2 de la sélection
+(décision T19) : stratégie 14 seule, pas le lundi, pas si la peur bouge de plus de 3 %. 2024 +36 %, 2025 +63 %,
+un tiers de jours perdants en moins. Aucune règle ne supprime toutes les pertes.
+
+Autrement dit : on évite les jours qui perdaient le plus souvent ; il restera des jours perdants.

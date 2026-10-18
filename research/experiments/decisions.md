@@ -173,3 +173,12 @@ secteur en baisse, largeur du marché, peur (VIXY). Candidates : stratégies de 
 +19,8 % / +55,5 %, avec garde-fous du marché +12,4 % / +29,2 %. Conclusion : le choix par résultats récents et les
 filtres du jour font moins bien que la stratégie 14 seule. La sélection reste suivie en papier, à la demande du
 propriétaire. Statut : diagnostic, aucun ordre.
+
+## T19 — 2026-10-18 — Sélection du jour, version 2 (propriétaire), dès le 19 octobre
+
+Remplace la règle T18 (choix par résultats récents, qui perdait). Toujours la stratégie 14 (sans PER, 7 premières
+actions) ; pas d'achat le lundi ; pas d'achat si VIXY a bougé de plus de ±3 % depuis l'ouverture à 14 h 45 ; marché en
+bonne forme. Plus de filtres largeur, publications, secteur. Règles trouvées sur les jours perdants de la stratégie 14
+en 2024 et 2025, chacune vraie dans les deux années (diagnostic, pas une preuve) : +36,1 % (2024) et +62,7 % (2025)
+contre +19,8 % et +55,5 % ; séances perdantes 62 et 47 contre 91 et 72 ; pire séance −3,3 % et −4,1 %. Contrôle hors
+échantillon : 2021-2023 (tests en cours), puis les séances futures. Statut : diagnostic, papier, aucun ordre.
