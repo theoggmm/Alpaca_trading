@@ -1,0 +1,458 @@
+{
+ "backtest_id": "b013",
+ "family": "reprise_apres_baisse",
+ "strategy": "nuit_15h55_ouverture",
+ "suite": "tests_2025",
+ "label": "periode_20261012_20261016_top7",
+ "top": 7,
+ "status": "diagnostic",
+ "created_at": "2026-10-18T15:56:42.600290+00:00",
+ "git_sha": "28f48fc74a9322e2160051806f3b61a312c5a6e0",
+ "period": {
+  "start": "2026-10-12",
+  "end": "2026-10-15",
+  "sessions": 4,
+  "months": null
+ },
+ "spy_month": null,
+ "capital_slices": 1,
+ "rules": {
+  "entry": "premier échange 15 min après la décision de chaque liste (New York)",
+  "exit": "heure de vente de la stratégie nuit_15h55_ouverture, stop −1.500 % / objectif +3.00 %",
+  "cost_bps_per_order": "5",
+  "split": "parts égales, fractions d'action"
+ },
+ "criteria": {
+  "per12": {
+   "signal": "fin_de_journee",
+   "version": 2,
+   "count": 20,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "month_sessions": 21,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "decision_after_open_minutes": 370,
+   "last_hour_minutes": 60,
+   "min_day_gain": "0.005",
+   "max_day_gain": "0.04",
+   "max_below_day_high": "0.01",
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50,
+   "max_pe": "25",
+   "market_min_day_return": null,
+   "market_min_last_hour_return": null,
+   "max_volatility_quantile": null,
+   "min_up_days": null,
+   "week_sessions": 5,
+   "min_week_gain": null,
+   "max_week_gain": null,
+   "rank_by": "derniere_heure"
+  },
+  "sans_per": {
+   "signal": "fin_de_journee",
+   "version": 1,
+   "count": 20,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "month_sessions": 21,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "decision_after_open_minutes": 370,
+   "last_hour_minutes": 60,
+   "min_day_gain": "0.005",
+   "max_day_gain": "0.04",
+   "max_below_day_high": "0.01",
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50,
+   "max_pe": null,
+   "market_min_day_return": null,
+   "market_min_last_hour_return": null,
+   "max_volatility_quantile": null,
+   "min_up_days": null,
+   "week_sessions": 5,
+   "min_week_gain": null,
+   "max_week_gain": null,
+   "rank_by": "derniere_heure"
+  }
+ },
+ "biases": [
+  "Univers = titres actifs aujourd'hui chez Alpaca : les titres disparus depuis (faillites, rachats) sont absents, ce qui embellit le passé (biais du survivant).",
+  "Indicateur ETF (Nasdaq Trader) lu aujourd'hui, appliqué au passé.",
+  "Bénéfices (PER) : seules les déclarations déposées à la SEC avant chaque jour de décision servent.",
+  "Repère univers liquide non calculé (trop coûteux sur le passé) : seul SPY sert de repère.",
+  "Plus haut de la première heure (version « pas au sommet ») : plus haute clôture minute, comme en direct.",
+  "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant la décision, est écarté (en direct il serait jugé sur ses premiers et derniers échanges) — rare pour des titres liquides."
+ ],
+ "summaries": {
+  "per12": {
+   "n": 4,
+   "mean": -0.004689401319455944,
+   "total": -0.018915284054621062,
+   "annualized": -0.699731253779099,
+   "suspect": false,
+   "positive_share": 0.25,
+   "best": 0.01325345677338136,
+   "worst": -0.01813376402561331,
+   "sharpe": -5.327282018883044
+  },
+  "sans_per": {
+   "n": 4,
+   "mean": -0.009922358116308018,
+   "total": -0.03937293541495557,
+   "annualized": -0.920392580074182,
+   "suspect": false,
+   "positive_share": 0.25,
+   "best": 0.005438903373213691,
+   "worst": -0.022361686359261865,
+   "sharpe": -11.609398572244881
+  },
+  "spy": {
+   "n": 4,
+   "mean": -0.0028224831727280382,
+   "total": -0.011253615036146636,
+   "annualized": -0.5098271586984908,
+   "suspect": false,
+   "positive_share": 0.25,
+   "best": 0.00025580188725509,
+   "worst": -0.00518522066884713,
+   "sharpe": -16.211401378925792
+  },
+  "per12_sans_regle": {
+   "n": 4,
+   "mean": -0.004689401319455944,
+   "total": -0.018915284054621062,
+   "annualized": -0.699731253779099,
+   "suspect": false,
+   "positive_share": 0.25,
+   "best": 0.01325345677338136,
+   "worst": -0.01813376402561331,
+   "sharpe": -5.327282018883044
+  },
+  "sans_per_sans_regle": {
+   "n": 4,
+   "mean": -0.009922358116308018,
+   "total": -0.03937293541495557,
+   "annualized": -0.920392580074182,
+   "suspect": false,
+   "positive_share": 0.25,
+   "best": 0.005438903373213691,
+   "worst": -0.022361686359261865,
+   "sharpe": -11.609398572244881
+  },
+  "per12_stop_seul": {
+   "n": 4,
+   "mean": -0.004689401319455944,
+   "total": -0.018915284054621062,
+   "annualized": -0.699731253779099,
+   "suspect": false,
+   "positive_share": 0.25,
+   "best": 0.01325345677338136,
+   "worst": -0.01813376402561331,
+   "sharpe": -5.327282018883044
+  },
+  "sans_per_stop_seul": {
+   "n": 4,
+   "mean": -0.009922358116308018,
+   "total": -0.03937293541495557,
+   "annualized": -0.920392580074182,
+   "suspect": false,
+   "positive_share": 0.25,
+   "best": 0.005438903373213691,
+   "worst": -0.022361686359261865,
+   "sharpe": -11.609398572244881
+  }
+ },
+ "days": [
+  {
+   "date": "2026-10-12",
+   "per12": -0.0008979895997518472,
+   "per12_n": 7,
+   "per12_gross": 0.00010161221155405391,
+   "per12_whole_gains": {
+    "10000": "-9.34",
+    "25000": "-22.68",
+    "50000": "-45.38",
+    "100000": "-89.75",
+    "1000000": "-897.66",
+    "2000000": "-1795.88"
+   },
+   "per12_hold": -0.0008979895997518472,
+   "per12_early": {},
+   "per12_symbols": [
+    "BSX",
+    "GME",
+    "UNIT",
+    "AGCO",
+    "SKWD",
+    "ALV",
+    "CNX"
+   ],
+   "per12_stop_only": -0.0008979895997518472,
+   "sans_per": -0.002515648535453325,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.0015176651923172104,
+   "sans_per_whole_gains": {
+    "10000": "-22.72",
+    "25000": "-61.89",
+    "50000": "-122.57",
+    "100000": "-248.85",
+    "1000000": "-2515.50",
+    "2000000": "-5029.91"
+   },
+   "sans_per_hold": -0.002515648535453325,
+   "sans_per_early": {
+    "CRWV": "stop"
+   },
+   "sans_per_symbols": [
+    "TDOC",
+    "BULL",
+    "PODD",
+    "OSCR",
+    "SG",
+    "FMC",
+    "CRWV"
+   ],
+   "sans_per_stop_only": -0.002515648535453325,
+   "spy": -0.0012306582115351806,
+   "spy_n": 1,
+   "spy_gross": -0.00023138923525857746,
+   "spy_whole_gains": {
+    "10000": "-11.49",
+    "25000": "-30.65",
+    "50000": "-61.30",
+    "100000": "-122.60",
+    "1000000": "-1229.84",
+    "2000000": "-2460.64"
+   },
+   "spy_hold": -0.0012306582115351806,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2026-10-13",
+   "per12": -0.012979308425839978,
+   "per12_n": 7,
+   "per12_gross": -0.011991793977041419,
+   "per12_whole_gains": {
+    "10000": "-127.47",
+    "25000": "-322.45",
+    "50000": "-647.24",
+    "100000": "-1296.71",
+    "1000000": "-12978.12",
+    "2000000": "-25957.50"
+   },
+   "per12_hold": -0.012979308425839978,
+   "per12_early": {
+    "KMX": "stop",
+    "PFSI": "stop",
+    "RUN": "stop"
+   },
+   "per12_symbols": [
+    "GPK",
+    "PFSI",
+    "DRH",
+    "KMX",
+    "RUN",
+    "CARG",
+    "VNT"
+   ],
+   "per12_stop_only": -0.012979308425839978,
+   "sans_per": -0.022361686359261865,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.021383558981932463,
+   "sans_per_whole_gains": {
+    "10000": "-220.70",
+    "25000": "-557.88",
+    "50000": "-1116.52",
+    "100000": "-2234.59",
+    "1000000": "-22359.03",
+    "2000000": "-44721.76"
+   },
+   "sans_per_hold": -0.022361686359261865,
+   "sans_per_early": {
+    "LASR": "stop",
+    "LPTH": "stop",
+    "SYM": "stop",
+    "TNDM": "stop"
+   },
+   "sans_per_symbols": [
+    "LASR",
+    "TNDM",
+    "NTSK",
+    "GPK",
+    "LPTH",
+    "SYM",
+    "MTN"
+   ],
+   "sans_per_stop_only": -0.022361686359261865,
+   "spy": -0.00518522066884713,
+   "spy_n": 1,
+   "spy_gross": -0.004189908233298203,
+   "spy_whole_gains": {
+    "10000": "-48.44",
+    "25000": "-129.17",
+    "50000": "-258.33",
+    "100000": "-516.66",
+    "1000000": "-5182.78",
+    "2000000": "-10369.59"
+   },
+   "spy_hold": -0.00518522066884713,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2026-10-14",
+   "per12": 0.01325345677338136,
+   "per12_n": 7,
+   "per12_gross": 0.014267217110323211,
+   "per12_whole_gains": {
+    "10000": "137.63",
+    "25000": "337.09",
+    "50000": "668.08",
+    "100000": "1329.35",
+    "1000000": "13254.87",
+    "2000000": "26513.53"
+   },
+   "per12_hold": 0.01325345677338136,
+   "per12_early": {
+    "DAVE": "stop",
+    "FND": "objectif",
+    "YELP": "objectif"
+   },
+   "per12_symbols": [
+    "AMN",
+    "DAVE",
+    "WEN",
+    "COO",
+    "YELP",
+    "FND",
+    "STT"
+   ],
+   "per12_stop_only": 0.01325345677338136,
+   "sans_per": 0.005438903373213691,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.00644484524752406,
+   "sans_per_whole_gains": {
+    "10000": "61.56",
+    "25000": "143.23",
+    "50000": "278.81",
+    "100000": "550.97",
+    "1000000": "5441.64",
+    "2000000": "10884.68"
+   },
+   "sans_per_hold": 0.005438903373213691,
+   "sans_per_early": {
+    "DAVE": "stop",
+    "Z": "objectif"
+   },
+   "sans_per_symbols": [
+    "AMN",
+    "DAVE",
+    "Z",
+    "PTRN",
+    "WEN",
+    "FIGS",
+    "ACI"
+   ],
+   "sans_per_stop_only": 0.005438903373213691,
+   "spy": -0.005129855697784932,
+   "spy_n": 1,
+   "spy_gross": -0.004134487869568609,
+   "spy_whole_gains": {
+    "10000": "-47.37",
+    "25000": "-126.32",
+    "50000": "-252.64",
+    "100000": "-509.23",
+    "1000000": "-5127.87",
+    "2000000": "-10259.68"
+   },
+   "spy_hold": -0.005129855697784932,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2026-10-15",
+   "per12": -0.01813376402561331,
+   "per12_n": 7,
+   "per12_gross": -0.01715140661093158,
+   "per12_whole_gains": {
+    "10000": "-179.75",
+    "25000": "-452.52",
+    "50000": "-905.08",
+    "100000": "-1810.00",
+    "1000000": "-18125.26",
+    "2000000": "-36260.94"
+   },
+   "per12_hold": -0.01813376402561331,
+   "per12_early": {
+    "OMER": "stop",
+    "SMCI": "stop",
+    "WDC": "stop"
+   },
+   "per12_symbols": [
+    "OMER",
+    "SMCI",
+    "ECG",
+    "WDC",
+    "CDE",
+    "GTES",
+    "AMTM"
+   ],
+   "per12_stop_only": -0.01813376402561331,
+   "sans_per": -0.020251000943730574,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.019270761825114995,
+   "sans_per_whole_gains": {
+    "10000": "-201.24",
+    "25000": "-505.38",
+    "50000": "-1010.47",
+    "100000": "-2022.57",
+    "1000000": "-20250.26",
+    "2000000": "-40501.58"
+   },
+   "sans_per_hold": -0.020251000943730574,
+   "sans_per_early": {
+    "ACMR": "stop",
+    "NN": "stop",
+    "OMER": "stop"
+   },
+   "sans_per_symbols": [
+    "ACMR",
+    "PLSE",
+    "OMER",
+    "MBX",
+    "NN",
+    "HYMC",
+    "RUM"
+   ],
+   "sans_per_stop_only": -0.020251000943730574,
+   "spy": 0.00025580188725509,
+   "spy_n": 1,
+   "spy_gross": 0.0012565580672323337,
+   "spy_whole_gains": {
+    "10000": "2.37",
+    "25000": "6.32",
+    "50000": "12.64",
+    "100000": "25.49",
+    "1000000": "255.65",
+    "2000000": "511.50"
+   },
+   "spy_hold": 0.00025580188725509,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  }
+ ]
+}

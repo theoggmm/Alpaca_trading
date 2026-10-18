@@ -341,8 +341,8 @@ def _month_tests(storage):
                                            "spy_net": str((a * spy).quantize(Decimal("0.01")))}
                                   for a in MONTH_TEST_AMOUNTS if empty_month or str(a) in computed}})
     # Le plus récent test de chaque période seulement, du plus court au plus long (le mois, six mois, l'année).
-    latest = {(t["period"]["start"], t["period"]["end"]): t for t in tests}
-    return sorted(latest.values(), key=lambda t: (t["period"]["sessions"], t["period"]["start"]))
+    latest = {(t["period"]["start"], t["period"]["end"], t.get("label")): t for t in tests}
+    return sorted(latest.values(), key=lambda t: (t["period"]["sessions"], t["period"]["start"], t.get("label") or ""))
 
 
 def _build_strategy(strategy, infos):
@@ -414,20 +414,24 @@ def _build_strategy(strategy, infos):
 
 
 BEST_MONTH_YEARS = ("annee_2025", "annee_2024")
+BEST_MONTH_SELECTIONS = {"full": "", "top7": "_top7"}   # liste entière, ou ses 7 premiers titres (--top 7)
 
 
-def _best_by_month(every):
+def _best_by_month(every, suffix=""):
     """
     Pour chaque année testée et chaque mois : la stratégie (et la liste) qui a le plus rapporté après frais, avec ses
     règles de vente (« avec limites ») et sans stop ni objectif (« sans limites »). Rendement du mois composé séance
     par séance (une tranche du capital par séance d'achat pour une garde de plusieurs séances). Choix fait après coup.
     """
     by_year = {}
+    wanted = {year + suffix: year for year in BEST_MONTH_YEARS}
     for strategy in every:
+        latest = {}   # dernier résultat de chaque test (un test refait remplace l'ancien)
         for path in sorted((RUNS_DIR / strategy.storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
             result = json.loads(path.read_text(encoding="utf-8"))
-            if result.get("label") not in BEST_MONTH_YEARS:
-                continue
+            if result.get("label") in wanted:
+                latest[result["label"]] = result
+        for result in latest.values():
             slices = result.get("capital_slices") or 1
             for variant in MONTH_TEST_LISTS:
                 months = {}
@@ -441,9 +445,10 @@ def _best_by_month(every):
                     m["sessions"] += 1
                 for month, m in months.items():
                     for kind in ("with", "without"):
-                        best = by_year.setdefault(result["label"][-4:], {}).setdefault(month, {}).get(kind)
+                        year = wanted[result["label"]][-4:]
+                        best = by_year.setdefault(year, {}).setdefault(month, {}).get(kind)
                         if best is None or m[kind] - 1 > best["return"]:
-                            by_year[result["label"][-4:]][month][kind] = {
+                            by_year[year][month][kind] = {
                                 "strategy": strategy.id, "order": strategy.order, "name": strategy.name,
                                 "name_en": strategy.name_en, "list": variant, "return": m[kind] - 1,
                                 "days": m["days"], "sessions": m["sessions"]}
@@ -457,7 +462,7 @@ def build(family):
     infos = [_strategy_info(s) for s in every]
     rows = [_build_strategy(s, infos) for s in every]
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
-            .replace("__BEST_MONTHS_JSON__", _embed(_best_by_month(every)))
+            .replace("__BEST_MONTHS_JSON__", _embed({k: _best_by_month(every, v) for k, v in BEST_MONTH_SELECTIONS.items()}))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")

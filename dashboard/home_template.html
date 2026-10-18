@@ -74,6 +74,7 @@
     <div class="pickers">
       <label><span id="best-year-label"></span> <select id="best-year"></select></label>
       <label><span id="best-amount-label"></span> <select id="best-amount"></select></label>
+      <label><span id="best-selection-label"></span> <select id="best-selection"></select></label>
     </div>
     <div class="panel"><table id="best-table"></table></div>
     <p class="note" id="best-note"></p>
@@ -94,7 +95,9 @@ const TEXT = {
     list_at: t => `liste ${t}`, bought_at: t => `prix attendu`, sold: "vendu",
     best_title: "La meilleure stratégie de chaque mois",
     best_intro: "Pour chaque mois testé, la stratégie (et sa liste) qui a le plus rapporté après frais : à gauche avec ses règles de vente (stop et objectif), à droite sans stop ni objectif. Le montant est investi à chaque achat ; une stratégie gardée plusieurs séances le partage en tranches.",
-    best_year: "Année :", best_amount: "Montant :",
+    best_year: "Année :", best_amount: "Montant :", best_selection: "Actions par liste :",
+    best_selections: { full: "Liste entière (jusqu'à 20)", top7: "Les 7 meilleures (en tête de liste)" },
+    best_top_note: " « Les 7 meilleures » : chaque jour, seules les 7 premières actions de la liste, dans l'ordre de la liste (connu avant l'achat : hausse de la dernière heure, de la semaine ou repli le plus profond selon la stratégie), avec le même montant réparti sur elles.",
     best_head: ["Mois", "Avec limites (stop / objectif)", "Rendement", "Gain", "Sans limites", "Rendement", "Gain"],
     best_list: { per12: "PER < 25", sans_per: "sans PER" }, best_days: (d, n) => `${d}/${n} séances avec une liste`,
     best_total: "Toute l'année, en passant chaque mois à la gagnante",
@@ -112,7 +115,9 @@ const TEXT = {
     list_at: t => `list ${t}`, bought_at: t => `price pending`, sold: "sold",
     best_title: "The best strategy each month",
     best_intro: "For each month tested, the strategy (and its list) that made the most after costs: on the left with its selling rules (stop and target), on the right with no stop or target. The amount is invested at each purchase; a strategy held several sessions splits it into slices.",
-    best_year: "Year:", best_amount: "Amount:",
+    best_year: "Year:", best_amount: "Amount:", best_selection: "Stocks per list:",
+    best_selections: { full: "Full list (up to 20)", top7: "Best 7 (top of the list)" },
+    best_top_note: " \"Best 7\": each day, only the first 7 stocks of the list, in the list's order (known before buying: last-hour rise, weekly rise or deepest dip depending on the strategy), with the same amount split across them.",
     best_head: ["Month", "With limits (stop / target)", "Return", "Gain", "Without limits", "Return", "Gain"],
     best_list: { per12: "P/E < 25", sans_per: "without P/E" }, best_days: (d, n) => `${d}/${n} sessions with a list`,
     best_total: "Whole year, switching each month to the winner",
@@ -176,12 +181,16 @@ ROWS.forEach(r => {
 
 // La meilleure stratégie de chaque mois (tests sur le passé) : année et montant choisis, gardés dans ce navigateur.
 (() => {
-  const years = Object.keys(BEST).sort().reverse();   // la plus récente d'abord
+  const years = Object.keys(BEST.full || {}).sort().reverse();   // la plus récente d'abord
   if (!years.length) { document.querySelector(".best").hidden = true; return; }
   const amounts = [10000, 25000, 100000, 1000000];
   const usd = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0, signDisplay: "exceptZero" }).format(v);
   const remember = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
   const recall = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const selection = document.getElementById("best-selection");
+  Object.keys(BEST).forEach(k => selection.add(new Option(TEXT.best_selections[k] || k, k)));
+  selection.value = BEST[recall("best-selection")] ? recall("best-selection") : "full";
+  document.getElementById("best-selection-label").textContent = TEXT.best_selection;
   const year = document.getElementById("best-year"), amount = document.getElementById("best-amount");
   years.forEach(y => year.add(new Option(y, y)));
   amounts.forEach(a => amount.add(new Option(usd(a).replace("+", ""), a)));
@@ -192,7 +201,7 @@ ROWS.forEach(r => {
   document.getElementById("best-amount-label").textContent = TEXT.best_amount;
   const pages = Object.fromEntries(ROWS.map(r => [r.id, LANG === "fr" ? r.fr : r.en]));
   const draw = () => {
-    const a = Number(amount.value), rows = BEST[year.value];
+    const a = Number(amount.value), rows = (BEST[selection.value] || {})[year.value] || [];
     const t = document.getElementById("best-table");
     t.replaceChildren();
     const head = t.createTHead().insertRow();
@@ -230,10 +239,12 @@ ROWS.forEach(r => {
       tr.appendChild(cell(v, TEXT.none));
       const gain = document.createElement("td"); gain.className = "num " + (v > 0 ? "up" : "down"); gain.textContent = usd(a * v); tr.appendChild(gain);
     });
-    document.getElementById("best-note").textContent = TEXT.best_note + (a >= 1000000 ? TEXT.best_big : "");
+    document.getElementById("best-note").textContent = TEXT.best_note + (selection.value === "top7" ? TEXT.best_top_note : "")
+      + (a >= 1000000 ? TEXT.best_big : "");
   };
   year.onchange = () => { remember("best-year", year.value); draw(); };
   amount.onchange = () => { remember("best-amount", amount.value); draw(); };
+  selection.onchange = () => { remember("best-selection", selection.value); draw(); };
   draw();
 })();
 </script>

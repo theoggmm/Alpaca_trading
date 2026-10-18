@@ -1515,7 +1515,12 @@ function renderMonthTests() {
     box.replaceChildren(el("div", "empty", TEXT.months_empty));
     return;
   }
-  picker.replaceChildren(...tests.map(t => new Option(`${TEXT.tests_labels[t.label] || TEXT.months_label(t.period)} · ${t.period.sessions} ${LANG === "fr" ? "séances" : "sessions"}`, t.id)));
+  const testName = t => {
+    const top = /_top(\d+)$/.exec(t.label || "");
+    const base = top ? t.label.slice(0, top.index) : t.label;
+    return (TEXT.tests_labels[base] || TEXT.months_label(t.period)) + (top ? (LANG === "fr" ? ` — ${top[1]} premiers titres` : ` — top ${top[1]} stocks`) : "");
+  };
+  picker.replaceChildren(...tests.map(t => new Option(`${testName(t)} · ${t.period.sessions} ${LANG === "fr" ? "séances" : "sessions"}`, t.id)));
   picker.value = tests.some(t => t.id === VIEW.monthTest) ? VIEW.monthTest : tests[0].id;
   const amountPicker = document.getElementById("month-amount");
   const usdSigned = v => `${Number(v) > 0 ? "+" : ""}${usd(v)}`;
