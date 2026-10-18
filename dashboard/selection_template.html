@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="__LANG__">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Régénérée chaque minute par le suivi en direct : elle se recharge seule. -->
+<meta http-equiv="refresh" content="60">
+<title>Règle en vigueur</title>
+<!-- Généré par dashboard/build.py : la sélection du jour (version 2, décision T19), tout au même endroit. -->
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --ink: #17202b; --muted: #5d6877; --line: #dde1e7;
+    --accent: #2b5d8c; --up: #1d7a4c; --down: #b23a3a;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+      --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+    --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 22px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+  h1 { margin: 0; font-size: 26px; flex: 1 1 auto; }
+  h2 { margin: 6px 0 0; font-size: 20px; }
+  header a, a { color: var(--accent); font-weight: 600; }
+  .intro { margin: 0; max-width: 85ch; }
+  .note { color: var(--muted); font-size: 13px; margin: 0; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+  .box { padding: 14px 16px; display: grid; gap: 8px; }
+  .rules { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+  .big { font-size: 22px; font-weight: 700; font-family: var(--font-data); }
+  .status { font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  th.text, td.text { text-align: left; }
+  td.num { font-family: var(--font-data); white-space: nowrap; }
+  td.muted { color: var(--muted); font-size: 13px; }
+  tr:last-child td { border-bottom: none; }
+  tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+  .pickers select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  .card span { display: block; color: var(--muted); font-size: 12px; }
+  .card b { font-family: var(--font-data); font-size: 18px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title"></h1>
+    <a id="home"></a>
+    <a id="other"></a>
+  </header>
+  <p class="intro" id="intro"></p>
+
+  <div class="panel box">
+    <h2 id="rules-title"></h2>
+    <ol class="rules" id="rules"></ol>
+    <p class="note" id="rules-note"></p>
+  </div>
+
+  <section>
+    <h2 id="today-title"></h2>
+    <div class="panel box" id="today"></div>
+    <div class="panel" id="today-stocks-panel"><table id="today-stocks"></table></div>
+  </section>
+
+  <section>
+    <h2 id="sessions-title"></h2>
+    <div class="cards" id="sessions-cards"></div>
+    <div class="panel"><table id="sessions"></table></div>
+  </section>
+
+  <section>
+    <h2 id="tests-title"></h2>
+    <p class="intro" id="tests-intro"></p>
+    <div class="pickers">
+      <label><span id="year-label"></span> <select id="year"></select></label>
+      <label><span id="amount-label"></span> <select id="amount"></select></label>
+    </div>
+    <div class="cards" id="tests-cards"></div>
+    <h3 id="months-title"></h3>
+    <div class="panel"><table id="months"></table></div>
+    <h3 id="days-title"></h3>
+    <div class="panel"><table id="days"></table></div>
+  </section>
+  <p class="note" id="note"></p>
+</main>
+<script>
+const LANG = "__LANG__";
+const DATA = __SELECTION_JSON__;
+const BUILT_AT = __BUILT_AT__;
+const TEXT = {
+  fr: {
+    title: "Règle en vigueur — version 2", home: "← Toutes les stratégies", home_href: "accueil.html",
+    other: "English", other_href: "selection_en.html", locale: "fr-FR",
+    intro: "Tout ce que fait la règle d'investissement en vigueur depuis le 19 octobre 2026 : la règle, le choix du jour et ses actions en direct, chaque séance suivie, et ce que la même règle aurait donné sur le passé. En papier : aucun ordre n'est passé.",
+    rules_title: "La règle",
+    rules: [
+      "Chaque séance, la stratégie 14 « Bascule sans stop », liste sans PER : achat à 15 h 00 (New York) si le S&P 500 tient, sinon à 15 h 55 s'il remonte sur la dernière heure, sinon rien ; vente le lendemain à 10 h 30, sans stop ni objectif.",
+      "Seulement les 7 premières actions de sa liste (dans l'ordre de la liste, connu avant l'achat), le montant réparti à parts égales.",
+      "Pas d'achat le lundi.",
+      "Pas d'achat si l'indice de peur (fonds VIXY) a bougé de plus de 3 %, dans un sens ou dans l'autre, depuis l'ouverture à 14 h 45 (New York, 20 h 45 Paris).",
+      "Pas d'achat si le marché (S&P 500) a fini la veille sous sa moyenne des 50 dernières séances.",
+    ],
+    rules_note: "Les règles 3 et 4 viennent des jours perdants de la stratégie 14 en 2024 et 2025 : elles valaient dans les deux années. Les années 2021 à 2023 et les séances à venir les jugeront (décision T19, page Méthodologie).",
+    today_title: "Aujourd'hui", today_wait: "Choix du jour à 20 h 45 (Paris), avec les prix de 14 h 45 (New York).",
+    closed: "Marché fermé ou séance pas encore commencée.",
+    blocked: { lundi: "Pas d'achat aujourd'hui : c'est lundi.", peur_en_hausse: "Pas d'achat aujourd'hui : l'indice de peur monte de plus de 3 %.", peur_en_chute: "Pas d'achat aujourd'hui : l'indice de peur baisse de plus de 3 %.", marche_en_mauvaise_forme: "Pas d'achat aujourd'hui : le marché est sous sa moyenne de 50 séances.", trop_peu_d_actions_en_hausse: "Pas d'achat aujourd'hui : trop peu d'actions en hausse." },
+    no_list: "La stratégie 14 n'a pas fait de liste aujourd'hui (marché qui ne tient ni ne remonte) : rien d'acheté.",
+    list_wait: "Achat décidé : actions dès que la liste de la stratégie 14 sort (15 h 00 ou 15 h 55, New York).",
+    fear: f => `Indice de peur (VIXY) depuis l'ouverture, à 14 h 45 : ${f}`,
+    result: "Résultat du jour", for_amount: a => `pour ${a}`,
+    stocks_head: ["Action", "Situation", "Prix d'achat", "Dernier prix ou vente", "Variation", "Gain (après frais)"],
+    states: { held: "En cours", sold: "Vendue", stop: "Vendue au stop", objectif: "Vendue à l'objectif", not_bought: "Pas encore achetée" },
+    sessions_title: "Séances suivies (depuis le 19 octobre 2026)", sessions_empty: "Aucune séance terminée pour l'instant.",
+    sessions_head: ["Séance", "Décision", "Actions", "Résultat", "Gain"],
+    bought: n => `${n} actions achetées`, nothing: "Pas d'achat",
+    cards: { total: "Cumul", sessions: "Séances", invested: "Séances investies", positive: "Positives", worst: "Pire séance", week: "Par semaine (moyenne)" },
+    tests_title: "Sur le passé (même règle, rejouée)",
+    tests_intro: "La même règle rejouée séance par séance avec les données de l'époque : achat et vente aux mêmes heures, 0,05 % de frais par ordre, avant impôts. Les titres disparus depuis manquent (le passé paraît un peu meilleur).",
+    year: "Année :", amount: "Montant :",
+    months_title: "Mois par mois", months_head: ["Mois", "Séances investies", "Résultat", "Gain"],
+    days_title: "Séance par séance", days_head: ["Séance", "Décision", "Actions achetées", "Résultat", "Gain"],
+    year_total: "Toute l'année",
+    note: "Diagnostic, en papier : aucun ordre n'est passé. Mise à jour chaque minute pendant la séance.",
+    updated: t => `Mise à jour à ${t} (Paris).`,
+  },
+  en: {
+    title: "Rule in force — version 2", home: "← All strategies", home_href: "home.html",
+    other: "Français", other_href: "selection.html", locale: "en-US",
+    intro: "Everything the investment rule in force since October 19, 2026 does: the rule, today's choice and its stocks live, every session followed, and what the same rule would have given on past data. On paper: no order is placed.",
+    rules_title: "The rule",
+    rules: [
+      "Every session, strategy 14 \"Switch without stop\", list without P/E: bought at 3:00 PM (New York) if the S&P 500 holds, otherwise at 3:55 PM if it recovers over the last hour, otherwise nothing; sold the next day at 10:30 AM, no stop or target.",
+      "Only the first 7 stocks of its list (in the list's order, known before buying), the amount split equally.",
+      "No purchase on Mondays.",
+      "No purchase if the fear index (VIXY fund) has moved more than 3%, either way, since the open at 2:45 PM (New York, 8:45 PM Paris).",
+      "No purchase if the market (S&P 500) closed the day before below its average of the last 50 sessions.",
+    ],
+    rules_note: "Rules 3 and 4 come from strategy 14's losing days in 2024 and 2025: they held in both years. The years 2021 to 2023 and the coming sessions will judge them (decision T19, Methodology page).",
+    today_title: "Today", today_wait: "Today's choice at 8:45 PM (Paris), with 2:45 PM (New York) prices.",
+    closed: "Market closed or session not started yet.",
+    blocked: { lundi: "No purchase today: it's Monday.", peur_en_hausse: "No purchase today: the fear index is up more than 3%.", peur_en_chute: "No purchase today: the fear index is down more than 3%.", marche_en_mauvaise_forme: "No purchase today: the market is below its 50-session average.", trop_peu_d_actions_en_hausse: "No purchase today: too few stocks rising." },
+    no_list: "Strategy 14 made no list today (the market neither held nor recovered): nothing bought.",
+    list_wait: "Purchase decided: stocks as soon as strategy 14's list comes out (3:00 PM or 3:55 PM, New York).",
+    fear: f => `Fear index (VIXY) since the open, at 2:45 PM: ${f}`,
+    result: "Today's result", for_amount: a => `for ${a}`,
+    stocks_head: ["Stock", "Status", "Purchase price", "Latest or sale price", "Change", "Gain (after costs)"],
+    states: { held: "Still held", sold: "Sold", stop: "Sold at the stop", objectif: "Sold at the target", not_bought: "Not bought yet" },
+    sessions_title: "Sessions followed (since October 19, 2026)", sessions_empty: "No completed session yet.",
+    sessions_head: ["Session", "Decision", "Stocks", "Result", "Gain"],
+    bought: n => `${n} stocks bought`, nothing: "No purchase",
+    cards: { total: "Total", sessions: "Sessions", invested: "Sessions invested", positive: "Positive", worst: "Worst session", week: "Per week (average)" },
+    tests_title: "On past data (same rule, replayed)",
+    tests_intro: "The same rule replayed session by session with the data of the time: bought and sold at the same times, 0.05% cost per order, before tax. Stocks that have since disappeared are missing (the past looks a little better).",
+    year: "Year:", amount: "Amount:",
+    months_title: "Month by month", months_head: ["Month", "Sessions invested", "Result", "Gain"],
+    days_title: "Session by session", days_head: ["Session", "Decision", "Stocks bought", "Result", "Gain"],
+    year_total: "Whole year",
+    note: "Diagnostic, on paper: no order is placed. Updated every minute during the session.",
+    updated: t => `Updated at ${t} (Paris).`,
+  },
+}[LANG];
+const pct = v => v == null ? "—" : new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(v);
+const usd = (v, signed = true) => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0, signDisplay: signed ? "exceptZero" : "auto" }).format(v);
+const usd2 = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(v);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const tone = v => v > 0 ? "up" : v < 0 ? "down" : "";
+const remember = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const recall = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const longDate = iso => new Date(`${iso}T12:00:00Z`).toLocaleDateString(TEXT.locale, { weekday: "short", day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+function table(t, head, rows, textCols = [0]) {
+  t.replaceChildren();
+  const h = t.createTHead().insertRow();
+  head.forEach((label, i) => h.appendChild(el("th", textCols.includes(i) ? "text" : "", label)));
+  const body = t.createTBody();
+  rows.forEach(r => { const tr = body.insertRow(); if (r.cls) tr.className = r.cls; r.cells.forEach(c => tr.appendChild(c)); });
+}
+const td = (text, cls = "") => el("td", cls, text);
+function cards(box, items) {
+  box.replaceChildren(...items.map(([label, value, cls]) => { const c = el("div", "card"); c.append(el("span", "", label), el("b", cls || "", value)); return c; }));
+}
+
+document.documentElement.lang = LANG;
+document.title = TEXT.title;
+document.getElementById("title").textContent = TEXT.title;
+Object.assign(document.getElementById("home"), { textContent: TEXT.home, href: TEXT.home_href });
+Object.assign(document.getElementById("other"), { textContent: TEXT.other, href: TEXT.other_href });
+["intro", "rules_title", "rules_note", "today_title", "sessions_title", "tests_title", "tests_intro", "months_title", "days_title", "note"]
+  .forEach(k => document.getElementById(k.replace("_", "-")).textContent = TEXT[k]);
+document.getElementById("rules").replaceChildren(...TEXT.rules.map(r => el("li", "", r)));
+document.getElementById("note").textContent = TEXT.note + " " + TEXT.updated(new Date(BUILT_AT).toLocaleTimeString(TEXT.locale, { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" }));
+
+// Montant (10 000 $ par défaut, le capital du propriétaire), gardé dans ce navigateur.
+const amounts = [10000, 25000, 100000];
+const amountPicker = document.getElementById("amount");
+amounts.forEach(a => amountPicker.add(new Option(usd(a, false), a)));
+amountPicker.value = amounts.map(String).includes(recall("rule-amount")) ? recall("rule-amount") : "10000";
+document.getElementById("amount-label").textContent = TEXT.amount;
+document.getElementById("year-label").textContent = TEXT.year;
+
+function render() {
+  const A = Number(amountPicker.value);
+  // Aujourd'hui.
+  const days = DATA.days || [];
+  const key = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const rec = days.find(d => d.session_date === key);
+  const box = document.getElementById("today");
+  box.replaceChildren();
+  const stocksPanel = document.getElementById("today-stocks-panel");
+  stocksPanel.hidden = true;
+  if (!rec) box.append(el("div", "status", TEXT.today_wait));
+  else {
+    const g = rec.guard || {};
+    const o = rec.outcome || {};
+    const stocks = Object.values(rec.stocks || {}).flat();
+    if (!rec.picks.length) box.append(el("div", "status", TEXT.blocked[g.blocked] || TEXT.nothing));
+    else if (rec.waiting_lists && !stocks.length) box.append(el("div", "status", TEXT.list_wait));
+    else if (!stocks.length) box.append(el("div", "status", TEXT.no_list));
+    else box.append(el("div", "status", TEXT.bought(stocks.length)));
+    box.append(el("div", "note", TEXT.fear(pct(g.fear_rise))));
+    if (o.return != null) {
+      const r = el("div"); r.append(el("span", "", LANG === "fr" ? `${TEXT.result} : ` : `${TEXT.result}: `),
+        el("span", "big " + tone(o.return), `${pct(o.return)}  ${usd(A * o.return)}`), el("span", "note", ` ${TEXT.for_amount(usd(A, false))}`));
+      box.append(r);
+    }
+    if (stocks.length) {
+      stocksPanel.hidden = false;
+      const share = A / stocks.length;
+      table(document.getElementById("today-stocks"), TEXT.stocks_head, stocks.map(s => {
+        const d = (o.stocks || {})[s] || {};
+        return { cells: [td(s, "text"), td(TEXT.states[d.state] || "—", "text"), td(d.entry ? usd2(d.entry) : "—", "num"),
+                         td(d.price ? usd2(d.price) : "—", "num"), td(pct(d.return), "num " + tone(d.return)),
+                         td(d.net_return == null ? "—" : usd(share * d.net_return), "num " + tone(d.net_return))] };
+      }), [0, 1]);
+    }
+  }
+  // Séances suivies.
+  const done = days.filter(d => d.session_date < key || (d.outcome || {}).status === "closed");
+  const rets = done.map(d => (d.outcome || {}).return ?? 0);
+  const invested = done.filter(d => Object.values(d.stocks || {}).flat().length);
+  const total = rets.reduce((t, r) => t * (1 + r), 1) - 1;
+  cards(document.getElementById("sessions-cards"), [
+    [TEXT.cards.total, `${pct(total)} · ${usd(A * total)}`, tone(total)],
+    [TEXT.cards.sessions, String(done.length)],
+    [TEXT.cards.invested, String(invested.length)],
+    [TEXT.cards.positive, invested.length ? `${invested.filter(d => (d.outcome || {}).return > 0).length} / ${invested.length}` : "—"],
+  ]);
+  const st = document.getElementById("sessions");
+  if (!done.length) table(st, TEXT.sessions_head, [{ cells: [Object.assign(td(TEXT.sessions_empty, "text muted"), { colSpan: 5 })] }]);
+  else table(st, TEXT.sessions_head, done.slice().reverse().map(d => {
+    const stocks = Object.values(d.stocks || {}).flat();
+    const r = (d.outcome || {}).return;
+    return { cells: [td(longDate(d.session_date), "text"),
+                     td(stocks.length ? TEXT.bought(stocks.length) : (TEXT.blocked[(d.guard || {}).blocked] || TEXT.nothing), "text"),
+                     td(stocks.join(", ") || "—", "text"), td(pct(r ?? 0), "num " + tone(r)), td(usd(A * (r ?? 0)), "num " + tone(r))] };
+  }), [0, 1, 2]);
+
+  // Sur le passé.
+  const tests = DATA.tests || { years: {}, days: [] };
+  const yearPicker = document.getElementById("year");
+  if (!yearPicker.options.length) {
+    Object.keys(tests.years).sort().reverse().forEach(y => yearPicker.add(new Option(y, y)));
+    yearPicker.value = tests.years[recall("rule-year")] ? recall("rule-year") : yearPicker.options[0]?.value;
+  }
+  const y = yearPicker.value, info = tests.years[y];
+  if (!info) return;
+  const rows = (tests.days || []).filter(d => d.date.startsWith(y));
+  const weeks = rows.length / 5;
+  cards(document.getElementById("tests-cards"), [
+    [TEXT.cards.total, `${pct(info.total)} · ${usd(A * info.total)}`, tone(info.total)],
+    [TEXT.cards.week, usd(A * rows.reduce((t, d) => t + d.return, 0) / weeks), ""],
+    [TEXT.cards.invested, `${info.invested} / ${info.sessions}`],
+    [TEXT.cards.positive, info.invested ? `${info.positive} / ${info.invested}` : "—"],
+    [TEXT.cards.worst, `${pct(info.worst)} · ${usd(A * info.worst)}`, "down"],
+  ]);
+  const months = {};
+  rows.forEach(d => { const m = d.date.slice(0, 7); months[m] = months[m] || { r: 1, n: 0 }; months[m].r *= 1 + d.return; if (d.stocks.length) months[m].n += 1; });
+  const monthRows = Object.entries(months).map(([m, v]) => ({ cells: [
+    td(new Date(`${m}-15T12:00:00Z`).toLocaleDateString(TEXT.locale, { month: "long", timeZone: "UTC" }), "text"),
+    td(String(v.n), "num"), td(pct(v.r - 1), "num " + tone(v.r - 1)), td(usd(A * (v.r - 1)), "num " + tone(v.r - 1))] }));
+  monthRows.push({ cls: "total", cells: [td(TEXT.year_total, "text"), td(String(info.invested), "num"),
+                                         td(pct(info.total), "num " + tone(info.total)), td(usd(A * info.total), "num " + tone(info.total))] });
+  table(document.getElementById("months"), TEXT.months_head, monthRows);
+  table(document.getElementById("days"), TEXT.days_head, rows.slice().reverse().map(d => ({ cells: [
+    td(longDate(d.date), "text"), td(d.stocks.length ? TEXT.bought(d.stocks.length) : (TEXT.blocked[d.blocked] || TEXT.no_list), "text"),
+    td(d.stocks.join(", ") || "—", "text"), td(pct(d.return), "num " + tone(d.return)), td(usd(A * d.return), "num " + tone(d.return))] })), [0, 1, 2]);
+}
+document.getElementById("year").onchange = e => { remember("rule-year", e.target.value); render(); };
+amountPicker.onchange = () => { remember("rule-amount", amountPicker.value); render(); };
+render();
+</script>
+</body>
+</html>

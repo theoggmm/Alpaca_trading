@@ -155,7 +155,9 @@ def outcome(family, every, record):
         positions = version.get("positions") or {}
         for s in symbols:
             r = (positions.get(s) or {}).get("net_return")
-            detail[s] = {"candidate": candidate, "net_return": r, "state": (positions.get(s) or {}).get("state")}
+            p = positions.get(s) or {}
+            detail[s] = {"candidate": candidate, "net_return": r, "state": p.get("state"), "entry": p.get("entry"),
+                         "price": p.get("price"), "at": p.get("at"), "return": p.get("return")}
             if r is not None:
                 values.append(r)
     status = "none" if not record.get("stocks") else "closed" if statuses == {"closed"} else "live"

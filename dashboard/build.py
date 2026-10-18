@@ -32,6 +32,9 @@ HOME_TEMPLATE = HERE / "home_template.html"
 # Une page par langue et par stratégie, générées depuis le même gabarit ; accueil commun.
 OUTPUTS = {"fr": HERE / "index.html", "en": HERE / "index_en.html"}
 HOME = {"fr": HERE / "accueil.html", "en": HERE / "home.html"}
+# Page de la règle en vigueur (sélection du jour, version 2) : tout au même endroit.
+SELECTION_TEMPLATE = HERE / "selection_template.html"
+SELECTION_PAGES = {"fr": HERE / "selection.html", "en": HERE / "selection_en.html"}
 LIVE_FILE = ROOT / "research" / "outputs" / "live" / "latest.json"
 # Clôtures du dernier mois de tout l'univers, écrites une fois par séance par le suivi en direct.
 CHARTS_FILE = HERE / "charts_data.js"
@@ -472,7 +475,10 @@ def _daily_selection(family, every):
         result = json.loads(path.read_text(encoding="utf-8"))
         if result.get("variant") == "v2":   # règle en vigueur (décision T19)
             rows = result["days"]
-            tests = {"id": path.parent.name, "git_sha": result["git_sha"], "years": {}}
+            tests = {"id": path.parent.name, "git_sha": result["git_sha"], "years": {}, "rules": result.get("rules"),
+                     "days": [{"date": r["date"], "return": r["return"], "blocked": r["guard"].get("blocked"),
+                               "fear": r["guard"].get("fear_rise"),
+                               "stocks": [s for v in r["stocks"].values() for s in v]} for r in rows]}
             for year, summary_ in result["summaries"].items():
                 year_rows = [r for r in rows if r["date"].startswith(year)]
                 invested = [r for r in year_rows if any(r["stocks"].values())]
@@ -491,14 +497,19 @@ def build(family):
     every = strategies(family)
     infos = [_strategy_info(s) for s in every]
     rows = [_build_strategy(s, infos) for s in every]
+    selection = _daily_selection(family, every)
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
-            .replace("__SELECTION_JSON__", _embed(_daily_selection(family, every)))
+            .replace("__SELECTION_JSON__", _embed(selection))
             .replace("__BEST_MONTHS_JSON__", _embed({k: _best_by_month(every, v) for k, v in BEST_MONTH_SELECTIONS.items()}))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")
     from dashboard import methodology
     methodology.write(EXPERIMENT)
+    page = (SELECTION_TEMPLATE.read_text(encoding="utf-8").replace("__SELECTION_JSON__", _embed(selection))
+            .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
+    for lang, out in SELECTION_PAGES.items():
+        out.write_text(page.replace("__LANG__", lang), encoding="utf-8")
     return OUTPUTS, sum(len(load_runs(s.storage)) for s in every)
 
 
