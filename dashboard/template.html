@@ -858,6 +858,8 @@ const TEXT = {
   const n = v => v == null ? null : (LANG === "fr" ? String(v).replace(".", ",") : String(v));
   const stop = STRATEGY.stop_pct === null ? null : n(STRATEGY.stop_pct ?? 1.5), target = n(STRATEGY.target_pct);
   if (stop === n(1.5) && target === n(3)) return;
+  TEXT.months_stop = stop == null ? (LANG === "fr" ? "Sans stop, après frais" : "No stop, after costs")
+    : LANG === "fr" ? `Stop −${stop} % seul (sans objectif), après frais` : `−${stop}% stop only (no target), after costs`;
   TEXT.position_states.stop = LANG === "fr" ? `Vendue au stop (−${stop} %)` : `Sold at the stop (−${stop}%)`;
   TEXT.position_states.objectif = LANG === "fr" ? `Vendue à l'objectif (+${target} %)` : `Sold at the target (+${target}%)`;
   TEXT.sold_early = { stop: LANG === "fr" ? `vendu au stop (−${stop} %)` : `sold at the stop (−${stop}%)`,
