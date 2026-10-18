@@ -200,10 +200,12 @@ SERIES = ("per12", "sans_per", "per12_sans_regle", "sans_per_sans_regle", "unive
 NO_RULE = "_sans_regle"  # même liste sans la règle stop / objectif (comparaison)
 
 
-def _results(finals):
+def _results(finals, slices=1):
     """
     Rendement quotidien après frais de chaque série (versions de la liste, repères), depuis les états de fin
     de séance qui portent la simulation après frais. Liste vide ce jour-là : 0 (règle de l'expérience 001).
+    slices : stratégie gardée plusieurs séances (achats qui se chevauchent) : chaque séance d'achat engage une
+    tranche du capital, son rendement compte pour 1/slices dans les cumuls.
     """
     series = {name: {} for name in SERIES}
     skipped, unsold = [], []
@@ -219,11 +221,11 @@ def _results(finals):
             continue
         for name, row in rows.items():
             if row.get("net_mean_return") is not None:
-                series[name][final["session_date"]] = row["net_mean_return"]
+                series[name][final["session_date"]] = row["net_mean_return"] / slices
             elif row.get("n") == 0:
                 series[name][final["session_date"]] = 0.0
             if row.get("hold_net_mean_return") is not None:
-                series[name + NO_RULE][final["session_date"]] = row["hold_net_mean_return"]
+                series[name + NO_RULE][final["session_date"]] = row["hold_net_mean_return"] / slices
             elif row.get("n") == 0 and name + NO_RULE in series:
                 series[name + NO_RULE][final["session_date"]] = 0.0
     provisional = [f["session_date"] for f in finals if f.get("provisional", True) and f["session_date"] not in skipped]
@@ -360,7 +362,7 @@ def _build_strategy(strategy, infos):
     archived_finals = [f for f in finals if f["session_date"] < RULES_SINCE]
     # La page n'embarque que les comptages et la colonne « ouverture → clôture » de chaque séance,
     # pas la liste complète des titres de chaque fin de séance. Comptages et résultats : règles actuelles.
-    results = _results(current_finals)
+    results = _results(current_finals, strategy.sale_offset if strategy.exit_after_sessions else 1)
     history = {
         "runs": len(current_runs),
         "finals": sum("stocks" in f for f in current_finals),

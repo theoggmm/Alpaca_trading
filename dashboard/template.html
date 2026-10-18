@@ -444,9 +444,24 @@ const TEXT = {
       `Journée en hausse : prix à la décision entre +${Number(c.min_day_gain) * 100} % et +${Number(c.max_day_gain) * 100} % au-dessus du premier prix de la séance.`,
       `Dernière heure en hausse : prix à la décision au-dessus de celui de ${c.last_hour_minutes} minutes plus tôt.`,
       `Près du plus haut du jour : au plus ${Number(c.max_below_day_high) * 100} % sous le plus haut de la journée.`,
+      ...(c.market_min_day_return != null ? [`Marché qui tient : à la décision, ${c.market_symbol} n'a pas perdu plus de ${-Number(c.market_min_day_return) * 100} % depuis l'ouverture ; sinon, pas de liste.`] : []),
+      ...(c.market_min_last_hour_return != null ? [`Marché qui remonte : ${c.market_symbol} a gagné au moins ${Number(c.market_min_last_hour_return) * 100} % sur la dernière heure avant la décision ; sinon, pas de liste.`] : []),
       ...(c.max_pe ? [`PER sur 12 mois glissants inférieur à ${c.max_pe}.`] : []),
       `Classement par hausse de la dernière heure, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu ; au plus ${c.count} titres.`,
     ],
+    criteria_swing: c => [
+      `Actions cotées aux États-Unis, hors ETF ; prix d'au moins ${c.min_price_usd} $ et au moins ${Number(c.min_avg_dollar_volume_usd) / 1e6} M$ échangés par jour en moyenne sur ${c.liquidity_sessions} séances.`,
+      ...(c.market_ma_sessions ? [`Marché en bonne forme : la veille, ${c.market_symbol} au-dessus de sa moyenne des ${c.market_ma_sessions} dernières séances.`] : []),
+      `Volatilité basse : dans la moitié la plus calme des actions liquides (${c.volatility_sessions} séances).`,
+      `Tendance haussière : moyenne des ${c.short_trend_sessions} dernières clôtures au-dessus de celle des ${c.trend_sessions} dernières.`,
+      `Repli net : prix à la décision entre ${Number(c.min_pullback) * 100} % et ${Number(c.max_pullback) * 100} % sous la plus haute clôture des ${c.high_sessions} dernières séances.`,
+      `En baisse aujourd'hui : prix à la décision sous la clôture de la veille.`,
+      ...(c.max_pe ? [`PER sur 12 mois glissants inférieur à ${c.max_pe}.`] : []),
+      `Classement du repli le plus profond au plus faible, puis au plus ${c.max_pairwise_correlation} de corrélation avec chaque titre déjà retenu ; au plus ${c.count} titres.`,
+    ],
+    switch_line: sw => sw.chosen === "first"
+      ? `Bascule : à la première décision, ${sw.criteria.first.market_symbol} était à ${pct(sw.market_day_return_at_first)} depuis l'ouverture (seuil ${pct(Number(sw.criteria.first.market_min_day_return))}) : le marché tenait, achat à la première heure.`
+      : `Bascule : à la première décision, ${sw.criteria.first.market_symbol} était à ${pct(sw.market_day_return_at_first)} depuis l'ouverture (sous le seuil de ${pct(Number(sw.criteria.first.market_min_day_return))}) : pas d'achat à la première heure ; liste de la seconde décision, si le marché a remonté sur la dernière heure.`,
     versions_title: "Les deux versions de la liste",
     intro_versions: "Chaque jour, le programme fait deux listes. Elles partagent les mêmes critères de base (actions calmes, en baisse sur un mois, qui remontent depuis deux jours et pendant la première heure) et quatre règles de prudence (deux de tendance, deux contre l'achat au sommet) ; seule la seconde ajoute le PER. Le menu « Version » en haut de page choisit la liste affichée.",
     versions_head: ["Version", "Règles", "Liste et achat (New York)", "Depuis"],
@@ -507,7 +522,9 @@ const TEXT = {
     strategy_label: "Stratégie", home_link: "← Toutes les stratégies",
     strategy_times: st => `Achat au premier échange à partir de ${st.buy} New York (${st.buy_paris} Paris)${st.buy_alt ? ` ou, si le marché n'a pas tenu, de ${st.buy_alt} New York (${st.buy_alt_paris} Paris)` : ""}, vente ${st.sale_offset > 1 ? `${st.sale_offset} séances plus tard, ` : st.next_day ? "la séance suivante, " : ""}au dernier échange avant ${st.sell} New York (${st.sell_paris} Paris)${st.sale_offset > 1 ? ` : les actions sont gardées jusqu'à ${st.sale_offset} séances, le résultat d'une séance d'achat est connu à la vente` : st.next_day ? " : les actions sont gardées pendant la nuit, le résultat d'une séance est connu le lendemain matin" : ""}. Vente plus tôt à −${st.stop_pct} %${st.target_pct == null ? " (pas d'objectif de hausse : une action qui monte est gardée jusqu'à la vente)" : ` ou +${st.target_pct} %`}.`,
     th_last_hour: "Dernière heure (veille)", th_overnight: "Nuit (jusqu'à 9 h 15)",
-    th_day: "Journée (jusqu'à la décision)", th_hour_before: "Dernière heure avant la décision",
+    th_day: "Journée (jusqu'à la décision)", th_hour_before: "Dernière heure avant la décision", th_pullback: "Repli depuis le plus haut (10 séances)",
+    no_selection_hold: m => `Pas de liste : à la décision, le marché (${m}) avait trop baissé depuis l'ouverture. Règle « marché qui tient ».`,
+    no_selection_recover: m => `Pas de liste : le marché (${m}) n'avait pas remonté sur la dernière heure. Règle « marché qui remonte ».`,
     sold_early: { stop: "vendu au stop (−1,5 %)", objectif: "vendu à l'objectif (+3 %)" },
     sim_early: (stops, targets) => `Vendus avant l'heure de vente : ${stops} au stop (baisse de 1,5 %), ${targets} à l'objectif (hausse de 3 %).`,
     final_provisional: "provisoire : recalculée le lendemain avec les corrections d'Alpaca",
@@ -552,6 +569,8 @@ const TEXT = {
       marche_en_bonne_forme: "Marché en bonne forme", pas_en_chute: "Pas en chute",
       fin_de_seance_en_hausse: "Veille finie en hausse", nuit_en_hausse_moderee: "Nuit en hausse modérée",
       journee_en_hausse: "Journée en hausse", derniere_heure_en_hausse: "Dernière heure en hausse", pres_du_plus_haut: "Près du plus haut du jour",
+      marche_tient: "Marché qui tient", marche_remonte: "Marché qui remonte", tendance_haussiere: "Tendance haussière",
+      repli_net: "Repli net", en_baisse_aujourd_hui: "En baisse aujourd'hui",
       pas_au_sommet: "Pas au sommet de la 1re heure", confirmation: "Confirmée à 10 h 45",
       per_maximum: "PER sous le seuil",
       selection_diversifiee: "Sélection diversifiée",
@@ -686,9 +705,24 @@ const TEXT = {
       `Up on the day: price at decision time between +${Number(c.min_day_gain) * 100}% and +${Number(c.max_day_gain) * 100}% above the session's first price.`,
       `Last hour rising: price at decision time above its level ${c.last_hour_minutes} minutes earlier.`,
       `Near the day's high: at most ${Number(c.max_below_day_high) * 100}% below the day's high.`,
+      ...(c.market_min_day_return != null ? [`Market holding: at the decision, ${c.market_symbol} has not lost more than ${-Number(c.market_min_day_return) * 100}% since the open; otherwise, no list.`] : []),
+      ...(c.market_min_last_hour_return != null ? [`Market recovering: ${c.market_symbol} gained at least ${Number(c.market_min_last_hour_return) * 100}% over the last hour before the decision; otherwise, no list.`] : []),
       ...(c.max_pe ? [`Trailing 12-month P/E below ${c.max_pe}.`] : []),
       `Ranked by last-hour rise, then at most ${c.max_pairwise_correlation} correlation with each stock already selected; at most ${c.count} stocks.`,
     ],
+    criteria_swing: c => [
+      `US-listed stocks, excluding ETFs; price of at least $${c.min_price_usd} and at least $${Number(c.min_avg_dollar_volume_usd) / 1e6}M traded per day on average over ${c.liquidity_sessions} sessions.`,
+      ...(c.market_ma_sessions ? [`Healthy market: the day before, ${c.market_symbol} above its average of the last ${c.market_ma_sessions} sessions.`] : []),
+      `Low volatility: in the calmer half of the liquid stocks (${c.volatility_sessions} sessions).`,
+      `Uptrend: average of the last ${c.short_trend_sessions} closes above that of the last ${c.trend_sessions}.`,
+      `Clear dip: price at the decision between ${Number(c.min_pullback) * 100}% and ${Number(c.max_pullback) * 100}% below the highest close of the last ${c.high_sessions} sessions.`,
+      `Down today: price at the decision below the previous close.`,
+      ...(c.max_pe ? [`Trailing 12-month P/E below ${c.max_pe}.`] : []),
+      `Ranked from the deepest dip to the shallowest, then at most ${c.max_pairwise_correlation} correlation with each stock already selected; at most ${c.count} stocks.`,
+    ],
+    switch_line: sw => sw.chosen === "first"
+      ? `Switch: at the first decision, ${sw.criteria.first.market_symbol} was at ${pct(sw.market_day_return_at_first)} since the open (threshold ${pct(Number(sw.criteria.first.market_min_day_return))}): the market held, bought at the first time.`
+      : `Switch: at the first decision, ${sw.criteria.first.market_symbol} was at ${pct(sw.market_day_return_at_first)} since the open (below the ${pct(Number(sw.criteria.first.market_min_day_return))} threshold): no purchase at the first time; list from the second decision, if the market rose over the last hour.`,
     versions_title: "The two versions of the list",
     intro_versions: "Every day, the program makes two lists. They share the same base criteria (calm stocks, down over a month, rising for two days and during the first hour) and four caution rules (two on trends, two against buying at the top); only the second adds the P/E. The \"Version\" menu at the top of the page chooses which list is shown.",
     versions_head: ["Version", "Rules", "List and purchase (New York)", "Since"],
@@ -749,7 +783,9 @@ const TEXT = {
     strategy_label: "Strategy", home_link: "← All strategies",
     strategy_times: st => `Bought at the first trade from ${st.buy} New York (${st.buy_paris} Paris)${st.buy_alt ? ` or, if the market did not hold, from ${st.buy_alt} New York (${st.buy_alt_paris} Paris)` : ""}, sold ${st.sale_offset > 1 ? `${st.sale_offset} sessions later, ` : st.next_day ? "the next session, " : ""}at the last trade before ${st.sell} New York (${st.sell_paris} Paris)${st.sale_offset > 1 ? `: the stocks are held up to ${st.sale_offset} sessions, a purchase day's result is known at the sale` : st.next_day ? ": the stocks are held overnight, a session's result is known the next morning" : ""}. Sold earlier at −${st.stop_pct}%${st.target_pct == null ? " (no upside target: a rising stock is kept until the sale)" : ` or +${st.target_pct}%`}.`,
     th_last_hour: "Last hour (day before)", th_overnight: "Overnight (to 9:15 AM)",
-    th_day: "Day (up to the decision)", th_hour_before: "Last hour before the decision",
+    th_day: "Day (up to the decision)", th_hour_before: "Last hour before the decision", th_pullback: "Dip from the high (10 sessions)",
+    no_selection_hold: m => `No list: at the decision, the market (${m}) had fallen too much since the open. "Market holding" rule.`,
+    no_selection_recover: m => `No list: the market (${m}) had not risen over the last hour. "Market recovering" rule.`,
     sold_early: { stop: "sold at the stop (−1.5%)", objectif: "sold at the target (+3%)" },
     sim_early: (stops, targets) => `Sold before the selling time: ${stops} at the stop (1.5% drop), ${targets} at the target (3% rise).`,
     final_provisional: "provisional: recalculated the next day with Alpaca's corrections",
@@ -794,6 +830,8 @@ const TEXT = {
       marche_en_bonne_forme: "Healthy market", pas_en_chute: "Not a falling knife",
       fin_de_seance_en_hausse: "Previous day finished rising", nuit_en_hausse_moderee: "Moderate overnight rise",
       journee_en_hausse: "Up on the day", derniere_heure_en_hausse: "Last hour rising", pres_du_plus_haut: "Near the day's high",
+      marche_tient: "Market holding", marche_remonte: "Market recovering", tendance_haussiere: "Uptrend",
+      repli_net: "Clear dip", en_baisse_aujourd_hui: "Down today",
       pas_au_sommet: "Not at the first-hour top", confirmation: "Confirmed at 10:45 AM",
       per_maximum: "P/E below threshold",
       selection_diversifiee: "Diversified selection",
@@ -801,6 +839,21 @@ const TEXT = {
     domains: {},
   },
 }[LANG];
+// Stop et objectif propres à la stratégie : les textes ci-dessus sont écrits pour −1,5 % / +3 %.
+(() => {
+  const n = v => v == null ? null : (LANG === "fr" ? String(v).replace(".", ",") : String(v));
+  const stop = n(STRATEGY.stop_pct ?? 1.5), target = n(STRATEGY.target_pct);
+  if (stop === n(1.5) && target === n(3)) return;
+  TEXT.position_states.stop = LANG === "fr" ? `Vendue au stop (−${stop} %)` : `Sold at the stop (−${stop}%)`;
+  TEXT.position_states.objectif = LANG === "fr" ? `Vendue à l'objectif (+${target} %)` : `Sold at the target (+${target}%)`;
+  TEXT.sold_early = { stop: LANG === "fr" ? `vendu au stop (−${stop} %)` : `sold at the stop (−${stop}%)`,
+                      objectif: LANG === "fr" ? `vendu à l'objectif (+${target} %)` : `sold at the target (+${target}%)` };
+  TEXT.sim_early = (stops, targets) => LANG === "fr"
+    ? `Vendus avant l'heure de vente : ${stops} au stop (baisse de ${stop} %)` + (target ? `, ${targets} à l'objectif (hausse de ${target} %).` : " (pas d'objectif de hausse).")
+    : `Sold before the selling time: ${stops} at the stop (${stop}% drop)` + (target ? `, ${targets} at the target (${target}% rise).` : " (no upside target).");
+  TEXT.intro_positions = TEXT.intro_positions.replace(LANG === "fr" ? "baisse de 1,5 %" : "1.5% drop", LANG === "fr" ? `baisse de ${stop} %` : `${stop}% drop`)
+    .replace(LANG === "fr" ? ", à l'objectif (hausse de 3 %)" : ", at the target (3% rise)", target ? (LANG === "fr" ? `, à l'objectif (hausse de ${target} %)` : `, at the target (${target}% rise)`) : "");
+})();
 
 const el = (tag, cls, text) => {
   const node = document.createElement(tag);
@@ -982,6 +1035,9 @@ function renderRun(run) {
     { label: th.d1, value: r => pct(r.return_day_minus_1), tone: r => r.return_day_minus_1 },
     ...(run.selection.some(r => r.return_first_hour != null)
       ? [{ label: th.first_hour, value: r => pct(r.return_first_hour), tone: r => r.return_first_hour }]
+      : run.selection.some(r => r.pullback != null)
+      ? [{ label: TEXT.th_pullback, value: r => pct(-r.pullback), tone: r => -r.pullback },
+         { label: TEXT.th_day, value: r => pct(r.return_day), tone: r => r.return_day }]
       : run.selection.some(r => r.return_overnight != null)
       ? [{ label: TEXT.th_last_hour, value: r => pct(r.return_last_hour), tone: r => r.return_last_hour },
          { label: TEXT.th_overnight, value: r => pct(r.return_overnight), tone: r => r.return_overnight }]
@@ -996,7 +1052,9 @@ function renderRun(run) {
   ], run.selection) : null;
   if (selectionTable) addCharts(selectionTable, run, inSession);
   document.getElementById("selection").replaceChildren(selectionTable || el("div", "empty",
-    run.funnel.marche_en_bonne_forme === 0 ? TEXT.no_selection_market(run.criteria.market_symbol) : TEXT.no_selection));
+    run.funnel.marche_en_bonne_forme === 0 ? TEXT.no_selection_market(run.criteria.market_symbol)
+      : run.funnel.marche_tient === 0 ? TEXT.no_selection_hold(run.criteria.market_symbol)
+      : run.funnel.marche_remonte === 0 ? TEXT.no_selection_recover(run.criteria.market_symbol) : TEXT.no_selection));
   document.getElementById("selection-note").textContent =
     (run.selection.length < run.criteria.count ? TEXT.fewer(run.selection.length, run.criteria.count) : TEXT.ranked)
     + TEXT.domain_note + (run.selection.some(r => r.domain_read_later) ? TEXT.star_note : "")
@@ -1012,8 +1070,11 @@ function renderRun(run) {
     return step;
   }));
 
-  const criteriaText = run.criteria.signal === "ouverture" ? TEXT.criteria_open : run.criteria.signal === "fin_de_journee" ? TEXT.criteria_close : TEXT.criteria;
-  document.getElementById("criteria").replaceChildren(...criteriaText(run.criteria).map(t => el("li", "", t)));
+  const criteriaText = run.criteria.signal === "ouverture" ? TEXT.criteria_open : run.criteria.signal === "fin_de_journee" ? TEXT.criteria_close
+    : run.criteria.signal === "repli_tendance" ? TEXT.criteria_swing : TEXT.criteria;
+  // Bascule : la liste enregistrée est celle de la décision retenue ; la première ligne dit pourquoi.
+  document.getElementById("criteria").replaceChildren(...[...(run.switch ? [TEXT.switch_line(run.switch)] : []),
+    ...criteriaText(run.criteria)].map(t => el("li", "", t)));
 }
 
 // Tendance sur un mois par domaine : celle du run s'il existe, sinon celle de la séance (clôture de la veille).
