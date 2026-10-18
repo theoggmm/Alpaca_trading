@@ -20,6 +20,8 @@ from core.screener import Criteria
 from core.closing import ClosingCriteria
 from core.opening import OpeningCriteria
 from core.strategy import load_strategies
+from core.swing import SwingCriteria
+from core.switch import SwitchCriteria
 from dashboard.live import DEFINITIVE_AFTER, FEED_DELAY, ORDER_PLAN_AMOUNT, ROOT
 
 HERE = ROOT / "dashboard"
@@ -61,12 +63,18 @@ def _ny_time(minutes, lang):
 def _strategies_table(lang, feed):
     """Tableau HTML des stratégies, dans l'ordre de l'accueil : sélection, décision, achat et vente (New York, Paris)."""
     kinds = {"fr": {Criteria: "Reprise après baisse (début de séance)", OpeningCriteria: "Ouverture (veille et nuit)",
-                    ClosingCriteria: "Fin de journée (journée et dernière heure)"},
+                    ClosingCriteria: "Fin de journée (journée et dernière heure)",
+                    SwitchCriteria: "Bascule (fin de journée, selon le marché)",
+                    SwingCriteria: "Repli dans une tendance (quelques séances)"},
              "en": {Criteria: "Rebound after decline (start of session)", OpeningCriteria: "Open (previous day and overnight)",
-                    ClosingCriteria: "End of day (day and last hour)"}}[lang]
+                    ClosingCriteria: "End of day (day and last hour)",
+                    SwitchCriteria: "Switch (end of day, depending on the market)",
+                    SwingCriteria: "Dip in an uptrend (a few sessions)"}}[lang]
     head = {"fr": ["#", "Stratégie", "Sélection", "Décision", "Achat", "Vente"],
             "en": ["#", "Strategy", "Selection", "Decision", "Purchase", "Sale"]}[lang]
     next_day = {"fr": "le lendemain ", "en": "next day "}[lang]
+    later = {"fr": "{k} séances plus tard ", "en": "{k} sessions later "}[lang]
+    either = {"fr": " ou ", "en": " or "}[lang]
 
     def when(minutes, prefix=""):
         return f"{prefix}{_ny_time(minutes, lang)} <small>({_paris_time(minutes, lang)} Paris)</small>"
@@ -75,15 +83,21 @@ def _strategies_table(lang, feed):
     for i, strategy in enumerate(load_strategies(CRITERIA_DIR, "reprise_apres_baisse"), start=1):
         c = strategy.criteria()["sans_per"]
         decision = NY_OPEN_MINUTES + c.decision_minutes
-        if strategy.overnight:
+        if strategy.exit_after_sessions:
+            sale = when(16 * 60 - strategy.exit_before_close_minutes, later.format(k=strategy.exit_after_sessions))
+        elif strategy.overnight:
             sale = when(NY_OPEN_MINUTES + strategy.exit_next_open_minutes, next_day)
         elif strategy.exit_after_open_minutes is not None:
             sale = when(NY_OPEN_MINUTES + strategy.exit_after_open_minutes)
         else:
             sale = when(16 * 60 - strategy.exit_before_close_minutes)
         name = strategy.name if lang == "fr" else strategy.name_en
-        rows.append(f"<tr><td>{i}</td><td>{name}</td><td>{kinds[type(c)]}</td><td>{when(decision)}</td>"
-                    f"<td>{when(decision + feed)}</td><td>{sale}</td></tr>")
+        # Bascule : deux heures de décision et d'achat possibles.
+        others = [NY_OPEN_MINUTES + m for m in getattr(c, "decisions_minutes", [])[1:]]
+        decided = when(decision) + "".join(either + when(m) for m in others)
+        bought = when(decision + feed) + "".join(either + when(m + feed) for m in others)
+        rows.append(f"<tr><td>{i}</td><td>{name}</td><td>{kinds[type(c)]}</td><td>{decided}</td>"
+                    f"<td>{bought}</td><td>{sale}</td></tr>")
     return "<tr>" + "".join(f"<th>{h}</th>" for h in head) + "</tr>\n    " + "\n    ".join(rows)
 
 
