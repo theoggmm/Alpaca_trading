@@ -212,9 +212,14 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, l
     later : (ouverture, clôture) des séances suivantes (vente une ou plusieurs séances plus tard).
     """
     records = {}
+    now = datetime.now(timezone.utc)
     for strategy in strategies:
         sale_session = later[strategy.sale_offset - 1] if strategy.overnight else None
         exit_time = strategy.exit_time(market_open, market_close, sale_session)
+        # Vente pas encore faite (ou pas encore servie) : la séance ne compte pas pour cette stratégie.
+        if exit_time + SIP_DELAY > now:
+            records[strategy.id] = {"date": day.isoformat(), "unsold": True}
+            continue
         entries = {v: d + SIP_DELAY for v, d in decisions[strategy.id].items()}
         entries["spy"] = min(entries.values())
         picked = {s for symbols in lists[strategy.id].values() for s in symbols}
@@ -284,15 +289,24 @@ def _one_day(i):
                                           market_open, previous_close, strategies)
         return _results_for_day(alpaca, lists, decisions, day, market_open, market_close, later, strategies)
 
-    return day, cached(_key(day, f"resultats_v{VERSION}_{_CONTEXT['criteria_hash']}"), compute)
+    # Une vente encore à venir : résultat recalculé au prochain lancement (pas de cache définitif).
+    pending = later[MAX_HOLD_SESSIONS - 1][1] + SIP_DELAY > datetime.now(timezone.utc) if len(later) == MAX_HOLD_SESSIONS else True
+    suffix = f"_partiel_{datetime.now(timezone.utc):%Y%m%d%H%M}" if pending else ""
+    return day, cached(_key(day, f"resultats_v{VERSION}_{_CONTEXT['criteria_hash']}{suffix}"), compute)
 
 
-def run(year=None, only=None):
-    """Rejoue l'année (2025 par défaut, avec ses trois tranches) pour toutes les stratégies ou celles de only."""
-    period, tests = (YEAR, TESTS) if year is None else (
-        (date(year, 1, 1), date(year, 12, 31)),
-        [{"label": f"janvier_juin_{year}", "start": date(year, 1, 1), "end": date(year, 6, 30)},
-         {"label": f"annee_{year}", "start": date(year, 1, 1), "end": date(year, 12, 31)}])
+def run(year=None, only=None, first=None, last=None):
+    """
+    Rejoue l'année (2025 par défaut, avec ses trois tranches), ou les séances du first au last, pour toutes les
+    stratégies ou celles de only.
+    """
+    if first is not None:
+        period, tests = (first, last), [{"label": f"periode_{first:%Y%m%d}_{last:%Y%m%d}", "start": first, "end": last}]
+    else:
+        period, tests = (YEAR, TESTS) if year is None else (
+            (date(year, 1, 1), date(year, 12, 31)),
+            [{"label": f"janvier_juin_{year}", "start": date(year, 1, 1), "end": date(year, 6, 30)},
+             {"label": f"annee_{year}", "start": date(year, 1, 1), "end": date(year, 12, 31)}])
     chosen = [s for s in STRATEGIES if only is None or s.id in only]
     if not chosen:
         raise ValueError(f"Aucune stratégie parmi {only}")
@@ -314,7 +328,8 @@ def run(year=None, only=None):
     assets = cached(f"{today}/alpaca_assets", alpaca.assets)
     symbols, _ = eligible_symbols(assets, listings)
     first_open = _utc(*sessions[days[0]][:2])
-    last_close = _utc(sessions[days[-1] + MAX_HOLD_SESSIONS][0], sessions[days[-1] + MAX_HOLD_SESSIONS][2])
+    last_close = min(_utc(sessions[days[-1] + MAX_HOLD_SESSIONS][0], sessions[days[-1] + MAX_HOLD_SESSIONS][2]),
+                     datetime.now(timezone.utc))
     print("Lecture des cours quotidiens (une fois)…")
     daily_key = _key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
     spy_key = _key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
@@ -332,7 +347,8 @@ def run(year=None, only=None):
         for n, (day, records) in enumerate(pool.map(_one_day, days), start=1):
             results[day] = records
             print(f"  [{n}/{len(days)}] {day} : " + " · ".join(
-                f"{sid} {r['per12_n']}/{r['sans_per_n']} {_pct(r['per12'])}" for sid, r in records.items()), flush=True)
+                f"{sid} {r['per12_n']}/{r['sans_per_n']} {_pct(r['per12'])}" if not r.get("unsold") else f"{sid} pas encore vendu"
+                for sid, r in records.items()), flush=True)
     by_strategy = {s.id: [results[day][s.id] for day in sorted(results)] for s in chosen}
 
     written = []
@@ -341,7 +357,11 @@ def run(year=None, only=None):
         # Achats qui se chevauchent (garde de plusieurs séances) : une tranche du capital par séance d'achat.
         slices = max(strategy.sale_offset, 1) if strategy.exit_after_sessions else 1
         for test in tests:
-            rows = [r for r in by_strategy[strategy.id] if test["start"].isoformat() <= r["date"] <= test["end"].isoformat()]
+            rows = [r for r in by_strategy[strategy.id] if test["start"].isoformat() <= r["date"] <= test["end"].isoformat()
+                    and not r.get("unsold")]
+            if not rows:
+                print(f"{strategy.id:26} {test['label']:18} aucune séance vendue")
+                continue
             names = [*strategy.criteria(), "spy"]
             series = {name: {r["date"]: r[name] / slices for r in rows if r[name] is not None} for name in names}
             holds = {f"{name}_sans_regle": {r["date"]: r[f"{name}_hold"] / slices for r in rows
@@ -388,9 +408,11 @@ def main():
     parser = argparse.ArgumentParser(description="Tests sur le passé des stratégies (diagnostic)")
     parser.add_argument("--year", type=int, help="Année rejouée (défaut : 2025 et ses trois tranches)")
     parser.add_argument("--only", help="Identifiants des stratégies, séparés par des virgules (défaut : toutes)")
+    parser.add_argument("--start", type=date.fromisoformat, help="Première séance (AAAA-MM-JJ), avec --end")
+    parser.add_argument("--end", type=date.fromisoformat, help="Dernière séance (AAAA-MM-JJ)")
     args = parser.parse_args()
     try:
-        return run(args.year, None if args.only is None else set(args.only.split(",")))
+        return run(args.year, None if args.only is None else set(args.only.split(",")), args.start, args.end)
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
         return 1
