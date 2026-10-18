@@ -477,3 +477,14 @@ gains sans augmenter la part de jours positifs. Scripts d'analyse hors dépôt (
 
 Autrement dit : ce qui a marché les jours précédents, ou les jours qui ressemblaient à aujourd'hui, ne dit pas quelle
 stratégie gagnera demain ; mieux vaut garder la même.
+
+## 2026-10-18 (nuit) — Sélection du jour
+
+**Question posée** : combiner les stratégies, filtre de publications, tests 2021-2023, signaux du jour, 7 actions au
+plus, choix quotidien d'après les dernières 24 h puis les 2-3 derniers jours.
+
+**Fait** : règle (core/selection.py), suivi en direct (dashboard/daily_pick.py), section de l'accueil, méthodologie
+(7 quinquies), tests 2024-2025 et comparaisons (décision T18) ; tests 2021-2023 des 23 stratégies en cours.
+
+Autrement dit : la règle demandée est en place et suivie chaque jour, mais sur 2024-2025 elle gagne moins que la
+stratégie 14 seule ; les années 2021 à 2023 diront si cela se confirme.

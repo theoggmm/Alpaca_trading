@@ -162,3 +162,14 @@ plusieurs séances (achat dans la journée). 14 bascule sans stop, 15 nuit si le
 meilleure moyenne à 10 000 $ : 14 sans PER, +52 $ par semaine, 55 % de séances investies positives, pire séance
 −305 $. Aucune stratégie n'approche 5 000 $ par semaine ni n'est positive chaque jour. Règles figées ; jugement sur
 les séances futures. Statut : diagnostic, paper trading seulement, aucun ordre.
+
+## T18 — 2026-10-18 — Sélection du jour (propriétaire), suivie en papier dès le 19 octobre
+
+Règle demandée : chaque séance, 0 à 3 stratégies (dernier résultat positif, puis 3 dernières séances), au plus 7 actions,
+aucune si le marché va mal ; filtres publications de résultats (dates estimées d'après les 8-K 2.02 passés de la SEC),
+secteur en baisse, largeur du marché, peur (VIXY). Candidates : stratégies de fin de journée gardées une nuit (7-12,
+14-18). Code : core/selection.py, dashboard/daily_pick.py (en direct), selection_backtest.py (passé). Tests 2024 / 2025
+(diagnostic) : règle complète −9,0 % / +4,0 % ; choix seul −16,8 % / +0,3 % ; toujours la stratégie 14 (7 actions)
++19,8 % / +55,5 %, avec garde-fous du marché +12,4 % / +29,2 %. Conclusion : le choix par résultats récents et les
+filtres du jour font moins bien que la stratégie 14 seule. La sélection reste suivie en papier, à la demande du
+propriétaire. Statut : diagnostic, aucun ordre.
