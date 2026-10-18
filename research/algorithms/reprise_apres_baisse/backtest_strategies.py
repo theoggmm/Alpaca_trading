@@ -329,7 +329,7 @@ def run(year=None, only=None, first=None, last=None):
     symbols, _ = eligible_symbols(assets, listings)
     first_open = _utc(*sessions[days[0]][:2])
     last_close = min(_utc(sessions[days[-1] + MAX_HOLD_SESSIONS][0], sessions[days[-1] + MAX_HOLD_SESSIONS][2]),
-                     datetime.now(timezone.utc))
+                     datetime.now(timezone.utc) - SIP_DELAY - timedelta(minutes=5))   # offre gratuite : rien des 15 dernières minutes
     print("Lecture des cours quotidiens (une fois)…")
     daily_key = _key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
     spy_key = _key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
