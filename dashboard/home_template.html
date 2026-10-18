@@ -98,6 +98,7 @@ const TEXT = {
     best_head: ["Mois", "Avec limites (stop / objectif)", "Rendement", "Gain", "Sans limites", "Rendement", "Gain"],
     best_list: { per12: "PER < 25", sans_per: "sans PER" }, best_days: (d, n) => `${d}/${n} séances avec une liste`,
     best_total: "Toute l'année, en passant chaque mois à la gagnante",
+    best_none: "Aucune stratégie n'a acheté ce mois-là (marché en mauvaise forme)",
     best_note: "Attention : la gagnante de chaque mois n'est connue qu'après coup. Elle change presque chaque mois, et plusieurs gagnantes d'un mois perdent sur l'année : la dernière ligne n'est pas atteignable en réalité. Diagnostic sur le passé, avant impôts.",
     best_big: " Avec 1 million $, les ordres pèseraient lourd face aux échanges de quelques minutes : les frais réels seraient bien plus élevés.",
     note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Colonnes « sans stop/objectif » (en gris) : le même résultat si chaque titre était gardé jusqu'à l'heure de vente, sans la vente à −1,5 % ni à +3 % — pour voir ce que la règle rapporte ou coûte. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
@@ -115,6 +116,7 @@ const TEXT = {
     best_head: ["Month", "With limits (stop / target)", "Return", "Gain", "Without limits", "Return", "Gain"],
     best_list: { per12: "P/E < 25", sans_per: "without P/E" }, best_days: (d, n) => `${d}/${n} sessions with a list`,
     best_total: "Whole year, switching each month to the winner",
+    best_none: "No strategy bought that month (market in poor shape)",
     best_note: "Warning: each month's winner is only known afterwards. It changes almost every month, and several monthly winners lose over the year: the last row cannot be reached in reality. Diagnostic on past data, before tax.",
     best_big: " With $1 million, the orders would weigh heavily against a few minutes of trading: real costs would be much higher.",
     note: "Today: live during the session (prices 15 min late), frozen at the selling time. \"No stop/target\" columns (grey background): the same result if every stock were kept until the selling time, without the −1.5% or +3% sale — to see what the rule gains or costs. All these strategies are paper diagnostics: no order is placed.",
@@ -198,11 +200,16 @@ ROWS.forEach(r => {
     const body = t.createTBody();
     const cells = (tr, pick) => {
       const name = document.createElement("td"); name.className = "text";
-      const link = document.createElement("a"); link.href = pages[pick.strategy] || "#";
-      link.textContent = `${pick.order}. ${LANG === "fr" ? pick.name : pick.name_en}`;
-      const d = document.createElement("div"); d.className = "desc";
-      d.textContent = `${TEXT.best_list[pick.list]} · ${TEXT.best_days(pick.days, pick.sessions)}`;
-      name.append(link, d); tr.appendChild(name);
+      if (pick.return === 0 && pick.days === 0) {
+        // Mois sans aucun achat, toutes stratégies confondues (règle « marché en bonne forme »).
+        name.textContent = TEXT.best_none; name.classList.add("state"); tr.appendChild(name);
+      } else {
+        const link = document.createElement("a"); link.href = pages[pick.strategy] || "#";
+        link.textContent = `${pick.order}. ${LANG === "fr" ? pick.name : pick.name_en}`;
+        const d = document.createElement("div"); d.className = "desc";
+        d.textContent = `${TEXT.best_list[pick.list]} · ${TEXT.best_days(pick.days, pick.sessions)}`;
+        name.append(link, d); tr.appendChild(name);
+      }
       tr.appendChild(cell(pick.return, TEXT.none));
       const gain = document.createElement("td"); gain.className = "num " + (pick.return > 0 ? "up" : pick.return < 0 ? "down" : "");
       gain.textContent = usd(a * pick.return); tr.appendChild(gain);
