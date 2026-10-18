@@ -382,7 +382,8 @@ def run(year=None, only=None, first=None, last=None):
                 "spy_month": test.get("spy_month"),
                 "capital_slices": slices,
                 "rules": {"entry": "premier échange 15 min après la décision de chaque liste (New York)",
-                          "exit": f"heure de vente de la stratégie {strategy.id}, stop −{strategy.stop_loss * 100} % / "
+                          "exit": f"heure de vente de la stratégie {strategy.id}, "
+                                  + ("pas de stop" if strategy.stop_loss is None else f"stop −{strategy.stop_loss * 100} %") + " / "
                                   + ("pas d'objectif" if strategy.take_profit is None else f"objectif +{strategy.take_profit * 100} %"),
                           "cost_bps_per_order": "5", "split": "parts égales, fractions d'action"},
                 "criteria": {v: c.to_json() for v, c in strategy.criteria().items()},
