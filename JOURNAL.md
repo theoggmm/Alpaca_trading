@@ -441,3 +441,15 @@ de 2025 et toute l'année 2025.
 
 Autrement dit : sur 2025, aucune stratégie ne gagne d'argent avec ses deux listes, sauf les achats de nuit sans
 filtre PER (+4 % à +7 % sur l'année) ; les frais de chaque jour pèsent lourd.
+
+## 2026-10-18 (suite) — Trois nouvelles stratégies
+
+**Question posée** : proposer trois stratégies pour gagner le plus, en mélangeant ce qui marche et selon le marché,
+garde de quelques jours au plus ; les ajouter au tableau de bord et à la méthodologie ; les tester sur la semaine passée.
+
+**Fait** : règles « marché qui tient / qui remonte », bascule, repli dans une tendance, garde de plusieurs séances,
+stop et objectif par stratégie ; production des listes, suivi en direct, pages, méthodologie (section 7 bis) ;
+tests 2025, 2024 et semaine du 12 octobre ; décision T16. 72 tests verts ; essai de bout en bout sur le 13 octobre.
+
+Autrement dit : sur 2024, année jamais regardée pour les régler, les trois nouvelles stratégies gagnent un peu
+(+3 % à +7 %) quand les dix anciennes perdent toutes ; c'est encourageant, pas encore une preuve.

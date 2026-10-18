@@ -134,3 +134,20 @@ l'année 2025. Mois retenu : mars 2025 (SPY −5,57 % clôture à clôture, le p
 année. Règles actuelles, stop −1,5 % / objectif +3 %, 0,05 % de frais par ordre. Statut : diagnostic (fenêtre
 passée, aucune règle ne change). Onglet « Tests » du tableau de bord. Mars 2025 : aucune liste, la règle « marché en
 bonne forme » a bloqué tout le mois. Séance écourtée (3 juillet) : les achats de 15 h 00 sont impossibles, comptés 0.
+
+## T16 — 2026-10-18 — Trois nouvelles stratégies (11 à 13), suivies en papier dès le 19 octobre (propriétaire)
+
+Demande du propriétaire : proposer trois stratégies, nouvelles règles comprises, en combinant ce qui marche et
+selon l'état du marché ; garde de quelques jours au plus (fixée à 3 séances, MAX_HOLD_SESSIONS).
+- 11 nuit_marche_tient : liste « fin de journée » à 14 h 45 si SPY ≥ −0,2 % depuis l'ouverture ; vente à
+  l'ouverture suivante ; stop −1,5 %, pas d'objectif.
+- 12 bascule_fin_de_journee : 14 h 45 si le marché tient, sinon 15 h 40 si SPY a monté sur la dernière heure,
+  sinon rien ; vente le lendemain 10 h 30 ; stop −1,5 %, pas d'objectif.
+- 13 repli_tendance_3j : actions calmes en tendance (MM20 > MM50), 3 à 10 % sous le plus haut de 10 séances, en
+  baisse le jour même ; achat 15 h 55, vente 3 séances plus tard à 15 h 55 ; stop −3 %, objectif +3 % ; capital
+  en 3 tranches (achats qui se chevauchent).
+Règles 11 et 12 choisies en lisant 2025 (diagnostic : 2025 n'est pas une preuve). Contrôle sur 2024, jamais
+regardé avant (backtest_strategies --year 2024, mêmes règles, figées avant le lancement) :
+11 : +0,6 % (PER) / +2,9 % (sans PER) ; 12 : +6,4 % / +3,3 % ; 13 : +4,9 % / +6,8 %. Les 10 stratégies d'avant
+perdent toutes en 2024 (−3 % à −24 %). Règles figées à partir de maintenant ; jugement sur les séances futures.
+Statut : diagnostic, paper trading seulement, aucun ordre.
