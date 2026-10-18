@@ -456,12 +456,43 @@ def _best_by_month(every, suffix=""):
             for year, months in sorted(by_year.items(), reverse=True)}
 
 
+def _daily_selection(family, every):
+    """
+    Sélection du jour pour l'accueil : choix du jour (stratégies, actions, garde-fous) et son résultat, séances
+    passées depuis le début du suivi, tests sur le passé (dernier résultat de la règle complète, par année).
+    """
+    from dashboard import daily_pick
+    names = {s.id: (s.order, s.name, s.name_en) for s in every}
+    days = []
+    for path in sorted((daily_pick.PICKS_DIR / family).glob("????-??-??.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        days.append({**record, "outcome": daily_pick.outcome(family, every, record)})
+    tests = None
+    for path in sorted((RUNS_DIR / family / "selection").glob("s[0-9][0-9][0-9]/results.json")):
+        result = json.loads(path.read_text(encoding="utf-8"))
+        if result.get("variant", "complete") == "complete":
+            rows = result["days"]
+            tests = {"id": path.parent.name, "git_sha": result["git_sha"], "years": {}}
+            for year, summary_ in result["summaries"].items():
+                year_rows = [r for r in rows if r["date"].startswith(year)]
+                invested = [r for r in year_rows if any(r["stocks"].values())]
+                months = {}
+                for r in year_rows:
+                    months[r["date"][:7]] = months.get(r["date"][:7], 1.0) * (1 + r["return"])
+                tests["years"][year] = {"total": summary_["total"], "sessions": len(year_rows), "invested": len(invested),
+                                        "positive": sum(1 for r in invested if r["return"] > 0),
+                                        "worst": min((r["return"] for r in year_rows), default=0),
+                                        "months": {m: v - 1 for m, v in sorted(months.items())}}
+    return {"names": {k: list(v) for k, v in names.items()}, "days": days, "tests": tests}
+
+
 def build(family):
     """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
     every = strategies(family)
     infos = [_strategy_info(s) for s in every]
     rows = [_build_strategy(s, infos) for s in every]
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
+            .replace("__SELECTION_JSON__", _embed(_daily_selection(family, every)))
             .replace("__BEST_MONTHS_JSON__", _embed({k: _best_by_month(every, v) for k, v in BEST_MONTH_SELECTIONS.items()}))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():

@@ -12,6 +12,8 @@ TIMEOUT_S = 10
 ATTEMPTS = 3
 RETRY_PAUSE_S = 2
 RATE_LIMIT_PAUSE_S = 15
+# « Trop de requêtes » : plus d'essais, plus espacés (15 s, 30 s, …) — plusieurs programmes partagent la limite.
+RATE_LIMIT_ATTEMPTS = 8
 USER_AGENT = "Alpaca_trading/0.1 (screener personnel, lecture seule)"
 
 
@@ -29,7 +31,8 @@ class Reader:
 
     def get(self, url, params=None, missing_ok=False):
         """Retourne la réponse (statut 200 exigé) ; None si 404 et missing_ok ; lève FetchError sinon."""
-        for attempt in range(1, ATTEMPTS + 1):
+        attempt, limited = 1, 0
+        while True:
             with self._lock:
                 wait = self._min_interval_s - (time.monotonic() - self._last_request)
                 if wait > 0:
@@ -41,10 +44,12 @@ class Reader:
                 if attempt == ATTEMPTS:
                     raise FetchError(f"Requête impossible vers {url} ({ATTEMPTS} essais) : {e}") from e
                 time.sleep(RETRY_PAUSE_S * attempt)
+                attempt += 1
                 continue
             # Trop de requêtes (plusieurs programmes partagent la limite du fournisseur) : pause, puis nouvel essai.
-            if response.status_code == 429 and attempt < ATTEMPTS:
-                time.sleep(RATE_LIMIT_PAUSE_S * attempt)
+            if response.status_code == 429 and limited < RATE_LIMIT_ATTEMPTS:
+                limited += 1
+                time.sleep(RATE_LIMIT_PAUSE_S * limited)
                 continue
             break
         if response.status_code == 404 and missing_ok:

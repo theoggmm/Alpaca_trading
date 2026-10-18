@@ -51,6 +51,9 @@
   .note { color: var(--muted); font-size: 13px; margin: 0; }
   .best { display: grid; gap: 12px; }
   .best h2 { margin: 12px 0 0; font-size: 20px; }
+  .best h3 { margin: 8px 0 0; font-size: 15px; }
+  .sel-today { padding: 14px 16px; display: grid; gap: 6px; }
+  .sel-today .pick b { color: var(--accent); }
   .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; }
   .pickers select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
   #best-table td.text { min-width: 0; }
@@ -67,6 +70,17 @@
   <p class="note" id="updated"></p>
   <div class="panel"><table id="rows"></table></div>
   <p class="note" id="note"></p>
+
+  <section class="best" id="selection">
+    <h2 id="sel-title"></h2>
+    <p class="intro" id="sel-intro"></p>
+    <div class="panel sel-today" id="sel-today"></div>
+    <h3 id="sel-days-title"></h3>
+    <div class="panel"><table id="sel-days"></table></div>
+    <h3 id="sel-tests-title"></h3>
+    <div class="panel"><table id="sel-tests"></table></div>
+    <p class="note" id="sel-note"></p>
+  </section>
 
   <section class="best">
     <h2 id="best-title"></h2>
@@ -85,6 +99,7 @@ const LANG = "__LANG__";
 const ROWS = __ROWS_JSON__;
 const BUILT_AT = __BUILT_AT__;
 const BEST = __BEST_MONTHS_JSON__;
+const SELECTION = __SELECTION_JSON__;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
@@ -93,6 +108,17 @@ const TEXT = {
     waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)", later: k => ` (${k} séances plus tard)`, or_at: "ou",
     updated: t => `Mise à jour à ${t} (Paris) — la page se recharge toute seule chaque minute pendant la séance.`,
     list_at: t => `liste ${t}`, bought_at: t => `prix attendu`, sold: "vendu",
+    sel_title: "Sélection du jour",
+    sel_intro: "Chaque séance à 14 h 45 (New York, 20 h 45 Paris) : parmi les stratégies de fin de journée gardées une nuit, celles dont le dernier résultat est positif, puis qui ont gagné sur leurs 3 dernières séances (au moins 2 sur 3) ; au plus 3 stratégies, et aucune si le marché va mal (sous sa moyenne de 50 séances, moins de la moitié des actions en hausse, peur en hausse). Au plus 7 actions en tout, prises en tête des listes, hors actions qui publient probablement leurs résultats cette nuit-là et hors secteurs en baisse. Le montant est réparti à parts égales.",
+    sel_wait: "Choix du jour à 15 h 00 (Paris), avec les prix de 14 h 45 (New York).",
+    sel_blocked: { marche_en_mauvaise_forme: "Aucune stratégie aujourd'hui : le marché est sous sa moyenne de 50 séances.", trop_peu_d_actions_en_hausse: "Aucune stratégie aujourd'hui : moins de la moitié des actions montent.", peur_en_hausse: "Aucune stratégie aujourd'hui : l'indice de peur monte trop." },
+    sel_none: "Aucune stratégie aujourd'hui : aucune n'a gagné à la fois la veille et sur ses 3 dernières séances.",
+    sel_list_wait: "liste attendue", sel_result: (r, g) => `Résultat : ${r} (${g} pour 10 000 $)`,
+    sel_guard: (b, f) => `Actions en hausse à 14 h 45 : ${b} · peur (VIXY) depuis l'ouverture : ${f}`,
+    sel_days_title: "Séances suivies", sel_days_head: ["Séance", "Stratégies", "Actions", "Résultat", "Pour 10 000 $"],
+    sel_days_empty: "Première séance suivie : lundi 19 octobre 2026.",
+    sel_tests_title: "Sur le passé (même règle, rejouée)", sel_tests_head: ["Année", "Résultat", "Pour 10 000 $", "Séances investies", "Positives", "Pire séance"],
+    sel_note: "Diagnostic sur le passé et en papier : aucun ordre n'est passé. Les dates de publication sont estimées d'après les publications passées déposées à la SEC (8-K rubrique 2.02).",
     best_title: "La meilleure stratégie de chaque mois",
     best_intro: "Pour chaque mois testé, la stratégie (et sa liste) qui a le plus rapporté après frais : à gauche avec ses règles de vente (stop et objectif), à droite sans stop ni objectif. Le montant est investi à chaque achat ; une stratégie gardée plusieurs séances le partage en tranches.",
     best_year: "Année :", best_amount: "Montant :", best_selection: "Actions par liste :",
@@ -113,6 +139,17 @@ const TEXT = {
     waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)", later: k => ` (${k} sessions later)`, or_at: "or",
     updated: t => `Updated at ${t} (Paris) — the page reloads itself every minute during the session.`,
     list_at: t => `list ${t}`, bought_at: t => `price pending`, sold: "sold",
+    sel_title: "Daily selection",
+    sel_intro: "Every session at 2:45 PM (New York, 8:45 PM Paris): among the end-of-day strategies held one night, those whose last result is positive, then that made money over their last 3 sessions (at least 2 out of 3); at most 3 strategies, and none if the market is doing badly (below its 50-session average, fewer than half of stocks rising, fear rising). At most 7 stocks in total, taken from the top of the lists, excluding stocks likely to report results that night and sectors falling that day. The amount is split equally.",
+    sel_wait: "Today's choice at 3:00 PM (Paris), with 2:45 PM (New York) prices.",
+    sel_blocked: { marche_en_mauvaise_forme: "No strategy today: the market is below its 50-session average.", trop_peu_d_actions_en_hausse: "No strategy today: fewer than half of stocks are rising.", peur_en_hausse: "No strategy today: the fear index is rising too much." },
+    sel_none: "No strategy today: none made money both the day before and over its last 3 sessions.",
+    sel_list_wait: "list pending", sel_result: (r, g) => `Result: ${r} (${g} for $10,000)`,
+    sel_guard: (b, f) => `Stocks rising at 2:45 PM: ${b} · fear (VIXY) since the open: ${f}`,
+    sel_days_title: "Sessions followed", sel_days_head: ["Session", "Strategies", "Stocks", "Result", "For $10,000"],
+    sel_days_empty: "First session followed: Monday, October 19, 2026.",
+    sel_tests_title: "On past data (same rule, replayed)", sel_tests_head: ["Year", "Result", "For $10,000", "Sessions invested", "Positive", "Worst session"],
+    sel_note: "Diagnostic on past data and on paper: no order is placed. Report dates are estimated from past reports filed with the SEC (8-K item 2.02).",
     best_title: "The best strategy each month",
     best_intro: "For each month tested, the strategy (and its list) that made the most after costs: on the left with its selling rules (stop and target), on the right with no stop or target. The amount is invested at each purchase; a strategy held several sessions splits it into slices.",
     best_year: "Year:", best_amount: "Amount:", best_selection: "Stocks per list:",
@@ -178,6 +215,61 @@ ROWS.forEach(r => {
   });
   const n = document.createElement("td"); n.className = "num"; n.textContent = r.totals.per12?.n ?? r.totals.sans_per?.n ?? 0; tr.appendChild(n);
 });
+
+// Sélection du jour : choix du jour, séances suivies, tests sur le passé.
+(() => {
+  const usd0 = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0, signDisplay: "exceptZero" }).format(v);
+  const name = c => { const [sid, v] = c.split("|"); const n = SELECTION.names[sid] || [0, sid, sid];
+    return `${n[0]}. ${LANG === "fr" ? n[1] : n[2]} · ${v === "per12" ? "P/E < 25" : LANG === "fr" ? "sans PER" : "without P/E"}`; };
+  ["title", "intro", "days_title", "tests_title", "note"].forEach(k => document.getElementById(`sel-${k.replace("_", "-")}`).textContent = TEXT[`sel_${k}`]);
+  const today = document.getElementById("sel-today");
+  const days = SELECTION.days || [];
+  const key = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const rec = days.find(d => d.session_date === key);
+  const line = t => { const p = document.createElement("div"); p.textContent = t; return p; };
+  if (!rec) today.append(line(TEXT.sel_wait));
+  else {
+    const g = rec.guard || {};
+    if (!rec.picks.length) today.append(line(g.blocked ? TEXT.sel_blocked[g.blocked] : TEXT.sel_none));
+    rec.picks.forEach(p => {
+      const d = document.createElement("div"); d.className = "pick";
+      const b = document.createElement("b"); b.textContent = name(p.candidate);
+      const stocks = rec.stocks[p.candidate];
+      d.append(b, document.createTextNode(" → " + (stocks ? stocks.join(", ") || "—" : TEXT.sel_list_wait)));
+      today.appendChild(d);
+    });
+    const o = rec.outcome || {};
+    if (o.return != null) today.append(line(TEXT.sel_result(pct(o.return), usd0(10000 * o.return))));
+    today.append(line(TEXT.sel_guard(g.breadth == null ? "—" : pct(g.breadth).replace("+", ""), g.fear_rise == null ? "—" : pct(g.fear_rise))));
+  }
+  const dt = document.getElementById("sel-days");
+  const head = dt.createTHead().insertRow();
+  TEXT.sel_days_head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; th.className = i < 3 ? "text" : ""; head.appendChild(th); });
+  const body = dt.createTBody();
+  const past = days.filter(d => d.session_date < key || (d.outcome || {}).status === "closed");
+  if (!past.length) { const tr = body.insertRow(); const td = tr.insertCell(); td.colSpan = 5; td.className = "text state"; td.textContent = TEXT.sel_days_empty; }
+  past.slice().reverse().forEach(d => {
+    const tr = body.insertRow();
+    [d.session_date, d.picks.map(p => name(p.candidate)).join(" · ") || "—",
+     Object.values(d.stocks || {}).flat().join(", ") || "—"].forEach(t => { const td = tr.insertCell(); td.className = "text"; td.textContent = t; });
+    const r = (d.outcome || {}).return;
+    tr.appendChild(cell(r ?? (d.picks.length ? null : 0), TEXT.none));
+    const g = tr.insertCell(); g.className = "num " + (r > 0 ? "up" : r < 0 ? "down" : ""); g.textContent = r == null ? "—" : usd0(10000 * r);
+  });
+  const tt = document.getElementById("sel-tests");
+  const th2 = tt.createTHead().insertRow();
+  TEXT.sel_tests_head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; th.className = i === 0 ? "text" : ""; th2.appendChild(th); });
+  const tb = tt.createTBody();
+  Object.entries((SELECTION.tests || {}).years || {}).sort().reverse().forEach(([y, v]) => {
+    const tr = tb.insertRow();
+    const c0 = tr.insertCell(); c0.className = "text"; c0.textContent = y;
+    tr.appendChild(cell(v.total, TEXT.none));
+    const g = tr.insertCell(); g.className = "num " + (v.total > 0 ? "up" : "down"); g.textContent = usd0(10000 * v.total);
+    const n = tr.insertCell(); n.className = "num"; n.textContent = `${v.invested} / ${v.sessions}`;
+    const pz = tr.insertCell(); pz.className = "num"; pz.textContent = v.invested ? pct(v.positive / v.invested).replace("+", "") : "—";
+    const w = tr.insertCell(); w.className = "num down"; w.textContent = usd0(10000 * v.worst);
+  });
+})();
 
 // La meilleure stratégie de chaque mois (tests sur le passé) : année et montant choisis, gardés dans ce navigateur.
 (() => {
