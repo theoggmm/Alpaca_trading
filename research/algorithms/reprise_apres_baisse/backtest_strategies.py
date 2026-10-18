@@ -420,6 +420,19 @@ BASE_TESTS = {"annee_2025": TESTS,
                                              "end": date(2026, 10, 16)}]}
 
 
+def decisions_for(alpaca, criteria, day, market_open):
+    """Heure de décision de chaque liste ce jour-là (bascule : selon le marché à la première décision, barres en cache)."""
+    decisions = {}
+    for variant, c in criteria.items():
+        if isinstance(c, SwitchCriteria):
+            first_decision = market_open + timedelta(minutes=c.first.decision_minutes)
+            spy = _bars(alpaca, _key(day, f"spy_minute_{first_decision.astimezone(NEW_YORK):%H%M}"), [BENCHMARK],
+                        market_open, first_decision)
+            c = c.first if choose(c, spy, market_open, first_decision) else c.second
+        decisions[variant] = market_open + timedelta(minutes=c.decision_minutes)
+    return decisions
+
+
 def _init_top(top):
     _CONTEXT.update(alpaca=AlpacaReader(), top=top, by_id={s.id: s for s in STRATEGIES})
 
@@ -442,14 +455,7 @@ def _top_job(job):
         i = index[day]
         market_open, market_close = _utc(day, sessions[i][1]), _utc(day, sessions[i][2])
         later = [(_utc(d, o), _utc(d, c)) for d, o, c in sessions[i + 1:i + 1 + MAX_HOLD_SESSIONS]]
-        decisions = {}
-        for variant, c in criteria.items():
-            if isinstance(c, SwitchCriteria):
-                first_decision = market_open + timedelta(minutes=c.first.decision_minutes)
-                spy = _bars(alpaca, _key(day, f"spy_minute_{first_decision.astimezone(NEW_YORK):%H%M}"), [BENCHMARK],
-                            market_open, first_decision)
-                c = c.first if choose(c, spy, market_open, first_decision) else c.second
-            decisions[variant] = market_open + timedelta(minutes=c.decision_minutes)
+        decisions = decisions_for(alpaca, criteria, day, market_open)
         full = {v: row.get(f"{v}_symbols", []) for v in criteria}
         records = _results_for_day(alpaca, {sid: {v: symbols[:top] for v, symbols in full.items()}}, {sid: decisions},
                                    day, market_open, market_close, later, [strategy], fetch_lists={sid: full})
