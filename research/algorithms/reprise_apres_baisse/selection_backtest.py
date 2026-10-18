@@ -63,9 +63,10 @@ def _cached_prices(day, prefix):
 _CONTEXT = {}
 
 
-def _init(history, lists, sessions, healthy, domains, releases):
+def _init(history, lists, sessions, healthy, domains, releases, rules, filters):
     _CONTEXT.update(history=history, lists=lists, sessions=sessions, healthy=healthy, domains=domains,
-                    releases=releases, alpaca=AlpacaReader(), by_id={s.id: s for s in STRATEGIES}, rules=SelectionRules())
+                    releases=releases, alpaca=AlpacaReader(), by_id={s.id: s for s in STRATEGIES}, rules=rules,
+                    filters=filters)
 
 
 def _one_day(day):
@@ -98,8 +99,11 @@ def _one_day(day):
     domains = _CONTEXT["domains"]
     trends = {} if not picks or not opens or not late else sector_trends(
         {s: v[0] for s, v in opens.items()}, {s: v[1] for s, v in late.items()}, domains)
-    excluded = {c: {s for s in v if likely_reporting(releases.get(s, []), session_day, sale_day, rules.earnings_tolerance_days)
-                    or (domains.get(s) in trends and trends[domains[s]] <= 0)} for c, v in lists.items()}
+    filters = _CONTEXT["filters"]
+    excluded = {c: {s for s in v if ("earnings" in filters and likely_reporting(releases.get(s, []), session_day, sale_day,
+                                                                                 rules.earnings_tolerance_days))
+                    or ("sector" in filters and domains.get(s) in trends and trends[domains[s]] <= 0)}
+                for c, v in lists.items()}
     chosen = choose_stocks(picks, lists, excluded, rules)
 
     # Résultat : chaque stratégie retenue, rejouée sur ses seules actions retenues (mêmes heures, mêmes barres).
@@ -123,7 +127,7 @@ def _one_day(day):
                  "excluded": {c: sorted(v) for c, v in excluded.items() if v}}
 
 
-def run(years):
+def run(years, rules=SelectionRules(), filters=("earnings", "sector"), variant="complete"):
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
     chosen = candidates()
@@ -160,7 +164,7 @@ def run(years):
     releases = sec.earnings_releases(in_lists, "selection")
     results = {}
     with ProcessPoolExecutor(max_workers=WORKERS, mp_context=multiprocessing.get_context("spawn"), initializer=_init,
-                             initargs=(history, lists, sessions, healthy, domains, releases)) as pool:
+                             initargs=(history, lists, sessions, healthy, domains, releases, rules, filters)) as pool:
         for n, (day, record) in enumerate(pool.map(_one_day, days), start=1):
             results[day] = record
             if n % 20 == 0:
@@ -171,7 +175,7 @@ def run(years):
     payload = {
         "family": FAMILY, "kind": "selection_du_jour", "status": "diagnostic", "git_sha": git_sha,
         "created_at": datetime.now(timezone.utc).isoformat(), "years": [str(y) for y in years],
-        "rules": SelectionRules().__dict__, "candidates": sorted(history),
+        "variant": variant, "rules": rules.__dict__, "filters": list(filters), "candidates": sorted(history),
         "summaries": {y: summary(v) for y, v in by_year.items() if v},
         "days": rows,
     }
@@ -190,9 +194,14 @@ def run(years):
 def main():
     parser = argparse.ArgumentParser(description="Sélection du jour sur le passé (diagnostic)")
     parser.add_argument("--years", default="2024,2025", help="Années, séparées par des virgules (tests des stratégies requis)")
+    parser.add_argument("--without", default="", help="Parties retirées pour comparer : breadth, fear, earnings, sector, guard")
     args = parser.parse_args()
+    off = set(filter(None, args.without.split(",")))
+    rules = SelectionRules(min_breadth=0.0 if off & {"breadth", "guard"} else SelectionRules.min_breadth,
+                           max_fear_rise=1e9 if off & {"fear", "guard"} else SelectionRules.max_fear_rise)
+    filters = tuple(f for f in ("earnings", "sector") if f not in off)
     try:
-        return run([int(y) for y in args.years.split(",")])
+        return run([int(y) for y in args.years.split(",")], rules, filters, "sans " + ",".join(sorted(off)) if off else "complete")
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
         return 1
