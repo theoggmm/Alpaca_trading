@@ -184,3 +184,21 @@ def test_apres_heure_de_vente_avant_les_prix_de_vente():
     assert result["status"] == "closed" and result["priced"] == 2
     assert result["mean_return"] == pytest.approx((-0.016 + 0.01) / 2)
     assert result["hold_mean_return"] == pytest.approx((-0.01 + 0.01) / 2)
+
+
+def test_stop_seul_sans_objectif():
+    """take_profit=None : UP (touche +3,2 %) reste jusqu'à la vente (90) ; DOWN est vendu au stop."""
+    from datetime import datetime, timedelta, timezone
+    from core.portfolio import simulate
+    entry_t = datetime(2026, 10, 16, 15, 0, tzinfo=timezone.utc)
+    exit_t = datetime(2026, 10, 16, 19, 30, tzinfo=timezone.utc)
+    cols = ["symbol", "timestamp", "open", "close", "volume"]
+    entry = pd.DataFrame([(s, entry_t, Decimal("100"), Decimal("100"), 1) for s in ("DOWN", "UP")], columns=cols)
+    exit_ = pd.DataFrame([(s, exit_t - timedelta(minutes=1), Decimal(p), Decimal(p), 1)
+                          for s, p in (("DOWN", "110"), ("UP", "90"))], columns=cols)
+    path = pd.DataFrame([("DOWN", entry_t + timedelta(minutes=20), Decimal("98.4"), Decimal("98.4"), 1),
+                         ("UP", entry_t + timedelta(minutes=60), Decimal("103.2"), Decimal("103.2"), 1)], columns=cols)
+    result = simulate(["DOWN", "UP"], entry, exit_, {}, entry_t, exit_t, exit_t + timedelta(minutes=30),
+                      path_bars=path, take_profit=None)
+    assert set(result["early_exits"]) == {"DOWN"}
+    assert result["mean_return"] == pytest.approx((-0.016 - 0.10) / 2)

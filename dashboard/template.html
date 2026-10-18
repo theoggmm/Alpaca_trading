@@ -409,7 +409,7 @@ const TEXT = {
     months_label: p => `${new Date(`${p.start}T12:00:00Z`).toLocaleDateString("fr-FR", { month: "long", year: "numeric", timeZone: "UTC" })} (${p.sessions} séances)`,
     months_head: (p, a) => `Du ${p.start} au ${p.end} : ${p.sessions} séances, ${usd(a)} investis chaque séance dans chaque liste`,
     months_spy: s => `Pour comparer : le S&P 500 (SPY) acheté et revendu aux mêmes heures, avec la même somme, aurait donné ${s} sur la période (après frais).`,
-    months_total: s => `ce que tu aurais gardé sur la période : ${s}`, months_month: "Mois", months_months_intro: "Mois par mois, puis toute la période (dernière ligne). L'impôt d'un mois ou de la période porte sur son total.", months_hold: "Sans stop/objectif, après frais",
+    months_total: s => `ce que tu aurais gardé sur la période : ${s}`, months_month: "Mois", months_months_intro: "Mois par mois, puis toute la période (dernière ligne). L'impôt d'un mois ou de la période porte sur son total.", months_hold: "Sans stop/objectif, après frais", months_stop: "Stop −1,5 % seul (sans +3 %), après frais",
     months_days_intro: "Jour par jour : ce que la liste aurait rapporté ou coûté ce jour-là. « Aucune liste » : rien n'était acheté (marché en mauvaise forme, ou aucune action ne passait les règles).",
     months_weeks_intro: "Semaine par semaine, puis toute la période (dernière ligne). L'impôt d'une semaine ou de la période porte sur son total : les jours perdants compensent les jours gagnants.",
     months_week: "Semaine", months_whole_month: "Toute la période", months_no_list: "aucune liste",
@@ -651,7 +651,7 @@ const TEXT = {
     months_label: p => `${new Date(`${p.start}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })} (${p.sessions} sessions)`,
     months_head: (p, a) => `From ${p.start} to ${p.end}: ${p.sessions} sessions, ${usd(a)} invested every session in each list`,
     months_spy: s => `For comparison: the S&P 500 (SPY) bought and sold at the same times, with the same amount, would have given ${s} over the period (after costs).`,
-    months_total: s => `what you would have kept over the period: ${s}`, months_month: "Month", months_months_intro: "Month by month, then the whole period (last row). The tax on a month or the period applies to its total.", months_hold: "No stop/target, after costs",
+    months_total: s => `what you would have kept over the period: ${s}`, months_month: "Month", months_months_intro: "Month by month, then the whole period (last row). The tax on a month or the period applies to its total.", months_hold: "No stop/target, after costs", months_stop: "−1.5% stop only (no +3%), after costs",
     months_days_intro: "Day by day: what the list would have earned or cost that day. \"no list\": nothing was bought (market in poor shape, or no stock passed the rules).",
     months_weeks_intro: "Week by week, then the whole period (last row). The tax on a week or the period applies to its total: losing days offset winning days.",
     months_week: "Week", months_whole_month: "Whole period", months_no_list: "no list",
@@ -1447,6 +1447,7 @@ function renderMonthTests() {
     { label: TEXT.sim_net, value: r => usdSigned(r.net), tone: r => Number(r.net) },
     { label: TEXT.sim_whole, value: r => usdSigned(r.whole), tone: r => Number(r.whole) },
     { label: TEXT.sim_tax, value: r => usdSigned(r.kept), tone: r => Number(r.kept) },
+    { label: TEXT.months_stop, cls: "alt", value: r => r.stop == null ? "—" : usdSigned(r.stop), tone: r => Number(r.stop ?? 0) },
     { label: TEXT.months_hold, cls: "alt", value: r => r.hold == null ? "—" : usdSigned(r.hold), tone: r => Number(r.hold ?? 0) },
   ];
   const draw = () => {

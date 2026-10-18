@@ -57,7 +57,7 @@ TRADE_WINDOW = timedelta(minutes=5)
 EXIT_WINDOW = timedelta(minutes=30)
 FIRST_WINDOW = timedelta(minutes=15)   # minutes d'ouverture lues pour le premier prix (préfiltre « fin de journée »)
 # Change quand le calcul change : les séances déjà rejouées (cache) sont alors refaites.
-VERSION = 1
+VERSION = 2   # 2 : variante « stop seul » et titres de chaque liste enregistrés
 WORKERS = 5
 EXTRA_BIASES = [
     "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant "
@@ -200,6 +200,12 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, n
             record[f"{name}_whole_gains"] = {} if empty else result.get("whole_gains", {})
             record[f"{name}_hold"] = 0.0 if empty else result.get("hold_net_mean_return", result.get("net_mean_return"))
             record[f"{name}_early"] = {} if empty else {s: e["reason"] for s, e in result.get("early_exits", {}).items()}
+            record[f"{name}_symbols"] = list(symbols)
+            # Variante « stop seul » : vente à −1,5 %, pas d'objectif à +3 % (le titre reste jusqu'à l'heure de vente).
+            if name != "spy":
+                stop_only = {} if empty else simulate(symbols, entry_bars, exit_bars, {}, entries[name], exit_time, after,
+                                                      amounts=TESTED_AMOUNTS, path_bars=path, take_profit=None)
+                record[f"{name}_stop_only"] = 0.0 if empty else stop_only.get("net_mean_return")
         records[strategy.id] = record
     return records
 
@@ -277,6 +283,9 @@ def run():
             series = {name: {r["date"]: r[name] for r in rows if r[name] is not None} for name in names}
             holds = {f"{name}_sans_regle": {r["date"]: r[f"{name}_hold"] for r in rows if r[f"{name}_hold"] is not None}
                      for name in strategy.criteria()}
+            holds.update({f"{name}_stop_seul": {r["date"]: r[f"{name}_stop_only"] for r in rows
+                                                 if r.get(f"{name}_stop_only") is not None}
+                          for name in strategy.criteria()})
             numbers = [int(p.name[1:]) for p in folder.glob("b[0-9][0-9][0-9]") if p.name[1:].isdigit()]
             payload = {
                 "backtest_id": f"b{max(numbers, default=0) + 1:03d}",

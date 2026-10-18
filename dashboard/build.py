@@ -284,6 +284,7 @@ def _month_tests(storage):
         whole = sum(Decimal(r["whole"]) for r in rows)
         return {"sessions": len(rows), "gross": str(sum(Decimal(r["gross"]) for r in rows)),
                 "net": str(sum(Decimal(r["net"]) for r in rows)), "hold": str(sum(Decimal(r["hold"]) for r in rows)),
+                "stop": str(sum(Decimal(r["stop"]) for r in rows)),
                 "whole": str(whole), "kept": kept(whole)}
 
     def lists_for(result, amount):
@@ -298,8 +299,11 @@ def _month_tests(storage):
                 whole = Decimal(d[f"{name}_whole_gains"].get(str(amount), "0"))
                 # Sans la règle stop / objectif (après frais) : même liste gardée jusqu'à l'heure de vente.
                 hold = Decimal(0) if empty or d.get(f"{name}_hold") is None else (amount * Decimal(str(d[f"{name}_hold"]))).quantize(Decimal("0.01"))
+                # Stop seul (−1,5 %, sans objectif +3 %), après frais ; absent d'un ancien test : celui avec la règle.
+                stop_rate = d.get(f"{name}_stop_only", d[name])
+                stop = Decimal(0) if empty or stop_rate is None else (amount * Decimal(str(stop_rate))).quantize(Decimal("0.01"))
                 days.append({"date": d["date"], "n": d[f"{name}_n"], "gross": str(gross), "net": str(net),
-                             "hold": str(hold), "whole": str(whole), "kept": kept(whole)})
+                             "hold": str(hold), "stop": str(stop), "whole": str(whole), "kept": kept(whole)})
             weeks, months = {}, {}
             for row in days:
                 weeks.setdefault(tuple(date.fromisoformat(row["date"]).isocalendar()[:2]), []).append(row)
