@@ -125,3 +125,12 @@ Affichage seulement, aucune règle ne change : à côté de chaque résultat ave
 calcul si chaque titre était gardé jusqu'à l'heure de vente (après frais) — accueil (aujourd'hui et depuis le
 16 octobre, par liste), simulation, suivi des positions, historique des résultats. Séries `per12_sans_regle`,
 `sans_per_sans_regle`. But : voir si la règle rapporte ou coûte.
+
+## T15 — 2026-10-18 — Tests des 10 stratégies sur 2025 (diagnostic, propriétaire)
+
+Demande du propriétaire : tester chaque stratégie sur un mois de baisse du S&P 500, six mois de 2025 et toute
+l'année 2025. Mois retenu : mars 2025 (SPY −5,57 % clôture à clôture, le pire mois de 2025). Une passe sur les
+250 séances de 2025 (backtest_strategies.py, git_sha 9f7922d), trois tranches par stratégie : mars, janvier-juin,
+année. Règles actuelles, stop −1,5 % / objectif +3 %, 0,05 % de frais par ordre. Statut : diagnostic (fenêtre
+passée, aucune règle ne change). Onglet « Tests » du tableau de bord. Mars 2025 : aucune liste, la règle « marché en
+bonne forme » a bloqué tout le mois. Séance écourtée (3 juillet) : les achats de 15 h 00 sont impossibles, comptés 0.

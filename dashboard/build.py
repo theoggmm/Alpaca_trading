@@ -248,6 +248,8 @@ def _backtests(storage):
     latest = {}
     for path in sorted((RUNS_DIR / storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
+        if result.get("suite"):   # tests des stratégies sur 2025 : onglet « Tests » (_month_tests)
+            continue
         # Une durée glissante (6 mois, 1 mois) ou une période datée (« février 2025 ») : dernier résultat de chacune.
         latest[result["period"]["months"] or result["period"]["start"]] = result
     return [{
@@ -289,12 +291,13 @@ def _month_tests(storage):
         for name in MONTH_TEST_LISTS:
             days = []
             for d in result["days"]:
-                empty = not d[f"{name}_n"]
+                # Liste vide, ou aucun titre acheté (pas d'échange à l'heure d'achat, séance écourtée) : rien d'investi, 0.
+                empty = not d[f"{name}_n"] or d[f"{name}_gross"] is None
                 gross = Decimal(0) if empty else (amount * Decimal(str(d[f"{name}_gross"]))).quantize(Decimal("0.01"))
                 net = Decimal(0) if empty else (amount * Decimal(str(d[name]))).quantize(Decimal("0.01"))
                 whole = Decimal(d[f"{name}_whole_gains"].get(str(amount), "0"))
                 # Sans la règle stop / objectif (après frais) : même liste gardée jusqu'à l'heure de vente.
-                hold = Decimal(0) if empty else (amount * Decimal(str(d.get(f"{name}_hold", d[name])))).quantize(Decimal("0.01"))
+                hold = Decimal(0) if empty or d.get(f"{name}_hold") is None else (amount * Decimal(str(d[f"{name}_hold"]))).quantize(Decimal("0.01"))
                 days.append({"date": d["date"], "n": d[f"{name}_n"], "gross": str(gross), "net": str(net),
                              "hold": str(hold), "whole": str(whole), "kept": kept(whole)})
             weeks, months = {}, {}

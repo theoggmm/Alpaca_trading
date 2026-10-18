@@ -430,3 +430,14 @@ menu des séances limité aux séances depuis le 16 octobre. Rien n'est supprim�
 disque (research/experiments/) et peuvent être réaffichés.
 
 Autrement dit : le tableau de bord ne montre plus que ce qui a été fait avec les règles actuelles.
+
+## 2026-10-18 — Tests 2025 des 10 stratégies
+
+**Question posée** : onglet renommé « Tests » ; tester les 10 stratégies sur un mois de baisse du S&P 500, six mois
+de 2025 et toute l'année 2025.
+
+**Fait** : backtest_strategies.py (une passe sur 2025, processus parallèles, ~2 h), 30 résultats, onglet « Tests »
+(mois par mois, semaines, jours pour mars, colonne sans stop/objectif). Décision T15.
+
+Autrement dit : sur 2025, aucune stratégie ne gagne d'argent avec ses deux listes, sauf les achats de nuit sans
+filtre PER (+4 % à +7 % sur l'année) ; les frais de chaque jour pèsent lourd.
