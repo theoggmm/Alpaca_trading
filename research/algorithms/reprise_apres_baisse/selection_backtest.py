@@ -135,13 +135,13 @@ def run(years, rules=SelectionRules(), filters=("earnings", "sector"), variant="
     chosen = candidates()
     history, lists = {}, {}
     for strategy in chosen:
-        for variant in strategy.criteria():
-            key = f"{strategy.id}|{variant}"
+        for version in strategy.criteria():
+            key = f"{strategy.id}|{version}"
             history[key], lists[key] = [], {}
             for year in years:
                 for day, r in sorted(_latest_days(strategy, f"annee_{year}").items()):
-                    history[key].append((day, r[variant] if r.get(f"{variant}_n") else None))
-                    lists[key][day] = r.get(f"{variant}_symbols", [])
+                    history[key].append((day, r[version] if r.get(f"{version}_n") else None))
+                    lists[key][day] = r.get(f"{version}_symbols", [])
     days = sorted({d for v in lists.values() for d in v})
     if not days:
         raise ValueError(f"Aucun test des stratégies pour {years}")

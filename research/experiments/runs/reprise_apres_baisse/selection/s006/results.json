@@ -8,7 +8,7 @@
   "2024",
   "2025"
  ],
- "variant": "sans_per, toujours bascule_sans_stop|sans_per",
+ "variant": "complete, toujours bascule_sans_stop|sans_per",
  "rules": {
   "max_picks": 3,
   "max_stocks": 7,
@@ -10775,5 +10775,6 @@
    },
    "excluded": {}
   }
- ]
+ ],
+ "variant_note": "libellé corrigé le 2026-10-18 (« sans_per, toujours bascule_sans_stop|sans_per » : écrasé par un bug de nom de variable, réglages inchangés)"
 }
