@@ -271,6 +271,7 @@ _CONTEXT = {}
 
 def _init(daily_key, spy_key, sessions, criteria_hash, only):
     """Au démarrage de chaque processus : cours quotidiens relus du cache disque, lecteur Alpaca propre."""
+    _share_rate_limit()
     _CONTEXT.update(daily=read_cached(daily_key), market_daily=read_cached(spy_key), sessions=sessions,
                     criteria_hash=criteria_hash, alpaca=AlpacaReader(),
                     strategies=[s for s in STRATEGIES if only is None or s.id in only])
@@ -433,7 +434,14 @@ def decisions_for(alpaca, criteria, day, market_open):
     return decisions
 
 
+def _share_rate_limit():
+    """Les processus du pool se partagent la limite d'Alpaca (~200 requêtes par minute) : chacun va WORKERS fois moins vite."""
+    from infra import alpaca_api
+    alpaca_api.MIN_INTERVAL_S = alpaca_api.MIN_INTERVAL_S * WORKERS
+
+
 def _init_top(top):
+    _share_rate_limit()
     _CONTEXT.update(alpaca=AlpacaReader(), top=top, by_id={s.id: s for s in STRATEGIES})
 
 

@@ -64,6 +64,7 @@ _CONTEXT = {}
 
 
 def _init(history, lists, sessions, healthy, domains, releases, rules, filters):
+    bt._share_rate_limit()
     _CONTEXT.update(history=history, lists=lists, sessions=sessions, healthy=healthy, domains=domains,
                     releases=releases, alpaca=AlpacaReader(), by_id={s.id: s for s in STRATEGIES}, rules=rules,
                     filters=filters)
