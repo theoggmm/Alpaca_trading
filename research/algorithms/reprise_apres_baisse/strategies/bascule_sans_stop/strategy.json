@@ -1,0 +1,11 @@
+{
+  "id": "bascule_sans_stop",
+  "order": 14,
+  "name": "Nouvelle 4 — Bascule sans stop",
+  "description": "Mêmes listes que la bascule de fin de journée (15 h 00 si le marché tient, sinon 15 h 55 s'il remonte), mais sans stop ni objectif : chaque action est gardée jusqu'au lendemain 10 h 30.",
+  "name_en": "New 4 — Switch without stop",
+  "description_en": "Same lists as the end-of-day switch (3:00 PM if the market holds, otherwise 3:55 PM if it recovers), but with no stop or target: each stock is kept until 10:30 AM the next day.",
+  "exit_next_open_minutes": 60,
+  "stop_loss": null,
+  "take_profit": null
+}

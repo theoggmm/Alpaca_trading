@@ -17,7 +17,9 @@ def test_strategies_de_la_famille():
     # Ordre voulu par le propriétaire (accueil, menu « Stratégie »).
     assert list(every) == ["principale", "vente_cloture", "achat_10h30", "achat_10h30_vente_cloture", "ouverture_1h",
                            "ouverture_2h", "nuit_15h_ouverture", "nuit_15h_10h30", "nuit_15h55_ouverture", "nuit_15h55_10h30",
-                           "nuit_marche_tient", "bascule_fin_de_journee", "repli_tendance_3j"]
+                           "nuit_marche_tient", "bascule_fin_de_journee", "repli_tendance_3j", "bascule_sans_stop",
+                           "nuit_tient_10h30", "bascule_serie", "bascule_calme", "leaders_semaine", "repli_marche_tient",
+                           "repli_rapide"]
     assert list(every)[0] == "principale" and every["principale"].storage == "reprise_apres_baisse"
     assert every["ouverture_1h"].storage == "reprise_apres_baisse/strategies/ouverture_1h"
     for s in every.values():
@@ -32,7 +34,9 @@ def test_strategies_de_la_famille():
     assert decisions == {"principale": 75, "achat_10h30": 45, "ouverture_1h": -15, "ouverture_2h": -15,
                          "vente_cloture": 75, "nuit_15h_10h30": 315, "nuit_15h_ouverture": 315,
                          "nuit_15h55_ouverture": 370, "achat_10h30_vente_cloture": 45, "nuit_15h55_10h30": 370,
-                         "nuit_marche_tient": 315, "bascule_fin_de_journee": 315, "repli_tendance_3j": 370}
+                         "nuit_marche_tient": 315, "bascule_fin_de_journee": 315, "repli_tendance_3j": 370,
+                         "bascule_sans_stop": 315, "nuit_tient_10h30": 315, "bascule_serie": 315, "bascule_calme": 315,
+                         "leaders_semaine": 315, "repli_marche_tient": 370, "repli_rapide": 370}
     # De nuit : achat en fin de séance, vente la séance suivante (« à l'ouverture » = fin de la première minute).
     monday = datetime(2026, 10, 19, 13, 30, tzinfo=timezone.utc)
     assert every["nuit_15h_10h30"].exit_time(OPEN, CLOSE, (monday, monday + timedelta(hours=6, minutes=30))) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)

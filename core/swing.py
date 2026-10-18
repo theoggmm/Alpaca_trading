@@ -14,6 +14,8 @@ Critères, dans l'ordre :
 8. Repli : le prix à la décision est entre min_pullback et max_pullback sous la plus haute clôture des
    high_sessions dernières séances (un recul net, mais pas un effondrement).
 9. En baisse aujourd'hui : prix à la décision sous la clôture de la veille (on achète la faiblesse).
+9 bis (facultatifs) : baisse lors de chacune des min_down_days dernières séances ; marché qui tient (repère pas plus
+   bas que market_min_day_return depuis l'ouverture, à la décision ; core/closing.market_moves).
 10. PER (facultatif) : prix à la décision / bénéfice sur 12 mois glissants sous un seuil.
 11. Classement du repli le plus profond au plus faible, puis diversification (corrélation), comme la famille.
 """
@@ -28,6 +30,7 @@ from zoneinfo import ZoneInfo
 
 import numpy as np
 
+from core.closing import market_moves
 from core.datation import usable_bars
 from core.fundamentals import price_to_earnings, ttm_eps
 from core.screener import (DAY, MINUTE, NEW_YORK, TRADING_DAYS_PER_YEAR, _correlation, liquid_universe,
@@ -58,6 +61,8 @@ class SwingCriteria:
     market_symbol: str = None
     market_ma_sessions: int = None
     max_pe: Decimal = None
+    min_down_days: int = None               # 9 bis : baisse lors de chacune des N dernières séances
+    market_min_day_return: Decimal = None   # 9 bis : marché qui tient à la décision (ex. -0.002)
 
     @classmethod
     def from_json(cls, raw, source="critères"):
@@ -87,7 +92,8 @@ class SwingCriteria:
         return {k: str(v) if isinstance(v, Decimal) else v for k, v in asdict(self).items()}
 
 
-def screen_swing(daily, minute, market_open, decision_time, criteria, earnings_for=None, market_daily=None):
+def screen_swing(daily, minute, market_open, decision_time, criteria, earnings_for=None, market_daily=None,
+                 market_minute=None):
     """
     Liste les titres retenus à decision_time (pendant la séance qui s'ouvre à market_open).
     minute : barres minute du jour avant la décision (le dernier prix de chaque titre suffit).
@@ -107,6 +113,15 @@ def screen_swing(daily, minute, market_open, decision_time, criteria, earnings_f
                                           criteria.market_ma_sessions)
         stats = stats if healthy else []
         funnel["marche_en_bonne_forme"] = len(stats)
+    if criteria.market_min_day_return is not None:
+        if market_minute is None:
+            raise ValueError("market_minute requis par la règle « marché qui tient »")
+        day, _ = market_moves(usable_bars(market_minute, MINUTE, decision_time), market_open, decision_time,
+                              criteria.market_symbol)
+        if day is None:
+            raise ValueError(f"Barres minute de {criteria.market_symbol} manquantes avant la décision")
+        stats = stats if day >= criteria.market_min_day_return else []
+        funnel["marche_tient"] = len(stats)
 
     if stats:
         ceiling = np.quantile([s.volatility for s in stats], criteria.max_volatility_quantile)
@@ -134,6 +149,9 @@ def screen_swing(daily, minute, market_open, decision_time, criteria, earnings_f
 
     kept = [k for k in pulled if k[1] < k[0].last_close]
     funnel["en_baisse_aujourd_hui"] = len(kept)
+    if criteria.min_down_days:
+        kept = [k for k in kept if all(r < 0 for _, r in k[0].returns[-criteria.min_down_days:])]
+        funnel["baisse_des_derniers_jours"] = len(kept)
 
     pe = {}
     if criteria.max_pe is not None:

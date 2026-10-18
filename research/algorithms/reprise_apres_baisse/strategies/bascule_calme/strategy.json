@@ -1,0 +1,11 @@
+{
+  "id": "bascule_calme",
+  "order": 17,
+  "name": "Nouvelle 7 — Bascule, actions calmes",
+  "description": "Bascule de fin de journée, limitée aux 30 % d'actions les plus calmes (écart-type des 60 dernières séances) : des nuits moins agitées. Vente le lendemain 10 h 30, sans stop ni objectif.",
+  "name_en": "New 7 — Switch, calm stocks",
+  "description_en": "End-of-day switch, limited to the calmest 30% of stocks (standard deviation over the last 60 sessions): quieter nights. Sold the next day at 10:30 AM, no stop or target.",
+  "exit_next_open_minutes": 60,
+  "stop_loss": null,
+  "take_profit": null
+}

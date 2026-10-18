@@ -165,8 +165,11 @@ def _produce_swing(alpaca, criteria, session_date, market_open, key):
     market_daily = None if criteria.market_symbol is None else cached(
         f"{key}/market_daily_bars_{criteria.market_symbol}",
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
+    market_minute = (_market_minute(alpaca, criteria.market_symbol, key, market_open, decision_time)
+                     if criteria.market_min_day_return is not None else None)
     selection, funnel = screen_swing(daily, minute, market_open, decision_time, criteria,
-                                     earnings_for=earnings(alpaca, key), market_daily=market_daily)
+                                     earnings_for=earnings(alpaca, key), market_daily=market_daily,
+                                     market_minute=market_minute)
     # Premier prix de la séance des titres retenus (colonne « depuis l'ouverture » du suivi), lu avant la décision.
     chosen = [i["symbol"] for i in selection]
     opening = (alpaca.bars(chosen, "1Min", market_open, market_open + PRICE_WINDOW) if chosen

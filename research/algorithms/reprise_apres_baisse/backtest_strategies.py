@@ -197,7 +197,8 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
                 symbols = liquid(decision, c)
                 late = _bars(alpaca, _key(day, f"avant_{decision.astimezone(NEW_YORK):%H%M}"), symbols,
                              decision - FIRST_WINDOW, decision)
-                selection, _ = screen_swing(daily, late, market_open, decision, c, earnings_for=pe, market_daily=market_daily)
+                selection, _ = screen_swing(daily, late, market_open, decision, c, earnings_for=pe, market_daily=market_daily,
+                                            market_minute=market_minute(decision) if c.market_min_day_return is not None else None)
                 chosen = [i["symbol"] for i in selection]
             else:
                 continue

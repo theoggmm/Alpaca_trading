@@ -1,0 +1,11 @@
+{
+  "id": "nuit_tient_10h30",
+  "order": 15,
+  "name": "Nouvelle 5 — Nuit si le marché tient, vente 10 h 30",
+  "description": "Liste de 14 h 45 seulement si le S&P 500 n'a pas perdu plus de 0,2 % depuis l'ouverture ; achat à 15 h 00, vente le lendemain à 10 h 30, sans stop ni objectif.",
+  "name_en": "New 5 — Overnight when the market holds, sold 10:30 AM",
+  "description_en": "2:45 PM list only if the S&P 500 has not lost more than 0.2% since the open; bought at 3:00 PM, sold the next day at 10:30 AM, no stop or target.",
+  "exit_next_open_minutes": 60,
+  "stop_loss": null,
+  "take_profit": null
+}

@@ -1,0 +1,11 @@
+{
+  "id": "leaders_semaine",
+  "order": 18,
+  "name": "Nouvelle 8 — Leaders de la semaine",
+  "description": "À 14 h 45, si le S&P 500 tient : actions en hausse de 3 à 12 % sur les 5 dernières séances, encore en hausse aujourd'hui et près de leur plus haut, classées par hausse sur la semaine. Achat 15 h 00, vente le lendemain à l'ouverture, sans stop ni objectif.",
+  "name_en": "New 8 — This week's leaders",
+  "description_en": "At 2:45 PM, if the S&P 500 holds: stocks up 3 to 12% over the last 5 sessions, still up today and near their high, ranked by their weekly gain. Bought at 3:00 PM, sold the next day at the open, no stop or target.",
+  "exit_next_open_minutes": 0,
+  "stop_loss": null,
+  "take_profit": null
+}

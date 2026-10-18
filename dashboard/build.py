@@ -94,7 +94,7 @@ def _strategy_info(strategy):
             "buy": _clock(buy), "sell": _clock(sell), "buy_paris": _paris(buy), "sell_paris": _paris(sell),
             "next_day": strategy.overnight, "sale_offset": strategy.sale_offset,
             "buy_alt": _clock(later_buy[0]) if later_buy else None, "buy_alt_paris": _paris(later_buy[0]) if later_buy else None,
-            "stop_pct": float(strategy.stop_loss * 100),
+            "stop_pct": None if strategy.stop_loss is None else float(strategy.stop_loss * 100),
             "target_pct": None if strategy.take_profit is None else float(strategy.take_profit * 100),
             "fr": page["fr"].name, "en": page["en"].name}
 
@@ -273,7 +273,7 @@ def _backtests(storage):
 
 
 # Onglet « Tests d'un mois » : montants proposés (investis chaque séance dans chaque liste), si le test les a calculés.
-MONTH_TEST_AMOUNTS = (Decimal("25000"), Decimal("2000000"))
+MONTH_TEST_AMOUNTS = (Decimal("10000"), Decimal("25000"), Decimal("2000000"))
 MONTH_TEST_LISTS = ("per12", "sans_per")
 TESTS_SUITE = "tests_2025"   # tests des 10 stratégies sur 2025 (backtest_strategies.py)
 

@@ -43,7 +43,7 @@ def _last_close(bars):
 def early_exits(path_bars, entry, entry_time, exit_time, now, stop_loss=STOP_LOSS, take_profit=TAKE_PROFIT):
     """
     Ventes anticipées : symbole -> {"at", "price", "reason"} au premier cours minute (clôture de la minute,
-    séance régulière) entre l'achat et la vente qui atteint le stop (prix d'achat × (1 - stop_loss)) ou
+    séance régulière) entre l'achat et la vente qui atteint le stop (prix d'achat × (1 - stop_loss) ; None : pas de stop) ou
     l'objectif (× (1 + take_profit)), connu à now. Vente à ce cours : de quoi compter le glissement au-delà du seuil.
     take_profit None : pas d'objectif, seul le stop vend plus tôt (variante « stop seul » des tests).
     """
@@ -52,13 +52,15 @@ def early_exits(path_bars, entry, entry_time, exit_time, now, stop_loss=STOP_LOS
     path_bars = path_bars[(path_bars["timestamp"] >= entry_time) & path_bars["symbol"].isin(list(entry))]
     result = {}
     for symbol, bars in path_bars.sort_values("timestamp").groupby("symbol", sort=True):
-        low = entry[symbol] * (1 - stop_loss)
+        low = None if stop_loss is None else entry[symbol] * (1 - stop_loss)
         high = None if take_profit is None else entry[symbol] * (1 + take_profit)
-        hit = bars[(bars["close"] <= low) | (False if high is None else bars["close"] >= high)]
+        if low is None and high is None:
+            continue
+        hit = bars[(False if low is None else bars["close"] <= low) | (False if high is None else bars["close"] >= high)]
         if not hit.empty:
             price = hit["close"].iloc[0]
             result[symbol] = {"at": hit["timestamp"].iloc[0].isoformat(), "price": price,
-                              "reason": "stop" if price <= low else "objectif"}
+                              "reason": "stop" if low is not None and price <= low else "objectif"}
     return result
 
 

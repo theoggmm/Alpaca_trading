@@ -1,0 +1,12 @@
+{
+  "id": "repli_marche_tient",
+  "order": 19,
+  "name": "Nouvelle 9 — Repli dans une tendance, marché qui tient",
+  "description": "Repli dans une tendance (stratégie 13), seulement si le S&P 500 n'a pas perdu plus de 0,2 % depuis l'ouverture à 15 h 40. Achat 15 h 55, vente 3 séances plus tard à 15 h 55. Stop −3 %, objectif +3 %.",
+  "name_en": "New 9 — Dip in an uptrend, market holding",
+  "description_en": "Dip in an uptrend (strategy 13), only if the S&P 500 has not lost more than 0.2% since the open at 3:40 PM. Bought at 3:55 PM, sold 3 sessions later at 3:55 PM. −3% stop, +3% target.",
+  "exit_before_close_minutes": 5,
+  "exit_after_sessions": 3,
+  "stop_loss": "0.03",
+  "take_profit": "0.03"
+}

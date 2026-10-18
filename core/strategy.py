@@ -11,7 +11,7 @@ tendance » (core/swing.py, "signal": "repli_tendance", gardé quelques séances
 
 Vente : N minutes avant la clôture, N minutes après l'ouverture, à l'ouverture suivante + N minutes, ou N minutes
 avant la clôture de la k-ième séance suivante (exit_after_sessions, au plus MAX_HOLD_SESSIONS). Stop et objectif
-propres à la stratégie (stop_loss, take_profit ; take_profit null = pas d'objectif), sinon ceux de core/portfolio.
+propres à la stratégie (stop_loss, take_profit ; null = pas de stop, pas d'objectif), sinon ceux de core/portfolio.
 La stratégie principale est le dossier de la famille lui-même ; les autres vivent sous `strategies/<id>/` (une variante vit sous sa famille).
 
 Chaque stratégie a sa clé de stockage (`storage`) : runs dans research/experiments/runs/<storage>/,
@@ -126,7 +126,8 @@ def _load(folder, family):
                     exit_after_open_minutes=raw.get("exit_after_open_minutes"),
                     exit_next_open_minutes=raw.get("exit_next_open_minutes"),
                     exit_after_sessions=after,
-                    stop_loss=Decimal(raw["stop_loss"]) if "stop_loss" in raw else STOP_LOSS,
+                    stop_loss=(None if raw["stop_loss"] is None else Decimal(raw["stop_loss"]))
+                    if "stop_loss" in raw else STOP_LOSS,
                     take_profit=(None if raw["take_profit"] is None else Decimal(raw["take_profit"]))
                     if "take_profit" in raw else TAKE_PROFIT)
 

@@ -1,0 +1,11 @@
+{
+  "id": "bascule_serie",
+  "order": 16,
+  "name": "Nouvelle 6 — Bascule, actions en série",
+  "description": "Bascule de fin de journée, mais seulement des actions montées lors de chacune des 2 séances précédentes (en plus de la hausse du jour) : on suit l'action quelques jours avant de l'acheter. Vente le lendemain 10 h 30, sans stop ni objectif.",
+  "name_en": "New 6 — Switch, stocks on a run",
+  "description_en": "End-of-day switch, but only stocks that rose in each of the 2 previous sessions (on top of today's rise): the stock is followed for a few days before buying. Sold the next day at 10:30 AM, no stop or target.",
+  "exit_next_open_minutes": 60,
+  "stop_loss": null,
+  "take_profit": null
+}

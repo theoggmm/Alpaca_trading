@@ -11,6 +11,9 @@ Critères, dans l'ordre :
    l'ouverture, à la décision.
 5 ter. Marché qui remonte (facultatif) : le repère a gagné au moins market_min_last_hour_return sur la dernière
    heure avant la décision.
+5 quater (facultatifs, quotidiens) : volatilité dans le quantile max_volatility_quantile le plus calme ; hausse
+   lors de chacune des min_up_days dernières séances ; hausse sur week_sessions séances entre min_week_gain et
+   max_week_gain. rank_by « semaine » classe par hausse sur la semaine au lieu de la dernière heure.
 6. Journée en hausse : dernier prix / premier prix de la séance - 1 entre deux bornes.
 7. Dernière heure en hausse : dernier prix > prix last_hour_minutes plus tôt.
 8. Près du plus haut du jour : au plus max_below_day_high sous la plus haute clôture minute de la séance.
@@ -25,6 +28,8 @@ from datetime import timedelta
 from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
+
+import numpy as np
 
 from core.datation import usable_bars
 from core.fundamentals import price_to_earnings, ttm_eps
@@ -56,6 +61,12 @@ class ClosingCriteria:
     max_pe: Decimal = None
     market_min_day_return: Decimal = None        # 5 bis : repère depuis l'ouverture, à la décision (ex. -0.002)
     market_min_last_hour_return: Decimal = None  # 5 ter : repère sur la dernière heure avant la décision (ex. 0)
+    max_volatility_quantile: float = None        # 5 quater : les plus calmes de l'univers liquide (ex. 0.5)
+    min_up_days: int = None                      # 5 quater : hausse lors de chacune des N dernières séances
+    week_sessions: int = 5
+    min_week_gain: Decimal = None                # 5 quater : hausse sur week_sessions séances, bornes
+    max_week_gain: Decimal = None
+    rank_by: str = "derniere_heure"              # ou « semaine »
 
     @classmethod
     def from_json(cls, raw, source="critères"):
@@ -146,6 +157,23 @@ def screen_closing(daily, minute, market_open, decision_time, criteria, earnings
     for step, ok in market_conditions(criteria, market_minute, market_open, decision_time).items():
         stats = stats if ok else []
         funnel[step] = len(stats)
+    if criteria.max_volatility_quantile is not None:
+        if stats:
+            ceiling = np.quantile([s.volatility for s in stats], criteria.max_volatility_quantile)
+            stats = [s for s in stats if s.volatility <= ceiling]
+        funnel["volatilite_basse"] = len(stats)
+    if criteria.min_up_days:
+        stats = [s for s in stats if all(r > 0 for _, r in s.returns[-criteria.min_up_days:])]
+        funnel["hausse_des_derniers_jours"] = len(stats)
+
+    def week(s):
+        return s.closes[-1] / s.closes[-1 - criteria.week_sessions] - 1
+
+    if criteria.min_week_gain is not None or criteria.max_week_gain is not None:
+        low = criteria.min_week_gain if criteria.min_week_gain is not None else Decimal("-1")
+        high = criteria.max_week_gain if criteria.max_week_gain is not None else Decimal("1e9")
+        stats = [s for s in stats if low <= week(s) <= high]
+        funnel["hausse_de_la_semaine"] = len(stats)
 
     session = minute[minute["timestamp"] >= market_open].sort_values("timestamp")
     by_symbol = {s: b for s, b in session.groupby("symbol", sort=True)}
@@ -187,7 +215,10 @@ def screen_closing(daily, minute, market_open, decision_time, criteria, earnings
         kept = [k for k in kept if pe[k[0].symbol] is not None and pe[k[0].symbol] < criteria.max_pe]
         funnel["per_maximum"] = len(kept)
 
-    kept.sort(key=lambda k: (-k[3], k[0].symbol))
+    if criteria.rank_by == "semaine":
+        kept.sort(key=lambda k: (-week(k[0]), k[0].symbol))
+    else:
+        kept.sort(key=lambda k: (-k[3], k[0].symbol))
     window = criteria.correlation_sessions
     selection = []
     for item in kept:
@@ -213,6 +244,7 @@ def screen_closing(daily, minute, market_open, decision_time, criteria, earnings
             "return_day": day,
             "return_last_hour": r_hour,
             "below_day_high": below_high,
+            "return_week": float(week(s)),
             "volatility_annualized": s.volatility * math.sqrt(TRADING_DAYS_PER_YEAR),
             "avg_dollar_volume": str(s.avg_dollar_volume.quantize(Decimal("1"))),
             "max_correlation_with_previous": corr,

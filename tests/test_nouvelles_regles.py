@@ -115,3 +115,33 @@ def test_repli_dans_une_tendance():
     # Un repli trop faible (1 %) : exclu.
     small = minute.assign(close=[(high * Decimal("0.99")).quantize(Decimal("0.01")), Decimal("57"), high])
     assert screen_swing(daily, small, MARKET_OPEN, SECOND, SWING)[0] == []
+
+
+
+def test_sans_stop_ni_objectif():
+    """stop_loss et take_profit None : aucune vente anticipée, chaque titre gardé jusqu'à l'heure de vente."""
+    from core.portfolio import simulate
+    entry_t = MARKET_OPEN + timedelta(minutes=90)
+    exit_t = MARKET_OPEN + timedelta(minutes=360)
+    entry = pd.DataFrame([("A", entry_t, Decimal("100"), Decimal("100"), 1)], columns=COLUMNS)
+    exit_ = pd.DataFrame([("A", exit_t - timedelta(minutes=1), Decimal("101"), Decimal("101"), 1)], columns=COLUMNS)
+    path = pd.DataFrame([("A", entry_t + timedelta(minutes=10), Decimal("90"), Decimal("90"), 1)], columns=COLUMNS)
+    result = simulate(["A"], entry, exit_, {}, entry_t, exit_t, exit_t + timedelta(hours=1), path_bars=path,
+                      stop_loss=None, take_profit=None)
+    assert result["early_exits"] == {} and abs(result["mean_return"] - 0.01) < 1e-9
+
+
+def test_filtres_quotidiens_fin_de_journee():
+    """Hausse des N dernières séances et hausse sur la semaine : calculées sur les clôtures d'avant la décision."""
+    daily, _ = market()
+    holds = _spy({0: "100", 314: "99.9"})
+    base = screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, CLOSING, market_minute=holds)[0]
+    assert [i["symbol"] for i in base] == ["CALM1"]
+    week = base[0]["return_week"]
+    inside = replace(CLOSING, min_week_gain=Decimal(str(week - 0.001)), max_week_gain=Decimal(str(week + 0.001)))
+    assert [i["symbol"] for i in screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, inside, market_minute=holds)[0]] == ["CALM1"]
+    outside = replace(CLOSING, min_week_gain=Decimal(str(week + 0.01)))
+    assert screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, outside, market_minute=holds)[0] == []
+    many = replace(CLOSING, min_up_days=30)
+    selection, funnel = screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, many, market_minute=holds)
+    assert selection == [] and "hausse_des_derniers_jours" in funnel
