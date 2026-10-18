@@ -31,6 +31,7 @@ import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
+from pathlib import Path
 
 import pandas as pd
 
@@ -207,10 +208,12 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
     return lists, decisions
 
 
-def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, later, strategies):
+def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, later, strategies, fetch_lists=None):
     """
     Simulation de chaque liste et du repère SPY aux heures de chaque stratégie : {stratégie: enregistrement}.
     later : (ouverture, clôture) des séances suivantes (vente une ou plusieurs séances plus tard).
+    fetch_lists : listes complètes dont les barres sont lues (mêmes fichiers de cache que le test d'origine) quand
+    lists n'en garde qu'une partie (les premiers titres de chaque liste, --top).
     """
     records = {}
     now = datetime.now(timezone.utc)
@@ -223,7 +226,7 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, l
             continue
         entries = {v: d + SIP_DELAY for v, d in decisions[strategy.id].items()}
         entries["spy"] = min(entries.values())
-        picked = {s for symbols in lists[strategy.id].values() for s in symbols}
+        picked = {s for symbols in (fetch_lists or lists)[strategy.id].values() for s in symbols}
         traded = picked | {BENCHMARK}
         tag = f"{strategy.id}"
         entry_bars = _concat([_bars(alpaca, _key(day, f"achat_{tag}_{at.astimezone(NEW_YORK):%H%M}"), traded, at,
@@ -354,50 +357,126 @@ def run(year=None, only=None, first=None, last=None):
 
     written = []
     for strategy in chosen:
-        folder = RUNS_DIR / strategy.storage / "backtests"
-        # Achats qui se chevauchent (garde de plusieurs séances) : une tranche du capital par séance d'achat.
-        slices = max(strategy.sale_offset, 1) if strategy.exit_after_sessions else 1
-        for test in tests:
-            rows = [r for r in by_strategy[strategy.id] if test["start"].isoformat() <= r["date"] <= test["end"].isoformat()
-                    and not r.get("unsold")]
-            if not rows:
-                print(f"{strategy.id:26} {test['label']:18} aucune séance vendue")
-                continue
-            names = [*strategy.criteria(), "spy"]
-            series = {name: {r["date"]: r[name] / slices for r in rows if r[name] is not None} for name in names}
-            holds = {f"{name}_sans_regle": {r["date"]: r[f"{name}_hold"] / slices for r in rows
-                                             if r[f"{name}_hold"] is not None}
-                     for name in strategy.criteria()}
-            holds.update({f"{name}_stop_seul": {r["date"]: r[f"{name}_stop_only"] / slices for r in rows
-                                                 if r.get(f"{name}_stop_only") is not None}
-                          for name in strategy.criteria()})
-            numbers = [int(p.name[1:]) for p in folder.glob("b[0-9][0-9][0-9]") if p.name[1:].isdigit()]
-            payload = {
-                "backtest_id": f"b{max(numbers, default=0) + 1:03d}",
-                "family": FAMILY, "strategy": strategy.id, "suite": SUITE, "label": test["label"],
-                "status": "diagnostic",
-                "created_at": datetime.now(timezone.utc).isoformat(),
-                "git_sha": git_sha,
-                "period": {"start": rows[0]["date"], "end": rows[-1]["date"], "sessions": len(rows), "months": None},
-                "spy_month": test.get("spy_month"),
-                "capital_slices": slices,
-                "rules": {"entry": "premier échange 15 min après la décision de chaque liste (New York)",
-                          "exit": f"heure de vente de la stratégie {strategy.id}, "
-                                  + ("pas de stop" if strategy.stop_loss is None else f"stop −{strategy.stop_loss * 100} %") + " / "
-                                  + ("pas d'objectif" if strategy.take_profit is None else f"objectif +{strategy.take_profit * 100} %"),
-                          "cost_bps_per_order": "5", "split": "parts égales, fractions d'action"},
-                "criteria": {v: c.to_json() for v, c in strategy.criteria().items()},
-                "biases": BIASES + EXTRA_BIASES,
-                "summaries": {name: summary(values) for name, values in {**series, **holds}.items()},
-                "days": rows,
-            }
-            path = folder / payload["backtest_id"] / "results.json"
-            path.parent.mkdir(parents=True, exist_ok=False)
-            path.write_text(json.dumps(payload, ensure_ascii=False, indent=1, default=str) + "\n", encoding="utf-8")
-            written.append(path)
-            s = payload["summaries"]
-            print(f"{strategy.id:26} {test['label']:18} " + "  ".join(
-                f"{name} {_pct(s[name].get('total'))}" for name in ("per12", "sans_per", "spy") if s.get(name, {}).get("n")))
+        written += _write_tests(strategy, by_strategy[strategy.id], tests, git_sha)
+    print(f"{len(written)} résultats écrits.")
+    return 0
+
+
+def _write_tests(strategy, all_rows, tests, git_sha, top=None):
+    """Un fichier de résultats par tranche (test) ; top : seuls les `top` premiers titres de chaque liste."""
+    written = []
+    folder = RUNS_DIR / strategy.storage / "backtests"
+    # Achats qui se chevauchent (garde de plusieurs séances) : une tranche du capital par séance d'achat.
+    slices = max(strategy.sale_offset, 1) if strategy.exit_after_sessions else 1
+    for test in tests:
+        rows = [r for r in all_rows if test["start"].isoformat() <= r["date"] <= test["end"].isoformat()
+                and not r.get("unsold")]
+        if not rows:
+            print(f"{strategy.id:26} {test['label']:18} aucune séance vendue")
+            continue
+        names = [*strategy.criteria(), "spy"]
+        series = {name: {r["date"]: r[name] / slices for r in rows if r[name] is not None} for name in names}
+        holds = {f"{name}_sans_regle": {r["date"]: r[f"{name}_hold"] / slices for r in rows
+                                         if r[f"{name}_hold"] is not None}
+                 for name in strategy.criteria()}
+        holds.update({f"{name}_stop_seul": {r["date"]: r[f"{name}_stop_only"] / slices for r in rows
+                                             if r.get(f"{name}_stop_only") is not None}
+                      for name in strategy.criteria()})
+        numbers = [int(p.name[1:]) for p in folder.glob("b[0-9][0-9][0-9]") if p.name[1:].isdigit()]
+        payload = {
+            "backtest_id": f"b{max(numbers, default=0) + 1:03d}",
+            "family": FAMILY, "strategy": strategy.id, "suite": SUITE,
+            "label": test["label"] + ("" if top is None else f"_top{top}"), "top": top,
+            "status": "diagnostic",
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "git_sha": git_sha,
+            "period": {"start": rows[0]["date"], "end": rows[-1]["date"], "sessions": len(rows), "months": None},
+            "spy_month": test.get("spy_month"),
+            "capital_slices": slices,
+            "rules": {"entry": "premier échange 15 min après la décision de chaque liste (New York)",
+                      "exit": f"heure de vente de la stratégie {strategy.id}, "
+                              + ("pas de stop" if strategy.stop_loss is None else f"stop −{strategy.stop_loss * 100} %") + " / "
+                              + ("pas d'objectif" if strategy.take_profit is None else f"objectif +{strategy.take_profit * 100} %"),
+                      "cost_bps_per_order": "5", "split": "parts égales, fractions d'action"},
+            "criteria": {v: c.to_json() for v, c in strategy.criteria().items()},
+            "biases": BIASES + EXTRA_BIASES,
+            "summaries": {name: summary(values) for name, values in {**series, **holds}.items()},
+            "days": rows,
+        }
+        path = folder / payload["backtest_id"] / "results.json"
+        path.parent.mkdir(parents=True, exist_ok=False)
+        path.write_text(json.dumps(payload, ensure_ascii=False, indent=1, default=str) + "\n", encoding="utf-8")
+        written.append(path)
+        s = payload["summaries"]
+        print(f"{strategy.id:26} {payload['label']:24} " + "  ".join(
+            f"{name} {_pct(s[name].get('total'))}" for name in ("per12", "sans_per", "spy") if s.get(name, {}).get("n")))
+    return written
+
+
+BASE_TESTS = {"annee_2025": TESTS,
+              "annee_2024": [{"label": "janvier_juin_2024", "start": date(2024, 1, 1), "end": date(2024, 6, 30)},
+                             {"label": "annee_2024", "start": date(2024, 1, 1), "end": date(2024, 12, 31)}],
+              "periode_20261012_20261016": [{"label": "periode_20261012_20261016", "start": date(2026, 10, 12),
+                                             "end": date(2026, 10, 16)}]}
+
+
+def _init_top(top):
+    _CONTEXT.update(alpaca=AlpacaReader(), top=top, by_id={s.id: s for s in STRATEGIES})
+
+
+def _top_job(job):
+    """
+    Rejoue un test déjà fait en ne gardant que les `top` premiers titres de chaque liste (ordre de la liste,
+    connu à la décision) : mêmes listes, mêmes heures, mêmes barres (cache du test d'origine).
+    """
+    sid, path = job
+    strategy, top, alpaca = _CONTEXT["by_id"][sid], _CONTEXT["top"], _CONTEXT["alpaca"]
+    result = json.loads(Path(path).read_text(encoding="utf-8"))
+    dates = [date.fromisoformat(r["date"]) for r in result["days"]]
+    sessions = alpaca.sessions(dates[0] - timedelta(days=10), dates[-1] + timedelta(days=20))
+    index = {s[0]: i for i, s in enumerate(sessions)}
+    criteria = strategy.criteria()
+    rows = []
+    for row in result["days"]:
+        day = date.fromisoformat(row["date"])
+        i = index[day]
+        market_open, market_close = _utc(day, sessions[i][1]), _utc(day, sessions[i][2])
+        later = [(_utc(d, o), _utc(d, c)) for d, o, c in sessions[i + 1:i + 1 + MAX_HOLD_SESSIONS]]
+        decisions = {}
+        for variant, c in criteria.items():
+            if isinstance(c, SwitchCriteria):
+                first_decision = market_open + timedelta(minutes=c.first.decision_minutes)
+                spy = _bars(alpaca, _key(day, f"spy_minute_{first_decision.astimezone(NEW_YORK):%H%M}"), [BENCHMARK],
+                            market_open, first_decision)
+                c = c.first if choose(c, spy, market_open, first_decision) else c.second
+            decisions[variant] = market_open + timedelta(minutes=c.decision_minutes)
+        full = {v: row.get(f"{v}_symbols", []) for v in criteria}
+        records = _results_for_day(alpaca, {sid: {v: symbols[:top] for v, symbols in full.items()}}, {sid: decisions},
+                                   day, market_open, market_close, later, [strategy], fetch_lists={sid: full})
+        rows.append(records[sid])
+    return sid, result["label"], rows
+
+
+def run_top(top, only=None):
+    """Pour chaque stratégie et chaque test d'origine (2025, 2024, semaine) : le même test avec les `top` premiers titres."""
+    git_sha = committed_git_sha()
+    jobs = []
+    for strategy in STRATEGIES:
+        if only is not None and strategy.id not in only:
+            continue
+        latest = {}
+        for path in sorted((RUNS_DIR / strategy.storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+            result = json.loads(path.read_text(encoding="utf-8"))
+            if result.get("top") is None and result.get("label") in BASE_TESTS:
+                latest[result["label"]] = path
+        jobs += [(strategy.id, str(path)) for path in latest.values()]
+    print(f"{len(jobs)} tests rejoués avec les {top} premiers titres de chaque liste.")
+    written = []
+    by_id = {s.id: s for s in STRATEGIES}
+    with ProcessPoolExecutor(max_workers=WORKERS, mp_context=multiprocessing.get_context("spawn"), initializer=_init_top,
+                             initargs=(top,)) as pool:
+        for sid, label, rows in pool.map(_top_job, jobs):
+            written += _write_tests(by_id[sid], rows, BASE_TESTS[label], git_sha, top)
     print(f"{len(written)} résultats écrits.")
     return 0
 
@@ -412,8 +491,11 @@ def main():
     parser.add_argument("--only", help="Identifiants des stratégies, séparés par des virgules (défaut : toutes)")
     parser.add_argument("--start", type=date.fromisoformat, help="Première séance (AAAA-MM-JJ), avec --end")
     parser.add_argument("--end", type=date.fromisoformat, help="Dernière séance (AAAA-MM-JJ)")
+    parser.add_argument("--top", type=int, help="Rejouer les tests déjà faits avec les N premiers titres de chaque liste")
     args = parser.parse_args()
     try:
+        if args.top:
+            return run_top(args.top, None if args.only is None else set(args.only.split(",")))
         return run(args.year, None if args.only is None else set(args.only.split(",")), args.start, args.end)
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
