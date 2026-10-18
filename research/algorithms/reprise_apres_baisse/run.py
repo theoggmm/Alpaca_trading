@@ -8,6 +8,7 @@ Depuis la racine du dépôt :
 import sys
 import time
 from datetime import date, datetime, timedelta, timezone
+from decimal import Decimal
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -166,6 +167,12 @@ def _produce_swing(alpaca, criteria, session_date, market_open, key):
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
     selection, funnel = screen_swing(daily, minute, market_open, decision_time, criteria,
                                      earnings_for=earnings(alpaca, key), market_daily=market_daily)
+    # Premier prix de la séance des titres retenus (colonne « depuis l'ouverture » du suivi), lu avant la décision.
+    chosen = [i["symbol"] for i in selection]
+    opening = (alpaca.bars(chosen, "1Min", market_open, market_open + PRICE_WINDOW) if chosen
+               else minute.iloc[0:0])
+    opens = {s: b.sort_values("timestamp")["open"].iloc[0] for s, b in opening.groupby("symbol")}
+    selection = [{**i, "open_today": str(opens.get(i["symbol"], Decimal(i["prev_close"])))} for i in selection]
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 

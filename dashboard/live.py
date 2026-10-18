@@ -116,7 +116,9 @@ def _selection(family, key):
     chaque titre de ces listes.
     """
     runs = [r for r in latest_per_session(load_runs(family)) if r["session_date"] == key]
-    return runs, {item["symbol"]: Decimal(item["open_today"]) for r in runs for item in r["selection"]}
+    # Premier prix de la séance ; à défaut (liste sans ce champ), le prix à la décision : le titre reste suivi.
+    return runs, {item["symbol"]: Decimal(item.get("open_today") or item["price_at_decision"])
+                  for r in runs for item in r["selection"]}
 
 
 def _month_trend(daily, market_open, criteria, domains):
