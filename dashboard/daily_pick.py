@@ -79,8 +79,8 @@ def update(alpaca, family, every, key, market_open, now, trades, opens, domains,
     rules = SelectionRules()
     chosen = candidates(every)
     if record is None:
-        hist = history(chosen, key)
-        picks = pick_strategies(hist, rules)
+        # Version 2 : toujours la même liste (rules.fixed) ; version 1 : choix par résultats récents.
+        picks = [(c, 0.0) for c in rules.fixed] if rules.fixed else pick_strategies(history(chosen, key), rules)
         spy = cached(f"{key}/selection_spy_daily", lambda: alpaca.bars(["SPY"], "1Day", market_open - timedelta(days=120), market_open))
         healthy, _, _ = market_in_uptrend(spy, market_open, "SPY", 50)
         prices = {s: p for s, (_, p) in trades.items()}
@@ -91,7 +91,7 @@ def update(alpaca, family, every, key, market_open, now, trades, opens, domains,
             fear_rise = None if fear.empty else float(fear["close"].iloc[-1] / fear["open"].iloc[0] - 1)
         except FetchError:
             fear_rise = None
-        ok, reason = market_ok(healthy, width, fear_rise, rules)
+        ok, reason = market_ok(healthy, width, fear_rise, rules, weekday=market_open.astimezone(ZoneInfo(NEW_YORK)).weekday())
         record = {"session_date": key, "decided_at": now.isoformat(), "git_sha": git_sha, "status": "diagnostic",
                   "picks": [{"candidate": c, "recent": score} for c, score in picks] if ok else [],
                   "considered": [c for c, _ in picks],
@@ -112,15 +112,16 @@ def update(alpaca, family, every, key, market_open, now, trades, opens, domains,
     if fresh:
         symbols = sorted({s for c in fresh for s in lists[c]})
         try:
-            releases = sec.earnings_releases(symbols, key)
+            releases = sec.earnings_releases(symbols, key) if "earnings" in rules.filters else {}
         except FetchError:
             releases = {}
         session_day = market_open.astimezone(ZoneInfo(NEW_YORK)).date()
         sale_day = session_day + timedelta(days=3 if session_day.weekday() == 4 else 1)
         trends = record["trends"]
-        excluded = {c: sorted(s for s in lists[c] if likely_reporting(releases.get(s, []), session_day, sale_day,
-                                                                       rules.earnings_tolerance_days)
-                              or (domains.get(s) in trends and trends[domains[s]] <= 0)) for c in lists}
+        excluded = {c: sorted(s for s in lists[c] if ("earnings" in rules.filters and likely_reporting(
+                                  releases.get(s, []), session_day, sale_day, rules.earnings_tolerance_days))
+                              or ("sector" in rules.filters and domains.get(s) in trends and trends[domains[s]] <= 0))
+                    for c in lists}
         picks = [(p["candidate"], p["recent"]) for p in record["picks"]]
         stocks = choose_stocks(picks, lists, {c: set(v) for c, v in excluded.items()}, rules)
         for c in fresh:

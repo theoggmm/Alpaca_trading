@@ -83,14 +83,15 @@ def _one_day(day):
     # Résultats connus à 14 h 45 : séances d'achat jusqu'à la veille (ventes de nuit faites ce matin).
     history = {c: [(d, r) for d, r in results if d < day][-10:] for c, results in _CONTEXT["history"].items()}
     # Stratégie fixe (comparaison) : toujours la même liste, seuls les garde-fous et filtres du jour s'appliquent.
-    picks = [(_CONTEXT["fixed"], 0.0)] if _CONTEXT.get("fixed") else pick_strategies(history, rules)
+    fixed = [_CONTEXT["fixed"]] if _CONTEXT.get("fixed") else list(rules.fixed)
+    picks = [(c, 0.0) for c in fixed] if fixed else pick_strategies(history, rules)
 
     # Garde-fous du jour.
     opens, late = _cached_prices(day, "ouverture_15min"), _cached_prices(day, "avant_1445")
     width = None if not opens or not late else breadth({s: v[0] for s, v in opens.items()}, {s: v[1] for s, v in late.items()})
     fear = cached(f"selection/{day}/vixy_1445", lambda: alpaca.bars([FEAR_SYMBOL], "1Min", market_open, guard_time))
     fear_rise = None if fear.empty else float(fear.sort_values("timestamp")["close"].iloc[-1] / fear.sort_values("timestamp")["open"].iloc[0] - 1)
-    ok, reason = market_ok(_CONTEXT["healthy"].get(day), width, fear_rise, rules)
+    ok, reason = market_ok(_CONTEXT["healthy"].get(day), width, fear_rise, rules, weekday=session_day.weekday())
     if not ok:
         picks = []
 
@@ -129,7 +130,8 @@ def _one_day(day):
                  "excluded": {c: sorted(v) for c, v in excluded.items() if v}}
 
 
-def run(years, rules=SelectionRules(), filters=("earnings", "sector"), variant="complete", fixed=None):
+def run(years, rules=SelectionRules(), filters=None, variant="v2", fixed=None):
+    filters = rules.filters if filters is None else filters
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
     chosen = candidates()
@@ -198,14 +200,21 @@ def main():
     parser.add_argument("--years", default="2024,2025", help="Années, séparées par des virgules (tests des stratégies requis)")
     parser.add_argument("--without", default="", help="Parties retirées pour comparer : breadth, fear, earnings, sector, guard")
     parser.add_argument("--fixed", help="Toujours la même liste « stratégie|version » (comparaison), garde-fous compris")
+    parser.add_argument("--version", choices=("v1", "v2"), default="v2",
+                        help="v2 (défaut, décision T19) ou v1 (choix par résultats récents, décision T18)")
     args = parser.parse_args()
     off = set(filter(None, args.without.split(",")))
-    rules = SelectionRules(min_breadth=0.0 if off & {"breadth", "guard"} else SelectionRules.min_breadth,
-                           max_fear_rise=1e9 if off & {"fear", "guard"} else SelectionRules.max_fear_rise)
-    filters = tuple(f for f in ("earnings", "sector") if f not in off)
+    base = SelectionRules() if args.version == "v2" else SelectionRules(
+        fixed=(), filters=("earnings", "sector"), skip_weekdays=(), min_fear_change=-1e9, min_breadth=0.5)
+    rules = SelectionRules(**{**base.__dict__,
+                              "min_breadth": 0.0 if off & {"breadth", "guard"} else base.min_breadth,
+                              "max_fear_rise": 1e9 if off & {"fear", "guard"} else base.max_fear_rise,
+                              "min_fear_change": -1e9 if off & {"fear", "guard"} else base.min_fear_change,
+                              "skip_weekdays": () if off & {"monday", "guard"} else base.skip_weekdays,
+                              "filters": tuple(f for f in base.filters if f not in off)})
+    label = args.version + (" sans " + ",".join(sorted(off)) if off else "")
     try:
-        return run([int(y) for y in args.years.split(",")], rules, filters, "sans " + ",".join(sorted(off)) if off else "complete",
-                   args.fixed)
+        return run([int(y) for y in args.years.split(",")], rules, None, label, args.fixed)
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
         return 1

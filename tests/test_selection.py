@@ -20,9 +20,14 @@ def test_choix_des_strategies():
 
 
 def test_garde_fous_et_largeur():
-    assert market_ok(False, 0.9, 0.0) == (False, "marche_en_mauvaise_forme")
-    assert market_ok(True, 0.4, 0.0)[0] is False and market_ok(True, 0.6, 0.05)[0] is False
-    assert market_ok(True, 0.6, 0.01) == (True, None) and market_ok(True, None, None) == (True, None)
+    v1 = SelectionRules(fixed=(), filters=("earnings", "sector"), skip_weekdays=(), min_fear_change=-1e9, min_breadth=0.5)
+    assert market_ok(False, 0.9, 0.0, v1) == (False, "marche_en_mauvaise_forme")
+    assert market_ok(True, 0.4, 0.0, v1)[0] is False and market_ok(True, 0.6, 0.05, v1)[0] is False
+    # Version 2 : peur entre −3 % et +3 %, pas le lundi, largeur ignorée.
+    assert market_ok(True, 0.1, 0.0) == (True, None)
+    assert market_ok(True, 0.6, -0.04) == (False, "peur_en_chute") and market_ok(True, 0.6, 0.031) == (False, "peur_en_hausse")
+    assert market_ok(True, 0.6, 0.0, weekday=0) == (False, "lundi") and market_ok(True, 0.6, 0.0, weekday=4) == (True, None)
+    assert market_ok(True, 0.6, 0.01, v1) == (True, None) and market_ok(True, None, None, v1) == (True, None)
     opens = {"A": Decimal("10"), "B": Decimal("10"), "C": Decimal("10")}
     assert breadth(opens, {"A": Decimal("11"), "B": Decimal("9"), "C": Decimal("10.5")}) == 2 / 3
     trends = sector_trends(opens, {"A": Decimal("11"), "B": Decimal("9"), "C": Decimal("10.5")},

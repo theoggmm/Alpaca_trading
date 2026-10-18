@@ -470,7 +470,7 @@ def _daily_selection(family, every):
     tests = None
     for path in sorted((RUNS_DIR / family / "selection").glob("s[0-9][0-9][0-9]/results.json")):
         result = json.loads(path.read_text(encoding="utf-8"))
-        if result.get("variant", "complete") == "complete":
+        if result.get("variant") == "v2":   # règle en vigueur (décision T19)
             rows = result["days"]
             tests = {"id": path.parent.name, "git_sha": result["git_sha"], "years": {}}
             for year, summary_ in result["summaries"].items():

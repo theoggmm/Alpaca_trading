@@ -1,6 +1,11 @@
 """
 Sélection du jour : chaque séance, 0 à 3 stratégies parmi les candidates, au plus 7 actions en tout (décision T18).
 
+Version 2 (décision T19, règles par défaut) : toujours la même liste (fixed : stratégie 14, sans PER), au plus 7
+actions en tête de liste ; pas d'achat si l'indice de peur (VIXY) a bougé de plus de ±3 % depuis l'ouverture, ni le
+lundi ; plus de filtre de largeur, de publications ni de secteur. La version 1 (choix par résultats récents) reste
+disponible (fixed=None, filtres) pour comparer : elle faisait moins bien sur 2024 et 2025.
+
 1. Dernières 24 h : on garde les stratégies dont le dernier résultat connu est positif.
 2. Les 2-3 derniers jours : parmi elles, celles dont la somme des 3 derniers résultats connus dépasse min_recent,
    avec au moins 2 séances positives sur 3 ; classées de la meilleure à la moins bonne.
@@ -27,12 +32,16 @@ QUARTER_DAYS = 91
 
 @dataclass(frozen=True)
 class SelectionRules:
+    fixed: tuple = ("bascule_sans_stop|sans_per",)   # v2 : toujours cette liste ; () : choix par résultats récents (v1)
+    filters: tuple = ()                # v1 : ("earnings", "sector")
+    skip_weekdays: tuple = (0,)        # v2 : pas d'achat le lundi (lundi = 0)
+    min_fear_change: float = -0.03     # v2 : VIXY pas en baisse de plus de 3 % depuis l'ouverture
     max_picks: int = 3
     max_stocks: int = 7
     recent_sessions: int = 3
     min_recent: float = 0.003          # somme des 3 derniers résultats (après frais) : +0,3 % au moins
     min_recent_positive: int = 2       # au moins 2 séances positives sur les 3
-    min_breadth: float = 0.5           # au moins la moitié des actions liquides en hausse à la décision
+    min_breadth: float = 0.0           # v1 : 0.5 (au moins la moitié des actions liquides en hausse)
     max_fear_rise: float = 0.03        # VIXY pas en hausse de plus de 3 % depuis l'ouverture
     earnings_tolerance_days: int = 5   # fenêtre autour d'une publication attendue
 
@@ -58,14 +67,18 @@ def pick_strategies(history, rules=SelectionRules()):
     return kept[:rules.max_picks]
 
 
-def market_ok(healthy, breadth, fear_rise, rules=SelectionRules()):
+def market_ok(healthy, breadth, fear_rise, rules=SelectionRules(), weekday=None):
     """Garde-fous du jour : (vrai/faux, raison). Une mesure absente (None) ne bloque pas."""
+    if weekday in rules.skip_weekdays:
+        return False, "lundi"
     if healthy is False:
         return False, "marche_en_mauvaise_forme"
     if breadth is not None and breadth < rules.min_breadth:
         return False, "trop_peu_d_actions_en_hausse"
     if fear_rise is not None and fear_rise > rules.max_fear_rise:
         return False, "peur_en_hausse"
+    if fear_rise is not None and fear_rise < rules.min_fear_change:
+        return False, "peur_en_chute"
     return True, None
 
 
