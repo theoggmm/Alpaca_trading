@@ -131,9 +131,11 @@ def _produce_closing(alpaca, criteria, session_date, market_open, key):
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
     market_minute = (_market_minute(alpaca, criteria.market_symbol, key, market_open, decision_time)
                      if _needs_market_minute(criteria) else None)
+    fear_minute = (_market_minute(alpaca, criteria.fear_symbol, key, market_open, decision_time)
+                   if criteria.market_max_fear_move is not None else None)
     selection, funnel = screen_closing(daily, minute, market_open, decision_time, criteria,
                                        earnings_for=earnings(alpaca, key), market_daily=market_daily,
-                                       market_minute=market_minute)
+                                       market_minute=market_minute, fear_minute=fear_minute)
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 

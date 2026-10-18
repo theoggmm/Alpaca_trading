@@ -145,3 +145,23 @@ def test_filtres_quotidiens_fin_de_journee():
     many = replace(CLOSING, min_up_days=30)
     selection, funnel = screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, many, market_minute=holds)
     assert selection == [] and "hausse_des_derniers_jours" in funnel
+
+
+
+def test_lundi_et_peur():
+    """Règle en vigueur : pas de liste le lundi, ni si VIXY a bougé de plus de 3 % depuis l'ouverture (à la décision)."""
+    daily, _ = market()
+    holds = _spy({0: "100", 314: "99.9"})
+    rule = replace(CLOSING, skip_weekdays=(0,), market_max_fear_move=Decimal("0.03"))
+    calm = pd.DataFrame([("VIXY", MARKET_OPEN, Decimal("20"), Decimal("20"), 1),
+                         ("VIXY", FIRST - timedelta(minutes=2), Decimal("20.4"), Decimal("20.4"), 1),
+                         ("VIXY", FIRST + timedelta(minutes=1), Decimal("40"), Decimal("40"), 1)], columns=COLUMNS)  # après : inconnue
+    weekday = FIRST.weekday()
+    selection, funnel = screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, replace(rule, skip_weekdays=((weekday + 1) % 7,)),
+                                       market_minute=holds, fear_minute=calm)
+    assert [i["symbol"] for i in selection] == ["CALM1"] and funnel["peur_calme"] > 0     # +2 % : calme
+    assert screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, replace(rule, skip_weekdays=(weekday,)),
+                          market_minute=holds, fear_minute=calm)[0] == []                      # jour exclu
+    nervous = calm.assign(close=[Decimal("20"), Decimal("20.8"), Decimal("40")])               # +4 % : trop
+    assert screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, replace(rule, skip_weekdays=()),
+                          market_minute=holds, fear_minute=nervous)[0] == []

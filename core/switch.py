@@ -73,7 +73,7 @@ def choose(criteria, market_minute, market_open, first_decision):
 
 
 def screen_switch(daily, minute, market_open, decision_time, criteria, earnings_for=None, market_daily=None,
-                  market_minute=None):
+                  market_minute=None, fear_minute=None):
     """
     Liste de la décision decision_time (première ou seconde) : (sélection, entonnoir, critères retenus).
     À la seconde décision, la première ne doit pas avoir été retenue (sinon ValueError : la liste du jour
@@ -89,6 +89,6 @@ def screen_switch(daily, minute, market_open, decision_time, criteria, earnings_
     else:
         raise ValueError("decision_time doit être l'une des deux décisions de la bascule")
     selection, funnel = screen_closing(daily, minute, market_open, decision_time, chosen, earnings_for=earnings_for,
-                                       market_daily=market_daily, market_minute=market_minute)
+                                       market_daily=market_daily, market_minute=market_minute, fear_minute=fear_minute)
     return selection, funnel, chosen
 

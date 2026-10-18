@@ -143,8 +143,10 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
         rising = [s for s in opens if s in prices and c.min_day_gain <= prices[s] / opens[s] - 1 <= c.max_day_gain]
         session = _bars(alpaca, _key(day, f"seance_{decision.astimezone(NEW_YORK):%H%M}"), rising, market_open, decision)
         needs_market = c.market_min_day_return is not None or c.market_min_last_hour_return is not None
+        fear = (_bars(alpaca, _key(day, f"peur_{c.fear_symbol}_{decision.astimezone(NEW_YORK):%H%M}"), [c.fear_symbol],
+                      market_open, decision) if c.market_max_fear_move is not None else None)
         selection, _ = screen_closing(daily, session, market_open, decision, c, earnings_for=pe, market_daily=market_daily,
-                                      market_minute=market_minute(decision) if needs_market else None)
+                                      market_minute=market_minute(decision) if needs_market else None, fear_minute=fear)
         return [i["symbol"] for i in selection]
 
     kinds = {s.id: s.criteria() for s in strategies}

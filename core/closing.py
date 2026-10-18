@@ -11,6 +11,9 @@ Critères, dans l'ordre :
    l'ouverture, à la décision.
 5 ter. Marché qui remonte (facultatif) : le repère a gagné au moins market_min_last_hour_return sur la dernière
    heure avant la décision.
+5 quinquies (facultatifs, règle en vigueur, décision T20) : pas de liste les jours de skip_weekdays (0 = lundi) ;
+   pas de liste si l'indice de peur (fear_symbol, VIXY) a bougé de plus de market_max_fear_move depuis l'ouverture,
+   à la décision.
 5 quater (facultatifs, quotidiens) : volatilité dans le quantile max_volatility_quantile le plus calme ; hausse
    lors de chacune des min_up_days dernières séances ; hausse sur week_sessions séances entre min_week_gain et
    max_week_gain. rank_by « semaine » classe par hausse sur la semaine au lieu de la dernière heure.
@@ -67,6 +70,9 @@ class ClosingCriteria:
     min_week_gain: Decimal = None                # 5 quater : hausse sur week_sessions séances, bornes
     max_week_gain: Decimal = None
     rank_by: str = "derniere_heure"              # ou « semaine »
+    skip_weekdays: tuple = ()                    # 5 quinquies : pas de liste ces jours-là (0 = lundi)
+    market_max_fear_move: Decimal = None         # 5 quinquies : |VIXY depuis l'ouverture| au plus (ex. 0.03)
+    fear_symbol: str = "VIXY"
 
     @classmethod
     def from_json(cls, raw, source="critères"):
@@ -131,7 +137,7 @@ def market_conditions(criteria, market_minute, market_open, decision_time):
 
 
 def screen_closing(daily, minute, market_open, decision_time, criteria, earnings_for=None, market_daily=None,
-                   market_minute=None):
+                   market_minute=None, fear_minute=None):
     """
     Liste les titres retenus à decision_time (pendant la séance qui s'ouvre à market_open).
     minute : barres minute de la séance du jour. market_minute : barres minute du repère (SPY) depuis l'ouverture,
@@ -157,6 +163,17 @@ def screen_closing(daily, minute, market_open, decision_time, criteria, earnings
     for step, ok in market_conditions(criteria, market_minute, market_open, decision_time).items():
         stats = stats if ok else []
         funnel[step] = len(stats)
+    if criteria.skip_weekdays:
+        stats = [] if decision_time.astimezone(ZoneInfo(NEW_YORK)).weekday() in criteria.skip_weekdays else stats
+        funnel["jour_autorise"] = len(stats)
+    if criteria.market_max_fear_move is not None:
+        if fear_minute is None:
+            raise ValueError("fear_minute requis par la règle « peur calme »")
+        move, _ = market_moves(usable_bars(fear_minute, MINUTE, decision_time), market_open, decision_time,
+                               criteria.fear_symbol)
+        # Barres de l'indice de peur absentes : la règle ne bloque pas (mesure inconnue).
+        stats = stats if move is None or abs(move) <= criteria.market_max_fear_move else []
+        funnel["peur_calme"] = len(stats)
     if criteria.max_volatility_quantile is not None:
         if stats:
             ceiling = np.quantile([s.volatility for s in stats], criteria.max_volatility_quantile)

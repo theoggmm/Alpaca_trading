@@ -15,7 +15,7 @@ CLOSE = datetime(2026, 10, 16, 20, 0, tzinfo=timezone.utc)
 def test_strategies_de_la_famille():
     every = {s.id: s for s in load_strategies(FAMILY_DIR, "reprise_apres_baisse")}
     # Ordre voulu par le propriétaire (accueil, menu « Stratégie »).
-    assert list(every) == ["principale", "vente_cloture", "achat_10h30", "achat_10h30_vente_cloture", "ouverture_1h",
+    assert list(every) == ["principale", "regle_en_vigueur", "vente_cloture", "achat_10h30", "achat_10h30_vente_cloture", "ouverture_1h",
                            "ouverture_2h", "nuit_15h_ouverture", "nuit_15h_10h30", "nuit_15h55_ouverture", "nuit_15h55_10h30",
                            "nuit_marche_tient", "bascule_fin_de_journee", "repli_tendance_3j", "bascule_sans_stop",
                            "nuit_tient_10h30", "bascule_serie", "bascule_calme", "leaders_semaine", "repli_marche_tient",
@@ -37,7 +37,8 @@ def test_strategies_de_la_famille():
                          "nuit_marche_tient": 315, "bascule_fin_de_journee": 315, "repli_tendance_3j": 370,
                          "bascule_sans_stop": 315, "nuit_tient_10h30": 315, "bascule_serie": 315, "bascule_calme": 315,
                          "leaders_semaine": 315, "repli_marche_tient": 370, "repli_rapide": 370,
-                         "reprise_2_seances": 75, "repli_matin_3_seances": 45, "leaders_3_seances": 315}
+                         "reprise_2_seances": 75, "repli_matin_3_seances": 45, "leaders_3_seances": 315,
+                         "regle_en_vigueur": 315}
     # De nuit : achat en fin de séance, vente la séance suivante (« à l'ouverture » = fin de la première minute).
     monday = datetime(2026, 10, 19, 13, 30, tzinfo=timezone.utc)
     assert every["nuit_15h_10h30"].exit_time(OPEN, CLOSE, (monday, monday + timedelta(hours=6, minutes=30))) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
