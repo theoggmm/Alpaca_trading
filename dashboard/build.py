@@ -32,9 +32,6 @@ HOME_TEMPLATE = HERE / "home_template.html"
 # Une page par langue et par stratégie, générées depuis le même gabarit ; accueil commun.
 OUTPUTS = {"fr": HERE / "index.html", "en": HERE / "index_en.html"}
 HOME = {"fr": HERE / "accueil.html", "en": HERE / "home.html"}
-# Page de la règle en vigueur (sélection du jour, version 2) : tout au même endroit.
-SELECTION_TEMPLATE = HERE / "selection_template.html"
-SELECTION_PAGES = {"fr": HERE / "selection.html", "en": HERE / "selection_en.html"}
 LIVE_FILE = ROOT / "research" / "outputs" / "live" / "latest.json"
 # Clôtures du dernier mois de tout l'univers, écrites une fois par séance par le suivi en direct.
 CHARTS_FILE = HERE / "charts_data.js"
@@ -92,7 +89,7 @@ def _strategy_info(strategy):
     else:
         sell = close_minutes - strategy.exit_before_close_minutes
     page = pages(strategy)
-    return {"id": strategy.id, "name": strategy.name, "description": strategy.description, "name_en": strategy.name_en,
+    return {"id": strategy.id, "order": strategy.order, "name": strategy.name, "description": strategy.description, "name_en": strategy.name_en,
             "description_en": strategy.description_en, "main": strategy.is_main,
             "buy": _clock(buy), "sell": _clock(sell), "buy_paris": _paris(buy), "sell_paris": _paris(sell),
             "next_day": strategy.overnight, "sale_offset": strategy.sale_offset,
@@ -459,57 +456,19 @@ def _best_by_month(every, suffix=""):
             for year, months in sorted(by_year.items(), reverse=True)}
 
 
-def _daily_selection(family, every):
-    """
-    Sélection du jour pour l'accueil : choix du jour (stratégies, actions, garde-fous) et son résultat, séances
-    passées depuis le début du suivi, tests sur le passé (dernier résultat de la règle complète, par année).
-    """
-    from dashboard import daily_pick
-    names = {s.id: (s.order, s.name, s.name_en) for s in every}
-    days = []
-    for path in sorted((daily_pick.PICKS_DIR / family).glob("????-??-??.json")):
-        record = json.loads(path.read_text(encoding="utf-8"))
-        days.append({**record, "outcome": daily_pick.outcome(family, every, record)})
-    tests = None
-    for path in sorted((RUNS_DIR / family / "selection").glob("s[0-9][0-9][0-9]/results.json")):
-        result = json.loads(path.read_text(encoding="utf-8"))
-        if result.get("variant") == "v2":   # règle en vigueur (décision T19)
-            rows = result["days"]
-            tests = {"id": path.parent.name, "git_sha": result["git_sha"], "years": {}, "rules": result.get("rules"),
-                     "days": [{"date": r["date"], "return": r["return"], "blocked": r["guard"].get("blocked"),
-                               "fear": r["guard"].get("fear_rise"),
-                               "stocks": [s for v in r["stocks"].values() for s in v]} for r in rows]}
-            for year, summary_ in result["summaries"].items():
-                year_rows = [r for r in rows if r["date"].startswith(year)]
-                invested = [r for r in year_rows if any(r["stocks"].values())]
-                months = {}
-                for r in year_rows:
-                    months[r["date"][:7]] = months.get(r["date"][:7], 1.0) * (1 + r["return"])
-                tests["years"][year] = {"total": summary_["total"], "sessions": len(year_rows), "invested": len(invested),
-                                        "positive": sum(1 for r in invested if r["return"] > 0),
-                                        "worst": min((r["return"] for r in year_rows), default=0),
-                                        "months": {m: v - 1 for m, v in sorted(months.items())}}
-    return {"names": {k: list(v) for k, v in names.items()}, "days": days, "tests": tests}
-
-
 def build(family):
     """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
     every = strategies(family)
-    infos = [_strategy_info(s) for s in every]
-    rows = [_build_strategy(s, infos) for s in every]
-    selection = _daily_selection(family, every)
+    # Accueil et menus « Stratégie » dans l'ordre des stratégies (la règle en vigueur, ordre 0, en tête).
+    infos = [_strategy_info(s) for s in sorted(every, key=lambda s: s.order)]
+    rows = sorted((_build_strategy(s, infos) for s in every), key=lambda r: r["order"])
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
-            .replace("__SELECTION_JSON__", _embed(selection))
             .replace("__BEST_MONTHS_JSON__", _embed({k: _best_by_month(every, v) for k, v in BEST_MONTH_SELECTIONS.items()}))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")
     from dashboard import methodology
     methodology.write(EXPERIMENT)
-    page = (SELECTION_TEMPLATE.read_text(encoding="utf-8").replace("__SELECTION_JSON__", _embed(selection))
-            .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
-    for lang, out in SELECTION_PAGES.items():
-        out.write_text(page.replace("__LANG__", lang), encoding="utf-8")
     return OUTPUTS, sum(len(load_runs(s.storage)) for s in every)
 
 
