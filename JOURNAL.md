@@ -464,3 +464,16 @@ dix stratégies, pages et méthodologie (7 ter, 7 quater), tests 2024, 2025 et s
 
 Autrement dit : la meilleure (bascule sans stop) rapporte en moyenne environ 50 $ par semaine avec 10 000 $ sur
 2024-2025, gagne un peu plus d'une séance sur deux, et perd parfois 300 $ dans une séance.
+
+## 2026-10-18 (soir) — Rotation entre stratégies (diagnostic, rien d'ajouté au tableau de bord)
+
+**Question posée** : changer de stratégie chaque jour, d'après les résultats récents puis d'après les motifs du
+marché (état du S&P 500 connu la veille, séances semblables du passé, apprentissage au fil de l'eau sur 2024-2025).
+
+**Résultat** : rotation par résultats récents (5, 10, 20 séances) et rotation par motifs (K = 20, 40, 80 séances
+semblables) font moins bien que garder la stratégie 14 (7 premiers titres, sans PER) dans toutes les périodes
+testées (octobre-décembre 2024 et 2025, années) ; le motif comme filtre « acheter ou non » sur la 14 retire des
+gains sans augmenter la part de jours positifs. Scripts d'analyse hors dépôt (bloc-notes de session).
+
+Autrement dit : ce qui a marché les jours précédents, ou les jours qui ressemblaient à aujourd'hui, ne dit pas quelle
+stratégie gagnera demain ; mieux vaut garder la même.
