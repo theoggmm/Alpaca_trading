@@ -453,3 +453,14 @@ tests 2025, 2024 et semaine du 12 octobre ; décision T16. 72 tests verts ; essa
 
 Autrement dit : sur 2024, année jamais regardée pour les régler, les trois nouvelles stratégies gagnent un peu
 (+3 % à +7 %) quand les dix anciennes perdent toutes ; c'est encourageant, pas encore une preuve.
+
+## 2026-10-18 (fin) — Stratégies 14 à 23
+
+**Question posée** : sept stratégies pour gagner le plus avec 10 000 $ et le moins de jours perdants, puis trois
+stratégies gardées plusieurs séances.
+
+**Fait** : nouveaux filtres (série, calme, semaine, repli si le marché tient, baisses consécutives), sortie sans stop,
+dix stratégies, pages et méthodologie (7 ter, 7 quater), tests 2024, 2025 et semaine ; décision T17. 74 tests verts.
+
+Autrement dit : la meilleure (bascule sans stop) rapporte en moyenne environ 50 $ par semaine avec 10 000 $ sur
+2024-2025, gagne un peu plus d'une séance sur deux, et perd parfois 300 $ dans une séance.

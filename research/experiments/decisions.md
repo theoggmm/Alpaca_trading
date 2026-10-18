@@ -151,3 +151,14 @@ regardé avant (backtest_strategies --year 2024, mêmes règles, figées avant l
 11 : +0,6 % (PER) / +2,9 % (sans PER) ; 12 : +6,4 % / +3,3 % ; 13 : +4,9 % / +6,8 %. Les 10 stratégies d'avant
 perdent toutes en 2024 (−3 % à −24 %). Règles figées à partir de maintenant ; jugement sur les séances futures.
 Statut : diagnostic, paper trading seulement, aucun ordre.
+
+## T17 — 2026-10-18 — Stratégies 14 à 23 (propriétaire), suivies en papier dès le 19 octobre
+
+Demande du propriétaire : le plus possible avec 10 000 $, le moins de jours perdants ; puis trois stratégies gardées
+plusieurs séances (achat dans la journée). 14 bascule sans stop, 15 nuit si le marché tient vendue 10 h 30 sans stop,
+16 bascule actions en série (2 séances de hausse), 17 bascule actions calmes (30 %), 18 leaders de la semaine,
+19 repli si le marché tient, 20 repli rapide (+2 %, 2 séances), 21 reprise gardée 2 séances, 22 repli du matin
+3 séances, 23 leaders 3 séances. Tests 2024 et 2025 (diagnostic ; 14 et 15 choisies en lisant les deux années) :
+meilleure moyenne à 10 000 $ : 14 sans PER, +52 $ par semaine, 55 % de séances investies positives, pire séance
+−305 $. Aucune stratégie n'approche 5 000 $ par semaine ni n'est positive chaque jour. Règles figées ; jugement sur
+les séances futures. Statut : diagnostic, paper trading seulement, aucun ordre.
