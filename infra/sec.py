@@ -1,5 +1,6 @@
 """
-Domaine d'activité officiel des sociétés, lu dans les données EDGAR de la SEC.
+Domaine d'activité officiel des sociétés, bénéfices et dates de publication des résultats, lus dans les données
+EDGAR de la SEC.
 
 Le domaine est le bureau d'examen de la SEC qui suit la société (champ ownerOrg, par exemple
 « 06 Technology »), complété du code SIC. La SEC exige un User-Agent portant un nom et un e-mail
@@ -91,4 +92,35 @@ def profiles(symbols, day):
         if cik is not None:
             profile = cached(f"sec/submissions/{cik:010d}", lambda: _profile(reader, cik), max_age=PROFILE_MAX_AGE)
             result[symbol] = {"cik": cik, **profile}
+    return result
+
+
+# Publication des résultats : formulaire 8-K, rubrique 2.02 « Results of Operations and Financial Condition ».
+EARNINGS_ITEM = "2.02"
+EARNINGS_MAX_AGE = timedelta(days=7)
+
+
+def _earnings_releases(reader, cik):
+    """Dates (AAAA-MM-JJ) et heures d'acceptation des 8-K rubrique 2.02 de la société, des plus récents aux plus anciens."""
+    data = reader.get(SUBMISSIONS_URL.format(cik=cik)).json()
+    recent = data.get("filings", {}).get("recent", {})
+    rows = zip(recent.get("form", []), recent.get("items", []), recent.get("filingDate", []),
+               recent.get("acceptanceDateTime", []))
+    return [{"date": day, "accepted": accepted} for form, items, day, accepted in rows
+            if form in ("8-K", "8-K/A") and EARNINGS_ITEM in (items or "").split(",")]
+
+
+def earnings_releases(symbols, day):
+    """
+    symbole -> publications de résultats déjà déposées à la SEC (8-K rubrique 2.02), lues le jour day :
+    [{"date", "accepted"}]. Seules les publications passées existent : une date future n'est jamais connue ici.
+    Un symbole inconnu de la SEC reçoit une liste vide.
+    """
+    reader = _reader()
+    tickers = _tickers(reader, day)
+    result = {}
+    for symbol in symbols:
+        cik = tickers.get(symbol.replace(".", "-"))
+        result[symbol] = [] if cik is None else cached(f"sec/earnings/{cik:010d}", lambda: _earnings_releases(reader, cik),
+                                                       max_age=EARNINGS_MAX_AGE)
     return result
