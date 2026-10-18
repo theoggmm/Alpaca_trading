@@ -63,9 +63,9 @@ def _cached_prices(day, prefix):
 _CONTEXT = {}
 
 
-def _init(history, lists, sessions, healthy, domains, releases, rules, filters):
+def _init(history, lists, sessions, healthy, domains, releases, rules, filters, fixed=None):
     bt._share_rate_limit()
-    _CONTEXT.update(history=history, lists=lists, sessions=sessions, healthy=healthy, domains=domains,
+    _CONTEXT.update(fixed=fixed, history=history, lists=lists, sessions=sessions, healthy=healthy, domains=domains,
                     releases=releases, alpaca=AlpacaReader(), by_id={s.id: s for s in STRATEGIES}, rules=rules,
                     filters=filters)
 
@@ -82,7 +82,8 @@ def _one_day(day):
 
     # Résultats connus à 14 h 45 : séances d'achat jusqu'à la veille (ventes de nuit faites ce matin).
     history = {c: [(d, r) for d, r in results if d < day][-10:] for c, results in _CONTEXT["history"].items()}
-    picks = pick_strategies(history, rules)
+    # Stratégie fixe (comparaison) : toujours la même liste, seuls les garde-fous et filtres du jour s'appliquent.
+    picks = [(_CONTEXT["fixed"], 0.0)] if _CONTEXT.get("fixed") else pick_strategies(history, rules)
 
     # Garde-fous du jour.
     opens, late = _cached_prices(day, "ouverture_15min"), _cached_prices(day, "avant_1445")
@@ -128,7 +129,7 @@ def _one_day(day):
                  "excluded": {c: sorted(v) for c, v in excluded.items() if v}}
 
 
-def run(years, rules=SelectionRules(), filters=("earnings", "sector"), variant="complete"):
+def run(years, rules=SelectionRules(), filters=("earnings", "sector"), variant="complete", fixed=None):
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
     chosen = candidates()
@@ -165,7 +166,7 @@ def run(years, rules=SelectionRules(), filters=("earnings", "sector"), variant="
     releases = sec.earnings_releases(in_lists, "selection")
     results = {}
     with ProcessPoolExecutor(max_workers=WORKERS, mp_context=multiprocessing.get_context("spawn"), initializer=_init,
-                             initargs=(history, lists, sessions, healthy, domains, releases, rules, filters)) as pool:
+                             initargs=(history, lists, sessions, healthy, domains, releases, rules, filters, fixed)) as pool:
         for n, (day, record) in enumerate(pool.map(_one_day, days), start=1):
             results[day] = record
             if n % 20 == 0:
@@ -176,7 +177,7 @@ def run(years, rules=SelectionRules(), filters=("earnings", "sector"), variant="
     payload = {
         "family": FAMILY, "kind": "selection_du_jour", "status": "diagnostic", "git_sha": git_sha,
         "created_at": datetime.now(timezone.utc).isoformat(), "years": [str(y) for y in years],
-        "variant": variant, "rules": rules.__dict__, "filters": list(filters), "candidates": sorted(history),
+        "variant": variant if fixed is None else f"{variant}, toujours {fixed}", "rules": rules.__dict__, "filters": list(filters), "candidates": sorted(history),
         "summaries": {y: summary(v) for y, v in by_year.items() if v},
         "days": rows,
     }
@@ -196,13 +197,15 @@ def main():
     parser = argparse.ArgumentParser(description="Sélection du jour sur le passé (diagnostic)")
     parser.add_argument("--years", default="2024,2025", help="Années, séparées par des virgules (tests des stratégies requis)")
     parser.add_argument("--without", default="", help="Parties retirées pour comparer : breadth, fear, earnings, sector, guard")
+    parser.add_argument("--fixed", help="Toujours la même liste « stratégie|version » (comparaison), garde-fous compris")
     args = parser.parse_args()
     off = set(filter(None, args.without.split(",")))
     rules = SelectionRules(min_breadth=0.0 if off & {"breadth", "guard"} else SelectionRules.min_breadth,
                            max_fear_rise=1e9 if off & {"fear", "guard"} else SelectionRules.max_fear_rise)
     filters = tuple(f for f in ("earnings", "sector") if f not in off)
     try:
-        return run([int(y) for y in args.years.split(",")], rules, filters, "sans " + ",".join(sorted(off)) if off else "complete")
+        return run([int(y) for y in args.years.split(",")], rules, filters, "sans " + ",".join(sorted(off)) if off else "complete",
+                   args.fixed)
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
         return 1
