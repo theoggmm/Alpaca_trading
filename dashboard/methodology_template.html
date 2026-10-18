@@ -176,6 +176,54 @@
   continuent le lendemain matin : une action qui ouvre sous le stop est vendue à l'ouverture.</p>
   <p class="plain">Autrement dit : le résultat d'un achat de nuit s'affiche le lendemain matin, rattaché au jour de l'achat.</p>
 
+  <h2 id="nouvelles"><span class="n">7 bis</span>Les trois nouvelles stratégies (11 à 13)</h2>
+  <p>Créées le 18 octobre 2026 à partir de ce que les dix premières stratégies ont montré sur les 250 séances de 2025
+  (onglet « Tests »). Le but : gagner le plus possible en combinant ce qui marche, et n'acheter que lorsque le marché
+  s'y prête. Chaque règle ne lit que ce qui est connu avant l'achat.</p>
+  <h3>Ce que 2025 a montré</h3>
+  <ul>
+    <li><b>Les achats du matin perdent presque tous les jours</b> (reprise après baisse, ouverture) : −10 % à −19 % sur l'année. Les
+    frais (0,1 % par aller-retour, chaque jour où il y a une liste) mangent la petite hausse de la journée. Même après une
+    journée de baisse du marché, le résultat change de signe d'un semestre à l'autre : pas de règle fiable le matin.</li>
+    <li><b>Les achats de nuit gagnent, mais pas tous les jours.</b> Liste de 15 h 00 sans PER : +15,5 points de base par nuit en
+    moyenne les 126 jours où le S&amp;P 500 n'avait pas perdu plus de 0,2 % à 14 h 45, −20 les 61 autres jours. Les deux
+    semestres vont dans le même sens.</li>
+    <li><b>Liste de 15 h 55</b> : +11,5 points de base par nuit les 87 jours où le S&amp;P 500 a monté sur la dernière heure, −5 les autres.</li>
+    <li><b>Le filtre PER nuit aux achats de nuit</b> : −15 % à −18 % sur l'année avec PER, contre −2 % à +7 % sans.</li>
+    <li><b>L'objectif +3 % coupe les gains de nuit</b> : sans stop ni objectif, la liste de 15 h 00 sans PER fait +11 % au lieu de +6,7 %.</li>
+  </ul>
+  <h3>Stratégie 11 — Nuit si le marché tient</h3>
+  <p><b>Ce qu'elle fait</b> : à 14 h 45, la liste « fin de journée » habituelle (actions en hausse de 0,5 à 4 % sur la journée,
+  dernière heure en hausse, près du plus haut), achat à 15 h 00, vente le lendemain à l'ouverture. <b>Quand elle s'applique</b> :
+  seulement si le S&amp;P 500 n'a pas perdu plus de 0,2 % depuis l'ouverture à 14 h 45 (règle « marché qui tient »), en plus de la
+  règle « marché en bonne forme » ; sinon, rien n'est acheté. <b>Vente plus tôt</b> : au stop −1,5 % seulement, pas d'objectif.
+  <b>Pourquoi</b> : c'est la meilleure combinaison observée — achat de nuit, jour où le marché tient, gains laissés courir.</p>
+  <h3>Stratégie 12 — Bascule de fin de journée</h3>
+  <p><b>Ce qu'elle fait</b> : un enchaînement de deux règles selon le marché du jour. À 14 h 45, si le S&amp;P 500 tient (pas plus
+  de −0,2 % depuis l'ouverture), elle achète la liste de 15 h 00. Sinon, elle attend : à 15 h 40, si le S&amp;P 500 a remonté sur
+  la dernière heure, elle achète la liste de 15 h 55 ; sinon, rien. <b>Vente</b> : le lendemain à 10 h 30 (stop −1,5 %, pas
+  d'objectif). <b>Pourquoi</b> : les jours où le marché a baissé dans la journée mais repart en fin de séance, la liste de 15 h 55
+  gagnait encore (+21 points de base par nuit sur 28 jours) ; la bascule récupère ces jours que la stratégie 11 laisse passer.
+  Sur 2025, la combinaison fait mieux que chacune seule, dans les deux semestres.</p>
+  <h3>Stratégie 13 — Repli dans une tendance (3 séances)</h3>
+  <p><b>Ce qu'elle fait</b> : à 15 h 40, parmi les actions calmes en tendance haussière (moyenne des 20 dernières clôtures au-dessus
+  de celle des 50), celles qui sont de 3 à 10 % sous leur plus haut des 10 dernières séances et en baisse aujourd'hui ; achat à
+  15 h 55, vente 3 séances plus tard à 15 h 55, ou plus tôt au stop −3 % ou à l'objectif +3 %. <b>Quand elle s'applique</b> :
+  marché en bonne forme. <b>Pourquoi</b> : une règle de sélection nouvelle (pas de « hausse en première heure ») et une garde plus
+  longue : les frais ne sont payés qu'une fois pour trois séances, au lieu de chaque jour. Les premières séances ont montré que les
+  actions les plus loin sous leur moyenne faisaient le pire : d'où la tendance exigée et le repli plafonné à 10 %. Le stop et
+  l'objectif sont élargis à 3 % : sur trois séances, une action bouge plus que sur quelques heures. Les achats se chevauchent :
+  le capital est partagé en trois tranches, chaque séance d'achat en engage une (les cumuls comptent un tiers de son résultat).</p>
+  <h3>Résultats des tests</h3>
+  <div class="panel"><table>
+    {{new_strategies_table}}
+  </table></div>
+  <p>Les règles des stratégies 11 et 12 ont été choisies en regardant 2025 : leur résultat sur 2025 est donc flatteur. Le vrai
+  contrôle est 2024, que rien n'a servi à régler, puis les séances à venir, en papier, à partir du 19 octobre 2026.</p>
+  <p class="plain">Autrement dit : on n'achète plus le matin, on achète le soir seulement quand le marché tient ou se reprend, et on
+  essaie une troisième voie qui garde les actions trois jours pour payer moins de frais ; 2024 et les prochaines semaines diront si
+  ça tient.</p>
+
   <h2 id="datation"><span class="n">8</span>Pas de donnée du futur</h2>
   <p>Toute fonction qui calcule un critère reçoit l'instant de décision et, dès sa première ligne, retire
   toute donnée qui n'était pas encore terminée à cet instant (une barre d'une minute n'est utilisable que
@@ -427,6 +475,52 @@
   purchase day. It becomes final {{definitive_after}} hours after the sale. A Friday purchase is sold on Monday. The stop and target
   keep running the next morning: a stock that opens below the stop is sold at the open.</p>
   <p class="plain">In other words: an overnight purchase's result shows the next morning, attached to the purchase day.</p>
+
+  <h2 id="new"><span class="n">7b</span>The three new strategies (11 to 13)</h2>
+  <p>Created on October 18, 2026 from what the first ten strategies showed over the 250 sessions of 2025 ("Tests" tab). The goal:
+  make as much as possible by combining what works, and only buy when the market is right for it. Each rule only reads what is
+  known before the purchase.</p>
+  <h3>What 2025 showed</h3>
+  <ul>
+    <li><b>Morning purchases lose almost every day</b> (rebound after decline, open): −10% to −19% over the year. Costs (0.1% per
+    round trip, on every day with a list) eat the small intraday rise. Even after a down day for the market, the result flips sign
+    from one half-year to the other: no reliable morning rule.</li>
+    <li><b>Overnight purchases make money, but not every day.</b> 3:00 PM list without P/E: +15.5 basis points per night on
+    average on the 126 days when the S&amp;P 500 had not lost more than 0.2% at 2:45 PM, −20 on the 61 other days. Both half-years
+    point the same way.</li>
+    <li><b>3:55 PM list</b>: +11.5 basis points per night on the 87 days when the S&amp;P 500 rose over the last hour, −5 on the others.</li>
+    <li><b>The P/E filter hurts overnight purchases</b>: −15% to −18% over the year with P/E, versus −2% to +7% without.</li>
+    <li><b>The +3% target cuts overnight gains</b>: without stop or target, the 3:00 PM list without P/E makes +11% instead of +6.7%.</li>
+  </ul>
+  <h3>Strategy 11 — Overnight when the market holds</h3>
+  <p><b>What it does</b>: at 2:45 PM, the usual "end of day" list (stocks up 0.5 to 4% on the day, last hour rising, near the high),
+  bought at 3:00 PM, sold the next day at the open. <b>When it applies</b>: only if the S&amp;P 500 has not lost more than 0.2%
+  since the open at 2:45 PM ("market holding" rule), on top of the "healthy market" rule; otherwise nothing is bought.
+  <b>Early sale</b>: at the −1.5% stop only, no target. <b>Why</b>: it is the best combination observed — overnight purchase,
+  on a day when the market holds, letting gains run.</p>
+  <h3>Strategy 12 — End-of-day switch</h3>
+  <p><b>What it does</b>: two rules in sequence depending on the day's market. At 2:45 PM, if the S&amp;P 500 holds (no worse than
+  −0.2% since the open), it buys the 3:00 PM list. Otherwise it waits: at 3:40 PM, if the S&amp;P 500 rose over the last hour, it
+  buys the 3:55 PM list; otherwise nothing. <b>Sale</b>: the next day at 10:30 AM (−1.5% stop, no target). <b>Why</b>: on days when
+  the market fell during the day but picks up at the end of the session, the 3:55 PM list still made money (+21 basis points per
+  night over 28 days); the switch catches those days that strategy 11 skips. Over 2025, the combination does better than each
+  alone, in both half-years.</p>
+  <h3>Strategy 13 — Dip in an uptrend (3 sessions)</h3>
+  <p><b>What it does</b>: at 3:40 PM, among calm stocks in an uptrend (average of the last 20 closes above that of the last 50),
+  those that are 3 to 10% below their high of the last 10 sessions and down today; bought at 3:55 PM, sold 3 sessions later at
+  3:55 PM, or earlier at the −3% stop or +3% target. <b>When it applies</b>: healthy market. <b>Why</b>: a new selection rule (no
+  "rise in the first hour") and a longer hold: costs are paid once for three sessions instead of every day. The first sessions
+  showed that the stocks furthest below their average did worst: hence the required uptrend and the dip capped at 10%. The stop and
+  target are widened to 3%: over three sessions a stock moves more than over a few hours. Purchases overlap: the capital is split
+  into three slices, each purchase session uses one (totals count a third of its result).</p>
+  <h3>Test results</h3>
+  <div class="panel"><table>
+    {{new_strategies_table}}
+  </table></div>
+  <p>The rules of strategies 11 and 12 were chosen by looking at 2025: their 2025 result is therefore flattering. The real check is
+  2024, which was not used to set anything, then the upcoming sessions, on paper, from October 19, 2026.</p>
+  <p class="plain">In other words: no more morning purchases, buy in the evening only when the market holds or recovers, and try a
+  third way that keeps stocks three days to pay fewer costs; 2024 and the coming weeks will tell whether it holds up.</p>
 
   <h2 id="datation"><span class="n">8</span>No data from the future</h2>
   <p>Every function that computes a criterion receives the decision time and, on its very first line, drops any

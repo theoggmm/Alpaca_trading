@@ -6,6 +6,7 @@ constantes du code au moment de la génération : la page décrit le code, elle 
 Écrite à chaque génération du tableau de bord (dashboard/build.py).
 """
 
+import json
 import re
 from datetime import date, datetime
 from decimal import Decimal
@@ -101,6 +102,48 @@ def _strategies_table(lang, feed):
     return "<tr>" + "".join(f"<th>{h}</th>" for h in head) + "</tr>\n    " + "\n    ".join(rows)
 
 
+TEST_COLUMNS = (("annee_2025", {"fr": "2025 (servi à régler 11 et 12)", "en": "2025 (used to set 11 and 12)"}),
+                ("annee_2024", {"fr": "2024 (jamais vu)", "en": "2024 (never seen)"}),
+                ("periode_20261012_20261016", {"fr": "Semaine du 12 au 16 oct. 2026", "en": "Week of Oct 12–16, 2026"}))
+
+
+def _new_strategies_table(lang):
+    """
+    Tableau HTML : rendement cumulé après frais de chaque stratégie (liste PER &lt; 25 / liste sans PER) dans chaque
+    test (dernier résultat de chaque période, onglet « Tests »). « à venir » tant que le test n'a pas tourné.
+    """
+    from infra.trace import RUNS_DIR
+    head = {"fr": ["#", "Stratégie"], "en": ["#", "Strategy"]}[lang] + [label[lang] for _, label in TEST_COLUMNS]
+    pending = {"fr": "à venir", "en": "pending"}[lang]
+    note = {"fr": "PER &lt; 25 · sans PER", "en": "P/E &lt; 25 · without P/E"}[lang]
+
+    def pct(v):
+        if v is None:
+            return "—"
+        return ("+" if v > 0 else "") + _number(Decimal(str(round(v * 100, 1))), lang).replace("-", "−") + (" %" if lang == "fr" else "%")
+
+    rows = []
+    for i, strategy in enumerate(load_strategies(CRITERIA_DIR, "reprise_apres_baisse"), start=1):
+        latest = {}
+        for path in sorted((RUNS_DIR / strategy.storage / "backtests").glob("b[0-9][0-9][0-9]/results.json")):
+            result = json.loads(path.read_text(encoding="utf-8"))
+            if result.get("label"):
+                latest[result["label"]] = result
+        cells = []
+        for label, _ in TEST_COLUMNS:
+            result = latest.get(label)
+            if result is None:
+                cells.append(f"<td>{pending}</td>")
+                continue
+            totals = [result["summaries"].get(v, {}).get("total") for v in ("per12", "sans_per")]
+            cells.append(f"<td>{pct(totals[0])} · <b>{pct(totals[1])}</b></td>")
+        name = strategy.name if lang == "fr" else strategy.name_en
+        rows.append(f"<tr><td>{i}</td><td>{name}</td>{''.join(cells)}</tr>")
+    return ("<tr>" + "".join(f"<th>{h}</th>" for h in head) + "</tr>\n    "
+            + "<tr><td></td><td></td>" + "".join(f"<td><small>{note}</small></td>" for _ in TEST_COLUMNS)
+            + "</tr>\n    " + "\n    ".join(rows))
+
+
 def _values(lang, experiment):
     base = Criteria.from_file(CRITERIA_DIR / "criteres_sans_per.json")
     per12 = Criteria.from_file(CRITERIA_DIR / "criteres_per12.json")
@@ -118,6 +161,7 @@ def _values(lang, experiment):
     return {
         "page_title": "Méthodologie" if lang == "fr" else "Methodology",
         "strategies_table": _strategies_table(lang, feed), "n_strategies": len(every),
+        "new_strategies_table": _new_strategies_table(lang),
         "open_last_hour": opening.last_hour_minutes, "open_min_night": _number(opening.min_overnight * 100, lang),
         "open_max_night": _number(opening.max_overnight * 100, lang), "open_min_volume": opening.min_premarket_volume,
         "open_decision": _ny_time(NY_OPEN_MINUTES + opening.decision_minutes, lang),
