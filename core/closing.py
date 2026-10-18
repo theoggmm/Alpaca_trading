@@ -7,6 +7,10 @@ terminées à cet instant servent (datation structurelle, première ligne de scr
 Critères, dans l'ordre :
 1-4. Univers liquide (mêmes règles que la famille : historique, prix, montant échangé).
 5. Marché en bonne forme (facultatif) : la veille, le repère a clôturé au-dessus de sa moyenne.
+5 bis. Marché qui tient (facultatif) : le repère (SPY) n'a pas perdu plus que market_min_day_return depuis
+   l'ouverture, à la décision.
+5 ter. Marché qui remonte (facultatif) : le repère a gagné au moins market_min_last_hour_return sur la dernière
+   heure avant la décision.
 6. Journée en hausse : dernier prix / premier prix de la séance - 1 entre deux bornes.
 7. Dernière heure en hausse : dernier prix > prix last_hour_minutes plus tôt.
 8. Près du plus haut du jour : au plus max_below_day_high sous la plus haute clôture minute de la séance.
@@ -50,6 +54,8 @@ class ClosingCriteria:
     market_symbol: str = None
     market_ma_sessions: int = None
     max_pe: Decimal = None
+    market_min_day_return: Decimal = None        # 5 bis : repère depuis l'ouverture, à la décision (ex. -0.002)
+    market_min_last_hour_return: Decimal = None  # 5 ter : repère sur la dernière heure avant la décision (ex. 0)
 
     @classmethod
     def from_json(cls, raw, source="critères"):
@@ -79,14 +85,52 @@ class ClosingCriteria:
         return {k: str(v) if isinstance(v, Decimal) else v for k, v in asdict(self).items()}
 
 
-def screen_closing(daily, minute, market_open, decision_time, criteria, earnings_for=None, market_daily=None):
+def market_moves(market_minute, market_open, decision_time, symbol, last_hour_minutes=60):
+    """
+    Variation du repère connue à decision_time : (depuis l'ouverture, sur la dernière heure), chacune None si
+    les barres manquent. Dernier prix = clôture de la dernière barre minute terminée.
+    """
+    market_minute = usable_bars(market_minute, MINUTE, decision_time)
+
+    bars = market_minute[(market_minute["symbol"] == symbol) & (market_minute["timestamp"] >= market_open)]
+    bars = bars.sort_values("timestamp")
+    if bars.empty:
+        return None, None
+    price = bars["close"].iloc[-1]
+    before = bars[bars["timestamp"] < decision_time - timedelta(minutes=last_hour_minutes)]
+    return price / bars["open"].iloc[0] - 1, None if before.empty else price / before["close"].iloc[-1] - 1
+
+
+def market_conditions(criteria, market_minute, market_open, decision_time):
+    """
+    Conditions de marché du jour (5 bis, 5 ter) : {"marche_tient": bool, "marche_remonte": bool} pour celles que
+    les critères fixent ; ValueError si les barres du repère manquent.
+    """
+    wanted = {"marche_tient": criteria.market_min_day_return, "marche_remonte": criteria.market_min_last_hour_return}
+    wanted = {k: v for k, v in wanted.items() if v is not None}
+    if not wanted:
+        return {}
+    if market_minute is None:
+        raise ValueError("market_minute requis par les règles « marché qui tient / qui remonte »")
+    day, hour = market_moves(market_minute, market_open, decision_time, criteria.market_symbol)
+    moves = {"marche_tient": day, "marche_remonte": hour}
+    if any(moves[k] is None for k in wanted):
+        raise ValueError(f"Barres minute de {criteria.market_symbol} manquantes avant la décision")
+    return {k: moves[k] >= v for k, v in wanted.items()}
+
+
+def screen_closing(daily, minute, market_open, decision_time, criteria, earnings_for=None, market_daily=None,
+                   market_minute=None):
     """
     Liste les titres retenus à decision_time (pendant la séance qui s'ouvre à market_open).
-    minute : barres minute de la séance du jour. Retourne (sélection, entonnoir) ; la sélection n'est jamais
+    minute : barres minute de la séance du jour. market_minute : barres minute du repère (SPY) depuis l'ouverture,
+    requises par les règles 5 bis / 5 ter. Retourne (sélection, entonnoir) ; la sélection n'est jamais
     complétée en assouplissant les critères.
     """
     daily = usable_bars(daily, DAY, decision_time)
     minute = usable_bars(minute, MINUTE, decision_time)
+    if market_minute is not None:
+        market_minute = usable_bars(market_minute, MINUTE, decision_time)
 
     if decision_time != market_open + timedelta(minutes=criteria.decision_minutes):
         raise ValueError("decision_time doit valoir market_open + decision_minutes")
@@ -99,6 +143,9 @@ def screen_closing(daily, minute, market_open, decision_time, criteria, earnings
                                           criteria.market_ma_sessions)
         stats = stats if healthy else []
         funnel["marche_en_bonne_forme"] = len(stats)
+    for step, ok in market_conditions(criteria, market_minute, market_open, decision_time).items():
+        stats = stats if ok else []
+        funnel[step] = len(stats)
 
     session = minute[minute["timestamp"] >= market_open].sort_values("timestamp")
     by_symbol = {s: b for s, b in session.groupby("symbol", sort=True)}

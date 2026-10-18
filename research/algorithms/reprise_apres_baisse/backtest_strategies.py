@@ -17,8 +17,13 @@ les titres en hausse dans la dernière heure de la veille ; la nuit n'est lue qu
 
 Depuis la racine du dépôt :
     .venv/bin/python -m research.algorithms.reprise_apres_baisse.backtest_strategies
+    .venv/bin/python -m research.algorithms.reprise_apres_baisse.backtest_strategies --year 2024 --only nuit_marche_tient,...
+
+Stratégie gardée plusieurs séances (achats qui se chevauchent) : le capital est partagé en autant de tranches que de
+séances de garde ; le rendement d'une séance d'achat compte pour une tranche dans les cumuls (« capital_slices »).
 """
 
+import argparse
 import hashlib
 import json
 import sys
@@ -30,10 +35,12 @@ from decimal import Decimal
 import pandas as pd
 
 from core.closing import ClosingCriteria, screen_closing
+from core.swing import SwingCriteria, screen_swing
+from core.switch import SwitchCriteria, choose
 from core.opening import OpeningCriteria, screen_opening
 from core.performance_metrics import summary
 from core.portfolio import simulate
-from core.screener import daily_candidates, liquid_universe, screen
+from core.screener import Criteria, daily_candidates, liquid_universe, screen
 from core.universe import eligible_symbols
 from infra import nasdaq_symbols
 from infra.alpaca_api import BAR_COLUMNS, AlpacaReader
@@ -41,10 +48,12 @@ from infra.cache import cached, read_cached
 from infra.http import FetchError
 from infra.trace import RUNS_DIR, TraceError, committed_git_sha
 from research.algorithms.reprise_apres_baisse.backtest import BIASES, TESTED_AMOUNTS
-from research.algorithms.reprise_apres_baisse.run import DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, STRATEGIES, earnings
+from research.algorithms.reprise_apres_baisse.run import (DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, STRATEGIES,
+                                                          earnings)
+from core.strategy import MAX_HOLD_SESSIONS
 
 BENCHMARK = "SPY"
-SUITE = "tests_2025"
+SUITE = "tests_2025"   # nom de la série de tests affichée dans l'onglet « Tests » (toutes années)
 # Une passe sur 2025, puis trois tests : le mois le plus baissier du S&P 500 (mars, −5,6 %), six mois, l'année.
 YEAR = (date(2025, 1, 1), date(2025, 12, 31))
 TESTS = [
@@ -59,6 +68,10 @@ FIRST_WINDOW = timedelta(minutes=15)   # minutes d'ouverture lues pour le premie
 # Change quand le calcul change : les séances déjà rejouées (cache) sont alors refaites.
 VERSION = 2   # 2 : variante « stop seul » et titres de chaque liste enregistrés
 WORKERS = 5
+# Les 10 premières stratégies gardent leur clé de cache d'origine (critères seuls) : leurs séances déjà rejouées
+# servent encore (mêmes heures, même stop et même objectif qu'alors).
+OLD_KEYS = {"principale", "vente_cloture", "achat_10h30", "achat_10h30_vente_cloture", "ouverture_1h", "ouverture_2h",
+            "nuit_15h_ouverture", "nuit_15h_10h30", "nuit_15h55_ouverture", "nuit_15h55_10h30"}
 EXTRA_BIASES = [
     "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant "
     "la décision, est écarté (en direct il serait jugé sur ses premiers et derniers échanges) — rare pour des "
@@ -91,8 +104,12 @@ def _concat(frames):
             else pd.DataFrame(columns=BAR_COLUMNS))
 
 
-def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close):
-    """Listes de toutes les stratégies pour la séance : {stratégie: {version: [symboles]}}, et la décision de chacune."""
+def _kind(criteria_by_variant):
+    return type(next(iter(criteria_by_variant.values())))
+
+
+def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close, strategies):
+    """Listes des stratégies pour la séance : {stratégie: {version: [symboles]}}, et la décision de chacune."""
     lists, decisions = {}, {}
     pe = earnings(alpaca, "backtest")
     memo = {}
@@ -109,10 +126,30 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
         if key not in memo:
             memo[key] = {x.symbol for x in daily_candidates(daily, cut, c)[0]}
         return memo[key]
-    kinds = {s.id: s.criteria() for s in STRATEGIES}
+
+    def market_minute(decision):
+        """Barres minute de SPY de l'ouverture à la décision (règles « marché qui tient / qui remonte »)."""
+        return _bars(alpaca, _key(day, f"spy_minute_{decision.astimezone(NEW_YORK):%H%M}"), [BENCHMARK], market_open, decision)
+
+    def closing_list(c, decision):
+        """Liste « fin de journée » : préfiltre « journée en hausse », puis toute la séance des titres qui le passent."""
+        symbols = liquid(decision, c)
+        first = _bars(alpaca, _key(day, "ouverture_15min"), symbols, market_open, market_open + FIRST_WINDOW)
+        late = _bars(alpaca, _key(day, f"avant_{decision.astimezone(NEW_YORK):%H%M}"), symbols,
+                     decision - FIRST_WINDOW, decision)
+        opens = {s: b["open"].iloc[0] for s, b in first.sort_values("timestamp").groupby("symbol")}
+        prices = {s: b["close"].iloc[-1] for s, b in late.sort_values("timestamp").groupby("symbol")}
+        rising = [s for s in opens if s in prices and c.min_day_gain <= prices[s] / opens[s] - 1 <= c.max_day_gain]
+        session = _bars(alpaca, _key(day, f"seance_{decision.astimezone(NEW_YORK):%H%M}"), rising, market_open, decision)
+        needs_market = c.market_min_day_return is not None or c.market_min_last_hour_return is not None
+        selection, _ = screen_closing(daily, session, market_open, decision, c, earnings_for=pe, market_daily=market_daily,
+                                      market_minute=market_minute(decision) if needs_market else None)
+        return [i["symbol"] for i in selection]
+
+    kinds = {s.id: s.criteria() for s in strategies}
 
     # « Reprise après baisse » : candidats quotidiens, puis minutes de 9 h 30 jusqu'à la décision la plus tardive.
-    rebound = {sid: c for sid, c in kinds.items() if not isinstance(next(iter(c.values())), (OpeningCriteria, ClosingCriteria))}
+    rebound = {sid: c for sid, c in kinds.items() if _kind(c) is Criteria}
     if rebound:
         last = max(c.decision_minutes for cs in rebound.values() for c in cs.values())
         wanted = set()
@@ -129,48 +166,55 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
                 lists.setdefault(sid, {})[variant] = [i["symbol"] for i in selection]
                 decisions.setdefault(sid, {})[variant] = decision
 
-    # « Ouverture » : dernière heure de la veille de tous les titres liquides, puis la nuit des seuls titres en hausse.
-    opening = {sid: c for sid, c in kinds.items() if isinstance(next(iter(c.values())), OpeningCriteria)}
-    for sid, cs in opening.items():
+    for sid, cs in kinds.items():
+        kind = _kind(cs)
         for variant, c in cs.items():
-            decision = market_open + timedelta(minutes=c.decision_minutes)
-            symbols = liquid(decision, c)
-            start = previous_close - timedelta(minutes=c.last_hour_minutes)
-            hour = _bars(alpaca, _key(day, f"veille_derniere_heure_{c.last_hour_minutes}"), symbols, start, previous_close)
-            rising = [s for s, b in hour.sort_values("timestamp").groupby("symbol")
-                      if b["close"].iloc[-1] > b["open"].iloc[0]]
-            night = _bars(alpaca, _key(day, f"nuit_{decision.astimezone(NEW_YORK):%H%M}"), rising, previous_close, decision)
-            selection, _ = screen_opening(daily, _concat([hour, night]), market_open, previous_close, decision, c,
-                                          earnings_for=pe, market_daily=market_daily)
-            lists.setdefault(sid, {})[variant] = [i["symbol"] for i in selection]
-            decisions.setdefault(sid, {})[variant] = decision
-
-    # « Fin de journée » : préfiltre « journée en hausse » (premières minutes et minutes avant la décision), puis
-    # toute la séance des seuls titres qui le passent.
-    closing = {sid: c for sid, c in kinds.items() if isinstance(next(iter(c.values())), ClosingCriteria)}
-    for sid, cs in closing.items():
-        for variant, c in cs.items():
-            decision = market_open + timedelta(minutes=c.decision_minutes)
-            symbols = liquid(decision, c)
-            first = _bars(alpaca, _key(day, "ouverture_15min"), symbols, market_open, market_open + FIRST_WINDOW)
-            late = _bars(alpaca, _key(day, f"avant_{decision.astimezone(NEW_YORK):%H%M}"), symbols,
-                         decision - FIRST_WINDOW, decision)
-            opens = {s: b["open"].iloc[0] for s, b in first.sort_values("timestamp").groupby("symbol")}
-            prices = {s: b["close"].iloc[-1] for s, b in late.sort_values("timestamp").groupby("symbol")}
-            rising = [s for s in opens if s in prices and c.min_day_gain <= prices[s] / opens[s] - 1 <= c.max_day_gain]
-            session = _bars(alpaca, _key(day, f"seance_{decision.astimezone(NEW_YORK):%H%M}"), rising, market_open, decision)
-            selection, _ = screen_closing(daily, session, market_open, decision, c, earnings_for=pe,
-                                          market_daily=market_daily)
-            lists.setdefault(sid, {})[variant] = [i["symbol"] for i in selection]
+            if kind is OpeningCriteria:
+                # Dernière heure de la veille de tous les titres liquides, puis la nuit des seuls titres en hausse.
+                decision = market_open + timedelta(minutes=c.decision_minutes)
+                symbols = liquid(decision, c)
+                start = previous_close - timedelta(minutes=c.last_hour_minutes)
+                hour = _bars(alpaca, _key(day, f"veille_derniere_heure_{c.last_hour_minutes}"), symbols, start, previous_close)
+                rising = [s for s, b in hour.sort_values("timestamp").groupby("symbol")
+                          if b["close"].iloc[-1] > b["open"].iloc[0]]
+                night = _bars(alpaca, _key(day, f"nuit_{decision.astimezone(NEW_YORK):%H%M}"), rising, previous_close, decision)
+                selection, _ = screen_opening(daily, _concat([hour, night]), market_open, previous_close, decision, c,
+                                              earnings_for=pe, market_daily=market_daily)
+                chosen = [i["symbol"] for i in selection]
+            elif kind is ClosingCriteria:
+                decision = market_open + timedelta(minutes=c.decision_minutes)
+                chosen = closing_list(c, decision)
+            elif kind is SwitchCriteria:
+                # Première liste si le marché tient à la première décision (barres terminées à elle), sinon la seconde.
+                first_decision = market_open + timedelta(minutes=c.first.decision_minutes)
+                keep_first = choose(c, market_minute(first_decision), market_open, first_decision)
+                picked = c.first if keep_first else c.second
+                decision = market_open + timedelta(minutes=picked.decision_minutes)
+                chosen = closing_list(picked, decision)
+            elif kind is SwingCriteria:
+                # Dernier prix des titres liquides avant la décision (15 dernières minutes).
+                decision = market_open + timedelta(minutes=c.decision_minutes)
+                symbols = liquid(decision, c)
+                late = _bars(alpaca, _key(day, f"avant_{decision.astimezone(NEW_YORK):%H%M}"), symbols,
+                             decision - FIRST_WINDOW, decision)
+                selection, _ = screen_swing(daily, late, market_open, decision, c, earnings_for=pe, market_daily=market_daily)
+                chosen = [i["symbol"] for i in selection]
+            else:
+                continue
+            lists.setdefault(sid, {})[variant] = chosen
             decisions.setdefault(sid, {})[variant] = decision
     return lists, decisions
 
 
-def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, next_open, next_close):
-    """Simulation de chaque liste et du repère SPY aux heures de chaque stratégie : {stratégie: enregistrement}."""
+def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, later, strategies):
+    """
+    Simulation de chaque liste et du repère SPY aux heures de chaque stratégie : {stratégie: enregistrement}.
+    later : (ouverture, clôture) des séances suivantes (vente une ou plusieurs séances plus tard).
+    """
     records = {}
-    for strategy in STRATEGIES:
-        exit_time = strategy.exit_time(market_open, market_close, next_open)
+    for strategy in strategies:
+        sale_session = later[strategy.sale_offset - 1] if strategy.overnight else None
+        exit_time = strategy.exit_time(market_open, market_close, sale_session)
         entries = {v: d + SIP_DELAY for v, d in decisions[strategy.id].items()}
         entries["spy"] = min(entries.values())
         picked = {s for symbols in lists[strategy.id].values() for s in symbols}
@@ -180,19 +224,21 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, n
                                     at + TRADE_WINDOW) for at in sorted(set(entries.values()))])
         exit_bars = _bars(alpaca, _key(day, f"vente_{tag}_{exit_time.astimezone(NEW_YORK):%Y%m%d_%H%M}"), traded,
                           exit_time - EXIT_WINDOW, exit_time)
-        # Trajet minute de l'achat à la vente (séances régulières seulement ; achat de nuit : la fin de séance du
-        # jour, puis la séance suivante jusqu'à la vente), comme le suivi en direct.
+        # Trajet minute de l'achat à la vente (séances régulières seulement : la fin de séance du jour, puis chaque
+        # séance suivante jusqu'à la vente), comme le suivi en direct.
         start = min(entries.values())
         windows = [(start, min(exit_time, market_close))]
-        if strategy.overnight:
-            windows.append((next_open, exit_time))
+        for open_at, close_at in later[:strategy.sale_offset]:
+            windows.append((open_at, min(close_at, exit_time)))
         path = _concat([_bars(alpaca, _key(day, f"trajet_{tag}_{a.astimezone(NEW_YORK):%Y%m%d%H%M}"), picked, a, b)
-                        for a, b in windows])
+                        for a, b in windows if b > a])
         after = exit_time + timedelta(days=1)
+        limits = {"stop_loss": strategy.stop_loss, "take_profit": strategy.take_profit}
         record = {"date": day.isoformat()}
         for name, symbols in {**lists[strategy.id], "spy": [BENCHMARK]}.items():
             result = simulate(symbols, entry_bars, exit_bars, {}, entries[name], exit_time, after,
-                              amounts=TESTED_AMOUNTS, path_bars=None if name == "spy" else path)
+                              amounts=TESTED_AMOUNTS, path_bars=None if name == "spy" else path,
+                              **({} if name == "spy" else limits))
             empty = not symbols
             record[name] = 0.0 if empty else result.get("net_mean_return")
             record[f"{name}_n"] = len(symbols)
@@ -201,10 +247,11 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, n
             record[f"{name}_hold"] = 0.0 if empty else result.get("hold_net_mean_return", result.get("net_mean_return"))
             record[f"{name}_early"] = {} if empty else {s: e["reason"] for s, e in result.get("early_exits", {}).items()}
             record[f"{name}_symbols"] = list(symbols)
-            # Variante « stop seul » : vente à −1,5 %, pas d'objectif à +3 % (le titre reste jusqu'à l'heure de vente).
+            # Variante « stop seul » : vente au stop, pas d'objectif (le titre reste jusqu'à l'heure de vente).
             if name != "spy":
                 stop_only = {} if empty else simulate(symbols, entry_bars, exit_bars, {}, entries[name], exit_time, after,
-                                                      amounts=TESTED_AMOUNTS, path_bars=path, take_profit=None)
+                                                      amounts=TESTED_AMOUNTS, path_bars=path,
+                                                      stop_loss=strategy.stop_loss, take_profit=None)
                 record[f"{name}_stop_only"] = 0.0 if empty else stop_only.get("net_mean_return")
         records[strategy.id] = record
     return records
@@ -213,10 +260,11 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, n
 _CONTEXT = {}
 
 
-def _init(daily_key, spy_key, sessions, criteria_hash):
+def _init(daily_key, spy_key, sessions, criteria_hash, only):
     """Au démarrage de chaque processus : cours quotidiens relus du cache disque, lecteur Alpaca propre."""
     _CONTEXT.update(daily=read_cached(daily_key), market_daily=read_cached(spy_key), sessions=sessions,
-                    criteria_hash=criteria_hash, alpaca=AlpacaReader())
+                    criteria_hash=criteria_hash, alpaca=AlpacaReader(),
+                    strategies=[s for s in STRATEGIES if only is None or s.id in only])
 
 
 def _one_day(i):
@@ -225,35 +273,48 @@ def _one_day(i):
     day, open_at, close_at = sessions[i]
     market_open, market_close = _utc(day, open_at), _utc(day, close_at)
     previous_close = _utc(sessions[i - 1][0], sessions[i - 1][2])
-    next_open = _utc(sessions[i + 1][0], sessions[i + 1][1])
-    next_close = _utc(sessions[i + 1][0], sessions[i + 1][2])
+    later = [(_utc(d, o), _utc(d, c)) for d, o, c in sessions[i + 1:i + 1 + MAX_HOLD_SESSIONS]]
+    strategies = _CONTEXT["strategies"]
 
     def compute():
         # Seulement l'historique utile à cette séance (plus rapide ; chaque règle retronque à sa décision).
         def window(bars):
             return bars[(bars["timestamp"] >= market_open - DAILY_HISTORY) & (bars["timestamp"] < market_close)]
         lists, decisions = _lists_for_day(alpaca, window(_CONTEXT["daily"]), window(_CONTEXT["market_daily"]), day,
-                                          market_open, previous_close)
-        return _results_for_day(alpaca, lists, decisions, day, market_open, market_close, next_open, next_close)
+                                          market_open, previous_close, strategies)
+        return _results_for_day(alpaca, lists, decisions, day, market_open, market_close, later, strategies)
 
     return day, cached(_key(day, f"resultats_v{VERSION}_{_CONTEXT['criteria_hash']}"), compute)
 
 
-def run():
+def run(year=None, only=None):
+    """Rejoue l'année (2025 par défaut, avec ses trois tranches) pour toutes les stratégies ou celles de only."""
+    period, tests = (YEAR, TESTS) if year is None else (
+        (date(year, 1, 1), date(year, 12, 31)),
+        [{"label": f"janvier_juin_{year}", "start": date(year, 1, 1), "end": date(year, 6, 30)},
+         {"label": f"annee_{year}", "start": date(year, 1, 1), "end": date(year, 12, 31)}])
+    chosen = [s for s in STRATEGIES if only is None or s.id in only]
+    if not chosen:
+        raise ValueError(f"Aucune stratégie parmi {only}")
     git_sha = committed_git_sha()
     alpaca = AlpacaReader()
-    criteria_hash = hashlib.sha1(json.dumps({s.id: {v: c.to_json() for v, c in s.criteria().items()}
-                                             for s in STRATEGIES}, sort_keys=True, default=str).encode()).hexdigest()[:10]
-    sessions = alpaca.sessions(YEAR[0] - timedelta(days=10), YEAR[1] + timedelta(days=10))
-    days = [i for i, s in enumerate(sessions) if YEAR[0] <= s[0] <= YEAR[1]]
-    print(f"{len(days)} séances du {sessions[days[0]][0]} au {sessions[days[-1]][0]} · {len(STRATEGIES)} stratégies.")
+    # Clé des résultats par séance : critères ET heures de vente, stop et objectif de chaque stratégie retenue.
+    criteria_hash = hashlib.sha1(json.dumps({s.id: {"criteria": {v: c.to_json() for v, c in s.criteria().items()},
+                                                    "exit": [s.sale_offset, s.exit_before_close_minutes,
+                                                             s.exit_after_open_minutes, s.exit_next_open_minutes,
+                                                             str(s.stop_loss), str(s.take_profit)]}
+                                             if s.id not in OLD_KEYS else {v: c.to_json() for v, c in s.criteria().items()}
+                                             for s in chosen}, sort_keys=True, default=str).encode()).hexdigest()[:10]
+    sessions = alpaca.sessions(period[0] - timedelta(days=10), period[1] + timedelta(days=20))
+    days = [i for i, s in enumerate(sessions) if period[0] <= s[0] <= period[1]]
+    print(f"{len(days)} séances du {sessions[days[0]][0]} au {sessions[days[-1]][0]} · {len(chosen)} stratégies.")
 
     today = datetime.now(timezone.utc).astimezone(NEW_YORK).date()
     listings, _ = cached(f"{today}/nasdaq_listings", nasdaq_symbols.listings)
     assets = cached(f"{today}/alpaca_assets", alpaca.assets)
     symbols, _ = eligible_symbols(assets, listings)
     first_open = _utc(*sessions[days[0]][:2])
-    last_close = _utc(sessions[days[-1] + 1][0], sessions[days[-1] + 1][2])
+    last_close = _utc(sessions[days[-1] + MAX_HOLD_SESSIONS][0], sessions[days[-1] + MAX_HOLD_SESSIONS][2])
     print("Lecture des cours quotidiens (une fois)…")
     daily_key = _key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
     spy_key = _key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
@@ -267,23 +328,26 @@ def run():
     # cours quotidiens déjà lus ; chaque séance a ses propres fichiers de cache.
     results = {}
     with ProcessPoolExecutor(max_workers=WORKERS, mp_context=multiprocessing.get_context("spawn"), initializer=_init,
-                             initargs=(daily_key, spy_key, sessions, criteria_hash)) as pool:
+                             initargs=(daily_key, spy_key, sessions, criteria_hash, only)) as pool:
         for n, (day, records) in enumerate(pool.map(_one_day, days), start=1):
             results[day] = records
             print(f"  [{n}/{len(days)}] {day} : " + " · ".join(
                 f"{sid} {r['per12_n']}/{r['sans_per_n']} {_pct(r['per12'])}" for sid, r in records.items()), flush=True)
-    by_strategy = {s.id: [results[day][s.id] for day in sorted(results)] for s in STRATEGIES}
+    by_strategy = {s.id: [results[day][s.id] for day in sorted(results)] for s in chosen}
 
     written = []
-    for strategy in STRATEGIES:
+    for strategy in chosen:
         folder = RUNS_DIR / strategy.storage / "backtests"
-        for test in TESTS:
+        # Achats qui se chevauchent (garde de plusieurs séances) : une tranche du capital par séance d'achat.
+        slices = max(strategy.sale_offset, 1) if strategy.exit_after_sessions else 1
+        for test in tests:
             rows = [r for r in by_strategy[strategy.id] if test["start"].isoformat() <= r["date"] <= test["end"].isoformat()]
             names = [*strategy.criteria(), "spy"]
-            series = {name: {r["date"]: r[name] for r in rows if r[name] is not None} for name in names}
-            holds = {f"{name}_sans_regle": {r["date"]: r[f"{name}_hold"] for r in rows if r[f"{name}_hold"] is not None}
+            series = {name: {r["date"]: r[name] / slices for r in rows if r[name] is not None} for name in names}
+            holds = {f"{name}_sans_regle": {r["date"]: r[f"{name}_hold"] / slices for r in rows
+                                             if r[f"{name}_hold"] is not None}
                      for name in strategy.criteria()}
-            holds.update({f"{name}_stop_seul": {r["date"]: r[f"{name}_stop_only"] for r in rows
+            holds.update({f"{name}_stop_seul": {r["date"]: r[f"{name}_stop_only"] / slices for r in rows
                                                  if r.get(f"{name}_stop_only") is not None}
                           for name in strategy.criteria()})
             numbers = [int(p.name[1:]) for p in folder.glob("b[0-9][0-9][0-9]") if p.name[1:].isdigit()]
@@ -295,8 +359,10 @@ def run():
                 "git_sha": git_sha,
                 "period": {"start": rows[0]["date"], "end": rows[-1]["date"], "sessions": len(rows), "months": None},
                 "spy_month": test.get("spy_month"),
+                "capital_slices": slices,
                 "rules": {"entry": "premier échange 15 min après la décision de chaque liste (New York)",
-                          "exit": f"heure de vente de la stratégie {strategy.id}, stop −1,5 % / objectif +3 %",
+                          "exit": f"heure de vente de la stratégie {strategy.id}, stop −{strategy.stop_loss * 100} % / "
+                                  + ("pas d'objectif" if strategy.take_profit is None else f"objectif +{strategy.take_profit * 100} %"),
                           "cost_bps_per_order": "5", "split": "parts égales, fractions d'action"},
                 "criteria": {v: c.to_json() for v, c in strategy.criteria().items()},
                 "biases": BIASES + EXTRA_BIASES,
@@ -319,8 +385,12 @@ def _pct(value):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Tests sur le passé des stratégies (diagnostic)")
+    parser.add_argument("--year", type=int, help="Année rejouée (défaut : 2025 et ses trois tranches)")
+    parser.add_argument("--only", help="Identifiants des stratégies, séparés par des virgules (défaut : toutes)")
+    args = parser.parse_args()
     try:
-        return run()
+        return run(args.year, None if args.only is None else set(args.only.split(",")))
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
         return 1

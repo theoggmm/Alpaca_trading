@@ -11,12 +11,14 @@ from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from core.closing import ClosingCriteria, screen_closing
+from core.closing import ClosingCriteria, market_moves, screen_closing
 from core.domains import domain_trends
 from core.fundamentals import split_adjusted
 from core.opening import OpeningCriteria, screen_opening
 from core.screener import Criteria, daily_candidates, liquid_universe, screen
 from core.strategy import load_strategies
+from core.swing import SwingCriteria, screen_swing
+from core.switch import SwitchCriteria, choose
 from core.universe import eligible_symbols
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import DATA_URL, AlpacaReader
@@ -40,6 +42,8 @@ SIP_DELAY = timedelta(minutes=15)
 MAX_WAIT = timedelta(minutes=20)
 # Couvre largement les 61 séances nécessaires aux critères (jours fériés compris).
 DAILY_HISTORY = timedelta(days=130)
+# Liste « repli dans une tendance » : dernier prix des titres liquides lu sur les 15 minutes avant la décision.
+PRICE_WINDOW = timedelta(minutes=15)
 
 
 # Divisions d'actions lues depuis cette date (bien avant les plus anciens bénéfices utiles, 12 mois + 200 jours).
@@ -97,6 +101,16 @@ def _produce_opening(alpaca, criteria, session_date, market_open, key):
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 
+def _market_minute(alpaca, symbol, key, market_open, decision_time):
+    """Barres minute du repère (SPY) de l'ouverture à la décision (règles « marché qui tient / qui remonte »)."""
+    return cached(f"{key}/market_minute_{symbol}_{decision_time.astimezone(NEW_YORK):%H%M}",
+                  lambda: alpaca.bars([symbol], "1Min", market_open, decision_time))
+
+
+def _needs_market_minute(criteria):
+    return criteria.market_min_day_return is not None or criteria.market_min_last_hour_return is not None
+
+
 def _produce_closing(alpaca, criteria, session_date, market_open, key):
     """
     Liste « fin de journée » : barres minute de la séance du jour des titres liquides, jusqu'à la décision.
@@ -114,8 +128,44 @@ def _produce_closing(alpaca, criteria, session_date, market_open, key):
     market_daily = None if criteria.market_symbol is None else cached(
         f"{key}/market_daily_bars_{criteria.market_symbol}",
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
+    market_minute = (_market_minute(alpaca, criteria.market_symbol, key, market_open, decision_time)
+                     if _needs_market_minute(criteria) else None)
     selection, funnel = screen_closing(daily, minute, market_open, decision_time, criteria,
-                                       earnings_for=earnings(alpaca, key), market_daily=market_daily)
+                                       earnings_for=earnings(alpaca, key), market_daily=market_daily,
+                                       market_minute=market_minute)
+    return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
+
+
+def _switch_choice(alpaca, criteria, market_open, key):
+    """
+    Bascule : (première liste retenue ?, variation du repère depuis l'ouverture à la première décision).
+    Barres du repère terminées à la première décision seulement.
+    """
+    first_decision = market_open + timedelta(minutes=criteria.first.decision_minutes)
+    market_minute = _market_minute(alpaca, criteria.market_symbol, key, market_open, first_decision)
+    day, _ = market_moves(market_minute, market_open, first_decision, criteria.market_symbol)
+    return choose(criteria, market_minute, market_open, first_decision), day
+
+
+def _produce_swing(alpaca, criteria, session_date, market_open, key):
+    """
+    Liste « repli dans une tendance » : dernier prix des titres liquides avant la décision (15 dernières minutes).
+    Retourne (décision, sélection, entonnoir, cotes Nasdaq, date de l'annuaire, univers, quotidien).
+    """
+    decision_time = market_open + timedelta(minutes=criteria.decision_minutes)
+    listings, listings_created = cached(f"{key}/nasdaq_listings", nasdaq_symbols.listings)
+    assets = cached(f"{key}/alpaca_assets", alpaca.assets)
+    symbols, universe_funnel = eligible_symbols(assets, listings)
+    daily = cached(f"{key}/daily_bars",
+                   lambda: alpaca.bars(symbols, "1Day", decision_time - DAILY_HISTORY, decision_time))
+    liquid, _ = liquid_universe(daily, decision_time, criteria)
+    minute = cached(f"{key}/swing_prices_{decision_time.astimezone(NEW_YORK):%H%M}",
+                    lambda: alpaca.bars([s.symbol for s in liquid], "1Min", decision_time - PRICE_WINDOW, decision_time))
+    market_daily = None if criteria.market_symbol is None else cached(
+        f"{key}/market_daily_bars_{criteria.market_symbol}",
+        lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
+    selection, funnel = screen_swing(daily, minute, market_open, decision_time, criteria,
+                                     earnings_for=earnings(alpaca, key), market_daily=market_daily)
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 
@@ -125,8 +175,19 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     Toutes les données sont tronquées à l'instant de décision (ouverture + première heure, + confirmation).
     """
     key = session_date.isoformat()
-    if isinstance(criteria, (OpeningCriteria, ClosingCriteria)):
-        special = _produce_opening if isinstance(criteria, OpeningCriteria) else _produce_closing
+    if isinstance(criteria, SwitchCriteria):
+        # Bascule : liste de la première décision si le marché tient, sinon (plus tard) celle de la seconde.
+        first, day = _switch_choice(alpaca, criteria, market_open, key)
+        chosen = criteria.first if first else criteria.second
+        if now < market_open + timedelta(minutes=chosen.decision_minutes) + SIP_DELAY:
+            return None   # le marché n'a pas tenu : la seconde liste n'est pas encore prête
+        payload = produce(alpaca, chosen, session_date, market_open, now, git_sha)
+        payload["switch"] = {"criteria": criteria.to_json(), "chosen": "first" if first else "second",
+                             "market_day_return_at_first": None if day is None else float(day)}
+        return payload
+    if isinstance(criteria, (OpeningCriteria, ClosingCriteria, SwingCriteria)):
+        special = {OpeningCriteria: _produce_opening, ClosingCriteria: _produce_closing,
+                   SwingCriteria: _produce_swing}[type(criteria)]
         decision_time, selection, funnel, listings, listings_created, universe_funnel, daily = special(
             alpaca, criteria, session_date, market_open, key)
         return _payload(alpaca, criteria, key, market_open, decision_time, now, git_sha, daily, listings,
@@ -203,6 +264,7 @@ def _report(payload, criteria, path):
         pe = f"  PER {item['pe_ttm']}" if item.get("pe_ttm") else ""
         # Liste « reprise » : première heure ; liste « ouverture » : dernière heure de la veille et nuit.
         signal = (f"1re heure {_pct(item['return_first_hour'])}" if "return_first_hour" in item else
+                  f"repli {_pct(-item['pullback'])}  journée {_pct(item['return_day'])}" if "pullback" in item else
                   f"fin de veille {_pct(item['return_last_hour'])}  nuit {_pct(item['return_overnight'])}"
                   if "return_overnight" in item else
                   f"journée {_pct(item['return_day'])}  dernière heure {_pct(item['return_last_hour'])}")
@@ -257,8 +319,12 @@ def run(wait=True):
                   f"liste produite au prochain lancement.")
             pending.append(label)
             continue
-        payload = {"run_id": next_run_id(strategy.storage), "variant": variant, "strategy": strategy.id,
-                   **produce(alpaca, criteria, session_date, market_open, now, git_sha)}
+        produced = produce(alpaca, criteria, session_date, market_open, now, git_sha)
+        if produced is None:
+            print(f"[{label}] Bascule : le marché n'a pas tenu à la première décision, seconde liste au prochain lancement.")
+            pending.append(label)
+            continue
+        payload = {"run_id": next_run_id(strategy.storage), "variant": variant, "strategy": strategy.id, **produced}
         _report(payload, criteria, save_run(strategy.storage, payload))
         domains = payload["domains"]
     if domains is None:

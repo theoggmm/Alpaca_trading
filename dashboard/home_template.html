@@ -71,7 +71,7 @@ const TEXT = {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
     intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
     head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · PER < 25 · sans stop/objectif", "Aujourd'hui · sans PER", "Aujourd'hui · sans PER · sans stop/objectif", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · PER < 25 · sans stop/objectif", "Depuis le 16 oct. · sans PER", "Depuis le 16 oct. · sans PER · sans stop/objectif", "Séances"],
-    waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)",
+    waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)", later: k => ` (${k} séances plus tard)`, or_at: "ou",
     updated: t => `Mise à jour à ${t} (Paris) — la page se recharge toute seule chaque minute pendant la séance.`,
     list_at: t => `liste ${t}`, bought_at: t => `prix attendu`, sold: "vendu",
     note: "Aujourd'hui : en direct pendant la séance (prix avec 15 min de retard), figé à l'heure de vente. Colonnes « sans stop/objectif » (en gris) : le même résultat si chaque titre était gardé jusqu'à l'heure de vente, sans la vente à −1,5 % ni à +3 % — pour voir ce que la règle rapporte ou coûte. Toutes ces stratégies sont des diagnostics en papier : aucun ordre n'est passé.",
@@ -80,7 +80,7 @@ const TEXT = {
     title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
     intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
     head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · P/E < 25 · no stop/target", "Today · without P/E", "Today · without P/E · no stop/target", "Since Oct 16 · P/E < 25", "Since Oct 16 · P/E < 25 · no stop/target", "Since Oct 16 · without P/E", "Since Oct 16 · without P/E · no stop/target", "Sessions"],
-    waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)",
+    waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)", later: k => ` (${k} sessions later)`, or_at: "or",
     updated: t => `Updated at ${t} (Paris) — the page reloads itself every minute during the session.`,
     list_at: t => `list ${t}`, bought_at: t => `price pending`, sold: "sold",
     note: "Today: live during the session (prices 15 min late), frozen at the selling time. \"No stop/target\" columns (grey background): the same result if every stock were kept until the selling time, without the −1.5% or +3% sale — to see what the rule gains or costs. All these strategies are paper diagnostics: no order is placed.",
@@ -113,10 +113,12 @@ ROWS.forEach(r => {
   const d = document.createElement("div"); d.className = "desc"; d.textContent = LANG === "fr" ? r.description : r.description_en;
   name.append(a, d); tr.appendChild(name);
   // New York sur la première ligne, Paris en dessous : la colonne reste étroite.
-  const times = document.createElement("td"); times.className = "text num"; const next = r.next_day ? TEXT.next_day : "";
+  const times = document.createElement("td"); times.className = "text num"; const next = r.sale_offset > 1 ? TEXT.later(r.sale_offset) : r.next_day ? TEXT.next_day : "";
   const paris = document.createElement("div"); paris.className = "desc";
-  paris.textContent = `${r.buy_paris} → ${r.sell_paris}${next} Paris`;
-  times.textContent = `${r.buy} → ${r.sell}${next} New York`;
+  // Bascule : deux heures d'achat possibles (« 15:00 ou 15:55 »).
+  const alt = (t, a) => a ? `${t} ${TEXT.or_at} ${a}` : t;
+  paris.textContent = `${alt(r.buy_paris, r.buy_alt_paris)} → ${r.sell_paris}${next} Paris`;
+  times.textContent = `${alt(r.buy, r.buy_alt)} → ${r.sell}${next} New York`;
   times.appendChild(paris); tr.appendChild(times);
   // Aujourd'hui : la liste n'est pas encore produite → son heure ; produite mais prix d'achat pas encore servi →
   // heure d'achat ; liste vide → « pas de liste » ; sinon le résultat en direct (« vendu » une fois figé).

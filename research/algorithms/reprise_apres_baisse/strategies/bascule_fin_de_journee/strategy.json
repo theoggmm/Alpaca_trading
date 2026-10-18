@@ -1,0 +1,11 @@
+{
+  "id": "bascule_fin_de_journee",
+  "order": 12,
+  "name": "Nouvelle 2 — Bascule de fin de journée",
+  "description": "À 14 h 45 : si le S&P 500 tient (pas plus de −0,2 % depuis l'ouverture), achat à 15 h 00. Sinon, à 15 h 40 : achat à 15 h 55 seulement si le S&P 500 a remonté sur la dernière heure. Sinon rien. Vente le lendemain à 10 h 30. Stop −1,5 %, pas d'objectif.",
+  "name_en": "New 2 — End-of-day switch",
+  "description_en": "At 2:45 PM: if the S&P 500 holds (no worse than −0.2% since the open), buy at 3:00 PM. Otherwise, at 3:40 PM: buy at 3:55 PM only if the S&P 500 rose over the last hour. Otherwise nothing. Sold the next day at 10:30 AM. −1.5% stop, no target.",
+  "exit_next_open_minutes": 60,
+  "stop_loss": "0.015",
+  "take_profit": null
+}

@@ -63,7 +63,7 @@ def early_exits(path_bars, entry, entry_time, exit_time, now, stop_loss=STOP_LOS
 
 
 def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time, now, amounts=AMOUNTS,
-             path_bars=None, take_profit=TAKE_PROFIT):
+             path_bars=None, take_profit=TAKE_PROFIT, stop_loss=STOP_LOSS):
     """
     symbols     : titres de la liste.
     entry_bars  : barres minute à partir de entry_time (prix d'achat).
@@ -89,7 +89,8 @@ def simulate(symbols, entry_bars, exit_bars, last_trades, entry_time, exit_time,
             current = {s: price for s, (_, price) in last_trades.items()}
     else:
         status, current = "live", {s: price for s, (_, price) in last_trades.items()}
-    early = {} if path_bars is None else early_exits(path_bars, entry, entry_time, exit_time, now, take_profit=take_profit)
+    early = {} if path_bars is None else early_exits(path_bars, entry, entry_time, exit_time, now, stop_loss=stop_loss,
+                                                               take_profit=take_profit)
     hold = dict(current)  # prix sans la règle stop / objectif : chaque titre gardé jusqu'à l'heure de vente
     current.update({s: e["price"] for s, e in early.items()})
     held = [s for s in symbols if s in entry and s in current]

@@ -1,0 +1,11 @@
+{
+  "id": "nuit_marche_tient",
+  "order": 11,
+  "name": "Nouvelle 1 — Nuit si le marché tient",
+  "description": "Choisie à 14 h 45 seulement si le S&P 500 n'a pas perdu plus de 0,2 % depuis l'ouverture. Actions en hausse sur la journée, près de leur plus haut. Achat à 15 h 00, vente le lendemain à l'ouverture. Stop −1,5 %, pas d'objectif.",
+  "name_en": "New 1 — Overnight when the market holds",
+  "description_en": "Chosen at 2:45 PM only if the S&P 500 has not lost more than 0.2% since the open. Stocks up on the day, near their high. Bought at 3:00 PM, sold the next day at the open. −1.5% stop, no target.",
+  "exit_next_open_minutes": 0,
+  "stop_loss": "0.015",
+  "take_profit": null
+}

@@ -79,7 +79,10 @@ def _strategy_info(strategy):
     """Ce que la page affiche d'une stratégie : nom, description, heures d'achat et de vente (New York)."""
     open_minutes, close_minutes = 9 * 60 + 30, 16 * 60
     buy = open_minutes + min(c.decision_minutes for c in strategy.criteria().values()) + 15
-    if strategy.overnight:   # vente la séance suivante (0 = à l'ouverture)
+    # Bascule : seconde heure d'achat possible (si le marché n'a pas tenu à la première décision).
+    later_buy = [open_minutes + m + 15 for c in strategy.criteria().values()
+                 for m in getattr(c, "decisions_minutes", [])[1:]]
+    if strategy.exit_next_open_minutes is not None:   # vente la séance suivante (0 = à l'ouverture)
         sell = open_minutes + strategy.exit_next_open_minutes
     elif strategy.exit_after_open_minutes is not None:
         sell = open_minutes + strategy.exit_after_open_minutes
@@ -89,7 +92,10 @@ def _strategy_info(strategy):
     return {"id": strategy.id, "name": strategy.name, "description": strategy.description, "name_en": strategy.name_en,
             "description_en": strategy.description_en, "main": strategy.is_main,
             "buy": _clock(buy), "sell": _clock(sell), "buy_paris": _paris(buy), "sell_paris": _paris(sell),
-            "next_day": strategy.overnight,
+            "next_day": strategy.overnight, "sale_offset": strategy.sale_offset,
+            "buy_alt": _clock(later_buy[0]) if later_buy else None, "buy_alt_paris": _paris(later_buy[0]) if later_buy else None,
+            "stop_pct": float(strategy.stop_loss * 100),
+            "target_pct": None if strategy.take_profit is None else float(strategy.take_profit * 100),
             "fr": page["fr"].name, "en": page["en"].name}
 
 

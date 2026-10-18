@@ -1,6 +1,6 @@
 """Stratégies : chargement, stockage sous la famille, heures de vente, sortes de critères."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from core.opening import OpeningCriteria
@@ -33,11 +33,11 @@ def test_strategies_de_la_famille():
                          "nuit_15h55_ouverture": 370, "achat_10h30_vente_cloture": 45, "nuit_15h55_10h30": 370}
     # De nuit : achat en fin de séance, vente la séance suivante (« à l'ouverture » = fin de la première minute).
     monday = datetime(2026, 10, 19, 13, 30, tzinfo=timezone.utc)
-    assert every["nuit_15h_10h30"].exit_time(OPEN, CLOSE, monday) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
-    assert every["nuit_15h55_ouverture"].exit_time(OPEN, CLOSE, monday) == datetime(2026, 10, 19, 13, 31, tzinfo=timezone.utc)
+    assert every["nuit_15h_10h30"].exit_time(OPEN, CLOSE, (monday, monday + timedelta(hours=6, minutes=30))) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
+    assert every["nuit_15h55_ouverture"].exit_time(OPEN, CLOSE, (monday, monday + timedelta(hours=6, minutes=30))) == datetime(2026, 10, 19, 13, 31, tzinfo=timezone.utc)
     assert every["nuit_15h_ouverture"].overnight and not every["principale"].overnight
     assert every["achat_10h30_vente_cloture"].exit_time(OPEN, CLOSE) == datetime(2026, 10, 16, 19, 55, tzinfo=timezone.utc)
-    assert every["nuit_15h55_10h30"].exit_time(OPEN, CLOSE, monday) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
+    assert every["nuit_15h55_10h30"].exit_time(OPEN, CLOSE, (monday, monday + timedelta(hours=6, minutes=30))) == datetime(2026, 10, 19, 14, 30, tzinfo=timezone.utc)
     assert isinstance(every["ouverture_1h"].criteria()["per12"], OpeningCriteria)
     assert isinstance(every["achat_10h30"].criteria()["per12"], Criteria)
 

@@ -1,0 +1,20 @@
+{
+  "signal": "fin_de_journee",
+  "version": 1,
+  "count": 20,
+  "liquidity_sessions": 20,
+  "min_price_usd": "5",
+  "min_avg_dollar_volume_usd": "20000000",
+  "volatility_sessions": 60,
+  "month_sessions": 21,
+  "correlation_sessions": 60,
+  "max_pairwise_correlation": 0.6,
+  "decision_after_open_minutes": 315,
+  "last_hour_minutes": 60,
+  "min_day_gain": "0.005",
+  "max_day_gain": "0.04",
+  "max_below_day_high": "0.01",
+  "market_symbol": "SPY",
+  "market_ma_sessions": 50,
+  "market_min_day_return": "-0.002"
+}
