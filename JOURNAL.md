@@ -494,3 +494,14 @@ stratégie 14 seule ; les années 2021 à 2023 diront si cela se confirme.
 un tiers de jours perdants en moins. Aucune règle ne supprime toutes les pertes.
 
 Autrement dit : on évite les jours qui perdaient le plus souvent ; il restera des jours perdants.
+
+## 2026-10-19 — Tests 2021-2023 et règle en vigueur, version 3
+
+**Question posée** : adapter le choix des investissements une fois 2021-2023 connues.
+
+**Fait** : tests 2021, 2022, 2023 des 23 stratégies (et versions 7 actions) ; sur cinq ans, presque tout le gain des
+stratégies de nuit vient de 2024-2025. Recherche de règles vraies au moins 4 années sur 5 : pas le lundi, S&P 500 en
+hausse à 14 h 45. Règle en vigueur version 3 (décision T21) : cinq ans +89 %, 4 années positives sur 5, 2022 −7 %.
+
+Autrement dit : la nouvelle règle gagne moins en 2025 mais beaucoup mieux les années difficiles ; rien ne garantit
+l'avenir, les prochaines semaines en papier le diront.

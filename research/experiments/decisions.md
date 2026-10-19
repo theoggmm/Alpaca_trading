@@ -190,3 +190,14 @@ stratégie 14 avec count 7, skip_weekdays [0] et market_max_fear_move 0,03 (VIXY
 chaque heure de décision (14 h 45 ou 15 h 40). Même règle que T19, une seule implémentation (règle 8) : la sélection
 du jour en direct (dashboard/daily_pick.py) et sa page sont archivées (dashboard/archive/). Tests 2024, 2025 et
 semaine du 12 octobre lancés ; 2021-2023 avec les autres stratégies. Statut : diagnostic, papier, aucun ordre.
+
+## T21 — 2026-10-19 — Règle en vigueur, version 3 (propriétaire : « adapter après 2021-2023 »)
+
+Tests 2021-2023 : la version 2 fait +1,6 % / −17,8 % / −3,3 % (sans PER, 7 actions). Critère : ne garder que les
+règles qui améliorent au moins 4 années sur 5. Gardées : pas le lundi (4/5) ; achat seulement si SPY est en hausse
+depuis l'ouverture à 14 h 45 (market_min_day_return 0, 4/5). Retirée : peur calme (2/5). Nouvelle règle : critères de
+nuit_tient_10h30 (fin de journée, décision 14 h 45, achat 15 h 00, vente le lendemain 10 h 30, sans stop ni objectif),
+count 7, market_min_day_return 0, skip_weekdays [0]. Sur le passé (rejeu des 7 premières actions) : 2021 +24,2 %,
+2022 −7,1 %, 2023 +2,5 %, 2024 +17,1 %, 2025 +36,2 %, cinq ans +89 % (version 2 : +73 %). Les cinq années ont servi au
+choix (diagnostic) ; jugement sur les séances futures. Réglages de la version 2 archivés
+(research/algorithms/reprise_apres_baisse/archive/regle_en_vigueur_v2/). Statut : papier, aucun ordre.

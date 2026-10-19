@@ -1,10 +1,10 @@
 {
   "id": "regle_en_vigueur",
   "order": 0,
-  "name": "Règle en vigueur (version 2)",
-  "description": "Bascule de fin de journée (15 h 00 si le S&P 500 tient, sinon 15 h 55 s'il remonte), seulement les 7 premières actions ; pas d'achat le lundi ni si l'indice de peur (VIXY) a bougé de plus de 3 % depuis l'ouverture. Vente le lendemain à 10 h 30, sans stop ni objectif. La liste sans PER est la règle ; la liste PER < 25 sert de comparaison.",
-  "name_en": "Rule in force (version 2)",
-  "description_en": "End-of-day switch (3:00 PM if the S&P 500 holds, otherwise 3:55 PM if it recovers), only the first 7 stocks; no purchase on Mondays nor if the fear index (VIXY) has moved more than 3% since the open. Sold the next day at 10:30 AM, no stop or target. The list without P/E is the rule; the P/E < 25 list is for comparison.",
+  "name": "Règle en vigueur (version 3)",
+  "description": "À 14 h 45 (New York), seulement si le S&P 500 est en hausse depuis l'ouverture et pas un lundi : les 7 premières actions de la liste de fin de journée (en hausse sur la journée, dernière heure en hausse, près du plus haut). Achat à 15 h 00, vente le lendemain à 10 h 30, sans stop ni objectif. La liste sans PER est la règle ; la liste PER < 25 sert de comparaison.",
+  "name_en": "Rule in force (version 3)",
+  "description_en": "At 2:45 PM (New York), only if the S&P 500 is up since the open and not on a Monday: the first 7 stocks of the end-of-day list (up on the day, last hour rising, near the high). Bought at 3:00 PM, sold the next day at 10:30 AM, no stop or target. The list without P/E is the rule; the P/E < 25 list is for comparison.",
   "exit_next_open_minutes": 60,
   "stop_loss": null,
   "take_profit": null
