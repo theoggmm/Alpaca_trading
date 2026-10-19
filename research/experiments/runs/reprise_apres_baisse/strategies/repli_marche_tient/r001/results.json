@@ -1,0 +1,276 @@
+{
+  "run_id": "r001",
+  "variant": "per12",
+  "strategy": "repli_marche_tient",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-19",
+  "market_open": "2026-10-19T13:30:00+00:00",
+  "decision_time": "2026-10-19T19:40:00+00:00",
+  "created_at": "2026-10-19T20:17:21.285774+00:00",
+  "git_sha": "6e255bc1b2558c2c7d0932c47fe93b5c37dcf5f8",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": "25",
+    "min_down_days": null,
+    "market_min_day_return": "-0.002"
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1019202603:02",
+      "otherlisted": "1019202603:02"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13523,
+    "cotes_sur_une_bourse_us": 12770,
+    "hors_etf_et_titres_de_test": 6990,
+    "avec_barres_quotidiennes": 6987,
+    "historique_complet": 6812,
+    "prix_minimum": 4683,
+    "volume_echange_minimum": 2038,
+    "marche_tient": 2038,
+    "volatilite_basse": 1019,
+    "tendance_haussiere": 165,
+    "repli_net": 29,
+    "en_baisse_aujourd_hui": 15,
+    "per_maximum": 6,
+    "selection_diversifiee": 6
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.024094691130423885
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.01377271766292357
+      },
+      {
+        "domain": "Technology",
+        "n": 298,
+        "mean_return": -0.018747633570080163
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.01999657827802925
+      },
+      {
+        "domain": "Finance",
+        "n": 247,
+        "mean_return": -0.029287188871203285
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 348,
+        "mean_return": -0.036604773250725996
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 168,
+        "mean_return": -0.03811452563612448
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 166,
+        "mean_return": -0.06871474079594156
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.08007952520940548
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "LUV",
+      "prev_close": "39.5",
+      "price_at_decision": "38.91",
+      "recent_high": "42.45",
+      "pullback": 0.0833922261484099,
+      "return_day": -0.014936708860759493,
+      "return_month": -0.020823004462072386,
+      "return_day_minus_2": 0.037874936451448904,
+      "return_day_minus_1": -0.03257408768062699,
+      "trend_gap": 0.009548450536933007,
+      "volatility_annualized": 0.3321537610433534,
+      "avg_dollar_volume": "250472428",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "24.32",
+      "open_today": "39.77",
+      "name": "Southwest Airlines Company Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Air Transportation, Scheduled"
+    },
+    {
+      "rank": 2,
+      "symbol": "KMT",
+      "prev_close": "30.79",
+      "price_at_decision": "30.76",
+      "recent_high": "33.41",
+      "pullback": 0.07931756958994313,
+      "return_day": -0.000974342318934719,
+      "return_month": 0.03183646112600536,
+      "return_day_minus_2": 0.002912621359223301,
+      "return_day_minus_1": -0.006453694740238786,
+      "trend_gap": 0.02310630338386679,
+      "volatility_annualized": 0.3518140396833682,
+      "avg_dollar_volume": "42049302",
+      "max_correlation_with_previous": 0.44316383163727097,
+      "pe_ttm": "6.96",
+      "open_today": "30.63",
+      "name": "Kennametal Inc. Common Stock",
+      "domain": "Technology",
+      "sic_description": "Machine Tools, Metal Cutting Types"
+    },
+    {
+      "rank": 3,
+      "symbol": "VLO",
+      "prev_close": "444.71",
+      "price_at_decision": "435.32",
+      "recent_high": "459.78",
+      "pullback": 0.0531993562138414,
+      "return_day": -0.021114883856895503,
+      "return_month": 0.07800644801590187,
+      "return_day_minus_2": -0.03419026490930445,
+      "return_day_minus_1": 0.0014637661577264333,
+      "trend_gap": 0.08444601431540641,
+      "volatility_annualized": 0.3445912702749476,
+      "avg_dollar_volume": "1282294165",
+      "max_correlation_with_previous": -0.07016711643878012,
+      "pe_ttm": "18.15",
+      "open_today": "445.76",
+      "name": "Valero Energy Corporation Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Petroleum Refining"
+    },
+    {
+      "rank": 4,
+      "symbol": "EHC",
+      "prev_close": "127.87",
+      "price_at_decision": "122.46",
+      "recent_high": "127.87",
+      "pullback": 0.04230859466645812,
+      "return_day": -0.04230859466645812,
+      "return_month": 0.0401854714064915,
+      "return_day_minus_2": 0.009560682680151707,
+      "return_day_minus_1": 0.0007826563356030367,
+      "trend_gap": 0.006144983040435001,
+      "volatility_annualized": 0.3089092302170866,
+      "avg_dollar_volume": "119466713",
+      "max_correlation_with_previous": 0.041727048869167914,
+      "pe_ttm": "19.94",
+      "open_today": "126.79",
+      "name": "Encompass Health Corporation Common Stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Services-Hospitals"
+    },
+    {
+      "rank": 5,
+      "symbol": "SBH",
+      "prev_close": "16.65",
+      "price_at_decision": "16.455",
+      "recent_high": "17.12",
+      "pullback": 0.038843457943925234,
+      "return_day": -0.011711711711711712,
+      "return_month": 0.05313092979127135,
+      "return_day_minus_2": 0.06269397889509622,
+      "return_day_minus_1": -0.027453271028037383,
+      "trend_gap": 0.002602257733470166,
+      "volatility_annualized": 0.3644515765841184,
+      "avg_dollar_volume": "22551368",
+      "max_correlation_with_previous": 0.48016503761633206,
+      "pe_ttm": "8.57",
+      "open_today": "16.6",
+      "name": "Sally Beauty Holdings, Inc. (Name to be changed from Sally Holdings, Inc.) Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Retail-Retail Stores, NEC"
+    },
+    {
+      "rank": 6,
+      "symbol": "ZD",
+      "prev_close": "57.15",
+      "price_at_decision": "56.61",
+      "recent_high": "58.44",
+      "pullback": 0.03131416837782341,
+      "return_day": -0.009448818897637795,
+      "return_month": -0.0334855403348554,
+      "return_day_minus_2": 0.017763845350052248,
+      "return_day_minus_1": -0.022073921971252568,
+      "trend_gap": 0.006823384790800011,
+      "volatility_annualized": 0.29833752143080033,
+      "avg_dollar_volume": "27959369",
+      "max_correlation_with_previous": 0.30716644486926464,
+      "pe_ttm": "3.25",
+      "open_today": "56.76",
+      "name": "Ziff Davis, Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Telegraph & Other Message Communications"
+    }
+  ],
+  "override": {
+    "ignore_market_health": true,
+    "criteria": {
+      "signal": "repli_tendance",
+      "version": 1,
+      "count": 20,
+      "liquidity_sessions": 20,
+      "min_price_usd": "5",
+      "min_avg_dollar_volume_usd": "20000000",
+      "volatility_sessions": 60,
+      "max_volatility_quantile": 0.5,
+      "month_sessions": 21,
+      "correlation_sessions": 60,
+      "max_pairwise_correlation": 0.6,
+      "decision_after_open_minutes": 370,
+      "short_trend_sessions": 20,
+      "trend_sessions": 50,
+      "high_sessions": 10,
+      "min_pullback": "0.03",
+      "max_pullback": "0.10",
+      "market_symbol": "SPY",
+      "market_ma_sessions": 50,
+      "max_pe": "25",
+      "min_down_days": null,
+      "market_min_day_return": "-0.002"
+    },
+    "note": "règle « marché en bonne forme » suspendue ce jour-là par le propriétaire"
+  }
+}
