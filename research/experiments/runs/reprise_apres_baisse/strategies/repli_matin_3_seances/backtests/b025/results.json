@@ -1,0 +1,8274 @@
+{
+ "backtest_id": "b025",
+ "family": "reprise_apres_baisse",
+ "strategy": "repli_matin_3_seances",
+ "suite": "tests_2025",
+ "label": "janvier_juin_2023_top7",
+ "top": 7,
+ "status": "diagnostic",
+ "created_at": "2026-10-19T08:27:35.594145+00:00",
+ "git_sha": "26e00b544e5c7aed7f97cd1d12c6195e3a4c5c4e",
+ "period": {
+  "start": "2023-01-03",
+  "end": "2023-06-30",
+  "sessions": 124,
+  "months": null
+ },
+ "spy_month": null,
+ "capital_slices": 3,
+ "rules": {
+  "entry": "premier échange 15 min après la décision de chaque liste (New York)",
+  "exit": "heure de vente de la stratégie repli_matin_3_seances, stop −3.00 % / objectif +3.00 %",
+  "cost_bps_per_order": "5",
+  "split": "parts égales, fractions d'action"
+ },
+ "criteria": {
+  "per12": {
+   "signal": "repli_tendance",
+   "version": 1,
+   "count": 20,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "max_volatility_quantile": 0.5,
+   "month_sessions": 21,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "decision_after_open_minutes": 45,
+   "short_trend_sessions": 20,
+   "trend_sessions": 50,
+   "high_sessions": 10,
+   "min_pullback": "0.03",
+   "max_pullback": "0.10",
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50,
+   "max_pe": "25",
+   "min_down_days": null,
+   "market_min_day_return": null
+  },
+  "sans_per": {
+   "signal": "repli_tendance",
+   "version": 1,
+   "count": 20,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "max_volatility_quantile": 0.5,
+   "month_sessions": 21,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "decision_after_open_minutes": 45,
+   "short_trend_sessions": 20,
+   "trend_sessions": 50,
+   "high_sessions": 10,
+   "min_pullback": "0.03",
+   "max_pullback": "0.10",
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50,
+   "max_pe": null,
+   "min_down_days": null,
+   "market_min_day_return": null
+  }
+ },
+ "biases": [
+  "Univers = titres actifs aujourd'hui chez Alpaca : les titres disparus depuis (faillites, rachats) sont absents, ce qui embellit le passé (biais du survivant).",
+  "Indicateur ETF (Nasdaq Trader) lu aujourd'hui, appliqué au passé.",
+  "Bénéfices (PER) : seules les déclarations déposées à la SEC avant chaque jour de décision servent.",
+  "Repère univers liquide non calculé (trop coûteux sur le passé) : seul SPY sert de repère.",
+  "Plus haut de la première heure (version « pas au sommet ») : plus haute clôture minute, comme en direct.",
+  "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant la décision, est écarté (en direct il serait jugé sur ses premiers et derniers échanges) — rare pour des titres liquides."
+ ],
+ "summaries": {
+  "per12": {
+   "n": 124,
+   "mean": -0.0011134396122042087,
+   "total": -0.13091542162946945,
+   "annualized": -0.24810300937534857,
+   "suspect": false,
+   "positive_share": 0.3467741935483871,
+   "best": 0.010006705201779318,
+   "worst": -0.022859762332009526,
+   "sharpe": -2.981194163921113
+  },
+  "sans_per": {
+   "n": 124,
+   "mean": -0.0007291540479849905,
+   "total": -0.08783217158740098,
+   "annualized": -0.1704136634966802,
+   "suspect": false,
+   "positive_share": 0.3225806451612903,
+   "best": 0.009787298195184153,
+   "worst": -0.018686015325098383,
+   "sharpe": -2.360149642095781
+  },
+  "spy": {
+   "n": 124,
+   "mean": 0.0012070235742401892,
+   "total": 0.1594389627483983,
+   "annualized": 0.35072921686656766,
+   "suspect": false,
+   "positive_share": 0.6209677419354839,
+   "best": 0.010559488262500994,
+   "worst": -0.013840220907156224,
+   "sharpe": 3.7036945886789865
+  },
+  "per12_sans_regle": {
+   "n": 124,
+   "mean": -0.0008087983214881816,
+   "total": -0.09878391312849344,
+   "annualized": -0.19053003407040048,
+   "suspect": false,
+   "positive_share": 0.3870967741935484,
+   "best": 0.01734940489423854,
+   "worst": -0.031014962878598933,
+   "sharpe": -1.6649873134712896
+  },
+  "sans_per_sans_regle": {
+   "n": 124,
+   "mean": -0.0004717967687013598,
+   "total": -0.05956052899738262,
+   "annualized": -0.11732383013004422,
+   "suspect": false,
+   "positive_share": 0.3548387096774194,
+   "best": 0.013984108947765318,
+   "worst": -0.032584248292028224,
+   "sharpe": -1.0955932301582112
+  },
+  "per12_stop_seul": {
+   "n": 124,
+   "mean": -0.0007383474028147823,
+   "total": -0.0900239370045004,
+   "annualized": -0.17445961665571685,
+   "suspect": false,
+   "positive_share": 0.3548387096774194,
+   "best": 0.01734940489423854,
+   "worst": -0.023306675767626944,
+   "sharpe": -1.7548408762492924
+  },
+  "sans_per_stop_seul": {
+   "n": 124,
+   "mean": -0.0004741881615937161,
+   "total": -0.05896970654016365,
+   "annualized": -0.11619651015328503,
+   "suspect": false,
+   "positive_share": 0.31451612903225806,
+   "best": 0.013984108947765318,
+   "worst": -0.019827933189576017,
+   "sharpe": -1.3317464407253603
+  }
+ },
+ "days": [
+  {
+   "date": "2023-01-03",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.01778263312739138,
+   "spy_n": 1,
+   "spy_gross": 0.01880092490640828,
+   "spy_whole_gains": {
+    "10000": "174.51",
+    "25000": "439.50",
+    "50000": "885.47",
+    "100000": "1777.41",
+    "1000000": "17780.55",
+    "2000000": "35561.10"
+   },
+   "spy_hold": 0.01778263312739138,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-04",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.01604295099854062,
+   "spy_n": 1,
+   "spy_gross": 0.017059502225152463,
+   "spy_whole_gains": {
+    "10000": "157.76",
+    "25000": "397.32",
+    "50000": "800.47",
+    "100000": "1600.95",
+    "1000000": "16038.69",
+    "2000000": "32083.23"
+   },
+   "spy_hold": 0.01604295099854062,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-05",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.025031919599677356,
+   "spy_n": 1,
+   "spy_gross": 0.02605746429162301,
+   "spy_whole_gains": {
+    "10000": "245.23",
+    "25000": "617.62",
+    "50000": "1244.32",
+    "100000": "2497.72",
+    "1000000": "25031.69",
+    "2000000": "50063.37"
+   },
+   "spy_hold": 0.025031919599677356,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-06",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.03062015250896579,
+   "spy_n": 1,
+   "spy_gross": 0.03165128822933494,
+   "spy_whole_gains": {
+    "10000": "302.10",
+    "25000": "760.85",
+    "50000": "1521.70",
+    "100000": "3054.59",
+    "1000000": "30613.08",
+    "2000000": "61237.34"
+   },
+   "spy_hold": 0.03062015250896579,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-09",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.012166016742519374,
+   "spy_n": 1,
+   "spy_gross": 0.013178689095438352,
+   "spy_whole_gains": {
+    "10000": "118.15",
+    "25000": "299.92",
+    "50000": "604.38",
+    "100000": "1213.30",
+    "1000000": "12164.85",
+    "2000000": "24329.70"
+   },
+   "spy_hold": 0.012166016742519374,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-10",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.025087656004570424,
+   "spy_n": 1,
+   "spy_gross": 0.026113256460803112,
+   "spy_whole_gains": {
+    "10000": "241.67",
+    "25000": "622.76",
+    "50000": "1245.51",
+    "100000": "2500.32",
+    "1000000": "25086.81",
+    "2000000": "50173.63"
+   },
+   "spy_hold": 0.025087656004570424,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-11",
+   "per12": -0.010274249998615538,
+   "per12_n": 7,
+   "per12_gross": -0.009284029138183937,
+   "per12_whole_gains": {
+    "10000": "-100.00",
+    "25000": "-241.28",
+    "50000": "-504.71",
+    "100000": "-1009.19",
+    "1000000": "-10251.78",
+    "2000000": "-20528.76"
+   },
+   "per12_hold": -0.013304937924444074,
+   "per12_early": {
+    "NOC": "stop",
+    "PFE": "stop"
+   },
+   "per12_symbols": [
+    "NOC",
+    "IRWD",
+    "PFE",
+    "UTHR",
+    "ABBV",
+    "VTRS",
+    "MRK"
+   ],
+   "per12_stop_only": -0.010274249998615538,
+   "sans_per": -0.02186873922037948,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.020890118649314327,
+   "sans_per_whole_gains": {
+    "10000": "-215.82",
+    "25000": "-529.97",
+    "50000": "-1083.55",
+    "100000": "-2168.12",
+    "1000000": "-21841.46",
+    "2000000": "-43716.78"
+   },
+   "sans_per_hold": -0.020869100546793647,
+   "sans_per_early": {
+    "GMAB": "stop",
+    "NOC": "stop",
+    "PFE": "stop",
+    "TFX": "stop"
+   },
+   "sans_per_symbols": [
+    "NOC",
+    "IRWD",
+    "PFE",
+    "UTHR",
+    "TFX",
+    "GMAB",
+    "ABBV"
+   ],
+   "sans_per_stop_only": -0.02186873922037948,
+   "spy": 0.01000634712519967,
+   "spy_n": 1,
+   "spy_gross": 0.011016858728126334,
+   "spy_whole_gains": {
+    "10000": "97.58",
+    "25000": "247.70",
+    "50000": "499.16",
+    "100000": "998.31",
+    "1000000": "10005.64",
+    "2000000": "20011.29"
+   },
+   "spy_hold": 0.01000634712519967,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-12",
+   "per12": -0.013059172516042529,
+   "per12_n": 7,
+   "per12_gross": -0.012071737971286193,
+   "per12_whole_gains": {
+    "10000": "-125.61",
+    "25000": "-319.98",
+    "50000": "-647.19",
+    "100000": "-1300.04",
+    "1000000": "-13050.88",
+    "2000000": "-26111.12"
+   },
+   "per12_hold": -0.015840420855719666,
+   "per12_early": {
+    "DGX": "stop",
+    "PFE": "stop",
+    "WEN": "objectif"
+   },
+   "per12_symbols": [
+    "PFE",
+    "ABBV",
+    "AVA",
+    "UTHR",
+    "ETR",
+    "WEN",
+    "DGX"
+   ],
+   "per12_stop_only": -0.01425845282786741,
+   "sans_per": -0.021862375484729635,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.020883748546745372,
+   "sans_per_whole_gains": {
+    "10000": "-209.57",
+    "25000": "-539.99",
+    "50000": "-1087.76",
+    "100000": "-2179.66",
+    "1000000": "-21855.61",
+    "2000000": "-43716.21"
+   },
+   "sans_per_hold": -0.02140942101679434,
+   "sans_per_early": {
+    "MKC": "stop",
+    "PFE": "stop",
+    "RVTY": "stop"
+   },
+   "sans_per_symbols": [
+    "PFE",
+    "ABBV",
+    "RVTY",
+    "AVA",
+    "MKC",
+    "UTHR",
+    "ETR"
+   ],
+   "sans_per_stop_only": -0.021862375484729635,
+   "spy": -0.011422841092562135,
+   "spy_n": 1,
+   "spy_gross": -0.010433769397807319,
+   "spy_whole_gains": {
+    "10000": "-112.21",
+    "25000": "-284.83",
+    "50000": "-569.67",
+    "100000": "-1139.33",
+    "1000000": "-11419.21",
+    "2000000": "-22842.74"
+   },
+   "spy_hold": -0.011422841092562135,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-13",
+   "per12": -0.019486228913751957,
+   "per12_n": 7,
+   "per12_gross": -0.018505224640529096,
+   "per12_whole_gains": {
+    "10000": "-192.31",
+    "25000": "-484.35",
+    "50000": "-971.42",
+    "100000": "-1945.61",
+    "1000000": "-19482.29",
+    "2000000": "-38968.67"
+   },
+   "per12_hold": -0.03229731349058241,
+   "per12_early": {
+    "AVA": "stop",
+    "HPE": "stop",
+    "PFE": "stop",
+    "SCHW": "stop",
+    "VTRS": "objectif"
+   },
+   "per12_symbols": [
+    "IRWD",
+    "PFE",
+    "DGX",
+    "AVA",
+    "HPE",
+    "VTRS",
+    "SCHW"
+   ],
+   "per12_stop_only": -0.02346468490172856,
+   "sans_per": -0.005225934628429878,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.0042306629272076965,
+   "sans_per_whole_gains": {
+    "10000": "-51.62",
+    "25000": "-130.60",
+    "50000": "-261.03",
+    "100000": "-521.25",
+    "1000000": "-5227.98",
+    "2000000": "-10452.21"
+   },
+   "sans_per_hold": -0.009299499357109843,
+   "sans_per_early": {
+    "AVA": "stop",
+    "GFL": "objectif",
+    "PFE": "stop",
+    "RVTY": "objectif"
+   },
+   "sans_per_symbols": [
+    "RVTY",
+    "IRWD",
+    "PFE",
+    "GFL",
+    "DGX",
+    "AVA",
+    "BTI"
+   ],
+   "sans_per_stop_only": -0.005637106609678819,
+   "spy": -0.01938552631820642,
+   "spy_n": 1,
+   "spy_gross": -0.01840442129201153,
+   "spy_whole_gains": {
+    "10000": "-190.70",
+    "25000": "-484.09",
+    "50000": "-968.18",
+    "100000": "-1936.36",
+    "1000000": "-19378.25",
+    "2000000": "-38763.84"
+   },
+   "spy_hold": -0.01938552631820642,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-17",
+   "per12": -0.01609578958326635,
+   "per12_n": 6,
+   "per12_gross": -0.015111393174645308,
+   "per12_whole_gains": {
+    "10000": "-159.33",
+    "25000": "-400.25",
+    "50000": "-802.15",
+    "100000": "-1608.14",
+    "1000000": "-16093.42",
+    "2000000": "-32190.66"
+   },
+   "per12_hold": -0.015741283873152188,
+   "per12_early": {
+    "EMR": "stop",
+    "LEVI": "stop",
+    "PFE": "stop"
+   },
+   "per12_symbols": [
+    "PFE",
+    "IRWD",
+    "EMR",
+    "LEVI",
+    "TRV",
+    "WU"
+   ],
+   "per12_stop_only": -0.01609578958326635,
+   "sans_per": -0.018190663988576217,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.017208363502321664,
+   "sans_per_whole_gains": {
+    "10000": "-177.51",
+    "25000": "-450.72",
+    "50000": "-904.58",
+    "100000": "-1815.76",
+    "1000000": "-18186.71",
+    "2000000": "-36378.55"
+   },
+   "sans_per_hold": -0.019561572277823562,
+   "sans_per_early": {
+    "EMR": "stop",
+    "HTO": "stop",
+    "LEVI": "stop",
+    "PFE": "stop"
+   },
+   "sans_per_symbols": [
+    "PFE",
+    "IRWD",
+    "EMR",
+    "SMFG",
+    "LEVI",
+    "HTO",
+    "TRV"
+   ],
+   "sans_per_stop_only": -0.018190663988576217,
+   "spy": -0.010931068841153224,
+   "spy_n": 1,
+   "spy_gross": -0.00994150512813787,
+   "spy_whole_gains": {
+    "10000": "-108.40",
+    "25000": "-271.01",
+    "50000": "-546.18",
+    "100000": "-1092.37",
+    "1000000": "-10927.83",
+    "2000000": "-21859.82"
+   },
+   "spy_hold": -0.010931068841153224,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-18",
+   "per12": -0.028462397275287304,
+   "per12_n": 7,
+   "per12_gross": -0.027490373660755324,
+   "per12_whole_gains": {
+    "10000": "-275.42",
+    "25000": "-704.19",
+    "50000": "-1416.01",
+    "100000": "-2839.12",
+    "1000000": "-28453.77",
+    "2000000": "-56914.50"
+   },
+   "per12_hold": -0.023998815164054603,
+   "per12_early": {
+    "AVA": "stop",
+    "EMR": "stop",
+    "GIS": "stop",
+    "POR": "stop",
+    "SCHW": "stop"
+   },
+   "per12_symbols": [
+    "ABBV",
+    "EMR",
+    "AVA",
+    "SCHW",
+    "GIS",
+    "JNJ",
+    "POR"
+   ],
+   "per12_stop_only": -0.028462397275287304,
+   "sans_per": -0.025761479214050635,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.024786753330322823,
+   "sans_per_whole_gains": {
+    "10000": "-250.22",
+    "25000": "-637.54",
+    "50000": "-1281.47",
+    "100000": "-2569.05",
+    "1000000": "-25755.48",
+    "2000000": "-51516.12"
+   },
+   "sans_per_hold": -0.023280580602052577,
+   "sans_per_early": {
+    "AVA": "stop",
+    "GIS": "stop",
+    "HTO": "stop",
+    "MKC": "stop",
+    "SCHW": "stop"
+   },
+   "sans_per_symbols": [
+    "ABBV",
+    "MKC",
+    "AVA",
+    "SCHW",
+    "BTI",
+    "HTO",
+    "GIS"
+   ],
+   "sans_per_stop_only": -0.025761479214050635,
+   "spy": 0.001989870487230595,
+   "spy_n": 1,
+   "spy_gross": 0.0029923616032758484,
+   "spy_whole_gains": {
+    "10000": "19.72",
+    "25000": "49.30",
+    "50000": "99.36",
+    "100000": "198.72",
+    "1000000": "1989.44",
+    "2000000": "3979.64"
+   },
+   "spy_hold": 0.001989870487230595,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-19",
+   "per12": 0.007387368364869227,
+   "per12_n": 7,
+   "per12_gross": 0.008395259678891107,
+   "per12_whole_gains": {
+    "10000": "73.19",
+    "25000": "183.97",
+    "50000": "367.51",
+    "100000": "737.52",
+    "1000000": "7384.31",
+    "2000000": "14772.04"
+   },
+   "per12_hold": 0.010223247983197434,
+   "per12_early": {
+    "AVA": "objectif",
+    "NTRS": "objectif"
+   },
+   "per12_symbols": [
+    "IRWD",
+    "NTRS",
+    "AVA",
+    "GIS",
+    "CMC",
+    "POR",
+    "DGX"
+   ],
+   "per12_stop_only": 0.010223247983197434,
+   "sans_per": 0.00687226826479501,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.007879644221037926,
+   "sans_per_whole_gains": {
+    "10000": "67.27",
+    "25000": "169.54",
+    "50000": "340.21",
+    "100000": "684.98",
+    "1000000": "6869.06",
+    "2000000": "13741.33"
+   },
+   "sans_per_hold": 0.011827263798455643,
+   "sans_per_early": {
+    "AVA": "objectif",
+    "IART": "objectif",
+    "NTRS": "objectif"
+   },
+   "sans_per_symbols": [
+    "IRWD",
+    "TEVA",
+    "NTRS",
+    "AVA",
+    "GIS",
+    "IART",
+    "CMC"
+   ],
+   "sans_per_stop_only": 0.011827263798455643,
+   "spy": 0.027834130472963858,
+   "spy_n": 1,
+   "spy_gross": 0.028862478777589132,
+   "spy_whole_gains": {
+    "10000": "268.67",
+    "25000": "692.35",
+    "50000": "1384.70",
+    "100000": "2779.73",
+    "1000000": "27828.32",
+    "2000000": "55666.97"
+   },
+   "spy_hold": 0.027834130472963858,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-20",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.021237423553831323,
+   "spy_n": 1,
+   "spy_gross": 0.022259171851534004,
+   "spy_whole_gains": {
+    "10000": "206.00",
+    "25000": "530.84",
+    "50000": "1061.68",
+    "100000": "2123.36",
+    "1000000": "21233.56",
+    "2000000": "42467.12"
+   },
+   "spy_hold": 0.021237423553831323,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-23",
+   "per12": 0.001227708603635932,
+   "per12_n": 7,
+   "per12_gross": 0.002229437176526013,
+   "per12_whole_gains": {
+    "10000": "5.62",
+    "25000": "29.60",
+    "50000": "58.86",
+    "100000": "117.25",
+    "1000000": "1224.39",
+    "2000000": "2446.74"
+   },
+   "per12_hold": 0.006148647233262247,
+   "per12_early": {
+    "CMC": "objectif",
+    "EVRG": "objectif"
+   },
+   "per12_symbols": [
+    "ABBV",
+    "IRWD",
+    "CPB",
+    "CMC",
+    "EVRG",
+    "DE",
+    "AVA"
+   ],
+   "per12_stop_only": 0.006148647233262247,
+   "sans_per": 0.002564827038940084,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0035678933991591336,
+   "sans_per_whole_gains": {
+    "10000": "23.42",
+    "25000": "61.13",
+    "50000": "126.12",
+    "100000": "256.04",
+    "1000000": "2562.78",
+    "2000000": "5127.74"
+   },
+   "sans_per_hold": 0.007485765668566399,
+   "sans_per_early": {
+    "CMC": "objectif",
+    "EVRG": "objectif"
+   },
+   "sans_per_symbols": [
+    "ABBV",
+    "IRWD",
+    "CPB",
+    "TEVA",
+    "CMC",
+    "EVRG",
+    "AMT"
+   ],
+   "sans_per_stop_only": 0.007485765668566399,
+   "spy": 0.010990184827749999,
+   "spy_n": 1,
+   "spy_gross": 0.012001680760544146,
+   "spy_whole_gains": {
+    "10000": "108.86",
+    "25000": "272.15",
+    "50000": "548.49",
+    "100000": "1096.98",
+    "1000000": "10986.52",
+    "2000000": "21977.22"
+   },
+   "spy_hold": 0.010990184827749999,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-24",
+   "per12": 0.02179392689000508,
+   "per12_n": 7,
+   "per12_gross": 0.0228162319694348,
+   "per12_whole_gains": {
+    "10000": "210.80",
+    "25000": "533.74",
+    "50000": "1077.21",
+    "100000": "2166.60",
+    "1000000": "21783.50",
+    "2000000": "43576.60"
+   },
+   "per12_hold": 0.033979617024513235,
+   "per12_early": {
+    "CMC": "objectif",
+    "EG": "objectif",
+    "SLB": "objectif"
+   },
+   "per12_symbols": [
+    "CPB",
+    "CMC",
+    "SO",
+    "DE",
+    "ENSG",
+    "EG",
+    "SLB"
+   ],
+   "per12_stop_only": 0.033979617024513235,
+   "sans_per": 0.015633071319593322,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.01664921246148386,
+   "sans_per_whole_gains": {
+    "10000": "152.42",
+    "25000": "385.66",
+    "50000": "778.30",
+    "100000": "1558.97",
+    "1000000": "15630.28",
+    "2000000": "31261.26"
+   },
+   "sans_per_hold": 0.02652391851400792,
+   "sans_per_early": {
+    "CMC": "objectif",
+    "MGA": "objectif",
+    "TFX": "objectif"
+   },
+   "sans_per_symbols": [
+    "TEVA",
+    "CPB",
+    "CMC",
+    "MGA",
+    "TFX",
+    "AZN",
+    "SO"
+   ],
+   "sans_per_stop_only": 0.02652391851400792,
+   "spy": 0.01613056976579721,
+   "spy_n": 1,
+   "spy_gross": 0.017147208655007615,
+   "spy_whole_gains": {
+    "10000": "159.79",
+    "25000": "399.48",
+    "50000": "805.11",
+    "100000": "1610.23",
+    "1000000": "16126.88",
+    "2000000": "32259.91"
+   },
+   "spy_hold": 0.01613056976579721,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-25",
+   "per12": 0.009578060112618568,
+   "per12_n": 7,
+   "per12_gross": 0.010588143214282019,
+   "per12_whole_gains": {
+    "10000": "91.18",
+    "25000": "238.42",
+    "50000": "476.45",
+    "100000": "956.93",
+    "1000000": "9576.42",
+    "2000000": "19151.25"
+   },
+   "per12_hold": 0.008926052552574767,
+   "per12_early": {
+    "PNC": "objectif",
+    "SCHW": "stop",
+    "SLB": "objectif",
+    "SO": "objectif"
+   },
+   "per12_symbols": [
+    "ENSG",
+    "SO",
+    "SCHW",
+    "HPE",
+    "SLB",
+    "PNC",
+    "TTC"
+   ],
+   "per12_stop_only": 0.008467961798185058,
+   "sans_per": 0.014421827367405167,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.015436756659418578,
+   "sans_per_whole_gains": {
+    "10000": "138.17",
+    "25000": "353.75",
+    "50000": "714.56",
+    "100000": "1436.59",
+    "1000000": "14419.25",
+    "2000000": "28836.77"
+   },
+   "sans_per_hold": 0.015261034903854633,
+   "sans_per_early": {
+    "AMT": "objectif",
+    "MGA": "objectif",
+    "SCHW": "stop",
+    "SLB": "objectif",
+    "SO": "objectif"
+   },
+   "sans_per_symbols": [
+    "MGA",
+    "AMT",
+    "ENSG",
+    "SO",
+    "SCHW",
+    "HPE",
+    "SLB"
+   ],
+   "sans_per_stop_only": 0.014802944149464923,
+   "spy": 0.01388244776679612,
+   "spy_n": 1,
+   "spy_gross": 0.01489683740938421,
+   "spy_whole_gains": {
+    "10000": "136.00",
+    "25000": "345.22",
+    "50000": "690.44",
+    "100000": "1386.11",
+    "1000000": "13882.03",
+    "2000000": "27764.05"
+   },
+   "spy_hold": 0.01388244776679612,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-26",
+   "per12": 0.0015618314721553602,
+   "per12_n": 7,
+   "per12_gross": 0.0025638943350589673,
+   "per12_whole_gains": {
+    "10000": "15.18",
+    "25000": "39.55",
+    "50000": "79.67",
+    "100000": "155.94",
+    "1000000": "1558.28",
+    "2000000": "3120.75"
+   },
+   "per12_hold": 0.011537856402672549,
+   "per12_early": {
+    "AVA": "stop",
+    "POST": "objectif",
+    "SCHW": "stop"
+   },
+   "per12_symbols": [
+    "CAG",
+    "SNX",
+    "POST",
+    "SCHW",
+    "PG",
+    "AVA",
+    "AVY"
+   ],
+   "per12_stop_only": 0.006578506004887387,
+   "sans_per": 0.0020127381698965795,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.00301525216506406,
+   "sans_per_whole_gains": {
+    "10000": "20.02",
+    "25000": "52.38",
+    "50000": "101.93",
+    "100000": "201.30",
+    "1000000": "2011.50",
+    "2000000": "4024.46"
+   },
+   "sans_per_hold": 0.010499495808001537,
+   "sans_per_early": {
+    "POST": "objectif",
+    "SCHW": "stop"
+   },
+   "sans_per_symbols": [
+    "CAG",
+    "SNX",
+    "ALL",
+    "AZN",
+    "POST",
+    "SCHW",
+    "PG"
+   ],
+   "sans_per_stop_only": 0.007029412702628607,
+   "spy": 0.006985844958636103,
+   "spy_n": 1,
+   "spy_gross": 0.007993334548389616,
+   "spy_whole_gains": {
+    "10000": "69.79",
+    "25000": "174.49",
+    "50000": "348.97",
+    "100000": "697.94",
+    "1000000": "6984.80",
+    "2000000": "13969.59"
+   },
+   "spy_hold": 0.006985844958636103,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-27",
+   "per12": 0.023773372933633293,
+   "per12_n": 7,
+   "per12_gross": 0.024797658449324772,
+   "per12_whole_gains": {
+    "10000": "233.75",
+    "25000": "587.72",
+    "50000": "1183.91",
+    "100000": "2372.14",
+    "1000000": "23767.07",
+    "2000000": "47542.30"
+   },
+   "per12_hold": 0.024177260358221587,
+   "per12_early": {
+    "CAG": "objectif",
+    "ENSG": "objectif",
+    "INTC": "objectif",
+    "WEN": "objectif"
+   },
+   "per12_symbols": [
+    "CAG",
+    "INTC",
+    "ENSG",
+    "PG",
+    "WEN",
+    "AVA",
+    "MRK"
+   ],
+   "per12_stop_only": 0.024177260358221587,
+   "sans_per": 0.017153048876058063,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.01817071075587403,
+   "sans_per_whole_gains": {
+    "10000": "147.31",
+    "25000": "409.75",
+    "50000": "845.15",
+    "100000": "1690.04",
+    "1000000": "17136.83",
+    "2000000": "34303.06"
+   },
+   "sans_per_hold": 0.018512952819456682,
+   "sans_per_early": {
+    "AZN": "stop",
+    "CAG": "objectif",
+    "CL": "objectif",
+    "ENSG": "objectif",
+    "FCNCA": "objectif",
+    "INTC": "objectif"
+   },
+   "sans_per_symbols": [
+    "CAG",
+    "CL",
+    "INTC",
+    "FCNCA",
+    "AZN",
+    "ENSG",
+    "ARGX"
+   ],
+   "sans_per_stop_only": 0.018560115528348672,
+   "spy": 0.010230445673356825,
+   "spy_n": 1,
+   "spy_gross": 0.011241181486936971,
+   "spy_whole_gains": {
+    "10000": "99.02",
+    "25000": "253.49",
+    "50000": "510.95",
+    "100000": "1021.90",
+    "1000000": "10226.93",
+    "2000000": "20457.82"
+   },
+   "spy_hold": 0.010230445673356825,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-30",
+   "per12": 0.015574970644755408,
+   "per12_n": 6,
+   "per12_gross": 0.01659105365690624,
+   "per12_whole_gains": {
+    "10000": "152.09",
+    "25000": "383.66",
+    "50000": "774.81",
+    "100000": "1554.38",
+    "1000000": "15571.82",
+    "2000000": "31146.06"
+   },
+   "per12_hold": 0.016714244840712565,
+   "per12_early": {
+    "CVX": "stop",
+    "ENSG": "objectif",
+    "JBL": "objectif",
+    "OGN": "objectif",
+    "UHS": "objectif"
+   },
+   "per12_symbols": [
+    "OGN",
+    "ENSG",
+    "CVX",
+    "JBL",
+    "ROP",
+    "UHS"
+   ],
+   "per12_stop_only": 0.019702511406923244,
+   "sans_per": 0.02212934816735817,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.023151988835859776,
+   "sans_per_whole_gains": {
+    "10000": "208.74",
+    "25000": "546.00",
+    "50000": "1092.01",
+    "100000": "2206.67",
+    "1000000": "22112.83",
+    "2000000": "44248.62"
+   },
+   "sans_per_hold": 0.014538808689021026,
+   "sans_per_early": {
+    "ENSG": "objectif",
+    "OGN": "objectif",
+    "SRPT": "objectif",
+    "TEVA": "objectif",
+    "TMO": "objectif"
+   },
+   "sans_per_symbols": [
+    "OGN",
+    "TEVA",
+    "ENSG",
+    "SRPT",
+    "HAE",
+    "TMO",
+    "ARGX"
+   ],
+   "sans_per_stop_only": 0.014538808689021026,
+   "spy": 0.02908150327286777,
+   "spy_n": 1,
+   "spy_gross": 0.03011109957429135,
+   "spy_whole_gains": {
+    "10000": "280.22",
+    "25000": "717.37",
+    "50000": "1445.96",
+    "100000": "2903.12",
+    "1000000": "29076.04",
+    "2000000": "58152.08"
+   },
+   "spy_hold": 0.02908150327286777,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-01-31",
+   "per12": -0.009426854419893984,
+   "per12_n": 7,
+   "per12_gross": -0.008435785739973918,
+   "per12_whole_gains": {
+    "10000": "-93.70",
+    "25000": "-240.18",
+    "50000": "-474.43",
+    "100000": "-942.19",
+    "1000000": "-9419.36",
+    "2000000": "-18847.91"
+   },
+   "per12_hold": 0.010186759151923448,
+   "per12_early": {
+    "AVA": "objectif",
+    "BALL": "stop",
+    "CAG": "stop",
+    "CAT": "stop",
+    "CVX": "stop",
+    "DHR": "objectif"
+   },
+   "per12_symbols": [
+    "CVX",
+    "AVA",
+    "CAG",
+    "CAT",
+    "DHR",
+    "DD",
+    "BALL"
+   ],
+   "per12_stop_only": -0.0059545515020617895,
+   "sans_per": -0.002164187866481636,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.001165852886858306,
+   "sans_per_whole_gains": {
+    "10000": "-34.21",
+    "25000": "-65.60",
+    "50000": "-129.03",
+    "100000": "-231.89",
+    "1000000": "-2181.18",
+    "2000000": "-4342.46"
+   },
+   "sans_per_hold": 0.016047203536282056,
+   "sans_per_early": {
+    "AVA": "objectif",
+    "AZN": "stop",
+    "CAG": "stop",
+    "CAT": "stop",
+    "CVX": "stop",
+    "RMBS": "objectif",
+    "TMO": "objectif"
+   },
+   "sans_per_symbols": [
+    "AZN",
+    "CVX",
+    "AVA",
+    "TMO",
+    "RMBS",
+    "CAG",
+    "CAT"
+   ],
+   "sans_per_stop_only": 0.008319652491327824,
+   "spy": 0.02337207515800525,
+   "spy_n": 1,
+   "spy_gross": 0.02439595917517184,
+   "spy_whole_gains": {
+    "10000": "233.51",
+    "25000": "583.78",
+    "50000": "1167.56",
+    "100000": "2335.12",
+    "1000000": "23369.17",
+    "2000000": "46738.35"
+   },
+   "spy_hold": 0.02337207515800525,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-01",
+   "per12": -0.004762616890995258,
+   "per12_n": 7,
+   "per12_gross": -0.0037668816402608865,
+   "per12_whole_gains": {
+    "10000": "-44.53",
+    "25000": "-112.65",
+    "50000": "-232.98",
+    "100000": "-471.20",
+    "1000000": "-4758.96",
+    "2000000": "-9517.92"
+   },
+   "per12_hold": 0.0032725684829785257,
+   "per12_early": {
+    "AVA": "objectif",
+    "CVX": "stop",
+    "SNX": "objectif",
+    "TRV": "stop"
+   },
+   "per12_symbols": [
+    "CVX",
+    "SNX",
+    "OGN",
+    "CAT",
+    "AVA",
+    "TRV",
+    "LH"
+   ],
+   "per12_stop_only": -0.004660041588308319,
+   "sans_per": -0.006529500336431022,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.00553553285302575,
+   "sans_per_whole_gains": {
+    "10000": "-54.77",
+    "25000": "-159.80",
+    "50000": "-318.21",
+    "100000": "-646.80",
+    "1000000": "-6522.92",
+    "2000000": "-13047.67"
+   },
+   "sans_per_hold": -0.0005470902135302024,
+   "sans_per_early": {
+    "AVA": "objectif",
+    "CB": "stop",
+    "CVX": "stop",
+    "SNX": "objectif"
+   },
+   "sans_per_symbols": [
+    "CVX",
+    "SNX",
+    "CB",
+    "JCI",
+    "OGN",
+    "NVS",
+    "AVA"
+   ],
+   "sans_per_stop_only": -0.006426925033744081,
+   "spy": 0.01000208217376202,
+   "spy_n": 1,
+   "spy_gross": 0.011012589509603703,
+   "spy_whole_gains": {
+    "10000": "96.78",
+    "25000": "247.75",
+    "50000": "499.36",
+    "100000": "998.73",
+    "1000000": "9998.90",
+    "2000000": "20001.66"
+   },
+   "spy_hold": 0.01000208217376202,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-02",
+   "per12": 0.01832696003135356,
+   "per12_n": 7,
+   "per12_gross": 0.019345796409574022,
+   "per12_whole_gains": {
+    "10000": "172.46",
+    "25000": "449.26",
+    "50000": "903.51",
+    "100000": "1818.87",
+    "1000000": "18314.72",
+    "2000000": "36643.16"
+   },
+   "per12_hold": 0.023643992866251566,
+   "per12_early": {
+    "AIG": "objectif",
+    "BALL": "objectif",
+    "CAT": "objectif",
+    "CVX": "objectif",
+    "PPC": "stop",
+    "RJF": "objectif",
+    "TRV": "objectif"
+   },
+   "per12_symbols": [
+    "CVX",
+    "CAT",
+    "AIG",
+    "TRV",
+    "PPC",
+    "RJF",
+    "BALL"
+   ],
+   "per12_stop_only": 0.021860920648670512,
+   "sans_per": 0.014798563956555086,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.015813870173620174,
+   "sans_per_whole_gains": {
+    "10000": "139.74",
+    "25000": "362.17",
+    "50000": "728.48",
+    "100000": "1468.80",
+    "1000000": "14788.83",
+    "2000000": "29587.90"
+   },
+   "sans_per_hold": 0.021441073068382697,
+   "sans_per_early": {
+    "AIG": "objectif",
+    "CAT": "objectif",
+    "CNH": "stop",
+    "CVX": "objectif",
+    "TRV": "objectif"
+   },
+   "sans_per_symbols": [
+    "CVX",
+    "CAT",
+    "AIG",
+    "SRPT",
+    "TRV",
+    "CNH",
+    "NVS"
+   ],
+   "sans_per_stop_only": 0.019036855462129992,
+   "spy": 0.0032691929426553693,
+   "spy_n": 1,
+   "spy_gross": 0.004272964021137266,
+   "spy_whole_gains": {
+    "10000": "32.34",
+    "25000": "81.50",
+    "50000": "163.00",
+    "100000": "326.00",
+    "1000000": "3269.04",
+    "2000000": "6538.08"
+   },
+   "spy_hold": 0.0032691929426553693,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-03",
+   "per12": 0.0038344772820745007,
+   "per12_n": 7,
+   "per12_gross": 0.004838813927679378,
+   "per12_whole_gains": {
+    "10000": "41.59",
+    "25000": "102.77",
+    "50000": "195.05",
+    "100000": "390.76",
+    "1000000": "3840.31",
+    "2000000": "7675.87"
+   },
+   "per12_hold": 0.010612746641612773,
+   "per12_early": {
+    "AIG": "objectif",
+    "CAG": "objectif",
+    "D": "objectif",
+    "PPC": "stop",
+    "RGA": "objectif",
+    "VRTX": "stop"
+   },
+   "per12_symbols": [
+    "RGA",
+    "AIG",
+    "D",
+    "PPC",
+    "VRTX",
+    "OGN",
+    "CAG"
+   ],
+   "per12_stop_only": 0.009861315909325135,
+   "sans_per": -0.002151701625773326,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.0011533541536630444,
+   "sans_per_whole_gains": {
+    "10000": "-18.32",
+    "25000": "-54.90",
+    "50000": "-111.11",
+    "100000": "-217.83",
+    "1000000": "-2157.52",
+    "2000000": "-4305.43"
+   },
+   "sans_per_hold": 0.015281988635129015,
+   "sans_per_early": {
+    "BRO": "objectif",
+    "CB": "objectif",
+    "NEM": "stop",
+    "RGA": "objectif",
+    "SRPT": "stop"
+   },
+   "sans_per_symbols": [
+    "CNH",
+    "RGA",
+    "CB",
+    "SRPT",
+    "DB",
+    "NEM",
+    "BRO"
+   ],
+   "sans_per_stop_only": 0.006478388007846313,
+   "spy": -0.011398131054984875,
+   "spy_n": 1,
+   "spy_gross": -0.010409034637831282,
+   "spy_whole_gains": {
+    "10000": "-112.84",
+    "25000": "-284.37",
+    "50000": "-568.73",
+    "100000": "-1137.46",
+    "1000000": "-11397.22",
+    "2000000": "-22794.44"
+   },
+   "spy_hold": -0.011398131054984875,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-06",
+   "per12": 0.016484441781391725,
+   "per12_n": 7,
+   "per12_gross": 0.017501434719642245,
+   "per12_whole_gains": {
+    "10000": "161.50",
+    "25000": "410.08",
+    "50000": "819.91",
+    "100000": "1645.51",
+    "1000000": "16480.00",
+    "2000000": "32964.09"
+   },
+   "per12_hold": 0.017059673119128607,
+   "per12_early": {
+    "AFL": "objectif",
+    "FANG": "objectif",
+    "LBTYK": "objectif",
+    "TKR": "objectif"
+   },
+   "per12_symbols": [
+    "FANG",
+    "OGN",
+    "TSN",
+    "TKR",
+    "AFL",
+    "LBTYK",
+    "MCK"
+   ],
+   "per12_stop_only": 0.017059673119128607,
+   "sans_per": 0.01273263702707233,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.01374587628372773,
+   "sans_per_whole_gains": {
+    "10000": "125.62",
+    "25000": "315.08",
+    "50000": "632.93",
+    "100000": "1271.96",
+    "1000000": "12730.74",
+    "2000000": "25463.13"
+   },
+   "sans_per_hold": 0.012110776619238246,
+   "sans_per_early": {
+    "DB": "objectif",
+    "FANG": "objectif",
+    "RIO": "objectif"
+   },
+   "sans_per_symbols": [
+    "FNV",
+    "DB",
+    "FANG",
+    "RIO",
+    "OGN",
+    "TSN",
+    "NVS"
+   ],
+   "sans_per_stop_only": 0.012110776619238246,
+   "spy": -0.003126450831633229,
+   "spy_n": 1,
+   "spy_gross": -0.0021290785963472194,
+   "spy_whole_gains": {
+    "10000": "-30.49",
+    "25000": "-78.04",
+    "50000": "-156.09",
+    "100000": "-312.17",
+    "1000000": "-3125.39",
+    "2000000": "-6251.99"
+   },
+   "spy_hold": -0.003126450831633229,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-07",
+   "per12": 0.02780652150454793,
+   "per12_n": 7,
+   "per12_gross": 0.0288348421863934,
+   "per12_whole_gains": {
+    "10000": "275.01",
+    "25000": "693.69",
+    "50000": "1387.39",
+    "100000": "2777.70",
+    "1000000": "27799.54",
+    "2000000": "55604.86"
+   },
+   "per12_hold": 0.021817387602458483,
+   "per12_early": {
+    "AIG": "objectif",
+    "EHC": "objectif",
+    "FN": "stop",
+    "GPK": "objectif",
+    "SGI": "objectif",
+    "VVV": "objectif"
+   },
+   "per12_symbols": [
+    "FN",
+    "TSN",
+    "EHC",
+    "GPK",
+    "SGI",
+    "AIG",
+    "VVV"
+   ],
+   "per12_stop_only": 0.019827057085880413,
+   "sans_per": 0.00719390141186342,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.008201599162150427,
+   "sans_per_whole_gains": {
+    "10000": "73.34",
+    "25000": "180.41",
+    "50000": "358.39",
+    "100000": "717.16",
+    "1000000": "7191.96",
+    "2000000": "14386.07"
+   },
+   "sans_per_hold": 0.027284438450047417,
+   "sans_per_early": {
+    "FN": "stop",
+    "ING": "objectif",
+    "RMBS": "objectif"
+   },
+   "sans_per_symbols": [
+    "ING",
+    "FN",
+    "FNV",
+    "TSN",
+    "RMBS",
+    "CB",
+    "ALKS"
+   ],
+   "sans_per_stop_only": 0.025294107933469347,
+   "spy": -0.0021529621087747297,
+   "spy_n": 1,
+   "spy_gross": -0.001154615897778006,
+   "spy_whole_gains": {
+    "10000": "-20.99",
+    "25000": "-53.73",
+    "50000": "-107.46",
+    "100000": "-214.92",
+    "1000000": "-2152.52",
+    "2000000": "-4305.87"
+   },
+   "spy_hold": -0.0021529621087747297,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-08",
+   "per12": -0.007976063136323925,
+   "per12_n": 7,
+   "per12_gross": -0.006983542939361767,
+   "per12_whole_gains": {
+    "10000": "-73.60",
+    "25000": "-191.61",
+    "50000": "-390.36",
+    "100000": "-791.82",
+    "1000000": "-7967.70",
+    "2000000": "-15943.97"
+   },
+   "per12_hold": 0.005209258156041483,
+   "per12_early": {
+    "PSX": "objectif",
+    "SHOO": "stop",
+    "VRTX": "stop"
+   },
+   "per12_symbols": [
+    "SHOO",
+    "PSX",
+    "VRTX",
+    "TSN",
+    "D",
+    "T",
+    "CAT"
+   ],
+   "per12_stop_only": -0.004678874834836706,
+   "sans_per": -0.0002370605972372533,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0007632024737009786,
+   "sans_per_whole_gains": {
+    "10000": "4.11",
+    "25000": "2.77",
+    "50000": "-3.72",
+    "100000": "-19.34",
+    "1000000": "-230.31",
+    "2000000": "-467.89"
+   },
+   "sans_per_hold": 0.012948260695128154,
+   "sans_per_early": {
+    "ALKS": "objectif",
+    "PSX": "objectif",
+    "SHOO": "stop",
+    "VRTX": "stop"
+   },
+   "sans_per_symbols": [
+    "MT",
+    "FNV",
+    "SHOO",
+    "PSX",
+    "JCI",
+    "ALKS",
+    "VRTX"
+   ],
+   "sans_per_stop_only": 0.003060127704249965,
+   "spy": -0.003786890037124295,
+   "spy_n": 1,
+   "spy_gross": -0.0027901785714285715,
+   "spy_whole_gains": {
+    "10000": "-37.34",
+    "25000": "-94.10",
+    "50000": "-188.20",
+    "100000": "-377.90",
+    "1000000": "-3786.50",
+    "2000000": "-7573.01"
+   },
+   "spy_hold": -0.003786890037124295,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-09",
+   "per12": 0.010857314739458853,
+   "per12_n": 7,
+   "per12_gross": 0.01186867773569643,
+   "per12_whole_gains": {
+    "10000": "104.86",
+    "25000": "269.34",
+    "50000": "541.88",
+    "100000": "1083.87",
+    "1000000": "10853.16",
+    "2000000": "21710.80"
+   },
+   "per12_hold": 0.013756748185037075,
+   "per12_early": {
+    "FAF": "objectif",
+    "RDN": "objectif"
+   },
+   "per12_symbols": [
+    "CVX",
+    "FAF",
+    "D",
+    "T",
+    "RDN",
+    "NXST",
+    "SRE"
+   ],
+   "per12_stop_only": 0.013756748185037075,
+   "sans_per": 0.012151803851352781,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.013164461984270593,
+   "sans_per_whole_gains": {
+    "10000": "117.88",
+    "25000": "301.17",
+    "50000": "606.62",
+    "100000": "1213.63",
+    "1000000": "12148.53",
+    "2000000": "24300.46"
+   },
+   "sans_per_hold": 0.01399245994271912,
+   "sans_per_early": {
+    "AMX": "objectif",
+    "FAF": "objectif"
+   },
+   "sans_per_symbols": [
+    "CVX",
+    "FAF",
+    "AMX",
+    "TU",
+    "D",
+    "KIM",
+    "T"
+   ],
+   "sans_per_stop_only": 0.01399245994271912,
+   "spy": 0.0019221481268927613,
+   "spy_n": 1,
+   "spy_gross": 0.0029245714866995573,
+   "spy_whole_gains": {
+    "10000": "18.91",
+    "25000": "47.64",
+    "50000": "96.04",
+    "100000": "192.08",
+    "1000000": "1921.52",
+    "2000000": "3843.79"
+   },
+   "spy_hold": 0.0019221481268927613,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-10",
+   "per12": 0.026548021805681003,
+   "per12_n": 7,
+   "per12_gross": 0.027575083358262975,
+   "per12_whole_gains": {
+    "10000": "257.94",
+    "25000": "653.02",
+    "50000": "1315.45",
+    "100000": "2645.02",
+    "1000000": "26543.83",
+    "2000000": "53088.81"
+   },
+   "per12_hold": 0.028108893510975553,
+   "per12_early": {
+    "BEN": "objectif",
+    "HST": "objectif",
+    "LEA": "objectif",
+    "LOW": "objectif",
+    "NXST": "objectif"
+   },
+   "per12_symbols": [
+    "BEN",
+    "TSN",
+    "LEA",
+    "NXST",
+    "LOW",
+    "HST",
+    "SCCO"
+   ],
+   "per12_stop_only": 0.028108893510975553,
+   "sans_per": 0.024904515650179777,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.025929932874442087,
+   "sans_per_whole_gains": {
+    "10000": "242.52",
+    "25000": "609.00",
+    "50000": "1235.22",
+    "100000": "2484.60",
+    "1000000": "24901.57",
+    "2000000": "49804.78"
+   },
+   "sans_per_hold": 0.030464117598894124,
+   "sans_per_early": {
+    "BEN": "objectif",
+    "CMG": "objectif",
+    "LEA": "objectif",
+    "NXST": "objectif",
+    "VRSN": "objectif"
+   },
+   "sans_per_symbols": [
+    "BEN",
+    "VRSN",
+    "RIO",
+    "TSN",
+    "LEA",
+    "CMG",
+    "NXST"
+   ],
+   "sans_per_stop_only": 0.030464117598894124,
+   "spy": 0.012748802447650772,
+   "spy_n": 1,
+   "spy_gross": 0.013762057877813505,
+   "spy_whole_gains": {
+    "10000": "123.96",
+    "25000": "317.35",
+    "50000": "634.70",
+    "100000": "1274.35",
+    "1000000": "12748.50",
+    "2000000": "25496.99"
+   },
+   "spy_hold": 0.012748802447650772,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-13",
+   "per12": -0.009782854559918936,
+   "per12_n": 7,
+   "per12_gross": -0.00879214205822801,
+   "per12_whole_gains": {
+    "10000": "-97.31",
+    "25000": "-246.19",
+    "50000": "-489.62",
+    "100000": "-976.76",
+    "1000000": "-9779.20",
+    "2000000": "-19563.83"
+   },
+   "per12_hold": -0.011221939247721496,
+   "per12_early": {
+    "D": "stop",
+    "ZD": "stop"
+   },
+   "per12_symbols": [
+    "BXMT",
+    "NXST",
+    "D",
+    "CAT",
+    "ZD",
+    "VZ",
+    "MDT"
+   ],
+   "per12_stop_only": -0.009782854559918936,
+   "sans_per": -0.010426731427254556,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.009436663124530448,
+   "sans_per_whole_gains": {
+    "10000": "-99.20",
+    "25000": "-261.58",
+    "50000": "-520.56",
+    "100000": "-1041.06",
+    "1000000": "-10422.80",
+    "2000000": "-20850.14"
+   },
+   "sans_per_hold": -0.0016637853266411502,
+   "sans_per_early": {
+    "D": "stop",
+    "FNV": "stop",
+    "NTR": "stop"
+   },
+   "sans_per_symbols": [
+    "CNH",
+    "FNV",
+    "BXMT",
+    "NXST",
+    "NTR",
+    "D",
+    "CAT"
+   ],
+   "sans_per_stop_only": -0.010426731427254556,
+   "spy": -0.005970032436323173,
+   "spy_n": 1,
+   "spy_gross": -0.004975505205143907,
+   "spy_whole_gains": {
+    "10000": "-58.52",
+    "25000": "-147.48",
+    "50000": "-297.30",
+    "100000": "-596.94",
+    "1000000": "-5969.41",
+    "2000000": "-11938.82"
+   },
+   "spy_hold": -0.005970032436323173,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-14",
+   "per12": 0.005368216390734122,
+   "per12_n": 7,
+   "per12_gross": 0.00637408754270084,
+   "per12_whole_gains": {
+    "10000": "52.83",
+    "25000": "130.35",
+    "50000": "263.72",
+    "100000": "533.78",
+    "1000000": "5363.48",
+    "2000000": "10732.26"
+   },
+   "per12_hold": 0.0019368973057192014,
+   "per12_early": {
+    "CALY": "objectif",
+    "HUN": "stop",
+    "KBH": "stop",
+    "LEA": "objectif",
+    "SGI": "objectif"
+   },
+   "per12_symbols": [
+    "D",
+    "CALY",
+    "SGI",
+    "KBH",
+    "HUN",
+    "LEA",
+    "DLTR"
+   ],
+   "per12_stop_only": 0.003310170100217072,
+   "sans_per": -0.0033693477466719512,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.002372218529810192,
+   "sans_per_whole_gains": {
+    "10000": "-32.34",
+    "25000": "-83.82",
+    "50000": "-167.98",
+    "100000": "-336.09",
+    "1000000": "-3368.46",
+    "2000000": "-6738.54"
+   },
+   "sans_per_hold": -0.007561222330144373,
+   "sans_per_early": {
+    "CALY": "objectif",
+    "NTR": "stop",
+    "SGI": "objectif",
+    "ZTO": "stop"
+   },
+   "sans_per_symbols": [
+    "NLY",
+    "D",
+    "ZTO",
+    "NTR",
+    "CALY",
+    "SGI",
+    "BMRN"
+   ],
+   "sans_per_stop_only": -0.004321341011229324,
+   "spy": -0.016734385235920857,
+   "spy_n": 1,
+   "spy_gross": -0.015750627742410022,
+   "spy_whole_gains": {
+    "10000": "-165.03",
+    "25000": "-415.87",
+    "50000": "-831.75",
+    "100000": "-1670.09",
+    "1000000": "-16733.95",
+    "2000000": "-33467.91"
+   },
+   "spy_hold": -0.016734385235920857,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-15",
+   "per12": -0.01796393647052678,
+   "per12_n": 7,
+   "per12_gross": -0.01698140914333371,
+   "per12_whole_gains": {
+    "10000": "-171.99",
+    "25000": "-444.54",
+    "50000": "-893.95",
+    "100000": "-1794.44",
+    "1000000": "-17961.36",
+    "2000000": "-35923.87"
+   },
+   "per12_hold": -0.03990075528128336,
+   "per12_early": {
+    "CRI": "stop",
+    "FLG": "stop",
+    "LPX": "stop",
+    "NWL": "objectif",
+    "SCI": "objectif"
+   },
+   "per12_symbols": [
+    "NWL",
+    "LPX",
+    "CRI",
+    "D",
+    "SCI",
+    "FLG",
+    "AMG"
+   ],
+   "per12_stop_only": -0.02861044076238119,
+   "sans_per": 0.00944671879228937,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.010456670486928978,
+   "sans_per_whole_gains": {
+    "10000": "95.77",
+    "25000": "237.85",
+    "50000": "472.83",
+    "100000": "945.25",
+    "1000000": "9446.37",
+    "2000000": "18892.74"
+   },
+   "sans_per_hold": -0.020029866957858647,
+   "sans_per_early": {
+    "ARR": "objectif",
+    "CNH": "objectif",
+    "DB": "objectif",
+    "KBH": "stop",
+    "NWL": "objectif"
+   },
+   "sans_per_symbols": [
+    "NWL",
+    "DB",
+    "CNH",
+    "CCI",
+    "ARR",
+    "KBH",
+    "AGI"
+   ],
+   "sans_per_stop_only": -0.013498006947827712,
+   "spy": -0.02904269296475123,
+   "spy_n": 1,
+   "spy_gross": -0.028071249936201706,
+   "spy_whole_gains": {
+    "10000": "-284.66",
+    "25000": "-717.34",
+    "50000": "-1446.07",
+    "100000": "-2903.52",
+    "1000000": "-29035.22",
+    "2000000": "-58081.82"
+   },
+   "spy_hold": -0.02904269296475123,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-16",
+   "per12": -0.042194467370502746,
+   "per12_n": 7,
+   "per12_gross": -0.041236182695535764,
+   "per12_whole_gains": {
+    "10000": "-412.02",
+    "25000": "-1051.55",
+    "50000": "-2103.09",
+    "100000": "-4216.84",
+    "1000000": "-42188.68",
+    "2000000": "-84380.91"
+   },
+   "per12_hold": -0.05326023456086754,
+   "per12_early": {
+    "CRI": "stop",
+    "GEN": "stop",
+    "HST": "stop",
+    "HUN": "stop",
+    "LPX": "stop",
+    "TTEK": "stop",
+    "ZD": "stop"
+   },
+   "per12_symbols": [
+    "HST",
+    "ZD",
+    "GEN",
+    "LPX",
+    "HUN",
+    "CRI",
+    "TTEK"
+   ],
+   "per12_stop_only": -0.042194467370502746,
+   "sans_per": -0.03001288288466143,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.029042410531369443,
+   "sans_per_whole_gains": {
+    "10000": "-286.49",
+    "25000": "-743.68",
+    "50000": "-1492.69",
+    "100000": "-2997.66",
+    "1000000": "-30006.23",
+    "2000000": "-60018.49"
+   },
+   "sans_per_hold": -0.04405521133382565,
+   "sans_per_early": {
+    "GEN": "stop",
+    "HST": "stop",
+    "ICUI": "stop",
+    "LPX": "stop",
+    "NWL": "objectif",
+    "ZD": "stop"
+   },
+   "sans_per_symbols": [
+    "HST",
+    "ICUI",
+    "ZD",
+    "GEN",
+    "LPX",
+    "BCS",
+    "NWL"
+   ],
+   "sans_per_stop_only": -0.03874124308899135,
+   "spy": -0.03171992018446885,
+   "spy_n": 1,
+   "spy_gross": -0.03075115572242229,
+   "spy_whole_gains": {
+    "10000": "-310.64",
+    "25000": "-782.81",
+    "50000": "-1578.04",
+    "100000": "-3168.51",
+    "1000000": "-31709.90",
+    "2000000": "-63432.23"
+   },
+   "spy_hold": -0.03171992018446885,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-17",
+   "per12": -0.02980290424469503,
+   "per12_n": 7,
+   "per12_gross": -0.02883222180772124,
+   "per12_whole_gains": {
+    "10000": "-290.32",
+    "25000": "-738.37",
+    "50000": "-1485.13",
+    "100000": "-2974.86",
+    "1000000": "-29797.84",
+    "2000000": "-59598.14"
+   },
+   "per12_hold": -0.027543504301060732,
+   "per12_early": {
+    "DBX": "stop",
+    "HUN": "stop",
+    "HWC": "stop",
+    "JBHT": "stop",
+    "KBH": "stop",
+    "NLY": "stop"
+   },
+   "per12_symbols": [
+    "KBH",
+    "NLY",
+    "DBX",
+    "HUN",
+    "CNXC",
+    "HWC",
+    "JBHT"
+   ],
+   "per12_stop_only": -0.02980290424469503,
+   "sans_per": -0.009191190852229756,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.008199886390851296,
+   "sans_per_whole_gains": {
+    "10000": "-91.56",
+    "25000": "-228.79",
+    "50000": "-458.45",
+    "100000": "-918.54",
+    "1000000": "-9189.89",
+    "2000000": "-18381.05"
+   },
+   "sans_per_hold": -0.010598500709111525,
+   "sans_per_early": {
+    "BCS": "objectif",
+    "CRBG": "objectif",
+    "DBX": "stop",
+    "KBH": "stop",
+    "NLY": "stop",
+    "SONY": "stop"
+   },
+   "sans_per_symbols": [
+    "KBH",
+    "ICUI",
+    "NLY",
+    "DBX",
+    "CRBG",
+    "BCS",
+    "SONY"
+   ],
+   "sans_per_stop_only": -0.013574180736762904,
+   "spy": -0.014186007505120429,
+   "spy_n": 1,
+   "spy_gross": -0.013199700359052515,
+   "spy_whole_gains": {
+    "10000": "-137.36",
+    "25000": "-351.65",
+    "50000": "-708.80",
+    "100000": "-1417.60",
+    "1000000": "-14181.50",
+    "2000000": "-28368.49"
+   },
+   "spy_hold": -0.014186007505120429,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-21",
+   "per12": -0.02489519613855885,
+   "per12_n": 7,
+   "per12_gross": -0.023919603538397328,
+   "per12_whole_gains": {
+    "10000": "-243.14",
+    "25000": "-617.05",
+    "50000": "-1238.10",
+    "100000": "-2483.27",
+    "1000000": "-24887.72",
+    "2000000": "-49783.79"
+   },
+   "per12_hold": -0.016241713728855058,
+   "per12_early": {
+    "ARW": "stop",
+    "CRI": "stop",
+    "HUN": "stop"
+   },
+   "per12_symbols": [
+    "HUN",
+    "DHI",
+    "BKU",
+    "HSIC",
+    "CRI",
+    "MTN",
+    "ARW"
+   ],
+   "per12_stop_only": -0.02489519613855885,
+   "sans_per": -0.016590366979669518,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.015606465395857281,
+   "sans_per_whole_gains": {
+    "10000": "-163.38",
+    "25000": "-409.87",
+    "50000": "-819.91",
+    "100000": "-1642.13",
+    "1000000": "-16581.85",
+    "2000000": "-33164.01"
+   },
+   "sans_per_hold": -0.011730841238167016,
+   "sans_per_early": {
+    "ADBE": "stop",
+    "ALK": "stop",
+    "HUN": "stop",
+    "PLNT": "objectif"
+   },
+   "sans_per_symbols": [
+    "HUN",
+    "PLNT",
+    "BCS",
+    "ADBE",
+    "DHI",
+    "SONY",
+    "ALK"
+   ],
+   "sans_per_stop_only": -0.014575358569736808,
+   "spy": -0.015704871040924794,
+   "spy_n": 1,
+   "spy_gross": -0.014720083518204358,
+   "spy_whole_gains": {
+    "10000": "-156.53",
+    "25000": "-391.32",
+    "50000": "-782.64",
+    "100000": "-1565.29",
+    "1000000": "-15701.02",
+    "2000000": "-31408.06"
+   },
+   "spy_hold": -0.015704871040924794,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-22",
+   "per12": 0.006328660973481678,
+   "per12_n": 7,
+   "per12_gross": 0.007335493050493665,
+   "per12_whole_gains": {
+    "10000": "57.42",
+    "25000": "153.85",
+    "50000": "313.60",
+    "100000": "626.86",
+    "1000000": "6326.63",
+    "2000000": "12653.27"
+   },
+   "per12_hold": 0.004863744886100444,
+   "per12_early": {
+    "EXR": "objectif",
+    "LH": "objectif"
+   },
+   "per12_symbols": [
+    "FLG",
+    "TTEK",
+    "APLE",
+    "LH",
+    "FLEX",
+    "EXR",
+    "DAL"
+   ],
+   "per12_stop_only": 0.004863744886100444,
+   "sans_per": -0.0006855651438221983,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0003142491982049931,
+   "sans_per_whole_gains": {
+    "10000": "-8.95",
+    "25000": "-18.00",
+    "50000": "-37.71",
+    "100000": "-69.47",
+    "1000000": "-685.11",
+    "2000000": "-1371.42"
+   },
+   "sans_per_hold": -0.0023187287297122988,
+   "sans_per_early": {
+    "CMG": "stop",
+    "ICLR": "objectif"
+   },
+   "sans_per_symbols": [
+    "SONY",
+    "FLG",
+    "CMG",
+    "P",
+    "ICLR",
+    "WPM",
+    "ALK"
+   ],
+   "sans_per_stop_only": -0.001906126990565352,
+   "spy": -0.0031815850805090363,
+   "spy_n": 1,
+   "spy_gross": -0.002184268007052817,
+   "spy_whole_gains": {
+    "10000": "-31.45",
+    "25000": "-78.62",
+    "50000": "-158.45",
+    "100000": "-318.12",
+    "1000000": "-3181.18",
+    "2000000": "-6362.36"
+   },
+   "spy_hold": -0.0031815850805090363,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-23",
+   "per12": -0.011994144951797597,
+   "per12_n": 7,
+   "per12_gross": -0.011005644846696845,
+   "per12_whole_gains": {
+    "10000": "-116.10",
+    "25000": "-295.95",
+    "50000": "-591.89",
+    "100000": "-1184.47",
+    "1000000": "-11966.97",
+    "2000000": "-23962.11"
+   },
+   "per12_hold": -0.004653543637983647,
+   "per12_early": {
+    "CABO": "stop",
+    "CMC": "stop",
+    "FAF": "objectif",
+    "JLL": "stop",
+    "WU": "stop"
+   },
+   "per12_symbols": [
+    "CABO",
+    "FAF",
+    "KEY",
+    "WU",
+    "CMC",
+    "RJF",
+    "JLL"
+   ],
+   "per12_stop_only": -0.013372885914600589,
+   "sans_per": -0.004409561507832087,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.0034134730250985528,
+   "sans_per_whole_gains": {
+    "10000": "-39.92",
+    "25000": "-105.33",
+    "50000": "-210.66",
+    "100000": "-427.74",
+    "1000000": "-4385.28",
+    "2000000": "-8793.82"
+   },
+   "sans_per_hold": -0.0020799489807026843,
+   "sans_per_early": {
+    "CABO": "stop",
+    "FAF": "objectif",
+    "NICE": "stop",
+    "WU": "stop"
+   },
+   "sans_per_symbols": [
+    "CABO",
+    "DIS",
+    "ORA",
+    "FAF",
+    "NICE",
+    "ICLR",
+    "WU"
+   ],
+   "sans_per_stop_only": -0.005788302470635079,
+   "spy": -0.010610547906355834,
+   "spy_n": 1,
+   "spy_gross": -0.009620663512065045,
+   "spy_whole_gains": {
+    "10000": "-105.58",
+    "25000": "-263.94",
+    "50000": "-527.89",
+    "100000": "-1059.83",
+    "1000000": "-10610.53",
+    "2000000": "-21221.06"
+   },
+   "spy_hold": -0.010610547906355834,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-24",
+   "per12": -0.003247433000427897,
+   "per12_n": 7,
+   "per12_gross": -0.002250181807832027,
+   "per12_whole_gains": {
+    "10000": "-30.83",
+    "25000": "-80.59",
+    "50000": "-160.82",
+    "100000": "-323.91",
+    "1000000": "-3245.32",
+    "2000000": "-6492.69"
+   },
+   "per12_hold": -0.003619777577300847,
+   "per12_early": {
+    "HSIC": "stop"
+   },
+   "per12_symbols": [
+    "WU",
+    "DHI",
+    "BKU",
+    "HSIC",
+    "FAF",
+    "HST",
+    "MTN"
+   ],
+   "per12_stop_only": -0.003247433000427897,
+   "sans_per": -0.0003723709663618249,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0006277567265182534,
+   "sans_per_whole_gains": {
+    "10000": "-1.22",
+    "25000": "-7.46",
+    "50000": "-16.03",
+    "100000": "-35.56",
+    "1000000": "-370.67",
+    "2000000": "-742.13"
+   },
+   "sans_per_hold": -0.004962804743220206,
+   "sans_per_early": {
+    "BKR": "objectif",
+    "BRKR": "stop",
+    "HSIC": "stop",
+    "WES": "objectif"
+   },
+   "sans_per_symbols": [
+    "WU",
+    "DHI",
+    "BKU",
+    "BKR",
+    "HSIC",
+    "BRKR",
+    "WES"
+   ],
+   "sans_per_stop_only": -0.004341431187826691,
+   "spy": 6.309667588159863e-05,
+   "spy_n": 1,
+   "spy_gross": 0.0010636600542466628,
+   "spy_whole_gains": {
+    "10000": "0.62",
+    "25000": "1.57",
+    "50000": "3.13",
+    "100000": "6.29",
+    "1000000": "63.08",
+    "2000000": "126.18"
+   },
+   "spy_hold": 6.309667588159863e-05,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-27",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": -0.00905089636467092,
+   "spy_n": 1,
+   "spy_gross": -0.008059451538622567,
+   "spy_whole_gains": {
+    "10000": "-89.98",
+    "25000": "-224.94",
+    "50000": "-449.88",
+    "100000": "-903.22",
+    "1000000": "-9049.52",
+    "2000000": "-18099.04"
+   },
+   "spy_hold": -0.00905089636467092,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-02-28",
+   "per12": -0.0188512602560126,
+   "per12_n": 7,
+   "per12_gross": -0.017869620696488852,
+   "per12_whole_gains": {
+    "10000": "-186.02",
+    "25000": "-469.41",
+    "50000": "-941.73",
+    "100000": "-1883.68",
+    "1000000": "-18848.22",
+    "2000000": "-37698.38"
+   },
+   "per12_hold": -0.009140611106737393,
+   "per12_early": {
+    "DOC": "stop",
+    "EHC": "stop",
+    "FLG": "stop",
+    "NUS": "stop"
+   },
+   "per12_symbols": [
+    "FLG",
+    "HST",
+    "EHC",
+    "DOC",
+    "NUS",
+    "ACN",
+    "NXST"
+   ],
+   "per12_stop_only": -0.0188512602560126,
+   "sans_per": 0.0009841627148719724,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.001985647620039428,
+   "sans_per_whole_gains": {
+    "10000": "8.87",
+    "25000": "19.56",
+    "50000": "45.51",
+    "100000": "95.01",
+    "1000000": "977.92",
+    "2000000": "1963.72"
+   },
+   "sans_per_hold": 0.016820227358701787,
+   "sans_per_early": {
+    "BA": "objectif",
+    "BNS": "objectif",
+    "EHC": "stop",
+    "GO": "stop",
+    "ORA": "objectif"
+   },
+   "sans_per_symbols": [
+    "BNS",
+    "GO",
+    "ORA",
+    "SBRA",
+    "HST",
+    "EHC",
+    "BA"
+   ],
+   "sans_per_stop_only": 0.008713700923591566,
+   "spy": 0.015876844473368436,
+   "spy_n": 1,
+   "spy_gross": 0.016893229510360302,
+   "spy_whole_gains": {
+    "10000": "156.47",
+    "25000": "391.17",
+    "50000": "788.35",
+    "100000": "1582.72",
+    "1000000": "15875.35",
+    "2000000": "31750.70"
+   },
+   "spy_hold": 0.015876844473368436,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-01",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.024057132100315386,
+   "spy_n": 1,
+   "spy_gross": 0.025081701517124105,
+   "spy_whole_gains": {
+    "10000": "235.53",
+    "25000": "597.89",
+    "50000": "1195.78",
+    "100000": "2400.61",
+    "1000000": "24051.41",
+    "2000000": "48111.87"
+   },
+   "spy_hold": 0.024057132100315386,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-02",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.00963353771878064,
+   "spy_n": 1,
+   "spy_gross": 0.010643676325802933,
+   "spy_whole_gains": {
+    "10000": "94.18",
+    "25000": "239.06",
+    "50000": "478.13",
+    "100000": "959.88",
+    "1000000": "9631.40",
+    "2000000": "19266.43"
+   },
+   "spy_hold": 0.00963353771878064,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-03",
+   "per12": -0.016470037919121133,
+   "per12_n": 7,
+   "per12_gross": -0.01548601594605372,
+   "per12_whole_gains": {
+    "10000": "-157.77",
+    "25000": "-409.69",
+    "50000": "-820.79",
+    "100000": "-1642.67",
+    "1000000": "-16464.53",
+    "2000000": "-32934.84"
+   },
+   "per12_hold": -0.026048766530396,
+   "per12_early": {
+    "ECPG": "stop",
+    "NXST": "stop",
+    "VLY": "stop"
+   },
+   "per12_symbols": [
+    "FAF",
+    "VLY",
+    "NXST",
+    "ECPG",
+    "RJF",
+    "HSIC",
+    "SCI"
+   ],
+   "per12_stop_only": -0.016470037919121133,
+   "sans_per": -0.0011472975280559395,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.0001479451493946648,
+   "sans_per_whole_gains": {
+    "10000": "-9.15",
+    "25000": "-41.41",
+    "50000": "-68.29",
+    "100000": "-121.11",
+    "1000000": "-1144.00",
+    "2000000": "-2293.77"
+   },
+   "sans_per_hold": -0.008814926173602945,
+   "sans_per_early": {
+    "COST": "objectif",
+    "ECPG": "stop",
+    "HRB": "objectif",
+    "NXST": "stop",
+    "SWX": "objectif",
+    "VLY": "stop"
+   },
+   "sans_per_symbols": [
+    "FAF",
+    "VLY",
+    "NXST",
+    "SWX",
+    "HRB",
+    "ECPG",
+    "COST"
+   ],
+   "sans_per_stop_only": 0.0007638024376719225,
+   "spy": -0.00739314520269188,
+   "spy_n": 1,
+   "spy_gross": -0.0064000417961913225,
+   "spy_whole_gains": {
+    "10000": "-73.62",
+    "25000": "-184.05",
+    "50000": "-368.11",
+    "100000": "-739.04",
+    "1000000": "-7390.44",
+    "2000000": "-14783.71"
+   },
+   "spy_hold": -0.00739314520269188,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-06",
+   "per12": -0.03138989717810758,
+   "per12_n": 7,
+   "per12_gross": -0.030420802527960613,
+   "per12_whole_gains": {
+    "10000": "-302.51",
+    "25000": "-773.00",
+    "50000": "-1555.94",
+    "100000": "-3123.58",
+    "1000000": "-31378.94",
+    "2000000": "-62772.32"
+   },
+   "per12_hold": -0.047758401418127844,
+   "per12_early": {
+    "ECPG": "stop",
+    "LH": "stop",
+    "LOPE": "stop",
+    "PRI": "stop",
+    "TGT": "stop",
+    "VTRS": "stop",
+    "WEN": "stop"
+   },
+   "per12_symbols": [
+    "ECPG",
+    "LH",
+    "VTRS",
+    "LOPE",
+    "TGT",
+    "WEN",
+    "PRI"
+   ],
+   "per12_stop_only": -0.03138989717810758,
+   "sans_per": -0.02653937002305212,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.02556542241927328,
+   "sans_per_whole_gains": {
+    "10000": "-257.73",
+    "25000": "-654.15",
+    "50000": "-1320.43",
+    "100000": "-2642.51",
+    "1000000": "-26533.07",
+    "2000000": "-53073.36"
+   },
+   "sans_per_hold": -0.045764492362989156,
+   "sans_per_early": {
+    "CAH": "stop",
+    "ECPG": "stop",
+    "LH": "stop",
+    "LOPE": "stop",
+    "RYAN": "stop",
+    "VTRS": "stop"
+   },
+   "sans_per_symbols": [
+    "ECPG",
+    "LH",
+    "HLN",
+    "RYAN",
+    "VTRS",
+    "LOPE",
+    "CAH"
+   ],
+   "sans_per_stop_only": -0.02653937002305212,
+   "spy": -0.03582439390865623,
+   "spy_n": 1,
+   "spy_gross": -0.03485973597359736,
+   "spy_whole_gains": {
+    "10000": "-347.53",
+    "25000": "-889.67",
+    "50000": "-1779.34",
+    "100000": "-3572.58",
+    "1000000": "-35823.08",
+    "2000000": "-71646.17"
+   },
+   "spy_hold": -0.03582439390865623,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-07",
+   "per12": -0.03335494536825988,
+   "per12_n": 7,
+   "per12_gross": -0.03238781674931866,
+   "per12_whole_gains": {
+    "10000": "-326.53",
+    "25000": "-822.17",
+    "50000": "-1659.51",
+    "100000": "-3326.53",
+    "1000000": "-33349.08",
+    "2000000": "-66700.43"
+   },
+   "per12_hold": -0.06897622964851538,
+   "per12_early": {
+    "AIZ": "stop",
+    "DAR": "stop",
+    "DVA": "stop",
+    "ECPG": "stop",
+    "FLG": "stop",
+    "LBTYK": "stop",
+    "NXST": "stop"
+   },
+   "per12_symbols": [
+    "ECPG",
+    "NXST",
+    "DVA",
+    "FLG",
+    "DAR",
+    "LBTYK",
+    "AIZ"
+   ],
+   "per12_stop_only": -0.03335494536825988,
+   "sans_per": -0.023793786306282094,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.02281709174530789,
+   "sans_per_whole_gains": {
+    "10000": "-231.27",
+    "25000": "-585.49",
+    "50000": "-1182.34",
+    "100000": "-2371.66",
+    "1000000": "-23784.77",
+    "2000000": "-47577.78"
+   },
+   "sans_per_hold": -0.05556416129535658,
+   "sans_per_early": {
+    "ALC": "stop",
+    "ARE": "stop",
+    "DAR": "stop",
+    "DVA": "stop",
+    "ECPG": "stop",
+    "FMS": "objectif",
+    "NXST": "stop"
+   },
+   "sans_per_symbols": [
+    "ECPG",
+    "NXST",
+    "ARE",
+    "FMS",
+    "ALC",
+    "DVA",
+    "DAR"
+   ],
+   "sans_per_stop_only": -0.025173060934378585,
+   "spy": -0.04152066272146867,
+   "spy_n": 1,
+   "spy_gross": -0.04056170390478179,
+   "spy_whole_gains": {
+    "10000": "-413.80",
+    "25000": "-1034.50",
+    "50000": "-2069.00",
+    "100000": "-4137.99",
+    "1000000": "-41507.23",
+    "2000000": "-83030.38"
+   },
+   "spy_hold": -0.04152066272146867,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-08",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": -0.033449937314351766,
+   "spy_n": 1,
+   "spy_gross": -0.03248290373487638,
+   "spy_whole_gains": {
+    "10000": "-330.82",
+    "25000": "-827.06",
+    "50000": "-1666.85",
+    "100000": "-3333.69",
+    "1000000": "-33438.74",
+    "2000000": "-66890.20"
+   },
+   "spy_hold": -0.033449937314351766,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-09",
+   "per12": -0.03439763021958529,
+   "per12_n": 7,
+   "per12_gross": -0.03343154480709864,
+   "per12_whole_gains": {
+    "10000": "-331.28",
+    "25000": "-849.57",
+    "50000": "-1709.01",
+    "100000": "-3434.25",
+    "1000000": "-34380.67",
+    "2000000": "-68782.32"
+   },
+   "per12_hold": -0.0930448886357968,
+   "per12_early": {
+    "AWI": "stop",
+    "EQH": "stop",
+    "FITB": "stop",
+    "GPC": "stop",
+    "MAA": "stop",
+    "PLAY": "stop",
+    "PRI": "stop"
+   },
+   "per12_symbols": [
+    "FITB",
+    "PRI",
+    "EQH",
+    "AWI",
+    "PLAY",
+    "GPC",
+    "MAA"
+   ],
+   "per12_stop_only": -0.03439763021958529,
+   "sans_per": -0.03163324121976723,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.030664390035394812,
+   "sans_per_whole_gains": {
+    "10000": "-308.20",
+    "25000": "-780.62",
+    "50000": "-1568.86",
+    "100000": "-3155.33",
+    "1000000": "-31617.49",
+    "2000000": "-63253.21"
+   },
+   "sans_per_hold": -0.09775274487608467,
+   "sans_per_early": {
+    "ARE": "stop",
+    "EQH": "stop",
+    "FITB": "stop",
+    "GPC": "stop",
+    "PLAY": "stop",
+    "PRI": "stop"
+   },
+   "sans_per_symbols": [
+    "FITB",
+    "ARE",
+    "PRI",
+    "EQH",
+    "CAH",
+    "PLAY",
+    "GPC"
+   ],
+   "sans_per_stop_only": -0.03163324121976723,
+   "spy": -0.025580535553720963,
+   "spy_n": 1,
+   "spy_gross": -0.024605628635815734,
+   "spy_whole_gains": {
+    "10000": "-253.94",
+    "25000": "-634.85",
+    "50000": "-1269.70",
+    "100000": "-2549.17",
+    "1000000": "-25579.58",
+    "2000000": "-51159.15"
+   },
+   "spy_hold": -0.025580535553720963,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-10",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": -0.005847840457349583,
+   "spy_n": 1,
+   "spy_gross": -0.0048531909730647905,
+   "spy_whole_gains": {
+    "10000": "-56.42",
+    "25000": "-145.39",
+    "50000": "-290.78",
+    "100000": "-583.73",
+    "1000000": "-5845.95",
+    "2000000": "-11694.08"
+   },
+   "spy_hold": -0.005847840457349583,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-13",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.029552642170531794,
+   "spy_n": 1,
+   "spy_gross": 0.03058270984654033,
+   "spy_whole_gains": {
+    "10000": "292.36",
+    "25000": "736.32",
+    "50000": "1472.63",
+    "100000": "2945.26",
+    "1000000": "29550.10",
+    "2000000": "59100.21"
+   },
+   "spy_hold": 0.029552642170531794,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-14",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": -0.002067664376846594,
+   "spy_n": 1,
+   "spy_gross": -0.0010692328254477412,
+   "spy_whole_gains": {
+    "10000": "-20.12",
+    "25000": "-51.08",
+    "50000": "-102.93",
+    "100000": "-206.63",
+    "1000000": "-2067.09",
+    "2000000": "-4134.95"
+   },
+   "spy_hold": -0.002067664376846594,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-15",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.02371546195474701,
+   "spy_n": 1,
+   "spy_gross": 0.024739689530489627,
+   "spy_whole_gains": {
+    "10000": "235.65",
+    "25000": "584.75",
+    "50000": "1178.23",
+    "100000": "2365.19",
+    "1000000": "23712.94",
+    "2000000": "47425.89"
+   },
+   "spy_hold": 0.02371546195474701,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-16",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.03167846478750298,
+   "spy_n": 1,
+   "spy_gross": 0.03271065934957152,
+   "spy_whole_gains": {
+    "10000": "316.55",
+    "25000": "785.51",
+    "50000": "1582.75",
+    "100000": "3165.49",
+    "1000000": "31678.36",
+    "2000000": "63356.71"
+   },
+   "spy_hold": 0.03167846478750298,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-17",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.005295096411212362,
+   "spy_n": 1,
+   "spy_gross": 0.006300894406621279,
+   "spy_whole_gains": {
+    "10000": "51.59",
+    "25000": "130.96",
+    "50000": "263.91",
+    "100000": "527.82",
+    "1000000": "5294.03",
+    "2000000": "10590.05"
+   },
+   "spy_hold": 0.005295096411212362,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-20",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.003361786071772717,
+   "spy_n": 1,
+   "spy_gross": 0.0043656497897034555,
+   "spy_whole_gains": {
+    "10000": "32.85",
+    "25000": "83.39",
+    "50000": "168.05",
+    "100000": "336.10",
+    "1000000": "3360.96",
+    "2000000": "6723.19"
+   },
+   "spy_hold": 0.003361786071772717,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-21",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": -0.005447573926178443,
+   "spy_n": 1,
+   "spy_gross": -0.004452523975129097,
+   "spy_whole_gains": {
+    "10000": "-53.79",
+    "25000": "-134.47",
+    "50000": "-271.00",
+    "100000": "-544.07",
+    "1000000": "-5446.93",
+    "2000000": "-10893.85"
+   },
+   "spy_hold": -0.005447573926178443,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-22",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": -0.008412651951616164,
+   "spy_n": 1,
+   "spy_gross": -0.00742056856187291,
+   "spy_whole_gains": {
+    "10000": "-83.75",
+    "25000": "-209.38",
+    "50000": "-418.77",
+    "100000": "-840.76",
+    "1000000": "-8410.81",
+    "2000000": "-16824.85"
+   },
+   "spy_hold": -0.008412651951616164,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-23",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": -0.004182203263823591,
+   "spy_n": 1,
+   "spy_gross": -0.003185887309110058,
+   "spy_whole_gains": {
+    "10000": "-41.32",
+    "25000": "-103.30",
+    "50000": "-208.18",
+    "100000": "-417.96",
+    "1000000": "-4181.17",
+    "2000000": "-8363.93"
+   },
+   "spy_hold": -0.004182203263823591,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-24",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.02160171943519071,
+   "spy_n": 1,
+   "spy_gross": 0.022623832211013814,
+   "spy_whole_gains": {
+    "10000": "211.12",
+    "25000": "535.92",
+    "50000": "1079.97",
+    "100000": "2159.93",
+    "1000000": "21599.31",
+    "2000000": "43198.61"
+   },
+   "spy_hold": 0.02160171943519071,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-27",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.015001112651469547,
+   "spy_n": 1,
+   "spy_gross": 0.01601662151855456,
+   "spy_whole_gains": {
+    "10000": "148.37",
+    "25000": "370.94",
+    "50000": "747.58",
+    "100000": "1495.16",
+    "1000000": "14997.27",
+    "2000000": "30000.25"
+   },
+   "spy_hold": 0.015001112651469547,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-28",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.03144567863286255,
+   "spy_n": 1,
+   "spy_gross": 0.032477640292325145,
+   "spy_whole_gains": {
+    "10000": "310.05",
+    "25000": "775.11",
+    "50000": "1562.15",
+    "100000": "3136.23",
+    "1000000": "31433.81",
+    "2000000": "62879.55"
+   },
+   "spy_hold": 0.03144567863286255,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-29",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.02723516666682346,
+   "spy_n": 1,
+   "spy_gross": 0.028262915708010875,
+   "spy_whole_gains": {
+    "10000": "270.97",
+    "25000": "677.44",
+    "50000": "1354.87",
+    "100000": "2720.17",
+    "1000000": "27232.99",
+    "2000000": "54465.97"
+   },
+   "spy_hold": 0.02723516666682346,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-30",
+   "per12": 0.029729279220315704,
+   "per12_n": 1,
+   "per12_gross": 0.03075952362173673,
+   "per12_whole_gains": {
+    "10000": "294.16",
+    "25000": "742.94",
+    "50000": "1485.88",
+    "100000": "2971.75",
+    "1000000": "29728.84",
+    "2000000": "59457.69"
+   },
+   "per12_hold": 0.03138390580717213,
+   "per12_early": {
+    "DKS": "objectif"
+   },
+   "per12_symbols": [
+    "DKS"
+   ],
+   "per12_stop_only": 0.03138390580717213,
+   "sans_per": 0.02936189458555246,
+   "sans_per_n": 2,
+   "sans_per_gross": 0.030391771418554515,
+   "sans_per_whole_gains": {
+    "10000": "292.01",
+    "25000": "731.91",
+    "50000": "1467.58",
+    "100000": "2935.17",
+    "1000000": "29359.78",
+    "2000000": "58723.34"
+   },
+   "sans_per_hold": 0.0317888884230161,
+   "sans_per_early": {
+    "DKS": "objectif",
+    "SNN": "objectif"
+   },
+   "sans_per_symbols": [
+    "DKS",
+    "SNN"
+   ],
+   "sans_per_stop_only": 0.0317888884230161,
+   "spy": 0.010163093922491965,
+   "spy_n": 1,
+   "spy_gross": 0.011173762350628525,
+   "spy_whole_gains": {
+    "10000": "98.28",
+    "25000": "251.60",
+    "50000": "507.13",
+    "100000": "1014.25",
+    "1000000": "10162.20",
+    "2000000": "20324.41"
+   },
+   "spy_hold": 0.010163093922491965,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-03-31",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": 0.0,
+   "sans_per_n": 0,
+   "sans_per_gross": 0.0,
+   "sans_per_whole_gains": {},
+   "sans_per_hold": 0.0,
+   "sans_per_early": {},
+   "sans_per_symbols": [],
+   "sans_per_stop_only": 0.0,
+   "spy": 0.004170670728284861,
+   "spy_n": 1,
+   "spy_gross": 0.005175343735516762,
+   "spy_whole_gains": {
+    "10000": "40.52",
+    "25000": "103.72",
+    "50000": "207.44",
+    "100000": "416.50",
+    "1000000": "4169.84",
+    "2000000": "8341.31"
+   },
+   "spy_hold": 0.004170670728284861,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-03",
+   "per12": 0.0,
+   "per12_n": 0,
+   "per12_gross": 0.0,
+   "per12_whole_gains": {},
+   "per12_hold": 0.0,
+   "per12_early": {},
+   "per12_symbols": [],
+   "per12_stop_only": 0.0,
+   "sans_per": -0.013853338407307245,
+   "sans_per_n": 2,
+   "sans_per_gross": -0.01286669842572376,
+   "sans_per_whole_gains": {
+    "10000": "-139.26",
+    "25000": "-345.39",
+    "50000": "-691.31",
+    "100000": "-1384.40",
+    "1000000": "-13852.70",
+    "2000000": "-27705.93"
+   },
+   "sans_per_hold": -0.018399111559275157,
+   "sans_per_early": {
+    "PRGS": "stop"
+   },
+   "sans_per_symbols": [
+    "PRGS",
+    "PODD"
+   ],
+   "sans_per_stop_only": -0.013853338407307245,
+   "spy": -0.00663281862078943,
+   "spy_n": 1,
+   "spy_gross": -0.005638954507353501,
+   "spy_whole_gains": {
+    "10000": "-65.31",
+    "25000": "-164.59",
+    "50000": "-329.19",
+    "100000": "-660.98",
+    "1000000": "-6630.73",
+    "2000000": "-13264.07"
+   },
+   "spy_hold": -0.00663281862078943,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-04",
+   "per12": -0.03177987249560417,
+   "per12_n": 1,
+   "per12_gross": -0.030811168015859904,
+   "per12_whole_gains": {
+    "10000": "-315.63",
+    "25000": "-792.93",
+    "50000": "-1585.87",
+    "100000": "-3175.59",
+    "1000000": "-31778.95",
+    "2000000": "-63557.91"
+   },
+   "per12_hold": 0.00725261027176813,
+   "per12_early": {
+    "MPC": "stop"
+   },
+   "per12_symbols": [
+    "MPC"
+   ],
+   "per12_stop_only": -0.03177987249560417,
+   "sans_per": -0.031801264330317304,
+   "sans_per_n": 2,
+   "sans_per_gross": -0.030832581253109014,
+   "sans_per_whole_gains": {
+    "10000": "-315.58",
+    "25000": "-793.46",
+    "50000": "-1586.93",
+    "100000": "-3175.59",
+    "1000000": "-31800.55",
+    "2000000": "-63601.10"
+   },
+   "sans_per_hold": -0.00861559962339837,
+   "sans_per_early": {
+    "MPC": "stop",
+    "PRGS": "stop"
+   },
+   "sans_per_symbols": [
+    "PRGS",
+    "MPC"
+   ],
+   "sans_per_stop_only": -0.031801264330317304,
+   "spy": -0.00468528617043098,
+   "spy_n": 1,
+   "spy_gross": -0.003689473550291341,
+   "spy_whole_gains": {
+    "10000": "-46.06",
+    "25000": "-116.06",
+    "50000": "-233.97",
+    "100000": "-467.94",
+    "1000000": "-4684.93",
+    "2000000": "-9369.86"
+   },
+   "spy_hold": -0.00468528617043098,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-05",
+   "per12": 0.004223987888346919,
+   "per12_n": 7,
+   "per12_gross": 0.005228714239410797,
+   "per12_whole_gains": {
+    "10000": "42.72",
+    "25000": "105.44",
+    "50000": "211.86",
+    "100000": "422.60",
+    "1000000": "4224.97",
+    "2000000": "8448.35"
+   },
+   "per12_hold": 0.004956881412239901,
+   "per12_early": {
+    "BLMN": "objectif"
+   },
+   "per12_symbols": [
+    "PRGS",
+    "TT",
+    "TER",
+    "BLMN",
+    "CRUS",
+    "EME",
+    "ALV"
+   ],
+   "per12_stop_only": 0.004956881412239901,
+   "sans_per": 0.008582946775382471,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.009592034265903115,
+   "sans_per_whole_gains": {
+    "10000": "86.38",
+    "25000": "213.33",
+    "50000": "428.47",
+    "100000": "857.92",
+    "1000000": "8583.04",
+    "2000000": "17165.73"
+   },
+   "sans_per_hold": 0.004365853143938421,
+   "sans_per_early": {
+    "BLMN": "objectif",
+    "SMPL": "objectif",
+    "TW": "stop"
+   },
+   "sans_per_symbols": [
+    "SMPL",
+    "PRGS",
+    "TT",
+    "TER",
+    "CRH",
+    "TW",
+    "BLMN"
+   ],
+   "sans_per_stop_only": 0.005428389374985806,
+   "spy": 0.00509852793531421,
+   "spy_n": 1,
+   "spy_gross": 0.006104129263913824,
+   "spy_whole_gains": {
+    "10000": "49.72",
+    "25000": "127.29",
+    "50000": "254.58",
+    "100000": "509.16",
+    "1000000": "5097.58",
+    "2000000": "10195.15"
+   },
+   "spy_hold": 0.00509852793531421,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-06",
+   "per12": -0.0035470957956819415,
+   "per12_n": 7,
+   "per12_gross": -0.0025501444157876763,
+   "per12_whole_gains": {
+    "10000": "-36.45",
+    "25000": "-84.63",
+    "50000": "-178.17",
+    "100000": "-352.24",
+    "1000000": "-3546.34",
+    "2000000": "-7086.76"
+   },
+   "per12_hold": -0.009429876561698036,
+   "per12_early": {
+    "CRUS": "stop",
+    "DCI": "objectif",
+    "TER": "objectif",
+    "TSCO": "objectif"
+   },
+   "per12_symbols": [
+    "PRGS",
+    "EME",
+    "CRUS",
+    "TER",
+    "DCI",
+    "JBL",
+    "TSCO"
+   ],
+   "per12_stop_only": -0.011264545285115677,
+   "sans_per": 0.0004567487106594067,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0014577059379837283,
+   "sans_per_whole_gains": {
+    "10000": "4.14",
+    "25000": "17.93",
+    "50000": "23.51",
+    "100000": "48.17",
+    "1000000": "459.31",
+    "2000000": "920.48"
+   },
+   "sans_per_hold": 0.001688682589925594,
+   "sans_per_early": {
+    "CLH": "objectif",
+    "CRUS": "stop",
+    "EMBJ": "objectif",
+    "SMPL": "objectif"
+   },
+   "sans_per_symbols": [
+    "SMPL",
+    "PRGS",
+    "EME",
+    "WDAY",
+    "CRUS",
+    "CLH",
+    "EMBJ"
+   ],
+   "sans_per_stop_only": -0.00014598613349204817,
+   "spy": 0.0013088449356836345,
+   "spy_n": 1,
+   "spy_gross": 0.0023106546854942235,
+   "spy_whole_gains": {
+    "10000": "12.75",
+    "25000": "32.64",
+    "50000": "65.29",
+    "100000": "130.57",
+    "1000000": "1308.79",
+    "2000000": "2617.58"
+   },
+   "spy_hold": 0.0013088449356836345,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-10",
+   "per12": -0.03173771112447201,
+   "per12_n": 3,
+   "per12_gross": -0.030768964462265378,
+   "per12_whole_gains": {
+    "10000": "-311.89",
+    "25000": "-790.28",
+    "50000": "-1577.21",
+    "100000": "-3166.55",
+    "1000000": "-31733.05",
+    "2000000": "-63464.33"
+   },
+   "per12_hold": -0.018114675640461084,
+   "per12_early": {
+    "CRUS": "stop",
+    "PRGS": "objectif"
+   },
+   "per12_symbols": [
+    "PRGS",
+    "CRUS",
+    "TXN"
+   ],
+   "per12_stop_only": -0.0257309437452905,
+   "sans_per": -0.015670519536409296,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.014685697645000002,
+   "sans_per_whole_gains": {
+    "10000": "-156.37",
+    "25000": "-381.91",
+    "50000": "-779.72",
+    "100000": "-1558.48",
+    "1000000": "-15663.48",
+    "2000000": "-31340.68"
+   },
+   "sans_per_hold": -0.005039889728513786,
+   "sans_per_early": {
+    "ASX": "stop",
+    "BEPC": "objectif",
+    "CRUS": "stop",
+    "MSCI": "objectif",
+    "PRGS": "objectif",
+    "TW": "stop"
+   },
+   "sans_per_symbols": [
+    "TW",
+    "MSCI",
+    "PRGS",
+    "CRUS",
+    "BEPC",
+    "ASX",
+    "GWRE"
+   ],
+   "sans_per_stop_only": -0.008424955672461832,
+   "spy": 0.015633823418206877,
+   "spy_n": 1,
+   "spy_gross": 0.016649965312572266,
+   "spy_whole_gains": {
+    "10000": "152.19",
+    "25000": "389.60",
+    "50000": "779.21",
+    "100000": "1558.42",
+    "1000000": "15632.88",
+    "2000000": "31265.76"
+   },
+   "spy_hold": 0.015633823418206877,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-11",
+   "per12": -0.026124913152151107,
+   "per12_n": 5,
+   "per12_gross": -0.02515055088416927,
+   "per12_whole_gains": {
+    "10000": "-259.86",
+    "25000": "-647.14",
+    "50000": "-1308.49",
+    "100000": "-2611.37",
+    "1000000": "-26115.57",
+    "2000000": "-52238.54"
+   },
+   "per12_hold": -0.022692600863490058,
+   "per12_early": {
+    "CRUS": "stop",
+    "KR": "stop",
+    "PRGS": "objectif"
+   },
+   "per12_symbols": [
+    "PRGS",
+    "CRUS",
+    "EME",
+    "ULTA",
+    "KR"
+   ],
+   "per12_stop_only": -0.023720398974490034,
+   "sans_per": -0.02266866258348715,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.021690842335946866,
+   "sans_per_whole_gains": {
+    "10000": "-216.85",
+    "25000": "-558.64",
+    "50000": "-1126.76",
+    "100000": "-2253.98",
+    "1000000": "-22667.24",
+    "2000000": "-45332.75"
+   },
+   "sans_per_hold": -0.013962234157152878,
+   "sans_per_early": {
+    "ASX": "stop",
+    "CRH": "objectif",
+    "CRUS": "stop",
+    "PRGS": "objectif",
+    "WDAY": "stop"
+   },
+   "sans_per_symbols": [
+    "PRGS",
+    "CRH",
+    "CRUS",
+    "EME",
+    "WDAY",
+    "ASX",
+    "ULTA"
+   ],
+   "sans_per_stop_only": -0.02070055657053342,
+   "spy": 0.004573830776625444,
+   "spy_n": 1,
+   "spy_gross": 0.00557890714558655,
+   "spy_whole_gains": {
+    "10000": "44.91",
+    "25000": "113.17",
+    "50000": "228.14",
+    "100000": "456.27",
+    "1000000": "4573.52",
+    "2000000": "9147.04"
+   },
+   "spy_hold": 0.004573830776625444,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-12",
+   "per12": -0.00023353694487546819,
+   "per12_n": 3,
+   "per12_gross": 0.000766729651477833,
+   "per12_whole_gains": {
+    "10000": "-2.28",
+    "25000": "-5.83",
+    "50000": "-11.61",
+    "100000": "-23.28",
+    "1000000": "-233.39",
+    "2000000": "-466.97"
+   },
+   "per12_hold": -0.00023353694487546819,
+   "per12_early": {},
+   "per12_symbols": [
+    "NSIT",
+    "KR",
+    "TXN"
+   ],
+   "per12_stop_only": -0.00023353694487546819,
+   "sans_per": -0.001094720792144316,
+   "sans_per_n": 7,
+   "sans_per_gross": -9.53158104456111e-05,
+   "sans_per_whole_gains": {
+    "10000": "-11.73",
+    "25000": "-27.20",
+    "50000": "-57.13",
+    "100000": "-110.71",
+    "1000000": "-1095.22",
+    "2000000": "-2189.86"
+   },
+   "sans_per_hold": 0.003414138576774219,
+   "sans_per_early": {
+    "SMPL": "stop",
+    "TSM": "stop",
+    "WYNN": "objectif"
+   },
+   "sans_per_symbols": [
+    "SMPL",
+    "WDAY",
+    "WYNN",
+    "NSIT",
+    "KR",
+    "TSM",
+    "BUD"
+   ],
+   "sans_per_stop_only": 2.185053265815824e-05,
+   "spy": 0.004274143320198182,
+   "spy_n": 1,
+   "spy_gross": 0.0052789198517841735,
+   "spy_whole_gains": {
+    "10000": "42.12",
+    "25000": "106.15",
+    "50000": "212.30",
+    "100000": "426.29",
+    "1000000": "4273.01",
+    "2000000": "8547.70"
+   },
+   "spy_hold": 0.004274143320198182,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-13",
+   "per12": 0.012026680821300918,
+   "per12_n": 7,
+   "per12_gross": 0.013039213768595865,
+   "per12_whole_gains": {
+    "10000": "120.52",
+    "25000": "302.98",
+    "50000": "606.40",
+    "100000": "1207.02",
+    "1000000": "12023.54",
+    "2000000": "24050.91"
+   },
+   "per12_hold": 0.01390101421183881,
+   "per12_early": {
+    "FAST": "objectif",
+    "KBH": "objectif",
+    "PSA": "stop"
+   },
+   "per12_symbols": [
+    "NSIT",
+    "JBL",
+    "KR",
+    "FAST",
+    "KBH",
+    "GPK",
+    "PSA"
+   ],
+   "per12_stop_only": 0.016013225492742193,
+   "sans_per": 0.004006607028509099,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.005011115889968339,
+   "sans_per_whole_gains": {
+    "10000": "39.08",
+    "25000": "99.46",
+    "50000": "198.66",
+    "100000": "398.86",
+    "1000000": "4006.31",
+    "2000000": "8011.03"
+   },
+   "sans_per_hold": 0.009892268369141165,
+   "sans_per_early": {
+    "FAST": "objectif",
+    "PGR": "stop"
+   },
+   "sans_per_symbols": [
+    "SMPL",
+    "ASX",
+    "NSIT",
+    "JBL",
+    "PGR",
+    "KR",
+    "FAST"
+   ],
+   "sans_per_stop_only": 0.006181762344282929,
+   "spy": 0.00776477622600016,
+   "spy_n": 1,
+   "spy_gross": 0.0087730451366815,
+   "spy_whole_gains": {
+    "10000": "76.38",
+    "25000": "192.47",
+    "50000": "387.99",
+    "100000": "775.98",
+    "1000000": "7762.82",
+    "2000000": "15528.69"
+   },
+   "spy_hold": 0.00776477622600016,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-14",
+   "per12": -0.008627315421057484,
+   "per12_n": 4,
+   "per12_gross": -0.007635446802169098,
+   "per12_whole_gains": {
+    "10000": "-78.77",
+    "25000": "-208.73",
+    "50000": "-424.54",
+    "100000": "-855.94",
+    "1000000": "-8619.76",
+    "2000000": "-17253.01"
+   },
+   "per12_hold": -0.018283513714743606,
+   "per12_early": {
+    "PSA": "stop",
+    "UNH": "stop"
+   },
+   "per12_symbols": [
+    "CAG",
+    "EVRG",
+    "PSA",
+    "UNH"
+   ],
+   "per12_stop_only": -0.008627315421057484,
+   "sans_per": -0.008845136953219474,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.0078534862648285,
+   "sans_per_whole_gains": {
+    "10000": "-82.82",
+    "25000": "-220.77",
+    "50000": "-441.90",
+    "100000": "-882.84",
+    "1000000": "-8844.44",
+    "2000000": "-17686.89"
+   },
+   "sans_per_hold": -0.013453870269097562,
+   "sans_per_early": {
+    "FIVE": "stop",
+    "OLED": "stop",
+    "RS": "objectif"
+   },
+   "sans_per_symbols": [
+    "PGR",
+    "WDAY",
+    "EXEL",
+    "RS",
+    "OLED",
+    "UMC",
+    "FIVE"
+   ],
+   "sans_per_stop_only": -0.011570434881214162,
+   "spy": 0.0028974089160490805,
+   "spy_n": 1,
+   "spy_gross": 0.003900808024519365,
+   "spy_whole_gains": {
+    "10000": "28.61",
+    "25000": "72.10",
+    "50000": "144.20",
+    "100000": "289.54",
+    "1000000": "2896.58",
+    "2000000": "5794.30"
+   },
+   "spy_hold": 0.0028974089160490805,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-17",
+   "per12": -0.017964422329734806,
+   "per12_n": 4,
+   "per12_gross": -0.016981895488643997,
+   "per12_whole_gains": {
+    "10000": "-174.79",
+    "25000": "-443.09",
+    "50000": "-888.80",
+    "100000": "-1792.26",
+    "1000000": "-17963.28",
+    "2000000": "-35926.62"
+   },
+   "per12_hold": -0.01932329296026141,
+   "per12_early": {
+    "JBL": "stop",
+    "UNH": "stop"
+   },
+   "per12_symbols": [
+    "JBL",
+    "UNH",
+    "MCK",
+    "GPK"
+   ],
+   "per12_stop_only": -0.017964422329734806,
+   "sans_per": -0.01238972047434048,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.011401616142648976,
+   "sans_per_whole_gains": {
+    "10000": "-125.46",
+    "25000": "-304.40",
+    "50000": "-612.44",
+    "100000": "-1233.50",
+    "1000000": "-12388.00",
+    "2000000": "-24780.85"
+   },
+   "sans_per_hold": -0.01014012836961643,
+   "sans_per_early": {
+    "ASX": "stop",
+    "JBL": "stop",
+    "MZTI": "objectif",
+    "OLED": "stop"
+   },
+   "sans_per_symbols": [
+    "ASX",
+    "OLED",
+    "CUBE",
+    "JBL",
+    "PEN",
+    "WPM",
+    "MZTI"
+   ],
+   "sans_per_stop_only": -0.011928317270366428,
+   "spy": -0.004260655308907026,
+   "spy_n": 1,
+   "spy_gross": -0.003264417845484222,
+   "spy_whole_gains": {
+    "10000": "-42.11",
+    "25000": "-106.13",
+    "50000": "-212.25",
+    "100000": "-424.50",
+    "1000000": "-4260.16",
+    "2000000": "-8520.33"
+   },
+   "spy_hold": -0.004260655308907026,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-18",
+   "per12": -0.01395938612600914,
+   "per12_n": 7,
+   "per12_gross": -0.012972852245194741,
+   "per12_whole_gains": {
+    "10000": "-135.67",
+    "25000": "-333.04",
+    "50000": "-688.20",
+    "100000": "-1383.22",
+    "1000000": "-13947.79",
+    "2000000": "-27911.15"
+   },
+   "per12_hold": -0.025667792490026733,
+   "per12_early": {
+    "CALM": "stop",
+    "NSIT": "stop",
+    "UNH": "stop"
+   },
+   "per12_symbols": [
+    "CALM",
+    "UNH",
+    "NSIT",
+    "KR",
+    "EME",
+    "SYY",
+    "SJM"
+   ],
+   "per12_stop_only": -0.01395938612600914,
+   "sans_per": -0.01063860694177404,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.009648750620555206,
+   "sans_per_whole_gains": {
+    "10000": "-106.13",
+    "25000": "-264.81",
+    "50000": "-530.00",
+    "100000": "-1063.44",
+    "1000000": "-10637.88",
+    "2000000": "-21275.47"
+   },
+   "sans_per_hold": -0.01669765810332851,
+   "sans_per_early": {
+    "AQN": "objectif",
+    "ASX": "stop",
+    "CALM": "stop",
+    "CIEN": "stop",
+    "ERIC": "stop",
+    "SMPL": "objectif"
+   },
+   "sans_per_symbols": [
+    "SMPL",
+    "CALM",
+    "ERIC",
+    "ASX",
+    "AQN",
+    "PGR",
+    "CIEN"
+   ],
+   "sans_per_stop_only": -0.015239599317177083,
+   "spy": -0.004431277667556724,
+   "spy_n": 1,
+   "spy_gross": -0.003435210911846426,
+   "spy_whole_gains": {
+    "10000": "-43.88",
+    "25000": "-110.58",
+    "50000": "-221.16",
+    "100000": "-442.32",
+    "1000000": "-4430.18",
+    "2000000": "-8862.11"
+   },
+   "spy_hold": -0.004431277667556724,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-19",
+   "per12": -0.01275666968541209,
+   "per12_n": 7,
+   "per12_gross": -0.011768932486498044,
+   "per12_whole_gains": {
+    "10000": "-127.34",
+    "25000": "-313.12",
+    "50000": "-633.30",
+    "100000": "-1266.61",
+    "1000000": "-12751.19",
+    "2000000": "-25505.10"
+   },
+   "per12_hold": -0.015209328046760416,
+   "per12_early": {
+    "CBRL": "stop",
+    "CSCO": "stop",
+    "HPE": "stop",
+    "QDEL": "objectif"
+   },
+   "per12_symbols": [
+    "CBRL",
+    "PSA",
+    "CSCO",
+    "UNH",
+    "HPE",
+    "QDEL",
+    "MCK"
+   ],
+   "per12_stop_only": -0.01319225734583905,
+   "sans_per": -0.005530617386209549,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.004535650520162735,
+   "sans_per_whole_gains": {
+    "10000": "-58.62",
+    "25000": "-138.42",
+    "50000": "-278.77",
+    "100000": "-552.52",
+    "1000000": "-5525.77",
+    "2000000": "-11058.05"
+   },
+   "sans_per_hold": -0.0057191991029966254,
+   "sans_per_early": {
+    "ASX": "stop",
+    "CBRL": "stop",
+    "SMPL": "objectif"
+   },
+   "sans_per_symbols": [
+    "CBRL",
+    "CIEN",
+    "FIVE",
+    "ASX",
+    "SMPL",
+    "PSA",
+    "HUM"
+   ],
+   "sans_per_stop_only": -0.007384050595393455,
+   "spy": -0.0026164965064255936,
+   "spy_n": 1,
+   "spy_gross": -0.001618614061709661,
+   "spy_whole_gains": {
+    "10000": "-25.88",
+    "25000": "-65.21",
+    "50000": "-130.42",
+    "100000": "-260.84",
+    "1000000": "-2615.65",
+    "2000000": "-5232.33"
+   },
+   "spy_hold": -0.0026164965064255936,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-20",
+   "per12": 0.0032193319921783293,
+   "per12_n": 7,
+   "per12_gross": 0.004223053184766802,
+   "per12_whole_gains": {
+    "10000": "28.59",
+    "25000": "72.57",
+    "50000": "150.61",
+    "100000": "309.86",
+    "1000000": "3214.82",
+    "2000000": "6429.21"
+   },
+   "per12_hold": 0.0025822143265213622,
+   "per12_early": {
+    "HPE": "stop"
+   },
+   "per12_symbols": [
+    "CSCO",
+    "PSA",
+    "HPE",
+    "UNH",
+    "VZ",
+    "MCK",
+    "SYY"
+   ],
+   "per12_stop_only": 0.0032193319921783293,
+   "sans_per": 0.0004977207409457456,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0014987189607966168,
+   "sans_per_whole_gains": {
+    "10000": "8.18",
+    "25000": "4.47",
+    "50000": "21.65",
+    "100000": "45.42",
+    "1000000": "489.48",
+    "2000000": "985.83"
+   },
+   "sans_per_hold": -0.004316906638273463,
+   "sans_per_early": {
+    "AQN": "objectif",
+    "HPE": "stop",
+    "HUM": "objectif",
+    "NICE": "stop"
+   },
+   "sans_per_symbols": [
+    "T",
+    "CSCO",
+    "AQN",
+    "NICE",
+    "PSA",
+    "HUM",
+    "HPE"
+   ],
+   "sans_per_stop_only": -0.0016325309449710978,
+   "spy": -0.015098450723962771,
+   "spy_n": 1,
+   "spy_gross": -0.014113056477563534,
+   "spy_whole_gains": {
+    "10000": "-149.05",
+    "25000": "-375.60",
+    "50000": "-751.20",
+    "100000": "-1508.36",
+    "1000000": "-15095.49",
+    "2000000": "-30190.99"
+   },
+   "spy_hold": -0.015098450723962771,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-21",
+   "per12": -0.02564885905411609,
+   "per12_n": 7,
+   "per12_gross": -0.024674020493890093,
+   "per12_whole_gains": {
+    "10000": "-247.66",
+    "25000": "-631.88",
+    "50000": "-1272.13",
+    "100000": "-2557.79",
+    "1000000": "-25641.06",
+    "2000000": "-51288.20"
+   },
+   "per12_hold": -0.0308098201391813,
+   "per12_early": {
+    "CALM": "stop",
+    "GLW": "stop",
+    "JBL": "stop",
+    "NRG": "stop"
+   },
+   "per12_symbols": [
+    "UNH",
+    "HPQ",
+    "JBL",
+    "NRG",
+    "AMGN",
+    "GLW",
+    "CALM"
+   ],
+   "per12_stop_only": -0.02564885905411609,
+   "sans_per": -0.02107061426636507,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.020091195171083796,
+   "sans_per_whole_gains": {
+    "10000": "-205.32",
+    "25000": "-514.37",
+    "50000": "-1047.11",
+    "100000": "-2098.85",
+    "1000000": "-21058.23",
+    "2000000": "-42130.53"
+   },
+   "sans_per_hold": -0.023596842178223974,
+   "sans_per_early": {
+    "ASX": "stop",
+    "FIVE": "stop",
+    "OLED": "stop"
+   },
+   "sans_per_symbols": [
+    "ASX",
+    "PGR",
+    "UNH",
+    "STLA",
+    "AGI",
+    "FIVE",
+    "OLED"
+   ],
+   "sans_per_stop_only": -0.02107061426636507,
+   "spy": -0.01981416581765136,
+   "spy_n": 1,
+   "spy_gross": -0.01883348964538288,
+   "spy_whole_gains": {
+    "10000": "-195.52",
+    "25000": "-492.71",
+    "50000": "-985.42",
+    "100000": "-1978.66",
+    "1000000": "-19810.07",
+    "2000000": "-39627.97"
+   },
+   "spy_hold": -0.01981416581765136,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-24",
+   "per12": 2.2820804558442088e-05,
+   "per12_n": 7,
+   "per12_gross": 0.0010233438869041735,
+   "per12_whole_gains": {
+    "10000": "1.45",
+    "25000": "0.43",
+    "50000": "1.71",
+    "100000": "8.71",
+    "1000000": "27.31",
+    "2000000": "44.88"
+   },
+   "per12_hold": 0.005505132981092949,
+   "per12_early": {
+    "LMT": "stop",
+    "SHOO": "stop",
+    "VZ": "objectif"
+   },
+   "per12_symbols": [
+    "PSA",
+    "VZ",
+    "LMT",
+    "CPB",
+    "SYY",
+    "SHOO",
+    "ACN"
+   ],
+   "per12_stop_only": 0.0010373778456046082,
+   "sans_per": -0.01593924911756467,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.014954696090168534,
+   "sans_per_whole_gains": {
+    "10000": "-159.04",
+    "25000": "-399.65",
+    "50000": "-796.18",
+    "100000": "-1594.20",
+    "1000000": "-15932.26",
+    "2000000": "-31870.67"
+   },
+   "sans_per_hold": -0.017929580681208465,
+   "sans_per_early": {
+    "ASX": "stop",
+    "NICE": "stop",
+    "OLED": "stop"
+   },
+   "sans_per_symbols": [
+    "NICE",
+    "ASR",
+    "FIVE",
+    "ASX",
+    "PGR",
+    "PSA",
+    "OLED"
+   ],
+   "sans_per_stop_only": -0.01593924911756467,
+   "spy": -0.0024650142996387584,
+   "spy_n": 1,
+   "spy_gross": -0.0014669802969370462,
+   "spy_whole_gains": {
+    "10000": "-24.38",
+    "25000": "-61.43",
+    "50000": "-122.86",
+    "100000": "-245.72",
+    "1000000": "-2465.00",
+    "2000000": "-4930.00"
+   },
+   "spy_hold": -0.0024650142996387584,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-25",
+   "per12": 0.00498091145115974,
+   "per12_n": 7,
+   "per12_gross": 0.005986395104437538,
+   "per12_whole_gains": {
+    "10000": "47.32",
+    "25000": "123.07",
+    "50000": "246.66",
+    "100000": "495.14",
+    "1000000": "4978.37",
+    "2000000": "9963.38"
+   },
+   "per12_hold": 0.013312689520287541,
+   "per12_early": {
+    "UPS": "stop",
+    "VZ": "objectif"
+   },
+   "per12_symbols": [
+    "UPS",
+    "PSA",
+    "NTAP",
+    "JBL",
+    "CSCO",
+    "ADM",
+    "VZ"
+   ],
+   "per12_stop_only": 0.0076192460228087225,
+   "sans_per": 0.007421569551161282,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.008429495083478601,
+   "sans_per_whole_gains": {
+    "10000": "74.47",
+    "25000": "181.20",
+    "50000": "370.20",
+    "100000": "738.48",
+    "1000000": "7420.00",
+    "2000000": "14847.48"
+   },
+   "sans_per_hold": 0.016001140573353684,
+   "sans_per_early": {
+    "BHP": "objectif",
+    "OLED": "stop",
+    "UMC": "objectif",
+    "UPS": "stop"
+   },
+   "sans_per_symbols": [
+    "BHP",
+    "OLED",
+    "GEHC",
+    "UMC",
+    "ASR",
+    "UPS",
+    "PSA"
+   ],
+   "sans_per_stop_only": 0.008657377890457401,
+   "spy": 0.012754522234064244,
+   "spy_n": 1,
+   "spy_gross": 0.013767783386874713,
+   "spy_whole_gains": {
+    "10000": "125.13",
+    "25000": "315.32",
+    "50000": "635.65",
+    "100000": "1271.29",
+    "1000000": "12752.94",
+    "2000000": "25505.89"
+   },
+   "spy_hold": 0.012754522234064244,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-26",
+   "per12": 0.028017625070605626,
+   "per12_n": 7,
+   "per12_gross": 0.02904615696162174,
+   "per12_whole_gains": {
+    "10000": "271.53",
+    "25000": "693.89",
+    "50000": "1394.08",
+    "100000": "2792.89",
+    "1000000": "28005.06",
+    "2000000": "56031.22"
+   },
+   "per12_hold": 0.03921528168176517,
+   "per12_early": {
+    "CWEN": "objectif",
+    "IART": "objectif",
+    "MOH": "objectif",
+    "NSP": "objectif",
+    "TTEK": "objectif"
+   },
+   "per12_symbols": [
+    "MOH",
+    "IART",
+    "CWEN",
+    "TXN",
+    "NSP",
+    "CSCO",
+    "TTEK"
+   ],
+   "per12_stop_only": 0.03921528168176517,
+   "sans_per": 0.01860578052435933,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.019624895862552783,
+   "sans_per_whole_gains": {
+    "10000": "169.73",
+    "25000": "451.16",
+    "50000": "918.03",
+    "100000": "1854.01",
+    "1000000": "18591.56",
+    "2000000": "37196.74"
+   },
+   "sans_per_hold": 0.029824055155125682,
+   "sans_per_early": {
+    "CWEN": "objectif",
+    "MOH": "objectif",
+    "TMO": "objectif"
+   },
+   "sans_per_symbols": [
+    "PGR",
+    "TMO",
+    "OLED",
+    "ASX",
+    "MOH",
+    "CCI",
+    "CWEN"
+   ],
+   "sans_per_stop_only": 0.029824055155125682,
+   "spy": 0.024637016748762588,
+   "spy_n": 1,
+   "spy_gross": 0.025662166340307123,
+   "spy_whole_gains": {
+    "10000": "239.17",
+    "25000": "612.28",
+    "50000": "1224.56",
+    "100000": "2458.69",
+    "1000000": "24634.77",
+    "2000000": "49269.54"
+   },
+   "spy_hold": 0.024637016748762588,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-27",
+   "per12": 0.025776139402422023,
+   "per12_n": 7,
+   "per12_gross": 0.026802428686466467,
+   "per12_whole_gains": {
+    "10000": "242.99",
+    "25000": "636.83",
+    "50000": "1278.50",
+    "100000": "2564.90",
+    "1000000": "25764.17",
+    "2000000": "51533.12"
+   },
+   "per12_hold": 0.03599893248757371,
+   "per12_early": {
+    "ABBV": "objectif",
+    "ADI": "objectif",
+    "DHR": "objectif",
+    "EMR": "objectif",
+    "FAF": "objectif",
+    "WTW": "objectif"
+   },
+   "per12_symbols": [
+    "DHR",
+    "FAF",
+    "CSCO",
+    "ABBV",
+    "ADI",
+    "EMR",
+    "WTW"
+   ],
+   "per12_stop_only": 0.03599893248757371,
+   "sans_per": 0.02570795555749742,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.026734176623587964,
+   "sans_per_whole_gains": {
+    "10000": "247.49",
+    "25000": "637.01",
+    "50000": "1280.11",
+    "100000": "2562.14",
+    "1000000": "25698.97",
+    "2000000": "51403.53"
+   },
+   "sans_per_hold": 0.03542418561660513,
+   "sans_per_early": {
+    "ABBV": "objectif",
+    "ADI": "objectif",
+    "ALKS": "objectif",
+    "DHR": "objectif",
+    "EMBJ": "objectif",
+    "FAF": "objectif"
+   },
+   "sans_per_symbols": [
+    "DHR",
+    "FAF",
+    "CSCO",
+    "ABBV",
+    "ADI",
+    "EMBJ",
+    "ALKS"
+   ],
+   "sans_per_stop_only": 0.03542418561660513,
+   "spy": 0.006336881711392199,
+   "spy_n": 1,
+   "spy_gross": 0.007343722013254523,
+   "spy_whole_gains": {
+    "10000": "61.94",
+    "25000": "156.10",
+    "50000": "314.67",
+    "100000": "631.83",
+    "1000000": "6335.62",
+    "2000000": "12673.72"
+   },
+   "spy_hold": 0.006336881711392199,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-04-28",
+   "per12": -0.010292011164400195,
+   "per12_n": 7,
+   "per12_gross": -0.009301808074019405,
+   "per12_whole_gains": {
+    "10000": "-100.23",
+    "25000": "-250.96",
+    "50000": "-507.09",
+    "100000": "-1020.99",
+    "1000000": "-10285.76",
+    "2000000": "-20576.30"
+   },
+   "per12_hold": -0.018941510226688916,
+   "per12_early": {
+    "BMY": "objectif",
+    "CBRL": "stop",
+    "COLM": "stop",
+    "GILD": "stop",
+    "WTW": "objectif"
+   },
+   "per12_symbols": [
+    "CBRL",
+    "LMT",
+    "WTW",
+    "NTAP",
+    "GILD",
+    "COLM",
+    "BMY"
+   ],
+   "per12_stop_only": -0.018584510831146327,
+   "sans_per": -0.018282858471095797,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.017300650225444067,
+   "sans_per_whole_gains": {
+    "10000": "-175.46",
+    "25000": "-449.89",
+    "50000": "-902.68",
+    "100000": "-1816.16",
+    "1000000": "-18275.17",
+    "2000000": "-36554.57"
+   },
+   "sans_per_hold": -0.022113984454563782,
+   "sans_per_early": {
+    "CBRL": "stop",
+    "CCI": "stop",
+    "GEHC": "stop",
+    "IONS": "objectif",
+    "KDP": "stop"
+   },
+   "sans_per_symbols": [
+    "CCI",
+    "CBRL",
+    "BHP",
+    "LMT",
+    "KDP",
+    "GEHC",
+    "IONS"
+   ],
+   "sans_per_stop_only": -0.025588863945762163,
+   "spy": -0.01654951684422756,
+   "spy_n": 1,
+   "spy_gross": -0.015565574389844596,
+   "spy_whole_gains": {
+    "10000": "-164.35",
+    "25000": "-407.58",
+    "50000": "-821.74",
+    "100000": "-1650.06",
+    "1000000": "-16546.61",
+    "2000000": "-33093.21"
+   },
+   "spy_hold": -0.01654951684422756,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-01",
+   "per12": -0.029975152170363985,
+   "per12_n": 7,
+   "per12_gross": -0.02900464206748291,
+   "per12_whole_gains": {
+    "10000": "-288.66",
+    "25000": "-737.23",
+    "50000": "-1491.56",
+    "100000": "-2986.15",
+    "1000000": "-29966.77",
+    "2000000": "-59942.28"
+   },
+   "per12_hold": -0.026640351408003714,
+   "per12_early": {
+    "AMGN": "stop",
+    "DGX": "stop",
+    "DOW": "stop",
+    "GILD": "stop",
+    "NDAQ": "stop",
+    "TXN": "stop"
+   },
+   "per12_symbols": [
+    "TXN",
+    "GILD",
+    "DGX",
+    "DOW",
+    "AMGN",
+    "NDAQ",
+    "DKS"
+   ],
+   "per12_stop_only": -0.029975152170363985,
+   "sans_per": -0.022913537307617398,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.021935962057299856,
+   "sans_per_whole_gains": {
+    "10000": "-223.19",
+    "25000": "-567.85",
+    "50000": "-1141.77",
+    "100000": "-2285.66",
+    "1000000": "-22907.06",
+    "2000000": "-45820.85"
+   },
+   "sans_per_hold": -0.029884623833049056,
+   "sans_per_early": {
+    "DGX": "stop",
+    "ERIC": "stop",
+    "GEHC": "stop",
+    "GILD": "stop",
+    "WK": "stop"
+   },
+   "sans_per_symbols": [
+    "CHKP",
+    "WK",
+    "ERIC",
+    "GEHC",
+    "SNY",
+    "GILD",
+    "DGX"
+   ],
+   "sans_per_stop_only": -0.022913537307617398,
+   "spy": -0.027160932439273984,
+   "spy_n": 1,
+   "spy_gross": -0.026187606708848045,
+   "spy_whole_gains": {
+    "10000": "-270.58",
+    "25000": "-671.03",
+    "50000": "-1352.88",
+    "100000": "-2705.77",
+    "1000000": "-27155.07",
+    "2000000": "-54320.96"
+   },
+   "spy_hold": -0.027160932439273984,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-02",
+   "per12": -0.01622900395109742,
+   "per12_n": 7,
+   "per12_gross": -0.01524474082348471,
+   "per12_whole_gains": {
+    "10000": "-154.51",
+    "25000": "-400.00",
+    "50000": "-798.28",
+    "100000": "-1609.61",
+    "1000000": "-16214.15",
+    "2000000": "-32440.92"
+   },
+   "per12_hold": -0.009164569359917368,
+   "per12_early": {
+    "FHI": "stop",
+    "HPE": "stop",
+    "LMT": "stop",
+    "UPS": "stop"
+   },
+   "per12_symbols": [
+    "HPE",
+    "UPS",
+    "COLM",
+    "TXN",
+    "FHI",
+    "ADM",
+    "LMT"
+   ],
+   "per12_stop_only": -0.01622900395109742,
+   "sans_per": -0.008980921467125967,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.007989406631175118,
+   "sans_per_whole_gains": {
+    "10000": "-85.90",
+    "25000": "-223.33",
+    "50000": "-447.54",
+    "100000": "-893.57",
+    "1000000": "-8977.11",
+    "2000000": "-17958.69"
+   },
+   "sans_per_hold": -0.00871268943903804,
+   "sans_per_early": {
+    "BHP": "objectif",
+    "EMBJ": "stop",
+    "HPE": "stop",
+    "KDP": "objectif",
+    "WK": "stop"
+   },
+   "sans_per_symbols": [
+    "KDP",
+    "BHP",
+    "HPE",
+    "WK",
+    "GEHC",
+    "ACHC",
+    "EMBJ"
+   ],
+   "sans_per_stop_only": -0.004942692306398788,
+   "spy": 0.002732755664508966,
+   "spy_n": 1,
+   "spy_gross": 0.0037359900373599006,
+   "spy_whole_gains": {
+    "10000": "26.89",
+    "25000": "67.78",
+    "50000": "136.63",
+    "100000": "273.25",
+    "1000000": "2732.52",
+    "2000000": "5465.04"
+   },
+   "spy_hold": 0.002732755664508966,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-03",
+   "per12": -0.010299875501529181,
+   "per12_n": 7,
+   "per12_gross": -0.009309680279419655,
+   "per12_whole_gains": {
+    "10000": "-94.16",
+    "25000": "-249.35",
+    "50000": "-509.17",
+    "100000": "-1026.12",
+    "1000000": "-10293.02",
+    "2000000": "-20590.67"
+   },
+   "per12_hold": -0.008626218759536747,
+   "per12_early": {
+    "AMCR": "objectif",
+    "PFSI": "stop"
+   },
+   "per12_symbols": [
+    "AMCR",
+    "PFSI",
+    "UPS",
+    "ABBV",
+    "LMT",
+    "CVX",
+    "GILD"
+   ],
+   "per12_stop_only": -0.00795350792820062,
+   "sans_per": -0.0029657155132776854,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.001968182462265457,
+   "sans_per_whole_gains": {
+    "10000": "-27.66",
+    "25000": "-70.53",
+    "50000": "-144.28",
+    "100000": "-292.13",
+    "1000000": "-2960.45",
+    "2000000": "-5930.08"
+   },
+   "sans_per_hold": -0.00570061202435839,
+   "sans_per_early": {
+    "AMCR": "objectif",
+    "CLH": "objectif",
+    "PFSI": "stop",
+    "SBAC": "stop"
+   },
+   "sans_per_symbols": [
+    "AMCR",
+    "PFSI",
+    "UPS",
+    "ABBV",
+    "CHKP",
+    "CLH",
+    "SBAC"
+   ],
+   "sans_per_stop_only": -0.0027109063650429094,
+   "spy": 0.0024496142170340536,
+   "spy_n": 1,
+   "spy_gross": 0.0034525653067959687,
+   "spy_whole_gains": {
+    "10000": "24.14",
+    "25000": "60.82",
+    "50000": "121.64",
+    "100000": "244.25",
+    "1000000": "2449.25",
+    "2000000": "4898.49"
+   },
+   "spy_hold": 0.0024496142170340536,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-04",
+   "per12": 0.007372167915985444,
+   "per12_n": 7,
+   "per12_gross": 0.008380044021954414,
+   "per12_whole_gains": {
+    "10000": "68.67",
+    "25000": "174.32",
+    "50000": "364.41",
+    "100000": "728.31",
+    "1000000": "7364.52",
+    "2000000": "14737.48"
+   },
+   "per12_hold": 0.0064010847142055415,
+   "per12_early": {
+    "CVX": "objectif",
+    "CW": "objectif",
+    "NXST": "objectif"
+   },
+   "per12_symbols": [
+    "NXST",
+    "FHI",
+    "CVX",
+    "CW",
+    "GILD",
+    "LMT",
+    "NSP"
+   ],
+   "per12_stop_only": 0.0064010847142055415,
+   "sans_per": 0.021248813398253148,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.022270573091498023,
+   "sans_per_whole_gains": {
+    "10000": "207.64",
+    "25000": "521.39",
+    "50000": "1056.85",
+    "100000": "2115.19",
+    "1000000": "21239.97",
+    "2000000": "42485.51"
+   },
+   "sans_per_hold": 0.023137942220777044,
+   "sans_per_early": {
+    "ACHC": "objectif",
+    "CW": "objectif",
+    "NXST": "objectif",
+    "OMC": "objectif",
+    "XOM": "objectif"
+   },
+   "sans_per_symbols": [
+    "XOM",
+    "NXST",
+    "FHI",
+    "BLK",
+    "OMC",
+    "ACHC",
+    "CW"
+   ],
+   "sans_per_stop_only": 0.023137942220777044,
+   "spy": 0.01671712099071709,
+   "spy_n": 1,
+   "spy_gross": 0.01773434672457474,
+   "spy_whole_gains": {
+    "10000": "161.74",
+    "25000": "414.06",
+    "50000": "834.60",
+    "100000": "1669.20",
+    "1000000": "16711.36",
+    "2000000": "33429.20"
+   },
+   "spy_hold": 0.01671712099071709,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-05",
+   "per12": -0.01857206994426941,
+   "per12_n": 3,
+   "per12_gross": -0.017590151054768927,
+   "per12_whole_gains": {
+    "10000": "-182.14",
+    "25000": "-462.91",
+    "50000": "-927.05",
+    "100000": "-1856.43",
+    "1000000": "-18569.30",
+    "2000000": "-37140.92"
+   },
+   "per12_hold": -0.009139992140029555,
+   "per12_early": {
+    "LAMR": "stop",
+    "NJR": "stop"
+   },
+   "per12_symbols": [
+    "LAMR",
+    "NJR",
+    "VZ"
+   ],
+   "per12_stop_only": -0.01857206994426941,
+   "sans_per": 0.005104664529512365,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.006110271997776009,
+   "sans_per_whole_gains": {
+    "10000": "52.34",
+    "25000": "132.76",
+    "50000": "257.96",
+    "100000": "510.36",
+    "1000000": "5107.11",
+    "2000000": "10214.09"
+   },
+   "sans_per_hold": 0.010797041066860504,
+   "sans_per_early": {
+    "AES": "objectif",
+    "BKNG": "objectif",
+    "HDB": "objectif",
+    "LAMR": "stop",
+    "RVTY": "stop",
+    "WDFC": "objectif"
+   },
+   "sans_per_symbols": [
+    "LAMR",
+    "GDDY",
+    "AES",
+    "HDB",
+    "BKNG",
+    "WDFC",
+    "RVTY"
+   ],
+   "sans_per_stop_only": -9.088296827021198e-05,
+   "spy": 0.004131394765368396,
+   "spy_n": 1,
+   "spy_gross": 0.005136028476989575,
+   "spy_whole_gains": {
+    "10000": "40.64",
+    "25000": "102.42",
+    "50000": "206.46",
+    "100000": "412.93",
+    "1000000": "4130.88",
+    "2000000": "8261.76"
+   },
+   "spy_hold": 0.004131394765368396,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-08",
+   "per12": -0.012111829372614177,
+   "per12_n": 7,
+   "per12_gross": -0.011123447010805887,
+   "per12_whole_gains": {
+    "10000": "-112.96",
+    "25000": "-294.43",
+    "50000": "-596.92",
+    "100000": "-1206.92",
+    "1000000": "-12104.32",
+    "2000000": "-24217.45"
+   },
+   "per12_hold": -0.012911192841627691,
+   "per12_early": {
+    "DGX": "stop",
+    "LOPE": "stop"
+   },
+   "per12_symbols": [
+    "GILD",
+    "LAMR",
+    "SCI",
+    "DGX",
+    "REGN",
+    "LOPE",
+    "MGM"
+   ],
+   "per12_stop_only": -0.012111829372614177,
+   "sans_per": 0.0022485821277186346,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0032513320848249062,
+   "sans_per_whole_gains": {
+    "10000": "17.84",
+    "25000": "52.27",
+    "50000": "112.29",
+    "100000": "219.57",
+    "1000000": "2250.85",
+    "2000000": "4497.05"
+   },
+   "sans_per_hold": -0.0056954182581773665,
+   "sans_per_early": {
+    "AES": "objectif",
+    "DGX": "stop",
+    "TFX": "objectif"
+   },
+   "sans_per_symbols": [
+    "GILD",
+    "LAMR",
+    "SCI",
+    "TFX",
+    "SW",
+    "AES",
+    "DGX"
+   ],
+   "sans_per_stop_only": -0.00566148443307461,
+   "spy": -0.0006194691196411888,
+   "spy_n": 1,
+   "spy_gross": 0.000380411351474728,
+   "spy_whole_gains": {
+    "10000": "-6.11",
+    "25000": "-15.40",
+    "50000": "-30.79",
+    "100000": "-61.83",
+    "1000000": "-619.27",
+    "2000000": "-1238.79"
+   },
+   "spy_hold": -0.0006194691196411888,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-09",
+   "per12": -0.010975092188806051,
+   "per12_n": 7,
+   "per12_gross": -0.009985572521161034,
+   "per12_whole_gains": {
+    "10000": "-106.19",
+    "25000": "-271.15",
+    "50000": "-545.83",
+    "100000": "-1095.09",
+    "1000000": "-10969.96",
+    "2000000": "-21944.31"
+   },
+   "per12_hold": -0.010754035246922831,
+   "per12_early": {
+    "FHI": "stop",
+    "LOPE": "stop"
+   },
+   "per12_symbols": [
+    "HSIC",
+    "ENSG",
+    "DGX",
+    "SCI",
+    "FHI",
+    "LOPE",
+    "ITW"
+   ],
+   "per12_stop_only": -0.010975092188806051,
+   "sans_per": 0.0017759403850286834,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0027782174639531744,
+   "sans_per_whole_gains": {
+    "10000": "19.43",
+    "25000": "48.83",
+    "50000": "94.72",
+    "100000": "184.30",
+    "1000000": "1779.01",
+    "2000000": "3560.52"
+   },
+   "sans_per_hold": -0.010612751942223374,
+   "sans_per_early": {
+    "AES": "objectif",
+    "IFF": "objectif",
+    "PAYC": "stop"
+   },
+   "sans_per_symbols": [
+    "PAYC",
+    "HSIC",
+    "ENSG",
+    "DGX",
+    "SCI",
+    "AES",
+    "IFF"
+   ],
+   "sans_per_stop_only": -0.009397824447476137,
+   "spy": -0.0005428490996007405,
+   "spy_n": 1,
+   "spy_gross": 0.0004571080298643913,
+   "spy_whole_gains": {
+    "10000": "-5.35",
+    "25000": "-13.47",
+    "50000": "-26.95",
+    "100000": "-54.11",
+    "1000000": "-542.80",
+    "2000000": "-1085.60"
+   },
+   "spy_hold": -0.0005428490996007405,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-10",
+   "per12": 0.0009429697294692645,
+   "per12_n": 7,
+   "per12_gross": 0.0019444134210445214,
+   "per12_whole_gains": {
+    "10000": "3.11",
+    "25000": "23.27",
+    "50000": "46.97",
+    "100000": "91.47",
+    "1000000": "934.62",
+    "2000000": "1879.63"
+   },
+   "per12_hold": 0.007497884576907182,
+   "per12_early": {
+    "OXY": "objectif",
+    "RRR": "stop"
+   },
+   "per12_symbols": [
+    "FHI",
+    "DGX",
+    "ULTA",
+    "NXST",
+    "OXY",
+    "RRR",
+    "REGN"
+   ],
+   "per12_stop_only": 0.000542236791130176,
+   "sans_per": -0.00038668279459059407,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.0006134305793017615,
+   "sans_per_whole_gains": {
+    "10000": "-2.60",
+    "25000": "-8.74",
+    "50000": "-18.20",
+    "100000": "-38.23",
+    "1000000": "-385.78",
+    "2000000": "-772.35"
+   },
+   "sans_per_hold": -0.00591836979926701,
+   "sans_per_early": {
+    "PRGO": "objectif",
+    "TSEM": "stop"
+   },
+   "sans_per_symbols": [
+    "ABBV",
+    "TFX",
+    "PRGO",
+    "FHI",
+    "DGX",
+    "BP",
+    "TSEM"
+   ],
+   "sans_per_stop_only": -0.007857376935627375,
+   "spy": 0.00013984188178105996,
+   "spy_n": 1,
+   "spy_gross": 0.0011404820437438223,
+   "spy_whole_gains": {
+    "10000": "1.38",
+    "25000": "3.48",
+    "50000": "6.96",
+    "100000": "13.97",
+    "1000000": "139.83",
+    "2000000": "279.67"
+   },
+   "spy_hold": 0.00013984188178105996,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-11",
+   "per12": 0.007660346894819868,
+   "per12_n": 7,
+   "per12_gross": 0.008668511323929243,
+   "per12_whole_gains": {
+    "10000": "74.44",
+    "25000": "188.69",
+    "50000": "379.21",
+    "100000": "761.62",
+    "1000000": "7654.92",
+    "2000000": "15317.08"
+   },
+   "per12_hold": 0.00045360791043809055,
+   "per12_early": {
+    "HSIC": "objectif",
+    "NXST": "objectif",
+    "RRR": "objectif"
+   },
+   "per12_symbols": [
+    "IVZ",
+    "LOPE",
+    "NXST",
+    "NSP",
+    "CVX",
+    "HSIC",
+    "RRR"
+   ],
+   "per12_stop_only": 0.00045360791043809055,
+   "sans_per": -0.002221614379101474,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.001223336854718384,
+   "sans_per_whole_gains": {
+    "10000": "-21.62",
+    "25000": "-56.27",
+    "50000": "-113.21",
+    "100000": "-224.11",
+    "1000000": "-2224.15",
+    "2000000": "-4444.93"
+   },
+   "sans_per_hold": -0.005281928062797949,
+   "sans_per_early": {
+    "NXST": "objectif"
+   },
+   "sans_per_symbols": [
+    "IVZ",
+    "TFX",
+    "PAYC",
+    "LOPE",
+    "NXST",
+    "BAX",
+    "NSP"
+   ],
+   "sans_per_stop_only": -0.005281928062797949,
+   "spy": -0.0020914705970942436,
+   "spy_n": 1,
+   "spy_gross": -0.0010930628638247033,
+   "spy_whole_gains": {
+    "10000": "-20.58",
+    "25000": "-51.86",
+    "50000": "-104.54",
+    "100000": "-209.09",
+    "1000000": "-2090.86",
+    "2000000": "-4182.55"
+   },
+   "spy_hold": -0.0020914705970942436,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-12",
+   "per12": 0.004154796765324182,
+   "per12_n": 7,
+   "per12_gross": 0.0051594538906521705,
+   "per12_whole_gains": {
+    "10000": "35.35",
+    "25000": "104.16",
+    "50000": "206.04",
+    "100000": "411.56",
+    "1000000": "4153.29",
+    "2000000": "8306.22"
+   },
+   "per12_hold": 0.004960729054499971,
+   "per12_early": {
+    "BJ": "stop",
+    "GEN": "objectif",
+    "GS": "objectif"
+   },
+   "per12_symbols": [
+    "GEN",
+    "HSIC",
+    "GS",
+    "DGX",
+    "BJ",
+    "GLPI",
+    "ENSG"
+   ],
+   "per12_stop_only": 0.0011684451173918848,
+   "sans_per": -0.006903305422227956,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.005909711930904522,
+   "sans_per_whole_gains": {
+    "10000": "-63.89",
+    "25000": "-164.26",
+    "50000": "-340.73",
+    "100000": "-689.24",
+    "1000000": "-6897.59",
+    "2000000": "-13798.58"
+   },
+   "sans_per_hold": 0.0002286604960151277,
+   "sans_per_early": {
+    "GEHC": "objectif",
+    "GEN": "objectif",
+    "RVTY": "stop",
+    "TSEM": "stop"
+   },
+   "sans_per_symbols": [
+    "RVTY",
+    "TSEM",
+    "BAX",
+    "GEN",
+    "TFX",
+    "MSGS",
+    "GEHC"
+   ],
+   "sans_per_stop_only": -0.003950990658108174,
+   "spy": 0.007029584442097698,
+   "spy_n": 1,
+   "spy_gross": 0.008037117793215354,
+   "spy_whole_gains": {
+    "10000": "69.35",
+    "25000": "174.76",
+    "50000": "349.52",
+    "100000": "701.82",
+    "1000000": "7029.30",
+    "2000000": "14058.61"
+   },
+   "spy_hold": 0.007029584442097698,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-15",
+   "per12": 0.003644110461468898,
+   "per12_n": 7,
+   "per12_gross": 0.004648256645022143,
+   "per12_whole_gains": {
+    "10000": "37.81",
+    "25000": "91.50",
+    "50000": "183.75",
+    "100000": "365.27",
+    "1000000": "3644.00",
+    "2000000": "7289.64"
+   },
+   "per12_hold": 0.003749073214918636,
+   "per12_early": {
+    "RRR": "objectif"
+   },
+   "per12_symbols": [
+    "IVZ",
+    "TRGP",
+    "SCI",
+    "UHS",
+    "RRR",
+    "AFL",
+    "GLPI"
+   ],
+   "per12_stop_only": 0.003749073214918636,
+   "sans_per": -0.006474235577515389,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.005480212801704998,
+   "sans_per_whole_gains": {
+    "10000": "-64.29",
+    "25000": "-158.11",
+    "50000": "-322.13",
+    "100000": "-645.02",
+    "1000000": "-6473.56",
+    "2000000": "-12948.89"
+   },
+   "sans_per_hold": 0.008886458378955492,
+   "sans_per_early": {
+    "NKE": "stop",
+    "RBA": "stop",
+    "WYNN": "objectif"
+   },
+   "sans_per_symbols": [
+    "WYNN",
+    "TFX",
+    "IVZ",
+    "RBA",
+    "TRGP",
+    "SCI",
+    "NKE"
+   ],
+   "sans_per_stop_only": -0.0035540449354895362,
+   "spy": 0.018878454346052558,
+   "spy_n": 1,
+   "spy_gross": 0.019897842494472823,
+   "spy_whole_gains": {
+    "10000": "185.81",
+    "25000": "468.25",
+    "50000": "936.50",
+    "100000": "1880.44",
+    "1000000": "18871.31",
+    "2000000": "37750.05"
+   },
+   "spy_hold": 0.018878454346052558,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-16",
+   "per12": 0.008073254868536347,
+   "per12_n": 7,
+   "per12_gross": 0.009081832412176702,
+   "per12_whole_gains": {
+    "10000": "78.24",
+    "25000": "198.24",
+    "50000": "401.29",
+    "100000": "801.87",
+    "1000000": "8068.90",
+    "2000000": "16142.62"
+   },
+   "per12_hold": 0.008252546346046453,
+   "per12_early": {
+    "CHRW": "objectif",
+    "FHI": "stop",
+    "GEN": "objectif"
+   },
+   "per12_symbols": [
+    "NSP",
+    "MGM",
+    "FHI",
+    "CHRW",
+    "GEN",
+    "TSCO",
+    "PKG"
+   ],
+   "per12_stop_only": 0.007688286418311328,
+   "sans_per": 0.0171640472508236,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.01818172013451627,
+   "sans_per_whole_gains": {
+    "10000": "169.90",
+    "25000": "422.02",
+    "50000": "855.16",
+    "100000": "1707.52",
+    "1000000": "17156.13",
+    "2000000": "34326.18"
+   },
+   "sans_per_hold": 0.030884657334390924,
+   "sans_per_early": {
+    "PAYC": "objectif",
+    "RBA": "objectif",
+    "TSEM": "objectif",
+    "WYNN": "objectif"
+   },
+   "sans_per_symbols": [
+    "NYT",
+    "TSEM",
+    "NSP",
+    "RBA",
+    "TFX",
+    "PAYC",
+    "WYNN"
+   ],
+   "sans_per_stop_only": 0.030884657334390924,
+   "spy": 0.0161796495416532,
+   "spy_n": 1,
+   "spy_gross": 0.01719633753519162,
+   "spy_whole_gains": {
+    "10000": "159.56",
+    "25000": "402.09",
+    "50000": "804.17",
+    "100000": "1614.73",
+    "1000000": "16179.23",
+    "2000000": "32358.46"
+   },
+   "spy_hold": 0.0161796495416532,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-17",
+   "per12": -0.004900529180663847,
+   "per12_n": 7,
+   "per12_gross": -0.0039049319112097838,
+   "per12_whole_gains": {
+    "10000": "-48.37",
+    "25000": "-121.73",
+    "50000": "-244.76",
+    "100000": "-489.52",
+    "1000000": "-4899.95",
+    "2000000": "-9800.88"
+   },
+   "per12_hold": -0.0017638691804189623,
+   "per12_early": {
+    "FHI": "stop"
+   },
+   "per12_symbols": [
+    "IVZ",
+    "FHI",
+    "AEE",
+    "KHC",
+    "RLI",
+    "LOPE",
+    "HRL"
+   ],
+   "per12_stop_only": -0.004900529180663847,
+   "sans_per": -0.013345656487064029,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.012358508569592357,
+   "sans_per_whole_gains": {
+    "10000": "-133.59",
+    "25000": "-333.65",
+    "50000": "-665.27",
+    "100000": "-1331.84",
+    "1000000": "-13341.96",
+    "2000000": "-26688.55"
+   },
+   "sans_per_hold": -0.01433464755904005,
+   "sans_per_early": {
+    "B": "stop",
+    "FHI": "stop",
+    "NKE": "stop",
+    "QDEL": "objectif",
+    "YETI": "stop"
+   },
+   "sans_per_symbols": [
+    "B",
+    "IVZ",
+    "NKE",
+    "BAX",
+    "QDEL",
+    "YETI",
+    "FHI"
+   ],
+   "sans_per_stop_only": -0.012081372638113775,
+   "spy": 0.015929275342034716,
+   "spy_n": 1,
+   "spy_gross": 0.016945712836123793,
+   "spy_whole_gains": {
+    "10000": "157.06",
+    "25000": "395.79",
+    "50000": "791.59",
+    "100000": "1589.46",
+    "1000000": "15926.04",
+    "2000000": "31858.35"
+   },
+   "spy_hold": 0.015929275342034716,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-18",
+   "per12": -0.01452998341027424,
+   "per12_n": 7,
+   "per12_gross": -0.013544020412185468,
+   "per12_whole_gains": {
+    "10000": "-143.54",
+    "25000": "-360.83",
+    "50000": "-724.92",
+    "100000": "-1450.21",
+    "1000000": "-14525.90",
+    "2000000": "-29055.06"
+   },
+   "per12_hold": -0.01944291199565679,
+   "per12_early": {
+    "CHH": "stop",
+    "DOC": "stop",
+    "SKY": "stop"
+   },
+   "per12_symbols": [
+    "IVZ",
+    "SKY",
+    "KHC",
+    "RLI",
+    "AEP",
+    "CHH",
+    "DOC"
+   ],
+   "per12_stop_only": -0.01452998341027424,
+   "sans_per": -0.0014605172001739169,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.0004614781978729404,
+   "sans_per_whole_gains": {
+    "10000": "-12.12",
+    "25000": "-36.63",
+    "50000": "-73.25",
+    "100000": "-143.44",
+    "1000000": "-1457.36",
+    "2000000": "-2920.10"
+   },
+   "sans_per_hold": -0.005886040229684579,
+   "sans_per_early": {
+    "BAP": "objectif",
+    "BTI": "objectif",
+    "YETI": "stop"
+   },
+   "sans_per_symbols": [
+    "RGLD",
+    "NYT",
+    "IVZ",
+    "BAP",
+    "APD",
+    "YETI",
+    "BTI"
+   ],
+   "sans_per_stop_only": -0.0018797765728965172,
+   "spy": -0.007031446946266807,
+   "spy_n": 1,
+   "spy_gross": -0.006037981660570226,
+   "spy_whole_gains": {
+    "10000": "-70.20",
+    "25000": "-174.09",
+    "50000": "-350.99",
+    "100000": "-701.98",
+    "1000000": "-7031.07",
+    "2000000": "-14062.14"
+   },
+   "spy_hold": -0.007031446946266807,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-19",
+   "per12": -0.021513866811238094,
+   "per12_n": 7,
+   "per12_gross": -0.02053489119023883,
+   "per12_whole_gains": {
+    "10000": "-210.68",
+    "25000": "-530.48",
+    "50000": "-1068.68",
+    "100000": "-2146.77",
+    "1000000": "-21505.21",
+    "2000000": "-43023.17"
+   },
+   "per12_hold": -0.029626703676299524,
+   "per12_early": {
+    "CHH": "stop",
+    "FLO": "stop",
+    "TSCO": "stop",
+    "UHS": "stop"
+   },
+   "per12_symbols": [
+    "DECK",
+    "FLO",
+    "TSCO",
+    "CHH",
+    "JBHT",
+    "UHS",
+    "MUSA"
+   ],
+   "per12_stop_only": -0.021513866811238094,
+   "sans_per": -0.02514316003242515,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.024167815520201464,
+   "sans_per_whole_gains": {
+    "10000": "-239.69",
+    "25000": "-618.61",
+    "50000": "-1248.54",
+    "100000": "-2508.97",
+    "1000000": "-25135.73",
+    "2000000": "-50279.98"
+   },
+   "sans_per_hold": -0.028003516239013954,
+   "sans_per_early": {
+    "FLO": "stop",
+    "MSGS": "stop",
+    "PODD": "stop",
+    "YETI": "stop"
+   },
+   "sans_per_symbols": [
+    "YETI",
+    "DECK",
+    "NYT",
+    "MSGS",
+    "AGI",
+    "PODD",
+    "FLO"
+   ],
+   "sans_per_stop_only": -0.02514316003242515,
+   "spy": -0.023379255136985452,
+   "spy_n": 1,
+   "spy_gross": -0.02240214583747268,
+   "spy_whole_gains": {
+    "10000": "-226.04",
+    "25000": "-583.92",
+    "50000": "-1167.85",
+    "100000": "-2335.70",
+    "1000000": "-23375.80",
+    "2000000": "-46751.60"
+   },
+   "spy_hold": -0.023379255136985452,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-22",
+   "per12": -0.019671449135386272,
+   "per12_n": 7,
+   "per12_gross": -0.018690630175041488,
+   "per12_whole_gains": {
+    "10000": "-193.40",
+    "25000": "-493.83",
+    "50000": "-980.30",
+    "100000": "-1964.59",
+    "1000000": "-19668.25",
+    "2000000": "-39343.69"
+   },
+   "per12_hold": -0.019705207057666218,
+   "per12_early": {
+    "CHH": "stop",
+    "DECK": "stop",
+    "EG": "objectif",
+    "ETR": "stop",
+    "IVZ": "stop",
+    "RLI": "stop"
+   },
+   "per12_symbols": [
+    "DECK",
+    "IVZ",
+    "CHH",
+    "EG",
+    "RLI",
+    "ETR",
+    "CAG"
+   ],
+   "per12_stop_only": -0.026134816089348794,
+   "sans_per": -0.03149876764718753,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.030529781921972112,
+   "sans_per_whole_gains": {
+    "10000": "-303.86",
+    "25000": "-780.35",
+    "50000": "-1566.78",
+    "100000": "-3143.71",
+    "1000000": "-31491.67",
+    "2000000": "-62987.38"
+   },
+   "sans_per_hold": -0.02691063239379901,
+   "sans_per_early": {
+    "CHH": "stop",
+    "DECK": "stop",
+    "EIX": "stop",
+    "IVZ": "stop",
+    "MSGS": "stop",
+    "PRGO": "stop",
+    "RGLD": "stop"
+   },
+   "sans_per_symbols": [
+    "MSGS",
+    "EIX",
+    "RGLD",
+    "DECK",
+    "IVZ",
+    "CHH",
+    "PRGO"
+   ],
+   "sans_per_stop_only": -0.03149876764718753,
+   "spy": -0.011479919148325165,
+   "spy_n": 1,
+   "spy_gross": -0.010490904560179417,
+   "spy_whole_gains": {
+    "10000": "-110.62",
+    "25000": "-285.77",
+    "50000": "-571.54",
+    "100000": "-1147.69",
+    "1000000": "-11476.90",
+    "2000000": "-22958.40"
+   },
+   "spy_hold": -0.011479919148325165,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-23",
+   "per12": -0.03420380367560991,
+   "per12_n": 7,
+   "per12_gross": -0.03323752433961753,
+   "per12_whole_gains": {
+    "10000": "-287.79",
+    "25000": "-812.61",
+    "50000": "-1637.01",
+    "100000": "-3361.51",
+    "1000000": "-34179.26",
+    "2000000": "-68358.52"
+   },
+   "per12_hold": -0.01655380889868362,
+   "per12_early": {
+    "AEE": "stop",
+    "AZO": "stop",
+    "CHH": "stop",
+    "DECK": "stop",
+    "MTH": "stop",
+    "TSCO": "stop",
+    "UHS": "stop"
+   },
+   "per12_symbols": [
+    "DECK",
+    "TSCO",
+    "UHS",
+    "AZO",
+    "CHH",
+    "AEE",
+    "MTH"
+   ],
+   "per12_stop_only": -0.03420380367560991,
+   "sans_per": -0.02404704382170935,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.023070602644942678,
+   "sans_per_whole_gains": {
+    "10000": "-235.10",
+    "25000": "-593.96",
+    "50000": "-1196.55",
+    "100000": "-2399.86",
+    "1000000": "-24041.91",
+    "2000000": "-48087.98"
+   },
+   "sans_per_hold": -0.010097763850505273,
+   "sans_per_early": {
+    "DECK": "stop",
+    "PEB": "stop",
+    "TSCO": "stop",
+    "WPM": "stop"
+   },
+   "sans_per_symbols": [
+    "WPM",
+    "MSGS",
+    "DECK",
+    "TSCO",
+    "PEB",
+    "PFGC",
+    "SMPL"
+   ],
+   "sans_per_stop_only": -0.02404704382170935,
+   "spy": 0.004995401983960763,
+   "spy_n": 1,
+   "spy_gross": 0.006000900135020253,
+   "spy_whole_gains": {
+    "10000": "47.97",
+    "25000": "123.93",
+    "50000": "247.86",
+    "100000": "497.72",
+    "1000000": "4995.15",
+    "2000000": "9990.30"
+   },
+   "spy_hold": 0.004995401983960763,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-24",
+   "per12": -0.0005572582595858109,
+   "per12_n": 7,
+   "per12_gross": 0.00044268445351115175,
+   "per12_whole_gains": {
+    "10000": "-4.42",
+    "25000": "-11.98",
+    "50000": "-25.95",
+    "100000": "-56.15",
+    "1000000": "-557.27",
+    "2000000": "-1113.36"
+   },
+   "per12_hold": -0.011277431458503332,
+   "per12_early": {
+    "AEE": "stop",
+    "CHH": "objectif",
+    "FAF": "objectif",
+    "SKY": "stop"
+   },
+   "per12_symbols": [
+    "CHH",
+    "LPX",
+    "BYD",
+    "GPC",
+    "SKY",
+    "AEE",
+    "FAF"
+   ],
+   "per12_stop_only": 0.002458329219188849,
+   "sans_per": -0.006343097281862251,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.005348943302154259,
+   "sans_per_whole_gains": {
+    "10000": "-56.60",
+    "25000": "-157.31",
+    "50000": "-314.19",
+    "100000": "-631.95",
+    "1000000": "-6338.87",
+    "2000000": "-12683.27"
+   },
+   "sans_per_hold": -0.008878875025675902,
+   "sans_per_early": {
+    "CHH": "objectif",
+    "EIX": "stop",
+    "PEB": "objectif",
+    "RGLD": "stop",
+    "XRAY": "stop",
+    "ZTS": "stop"
+   },
+   "sans_per_symbols": [
+    "RGLD",
+    "EIX",
+    "CHH",
+    "XRAY",
+    "PEB",
+    "ZTS",
+    "LPX"
+   ],
+   "sans_per_stop_only": -0.006174142363895045,
+   "spy": 0.020979171375219884,
+   "spy_n": 1,
+   "spy_gross": 0.022000661291553272,
+   "spy_whole_gains": {
+    "10000": "206.31",
+    "25000": "519.91",
+    "50000": "1048.07",
+    "100000": "2096.14",
+    "1000000": "20977.87",
+    "2000000": "41955.74"
+   },
+   "spy_hold": 0.020979171375219884,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-25",
+   "per12": -0.06857928699602858,
+   "per12_n": 7,
+   "per12_gross": -0.06764740033969645,
+   "per12_whole_gains": {
+    "10000": "-665.92",
+    "25000": "-1674.34",
+    "50000": "-3390.56",
+    "100000": "-6830.08",
+    "1000000": "-68552.32",
+    "2000000": "-137123.21"
+   },
+   "per12_hold": -0.07290863809211304,
+   "per12_early": {
+    "AAP": "stop",
+    "GPC": "stop",
+    "MOH": "stop",
+    "PFSI": "objectif",
+    "SKY": "stop"
+   },
+   "per12_symbols": [
+    "AAP",
+    "SKY",
+    "GPC",
+    "PPL",
+    "PFSI",
+    "AON",
+    "MOH"
+   ],
+   "per12_stop_only": -0.06992002730288083,
+   "sans_per": -0.056058045975295144,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.055113631814189885,
+   "sans_per_whole_gains": {
+    "10000": "-543.55",
+    "25000": "-1369.99",
+    "50000": "-2775.80",
+    "100000": "-5584.38",
+    "1000000": "-56043.83",
+    "2000000": "-112089.85"
+   },
+   "sans_per_hold": -0.06980642863912973,
+   "sans_per_early": {
+    "AAP": "stop",
+    "ELS": "objectif",
+    "HEI.A": "stop",
+    "SKY": "stop"
+   },
+   "sans_per_symbols": [
+    "HEI.A",
+    "RGLD",
+    "ELS",
+    "NGG",
+    "AAP",
+    "SMPL",
+    "SKY"
+   ],
+   "sans_per_stop_only": -0.059483799568728055,
+   "spy": 0.010643214645079118,
+   "spy_n": 1,
+   "spy_gross": 0.011654363434118718,
+   "spy_whole_gains": {
+    "10000": "105.30",
+    "25000": "265.36",
+    "50000": "530.73",
+    "100000": "1061.46",
+    "1000000": "10639.85",
+    "2000000": "21283.92"
+   },
+   "spy_hold": 0.010643214645079118,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-26",
+   "per12": -0.009232455747549153,
+   "per12_n": 7,
+   "per12_gross": -0.00824119257170878,
+   "per12_whole_gains": {
+    "10000": "-92.66",
+    "25000": "-230.40",
+    "50000": "-457.63",
+    "100000": "-916.72",
+    "1000000": "-9229.97",
+    "2000000": "-18457.55"
+   },
+   "per12_hold": -0.0049423852734438315,
+   "per12_early": {
+    "EPC": "stop",
+    "GPC": "stop",
+    "UHS": "objectif"
+   },
+   "per12_symbols": [
+    "PPL",
+    "MDT",
+    "UHS",
+    "EEFT",
+    "LGIH",
+    "EPC",
+    "GPC"
+   ],
+   "per12_stop_only": -0.009369264525731445,
+   "sans_per": 0.014069374275047813,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.015083950937654165,
+   "sans_per_whole_gains": {
+    "10000": "136.63",
+    "25000": "347.13",
+    "50000": "700.16",
+    "100000": "1405.06",
+    "1000000": "14062.87",
+    "2000000": "28135.61"
+   },
+   "sans_per_hold": 0.019889595938997588,
+   "sans_per_early": {
+    "RYAN": "stop",
+    "UHS": "objectif",
+    "VTR": "objectif",
+    "XYL": "objectif"
+   },
+   "sans_per_symbols": [
+    "VTR",
+    "PPL",
+    "MDT",
+    "UHS",
+    "RYAN",
+    "ENOV",
+    "XYL"
+   ],
+   "sans_per_stop_only": 0.013122811793689588,
+   "spy": 0.004252501879121484,
+   "spy_n": 1,
+   "spy_gross": 0.005257256758440264,
+   "spy_whole_gains": {
+    "10000": "40.98",
+    "25000": "105.87",
+    "50000": "211.74",
+    "100000": "425.19",
+    "1000000": "4251.91",
+    "2000000": "8503.82"
+   },
+   "spy_hold": 0.004252501879121484,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-30",
+   "per12": -0.05517981789249567,
+   "per12_n": 7,
+   "per12_gross": -0.0542345250639739,
+   "per12_whole_gains": {
+    "10000": "-456.14",
+    "25000": "-1311.96",
+    "50000": "-2651.90",
+    "100000": "-5411.08",
+    "1000000": "-55108.73",
+    "2000000": "-110234.57"
+   },
+   "per12_hold": -0.06516702679006493,
+   "per12_early": {
+    "AAP": "stop",
+    "AZO": "stop",
+    "BKNG": "stop",
+    "DG": "stop",
+    "EXE": "objectif"
+   },
+   "per12_symbols": [
+    "AZO",
+    "AAP",
+    "BWXT",
+    "EXE",
+    "PG",
+    "DG",
+    "BKNG"
+   ],
+   "per12_stop_only": -0.0515300464814436,
+   "sans_per": -0.02692851153314414,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.025954953265543482,
+   "sans_per_whole_gains": {
+    "10000": "-186.67",
+    "25000": "-610.89",
+    "50000": "-1245.18",
+    "100000": "-2593.97",
+    "1000000": "-26869.66",
+    "2000000": "-53734.40"
+   },
+   "sans_per_hold": -0.03821250934960913,
+   "sans_per_early": {
+    "AAP": "stop",
+    "AGI": "objectif",
+    "AZO": "stop",
+    "EW": "objectif",
+    "RYAN": "objectif"
+   },
+   "sans_per_symbols": [
+    "AZO",
+    "RYAN",
+    "SMPL",
+    "AGI",
+    "AAP",
+    "EW",
+    "BWXT"
+   ],
+   "sans_per_stop_only": -0.02471071246234794,
+   "spy": 0.01680923324121389,
+   "spy_n": 1,
+   "spy_gross": 0.017826551133401196,
+   "spy_whole_gains": {
+    "10000": "162.57",
+    "25000": "419.97",
+    "50000": "839.93",
+    "100000": "1679.86",
+    "1000000": "16805.40",
+    "2000000": "33617.58"
+   },
+   "spy_hold": 0.01680923324121389,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-05-31",
+   "per12": 0.030020115605337953,
+   "per12_n": 7,
+   "per12_gross": 0.03105065098863494,
+   "per12_whole_gains": {
+    "10000": "288.75",
+    "25000": "743.29",
+    "50000": "1492.41",
+    "100000": "2991.60",
+    "1000000": "30010.59",
+    "2000000": "60032.03"
+   },
+   "per12_hold": 0.05204821468271562,
+   "per12_early": {
+    "BWXT": "objectif",
+    "CNC": "objectif",
+    "FBIN": "objectif",
+    "MAR": "objectif",
+    "PG": "objectif",
+    "WLK": "objectif"
+   },
+   "per12_symbols": [
+    "WLK",
+    "FBIN",
+    "BWXT",
+    "PG",
+    "MDT",
+    "MAR",
+    "CNC"
+   ],
+   "per12_stop_only": 0.05204821468271562,
+   "sans_per": 0.027875522451709187,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.028903912169019552,
+   "sans_per_whole_gains": {
+    "10000": "270.84",
+    "25000": "687.72",
+    "50000": "1385.13",
+    "100000": "2777.04",
+    "1000000": "27866.49",
+    "2000000": "55744.29"
+   },
+   "sans_per_hold": 0.04195232684329595,
+   "sans_per_early": {
+    "BWXT": "objectif",
+    "FBIN": "objectif",
+    "PG": "objectif",
+    "RMD": "objectif",
+    "WLK": "objectif"
+   },
+   "sans_per_symbols": [
+    "WLK",
+    "FBIN",
+    "BWXT",
+    "RMD",
+    "PG",
+    "SNN",
+    "MDT"
+   ],
+   "sans_per_stop_only": 0.04195232684329595,
+   "spy": 0.02387977459169596,
+   "spy_n": 1,
+   "spy_gross": 0.024904166562272945,
+   "spy_whole_gains": {
+    "10000": "238.40",
+    "25000": "591.23",
+    "50000": "1191.99",
+    "100000": "2383.98",
+    "1000000": "23877.89",
+    "2000000": "47755.79"
+   },
+   "spy_hold": 0.02387977459169596,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-01",
+   "per12": 0.021621065346334296,
+   "per12_n": 7,
+   "per12_gross": 0.022643197477746336,
+   "per12_whole_gains": {
+    "10000": "209.16",
+    "25000": "530.85",
+    "50000": "1071.30",
+    "100000": "2156.51",
+    "1000000": "21618.18",
+    "2000000": "43237.52"
+   },
+   "per12_hold": 0.038146618574495965,
+   "per12_early": {
+    "CHH": "objectif",
+    "EG": "objectif",
+    "KMB": "objectif",
+    "KR": "objectif",
+    "LPX": "objectif",
+    "MLI": "objectif",
+    "SFM": "stop"
+   },
+   "per12_symbols": [
+    "KR",
+    "EG",
+    "SFM",
+    "CHH",
+    "MLI",
+    "LPX",
+    "KMB"
+   ],
+   "per12_stop_only": 0.036381825421949135,
+   "sans_per": 0.021621065346334296,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.022643197477746336,
+   "sans_per_whole_gains": {
+    "10000": "209.16",
+    "25000": "530.85",
+    "50000": "1071.30",
+    "100000": "2156.51",
+    "1000000": "21618.18",
+    "2000000": "43237.52"
+   },
+   "sans_per_hold": 0.038146618574495965,
+   "sans_per_early": {
+    "CHH": "objectif",
+    "EG": "objectif",
+    "KMB": "objectif",
+    "KR": "objectif",
+    "LPX": "objectif",
+    "MLI": "objectif",
+    "SFM": "stop"
+   },
+   "sans_per_symbols": [
+    "KR",
+    "EG",
+    "SFM",
+    "CHH",
+    "MLI",
+    "LPX",
+    "KMB"
+   ],
+   "sans_per_stop_only": 0.036381825421949135,
+   "spy": 0.0234631690925982,
+   "spy_n": 1,
+   "spy_gross": 0.024487144249269132,
+   "spy_whole_gains": {
+    "10000": "225.48",
+    "25000": "582.48",
+    "50000": "1164.97",
+    "100000": "2339.33",
+    "1000000": "23459.04",
+    "2000000": "46918.08"
+   },
+   "spy_hold": 0.0234631690925982,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-02",
+   "per12": 0.029017442639258175,
+   "per12_n": 2,
+   "per12_gross": 0.030046974848001805,
+   "per12_whole_gains": {
+    "10000": "289.40",
+    "25000": "723.50",
+    "50000": "1447.94",
+    "100000": "2898.89",
+    "1000000": "29015.55",
+    "2000000": "58032.03"
+   },
+   "per12_hold": 0.03937540180522669,
+   "per12_early": {
+    "ATO": "objectif",
+    "CMCSA": "objectif"
+   },
+   "per12_symbols": [
+    "CMCSA",
+    "ATO"
+   ],
+   "per12_stop_only": 0.03937540180522669,
+   "sans_per": 0.012908946053582341,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.013922361707462864,
+   "sans_per_whole_gains": {
+    "10000": "131.76",
+    "25000": "322.18",
+    "50000": "643.43",
+    "100000": "1289.88",
+    "1000000": "12906.62",
+    "2000000": "25813.00"
+   },
+   "sans_per_hold": 0.01704799260145077,
+   "sans_per_early": {
+    "ALKS": "objectif",
+    "ATO": "objectif",
+    "CMCSA": "objectif",
+    "COO": "stop",
+    "CRM": "stop",
+    "NVO": "objectif"
+   },
+   "sans_per_symbols": [
+    "NVO",
+    "COO",
+    "CMCSA",
+    "CRM",
+    "ALKS",
+    "ATO",
+    "BCE"
+   ],
+   "sans_per_stop_only": 0.016925706345481344,
+   "spy": 0.0011584330321890773,
+   "spy_n": 1,
+   "spy_gross": 0.0021600922948525982,
+   "spy_whole_gains": {
+    "10000": "11.33",
+    "25000": "28.80",
+    "50000": "57.60",
+    "100000": "115.68",
+    "1000000": "1158.23",
+    "2000000": "2316.47"
+   },
+   "spy_hold": 0.0011584330321890773,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-05",
+   "per12": 0.01523341028389898,
+   "per12_n": 7,
+   "per12_gross": 0.01624915156482334,
+   "per12_whole_gains": {
+    "10000": "145.68",
+    "25000": "377.49",
+    "50000": "755.27",
+    "100000": "1520.28",
+    "1000000": "15226.39",
+    "2000000": "30457.50"
+   },
+   "per12_hold": 0.041076538120629745,
+   "per12_early": {
+    "EEFT": "objectif",
+    "EXE": "objectif",
+    "GPI": "objectif",
+    "KLIC": "objectif"
+   },
+   "per12_symbols": [
+    "EEFT",
+    "EG",
+    "CHRW",
+    "INGR",
+    "KLIC",
+    "GPI",
+    "EXE"
+   ],
+   "per12_stop_only": 0.041076538120629745,
+   "sans_per": 0.014847748566562811,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.015863103992842513,
+   "sans_per_whole_gains": {
+    "10000": "132.72",
+    "25000": "360.63",
+    "50000": "731.12",
+    "100000": "1471.78",
+    "1000000": "14839.38",
+    "2000000": "29687.60"
+   },
+   "sans_per_hold": 0.008660002576103446,
+   "sans_per_early": {
+    "CRM": "objectif",
+    "EEFT": "objectif",
+    "POOL": "objectif",
+    "YETI": "objectif"
+   },
+   "sans_per_symbols": [
+    "EEFT",
+    "YETI",
+    "EG",
+    "CHRW",
+    "GO",
+    "POOL",
+    "CRM"
+   ],
+   "sans_per_stop_only": 0.008660002576103446,
+   "spy": 0.0018780581881104558,
+   "spy_n": 1,
+   "spy_gross": 0.002880437435922472,
+   "spy_whole_gains": {
+    "10000": "18.47",
+    "25000": "46.18",
+    "50000": "93.14",
+    "100000": "187.05",
+    "1000000": "1877.42",
+    "2000000": "3755.61"
+   },
+   "spy_hold": 0.0018780581881104558,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-06",
+   "per12": 0.006000990003672457,
+   "per12_n": 5,
+   "per12_gross": 0.007007494245797192,
+   "per12_whole_gains": {
+    "10000": "59.99",
+    "25000": "153.51",
+    "50000": "301.17",
+    "100000": "602.84",
+    "1000000": "6002.01",
+    "2000000": "12006.36"
+   },
+   "per12_hold": 0.008439955388176408,
+   "per12_early": {
+    "CASY": "stop",
+    "RHP": "objectif",
+    "SFM": "objectif"
+   },
+   "per12_symbols": [
+    "SFM",
+    "KR",
+    "RHP",
+    "KMB",
+    "CASY"
+   ],
+   "per12_stop_only": 0.006867082140594436,
+   "sans_per": 0.008450932546846165,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.009459887957098137,
+   "sans_per_whole_gains": {
+    "10000": "79.57",
+    "25000": "209.80",
+    "50000": "419.67",
+    "100000": "844.56",
+    "1000000": "8447.84",
+    "2000000": "16900.97"
+   },
+   "sans_per_hold": 0.008671507029729485,
+   "sans_per_early": {
+    "CRM": "objectif",
+    "SFM": "objectif"
+   },
+   "sans_per_symbols": [
+    "SFM",
+    "KR",
+    "MDT",
+    "CRM",
+    "RYAN",
+    "CP",
+    "ABT"
+   ],
+   "sans_per_stop_only": 0.008671507029729485,
+   "spy": 0.004493135002764727,
+   "spy_n": 1,
+   "spy_gross": 0.005498130635583902,
+   "spy_whole_gains": {
+    "10000": "44.15",
+    "25000": "112.22",
+    "50000": "224.44",
+    "100000": "448.87",
+    "1000000": "4492.41",
+    "2000000": "8984.83"
+   },
+   "spy_hold": 0.004493135002764727,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-07",
+   "per12": 0.018746884576578603,
+   "per12_n": 4,
+   "per12_gross": 0.019766141089411597,
+   "per12_whole_gains": {
+    "10000": "181.81",
+    "25000": "460.42",
+    "50000": "930.10",
+    "100000": "1865.29",
+    "1000000": "18741.25",
+    "2000000": "37483.70"
+   },
+   "per12_hold": 0.019850972529703175,
+   "per12_early": {
+    "MUSA": "objectif"
+   },
+   "per12_symbols": [
+    "CASY",
+    "MRK",
+    "KMB",
+    "MUSA"
+   ],
+   "per12_stop_only": 0.019850972529703175,
+   "sans_per": 0.016398248987880757,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.01741515569021981,
+   "sans_per_whole_gains": {
+    "10000": "156.79",
+    "25000": "401.32",
+    "50000": "813.37",
+    "100000": "1634.60",
+    "1000000": "16389.89",
+    "2000000": "32788.77"
+   },
+   "sans_per_hold": 0.016398248987880757,
+   "sans_per_early": {},
+   "sans_per_symbols": [
+    "COO",
+    "CASY",
+    "MDT",
+    "GO",
+    "MRK",
+    "FTNT",
+    "ARGX"
+   ],
+   "sans_per_stop_only": 0.016398248987880757,
+   "spy": 0.010448547608967252,
+   "spy_n": 1,
+   "spy_gross": 0.011459501633588531,
+   "spy_whole_gains": {
+    "10000": "102.90",
+    "25000": "257.25",
+    "50000": "518.79",
+    "100000": "1041.86",
+    "1000000": "10444.37",
+    "2000000": "20893.04"
+   },
+   "spy_hold": 0.010448547608967252,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-08",
+   "per12": 0.01848167937617133,
+   "per12_n": 7,
+   "per12_gross": 0.019500670551134983,
+   "per12_whole_gains": {
+    "10000": "180.95",
+    "25000": "459.43",
+    "50000": "919.75",
+    "100000": "1843.96",
+    "1000000": "18478.76",
+    "2000000": "36958.51"
+   },
+   "per12_hold": 0.023253518824499886,
+   "per12_early": {
+    "CNM": "objectif",
+    "HPQ": "objectif",
+    "MDT": "objectif",
+    "SFM": "objectif"
+   },
+   "per12_symbols": [
+    "CHRW",
+    "SFM",
+    "MDT",
+    "HPQ",
+    "RHP",
+    "GOOG",
+    "CNM"
+   ],
+   "per12_stop_only": 0.023253518824499886,
+   "sans_per": 0.0239589160843049,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.024983387235965035,
+   "sans_per_whole_gains": {
+    "10000": "235.60",
+    "25000": "594.73",
+    "50000": "1192.88",
+    "100000": "2390.94",
+    "1000000": "23954.91",
+    "2000000": "47913.39"
+   },
+   "sans_per_hold": 0.029137667446816888,
+   "sans_per_early": {
+    "GO": "objectif",
+    "HPQ": "objectif",
+    "MDT": "objectif",
+    "SFM": "objectif",
+    "VIR": "objectif"
+   },
+   "sans_per_symbols": [
+    "CHRW",
+    "SFM",
+    "VIR",
+    "MDT",
+    "GO",
+    "ZTS",
+    "HPQ"
+   ],
+   "sans_per_stop_only": 0.029137667446816888,
+   "spy": 0.020313486951538895,
+   "spy_n": 1,
+   "spy_gross": 0.021334310850439884,
+   "spy_whole_gains": {
+    "10000": "199.59",
+    "25000": "507.30",
+    "50000": "1014.61",
+    "100000": "2029.21",
+    "1000000": "20308.73",
+    "2000000": "40625.78"
+   },
+   "spy_hold": 0.020313486951538895,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-09",
+   "per12": -0.01096526928121276,
+   "per12_n": 4,
+   "per12_gross": -0.009975739785746238,
+   "per12_whole_gains": {
+    "10000": "-108.79",
+    "25000": "-272.45",
+    "50000": "-546.36",
+    "100000": "-1094.50",
+    "1000000": "-10964.11",
+    "2000000": "-21929.97"
+   },
+   "per12_hold": -0.01096526928121276,
+   "per12_early": {},
+   "per12_symbols": [
+    "CASY",
+    "VVV",
+    "WH",
+    "RHP"
+   ],
+   "per12_stop_only": -0.01096526928121276,
+   "sans_per": -0.008883770100581093,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.007892158064663715,
+   "sans_per_whole_gains": {
+    "10000": "-87.48",
+    "25000": "-221.53",
+    "50000": "-443.01",
+    "100000": "-887.18",
+    "1000000": "-8883.87",
+    "2000000": "-17768.23"
+   },
+   "sans_per_hold": -0.008715548570924112,
+   "sans_per_early": {
+    "PLD": "stop",
+    "TECH": "stop"
+   },
+   "sans_per_symbols": [
+    "BRBR",
+    "MTN",
+    "TECH",
+    "CASY",
+    "OLED",
+    "VVV",
+    "PLD"
+   ],
+   "sans_per_stop_only": -0.008883770100581093,
+   "spy": 0.008690852928639695,
+   "spy_n": 1,
+   "spy_gross": 0.009700048379293662,
+   "spy_whole_gains": {
+    "10000": "86.27",
+    "25000": "215.68",
+    "50000": "431.35",
+    "100000": "866.30",
+    "1000000": "8688.14",
+    "2000000": "17379.87"
+   },
+   "spy_hold": 0.008690852928639695,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-12",
+   "per12": 0.020827170092877007,
+   "per12_n": 5,
+   "per12_gross": 0.02184850793188939,
+   "per12_whole_gains": {
+    "10000": "204.60",
+    "25000": "518.89",
+    "50000": "1038.80",
+    "100000": "2081.48",
+    "1000000": "20822.51",
+    "2000000": "41650.25"
+   },
+   "per12_hold": 0.022438673012380114,
+   "per12_early": {
+    "FR": "objectif",
+    "SFM": "objectif"
+   },
+   "per12_symbols": [
+    "NDAQ",
+    "SFM",
+    "VVV",
+    "FR",
+    "GOOGL"
+   ],
+   "per12_stop_only": 0.022438673012380114,
+   "sans_per": 0.02240471816906389,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.02342763434532108,
+   "sans_per_whole_gains": {
+    "10000": "221.46",
+    "25000": "556.00",
+    "50000": "1117.34",
+    "100000": "2235.87",
+    "1000000": "22400.14",
+    "2000000": "44803.31"
+   },
+   "sans_per_hold": 0.02219925723009301,
+   "sans_per_early": {
+    "BKNG": "objectif",
+    "BRBR": "objectif",
+    "PLD": "objectif",
+    "SFM": "objectif"
+   },
+   "sans_per_symbols": [
+    "NDAQ",
+    "PLD",
+    "SFM",
+    "BRBR",
+    "VVV",
+    "PAA",
+    "BKNG"
+   ],
+   "sans_per_stop_only": 0.02219925723009301,
+   "spy": 0.026979296481730038,
+   "spy_n": 1,
+   "spy_gross": 0.028006789524733268,
+   "spy_whole_gains": {
+    "10000": "267.16",
+    "25000": "667.91",
+    "50000": "1346.95",
+    "100000": "2693.90",
+    "1000000": "26972.41",
+    "2000000": "53955.96"
+   },
+   "spy_hold": 0.026979296481730038,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-13",
+   "per12": -0.03140087690600696,
+   "per12_n": 2,
+   "per12_gross": -0.030431793241080505,
+   "per12_whole_gains": {
+    "10000": "-311.13",
+    "25000": "-781.78",
+    "50000": "-1566.98",
+    "100000": "-3137.39",
+    "1000000": "-31400.01",
+    "2000000": "-62800.02"
+   },
+   "per12_hold": -0.02975082487890103,
+   "per12_early": {
+    "OGS": "stop",
+    "VVV": "stop"
+   },
+   "per12_symbols": [
+    "OGS",
+    "VVV"
+   ],
+   "per12_stop_only": -0.03140087690600696,
+   "sans_per": -0.00639532379985163,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.00540122207278795,
+   "sans_per_whole_gains": {
+    "10000": "-59.83",
+    "25000": "-156.13",
+    "50000": "-315.89",
+    "100000": "-638.68",
+    "1000000": "-6393.61",
+    "2000000": "-12788.40"
+   },
+   "sans_per_hold": -0.0023875589627031296,
+   "sans_per_early": {
+    "INVH": "objectif",
+    "OGS": "stop",
+    "TECH": "stop",
+    "VVV": "stop"
+   },
+   "sans_per_symbols": [
+    "CRM",
+    "TECH",
+    "OGS",
+    "VVV",
+    "CP",
+    "INVH",
+    "BIIB"
+   ],
+   "sans_per_stop_only": -0.007169105471730509,
+   "spy": 0.011334134917486359,
+   "spy_n": 1,
+   "spy_gross": 0.012345974972431319,
+   "spy_whole_gains": {
+    "10000": "108.80",
+    "25000": "279.09",
+    "50000": "562.90",
+    "100000": "1130.54",
+    "1000000": "11333.76",
+    "2000000": "22667.53"
+   },
+   "spy_hold": 0.011334134917486359,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-14",
+   "per12": -0.014167874610910035,
+   "per12_n": 4,
+   "per12_gross": -0.013181549322876929,
+   "per12_whole_gains": {
+    "10000": "-140.79",
+    "25000": "-353.26",
+    "50000": "-707.22",
+    "100000": "-1415.89",
+    "1000000": "-14166.78",
+    "2000000": "-28334.45"
+   },
+   "per12_hold": -0.01843621772155563,
+   "per12_early": {
+    "GPK": "stop"
+   },
+   "per12_symbols": [
+    "VVV",
+    "RDN",
+    "GPK",
+    "GOOGL"
+   ],
+   "per12_stop_only": -0.014167874610910035,
+   "sans_per": -0.016368615753755374,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.015384492307786145,
+   "sans_per_whole_gains": {
+    "10000": "-156.03",
+    "25000": "-401.36",
+    "50000": "-811.49",
+    "100000": "-1631.75",
+    "1000000": "-16365.16",
+    "2000000": "-32731.02"
+   },
+   "sans_per_hold": -0.018807668959838573,
+   "sans_per_early": {
+    "GPK": "stop"
+   },
+   "sans_per_symbols": [
+    "VVV",
+    "RDN",
+    "SON",
+    "BIIB",
+    "GPK",
+    "EXEL",
+    "OLED"
+   ],
+   "sans_per_stop_only": -0.016368615753755374,
+   "spy": 0.0021233447513721365,
+   "spy_n": 1,
+   "spy_gross": 0.0031259694084520484,
+   "spy_whole_gains": {
+    "10000": "20.48",
+    "25000": "52.53",
+    "50000": "105.94",
+    "100000": "211.89",
+    "1000000": "2123.31",
+    "2000000": "4246.61"
+   },
+   "spy_hold": 0.0021233447513721365,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-15",
+   "per12": -0.01435934871344208,
+   "per12_n": 7,
+   "per12_gross": -0.013373214995296449,
+   "per12_whole_gains": {
+    "10000": "-141.19",
+    "25000": "-357.35",
+    "50000": "-716.68",
+    "100000": "-1434.33",
+    "1000000": "-14356.85",
+    "2000000": "-28716.67"
+   },
+   "per12_hold": -0.011895476639714037,
+   "per12_early": {
+    "IRWD": "stop",
+    "PK": "stop",
+    "WH": "stop"
+   },
+   "per12_symbols": [
+    "PK",
+    "OGS",
+    "RDN",
+    "WH",
+    "VVV",
+    "IRWD",
+    "DD"
+   ],
+   "per12_stop_only": -0.01435934871344208,
+   "sans_per": -0.01206803723614655,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.011079611060294772,
+   "sans_per_whole_gains": {
+    "10000": "-116.88",
+    "25000": "-299.47",
+    "50000": "-601.74",
+    "100000": "-1204.52",
+    "1000000": "-12065.05",
+    "2000000": "-24132.51"
+   },
+   "sans_per_hold": -0.012136403527832188,
+   "sans_per_early": {
+    "PK": "stop",
+    "WH": "stop"
+   },
+   "sans_per_symbols": [
+    "PK",
+    "CWST",
+    "OGS",
+    "SON",
+    "BIIB",
+    "RDN",
+    "WH"
+   ],
+   "sans_per_stop_only": -0.01206803723614655,
+   "spy": -0.006697763391334088,
+   "spy_n": 1,
+   "spy_gross": -0.005703964255157334,
+   "spy_whole_gains": {
+    "10000": "-64.85",
+    "25000": "-166.35",
+    "50000": "-332.71",
+    "100000": "-668.24",
+    "1000000": "-6696.46",
+    "2000000": "-13392.91"
+   },
+   "spy_hold": -0.006697763391334088,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-16",
+   "per12": -0.019891925911827993,
+   "per12_n": 5,
+   "per12_gross": -0.018911327538553183,
+   "per12_whole_gains": {
+    "10000": "-196.66",
+    "25000": "-495.84",
+    "50000": "-992.21",
+    "100000": "-1987.02",
+    "1000000": "-19888.06",
+    "2000000": "-39780.52"
+   },
+   "per12_hold": -0.02059372833987481,
+   "per12_early": {
+    "WH": "stop"
+   },
+   "per12_symbols": [
+    "WH",
+    "RDN",
+    "VVV",
+    "DD",
+    "WU"
+   ],
+   "per12_stop_only": -0.019891925911827993,
+   "sans_per": -0.019690699608421593,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.018709899908179894,
+   "sans_per_whole_gains": {
+    "10000": "-194.14",
+    "25000": "-489.23",
+    "50000": "-982.96",
+    "100000": "-1967.57",
+    "1000000": "-19687.17",
+    "2000000": "-39378.98"
+   },
+   "sans_per_hold": -0.021086153334705655,
+   "sans_per_early": {
+    "SON": "stop",
+    "WH": "stop"
+   },
+   "sans_per_symbols": [
+    "SON",
+    "WH",
+    "RDN",
+    "VVV",
+    "SYF",
+    "HMC",
+    "WU"
+   ],
+   "sans_per_stop_only": -0.019690699608421593,
+   "spy": -0.014417261531302423,
+   "spy_n": 1,
+   "spy_gross": -0.013431185754945545,
+   "spy_whole_gains": {
+    "10000": "-141.04",
+    "25000": "-355.67",
+    "50000": "-717.48",
+    "100000": "-1441.08",
+    "1000000": "-14416.98",
+    "2000000": "-28833.96"
+   },
+   "spy_hold": -0.014417261531302423,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-20",
+   "per12": -0.01565997408883732,
+   "per12_n": 7,
+   "per12_gross": -0.01467514164670509,
+   "per12_whole_gains": {
+    "10000": "-154.60",
+    "25000": "-390.64",
+    "50000": "-781.21",
+    "100000": "-1563.65",
+    "1000000": "-15658.28",
+    "2000000": "-31317.82"
+   },
+   "per12_hold": -0.028695929097680366,
+   "per12_early": {
+    "GPK": "stop",
+    "HST": "stop",
+    "LXP": "stop"
+   },
+   "per12_symbols": [
+    "WH",
+    "VVV",
+    "GPK",
+    "IRWD",
+    "HST",
+    "MTG",
+    "LXP"
+   ],
+   "per12_stop_only": -0.01565997408883732,
+   "sans_per": -0.011786454982759717,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.010797747083792993,
+   "sans_per_whole_gains": {
+    "10000": "-113.51",
+    "25000": "-294.43",
+    "50000": "-586.31",
+    "100000": "-1176.34",
+    "1000000": "-11781.48",
+    "2000000": "-23570.48"
+   },
+   "sans_per_hold": -0.019319570364522823,
+   "sans_per_early": {
+    "GPK": "stop",
+    "HAE": "objectif",
+    "SON": "stop",
+    "TM": "stop"
+   },
+   "sans_per_symbols": [
+    "WH",
+    "VVV",
+    "GPK",
+    "TM",
+    "SON",
+    "IRWD",
+    "HAE"
+   ],
+   "sans_per_stop_only": -0.014060616415916518,
+   "spy": -0.005226582759396042,
+   "spy_n": 1,
+   "spy_gross": -0.004231311706629055,
+   "spy_whole_gains": {
+    "10000": "-50.31",
+    "25000": "-129.06",
+    "50000": "-260.30",
+    "100000": "-520.61",
+    "1000000": "-5225.76",
+    "2000000": "-10451.52"
+   },
+   "spy_hold": -0.005226582759396042,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-21",
+   "per12": -0.005165035324665023,
+   "per12_n": 7,
+   "per12_gross": -0.0041697026936741936,
+   "per12_whole_gains": {
+    "10000": "-50.90",
+    "25000": "-128.17",
+    "50000": "-257.61",
+    "100000": "-515.13",
+    "1000000": "-5164.73",
+    "2000000": "-10329.10"
+   },
+   "per12_hold": -0.01197981740250791,
+   "per12_early": {
+    "GPK": "stop",
+    "IRWD": "objectif",
+    "LXP": "stop"
+   },
+   "per12_symbols": [
+    "GPK",
+    "IRWD",
+    "HST",
+    "VVV",
+    "MAT",
+    "LXP",
+    "RDN"
+   ],
+   "per12_stop_only": -0.010292896032668464,
+   "sans_per": -0.013701866426656033,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.01271507489731802,
+   "sans_per_whole_gains": {
+    "10000": "-125.57",
+    "25000": "-338.96",
+    "50000": "-679.99",
+    "100000": "-1359.98",
+    "1000000": "-13699.39",
+    "2000000": "-27398.47"
+   },
+   "sans_per_hold": -0.018082384883216566,
+   "sans_per_early": {
+    "BIIB": "stop",
+    "GPK": "stop",
+    "IRWD": "objectif",
+    "SON": "stop"
+   },
+   "sans_per_symbols": [
+    "GPK",
+    "IRWD",
+    "HST",
+    "BIIB",
+    "CWST",
+    "SON",
+    "TM"
+   ],
+   "sans_per_stop_only": -0.018829727134659476,
+   "spy": -0.009166107260931157,
+   "spy_n": 1,
+   "spy_gross": -0.008174777703413329,
+   "spy_whole_gains": {
+    "10000": "-88.24",
+    "25000": "-226.36",
+    "50000": "-456.56",
+    "100000": "-913.12",
+    "1000000": "-9165.76",
+    "2000000": "-18331.51"
+   },
+   "spy_hold": -0.009166107260931157,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-22",
+   "per12": -0.01201621645069471,
+   "per12_n": 7,
+   "per12_gross": -0.011027738428134124,
+   "per12_whole_gains": {
+    "10000": "-119.31",
+    "25000": "-301.42",
+    "50000": "-600.65",
+    "100000": "-1201.49",
+    "1000000": "-12015.24",
+    "2000000": "-24030.41"
+   },
+   "per12_hold": 0.001960676039217791,
+   "per12_early": {
+    "LXP": "stop",
+    "MAT": "objectif",
+    "SHO": "stop",
+    "WH": "stop"
+   },
+   "per12_symbols": [
+    "SHO",
+    "LXP",
+    "WH",
+    "MAT",
+    "IRWD",
+    "OGS",
+    "TROW"
+   ],
+   "per12_stop_only": -0.010201025362559539,
+   "sans_per": -0.016469772645591515,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.015485750407117868,
+   "sans_per_whole_gains": {
+    "10000": "-157.79",
+    "25000": "-410.07",
+    "50000": "-819.08",
+    "100000": "-1645.67",
+    "1000000": "-16466.99",
+    "2000000": "-32934.74"
+   },
+   "sans_per_hold": 0.0019362517584323709,
+   "sans_per_early": {
+    "ADSK": "stop",
+    "LXP": "stop",
+    "MAT": "objectif",
+    "SHO": "stop",
+    "WH": "stop"
+   },
+   "sans_per_symbols": [
+    "SHO",
+    "LXP",
+    "WH",
+    "MAT",
+    "CWST",
+    "IRWD",
+    "ADSK"
+   ],
+   "sans_per_stop_only": -0.014654581557456345,
+   "spy": 0.0006949749043870764,
+   "spy_n": 1,
+   "spy_gross": 0.0016961704770778088,
+   "spy_whole_gains": {
+    "10000": "6.69",
+    "25000": "17.17",
+    "50000": "34.64",
+    "100000": "69.27",
+    "1000000": "694.75",
+    "2000000": "1389.79"
+   },
+   "spy_hold": 0.0006949749043870764,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-23",
+   "per12": 0.02076862597034291,
+   "per12_n": 7,
+   "per12_gross": 0.021789905235946053,
+   "per12_whole_gains": {
+    "10000": "206.21",
+    "25000": "514.91",
+    "50000": "1034.37",
+    "100000": "2075.63",
+    "1000000": "20763.61",
+    "2000000": "41534.11"
+   },
+   "per12_hold": 0.02979012765622478,
+   "per12_early": {
+    "LXP": "objectif",
+    "MAT": "objectif",
+    "SWKS": "objectif",
+    "TROW": "objectif"
+   },
+   "per12_symbols": [
+    "LXP",
+    "HST",
+    "TROW",
+    "GS",
+    "TNL",
+    "SWKS",
+    "MAT"
+   ],
+   "per12_stop_only": 0.02979012765622478,
+   "sans_per": 0.00984359944007125,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.010853948213898235,
+   "sans_per_whole_gains": {
+    "10000": "92.96",
+    "25000": "238.37",
+    "50000": "486.29",
+    "100000": "977.35",
+    "1000000": "9842.11",
+    "2000000": "19683.59"
+   },
+   "sans_per_hold": 0.010878696473326295,
+   "sans_per_early": {
+    "EYE": "stop",
+    "LXP": "objectif",
+    "TM": "objectif"
+   },
+   "sans_per_symbols": [
+    "LXP",
+    "SON",
+    "EYE",
+    "ADSK",
+    "SONY",
+    "TM",
+    "HST"
+   ],
+   "sans_per_stop_only": 0.009275491889810396,
+   "spy": 0.003219434074204649,
+   "spy_n": 1,
+   "spy_gross": 0.004223155368926214,
+   "spy_whole_gains": {
+    "10000": "30.87",
+    "25000": "79.20",
+    "50000": "159.74",
+    "100000": "320.83",
+    "1000000": "3219.00",
+    "2000000": "6438.01"
+   },
+   "spy_hold": 0.003219434074204649,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-26",
+   "per12": 0.012856672286995453,
+   "per12_n": 7,
+   "per12_gross": 0.01387003564095943,
+   "per12_whole_gains": {
+    "10000": "127.43",
+    "25000": "320.17",
+    "50000": "641.82",
+    "100000": "1284.91",
+    "1000000": "12855.93",
+    "2000000": "25712.45"
+   },
+   "per12_hold": 0.019883099225718685,
+   "per12_early": {
+    "GEN": "objectif",
+    "HUBG": "objectif",
+    "IRWD": "stop",
+    "WU": "objectif"
+   },
+   "per12_symbols": [
+    "PFE",
+    "GEN",
+    "HGV",
+    "VTRS",
+    "IRWD",
+    "HUBG",
+    "WU"
+   ],
+   "per12_stop_only": 0.017437322841760857,
+   "sans_per": -0.005146612809459779,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.004151261746737878,
+   "sans_per_whole_gains": {
+    "10000": "-47.03",
+    "25000": "-127.56",
+    "50000": "-256.01",
+    "100000": "-511.39",
+    "1000000": "-5142.46",
+    "2000000": "-10292.90"
+   },
+   "sans_per_hold": 0.0024279636015114665,
+   "sans_per_early": {
+    "KKR": "objectif",
+    "MORN": "stop"
+   },
+   "sans_per_symbols": [
+    "PFE",
+    "SONY",
+    "KKR",
+    "MORN",
+    "EXPO",
+    "HMC",
+    "ORA"
+   ],
+   "sans_per_stop_only": -0.0027680401910071006,
+   "spy": 0.00752811461431495,
+   "spy_n": 1,
+   "spy_gross": 0.008536146744994606,
+   "spy_whole_gains": {
+    "10000": "72.25",
+    "25000": "185.33",
+    "50000": "373.80",
+    "100000": "750.74",
+    "1000000": "7526.24",
+    "2000000": "15055.63"
+   },
+   "spy_hold": 0.00752811461431495,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-27",
+   "per12": 0.02296329620698157,
+   "per12_n": 7,
+   "per12_gross": 0.02398677124070541,
+   "per12_whole_gains": {
+    "10000": "218.35",
+    "25000": "563.58",
+    "50000": "1136.72",
+    "100000": "2283.93",
+    "1000000": "22952.71",
+    "2000000": "45913.89"
+   },
+   "per12_hold": 0.03306600214423829,
+   "per12_early": {
+    "ACN": "objectif",
+    "GS": "objectif",
+    "SHO": "objectif",
+    "SNX": "objectif",
+    "TNL": "objectif"
+   },
+   "per12_symbols": [
+    "PFE",
+    "GS",
+    "SHO",
+    "TNL",
+    "ACN",
+    "IRWD",
+    "SNX"
+   ],
+   "per12_stop_only": 0.03306600214423829,
+   "sans_per": 0.019130825844234638,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.020150466490401957,
+   "sans_per_whole_gains": {
+    "10000": "181.18",
+    "25000": "468.15",
+    "50000": "945.86",
+    "100000": "1902.22",
+    "1000000": "19120.58",
+    "2000000": "38249.63"
+   },
+   "sans_per_hold": 0.02786792287673066,
+   "sans_per_early": {
+    "ACN": "objectif",
+    "GS": "objectif",
+    "SHO": "objectif",
+    "TNL": "objectif"
+   },
+   "sans_per_symbols": [
+    "PFE",
+    "GS",
+    "SHO",
+    "TNL",
+    "ACN",
+    "IRWD",
+    "UMC"
+   ],
+   "sans_per_stop_only": 0.02786792287673066,
+   "spy": 0.025493516465464133,
+   "spy_n": 1,
+   "spy_gross": 0.026519522985189458,
+   "spy_whole_gains": {
+    "10000": "254.61",
+    "25000": "636.51",
+    "50000": "1273.03",
+    "100000": "2546.06",
+    "1000000": "25492.38",
+    "2000000": "50984.76"
+   },
+   "spy_hold": 0.025493516465464133,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-28",
+   "per12": 0.01888296586800321,
+   "per12_n": 7,
+   "per12_gross": 0.01990235853020231,
+   "per12_whole_gains": {
+    "10000": "173.80",
+    "25000": "464.30",
+    "50000": "935.52",
+    "100000": "1879.73",
+    "1000000": "18870.62",
+    "2000000": "37753.07"
+   },
+   "per12_hold": 0.03855569226181203,
+   "per12_early": {
+    "GPK": "stop",
+    "GS": "objectif",
+    "LXP": "objectif",
+    "PK": "objectif",
+    "SNX": "objectif",
+    "UTHR": "objectif",
+    "WH": "objectif"
+   },
+   "per12_symbols": [
+    "GPK",
+    "GS",
+    "PK",
+    "SNX",
+    "UTHR",
+    "WH",
+    "LXP"
+   ],
+   "per12_stop_only": 0.02897233252866331,
+   "sans_per": 0.011522859071561954,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.01253488794507027,
+   "sans_per_whole_gains": {
+    "10000": "102.87",
+    "25000": "277.49",
+    "50000": "568.09",
+    "100000": "1144.21",
+    "1000000": "11509.79",
+    "2000000": "23034.22"
+   },
+   "sans_per_hold": 0.03507978229853567,
+   "sans_per_early": {
+    "ACN": "objectif",
+    "GPK": "stop",
+    "GS": "objectif",
+    "MORN": "objectif",
+    "PK": "objectif"
+   },
+   "sans_per_symbols": [
+    "MORN",
+    "GPK",
+    "GS",
+    "PK",
+    "EXPO",
+    "ORA",
+    "ACN"
+   ],
+   "sans_per_stop_only": 0.02549642256538695,
+   "spy": 0.01823913026164384,
+   "spy_n": 1,
+   "spy_gross": 0.019257878766157744,
+   "spy_whole_gains": {
+    "10000": "175.66",
+    "25000": "450.61",
+    "50000": "908.86",
+    "100000": "1817.71",
+    "1000000": "18238.21",
+    "2000000": "36476.41"
+   },
+   "spy_hold": 0.01823913026164384,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-29",
+   "per12": 0.008974200033738763,
+   "per12_n": 7,
+   "per12_gross": 0.009983678973242253,
+   "per12_whole_gains": {
+    "10000": "86.17",
+    "25000": "218.42",
+    "50000": "442.69",
+    "100000": "891.93",
+    "1000000": "8971.42",
+    "2000000": "17942.62"
+   },
+   "per12_hold": 0.009287481484703645,
+   "per12_early": {
+    "DTE": "objectif",
+    "GOOGL": "objectif",
+    "MAA": "objectif",
+    "OSIS": "stop",
+    "PAYX": "objectif"
+   },
+   "per12_symbols": [
+    "GOOGL",
+    "OSIS",
+    "DTE",
+    "HRB",
+    "COF",
+    "MAA",
+    "PAYX"
+   ],
+   "per12_stop_only": 0.008132903052433423,
+   "sans_per": 0.01666648987750857,
+   "sans_per_n": 7,
+   "sans_per_gross": 0.017683664954924787,
+   "sans_per_whole_gains": {
+    "10000": "156.73",
+    "25000": "409.52",
+    "50000": "827.73",
+    "100000": "1659.35",
+    "1000000": "16658.29",
+    "2000000": "33328.46"
+   },
+   "sans_per_hold": 0.020072045705653675,
+   "sans_per_early": {
+    "FCN": "objectif",
+    "FWONK": "objectif",
+    "ORCL": "objectif"
+   },
+   "sans_per_symbols": [
+    "SONY",
+    "ORCL",
+    "UMC",
+    "FWONK",
+    "HMC",
+    "FCN",
+    "QGEN"
+   ],
+   "sans_per_stop_only": 0.020072045705653675,
+   "spy": 0.013998005167558007,
+   "spy_n": 1,
+   "spy_gross": 0.015012510425354461,
+   "spy_whole_gains": {
+    "10000": "135.18",
+    "25000": "346.75",
+    "50000": "699.39",
+    "100000": "1398.77",
+    "1000000": "13993.61",
+    "2000000": "27993.10"
+   },
+   "spy_hold": 0.013998005167558007,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  },
+  {
+   "date": "2023-06-30",
+   "per12": 0.02182753838327014,
+   "per12_n": 2,
+   "per12_gross": 0.022849877091007276,
+   "per12_whole_gains": {
+    "10000": "216.86",
+    "25000": "543.57",
+    "50000": "1088.51",
+    "100000": "2181.25",
+    "1000000": "21823.67",
+    "2000000": "43651.57"
+   },
+   "per12_hold": 0.016595557947117295,
+   "per12_early": {
+    "DTE": "objectif"
+   },
+   "per12_symbols": [
+    "DTE",
+    "CPT"
+   ],
+   "per12_stop_only": 0.016595557947117295,
+   "sans_per": -0.009996625727234382,
+   "sans_per_n": 7,
+   "sans_per_gross": -0.009006127103649824,
+   "sans_per_whole_gains": {
+    "10000": "-95.72",
+    "25000": "-249.34",
+    "50000": "-496.99",
+    "100000": "-999.88",
+    "1000000": "-9996.72",
+    "2000000": "-19993.38"
+   },
+   "sans_per_hold": -0.010926436764443465,
+   "sans_per_early": {
+    "ADSK": "stop",
+    "ALKS": "stop",
+    "ASX": "stop",
+    "DTE": "objectif"
+   },
+   "sans_per_symbols": [
+    "ASX",
+    "ALKS",
+    "ADSK",
+    "HMC",
+    "DTE",
+    "BA",
+    "CPT"
+   ],
+   "sans_per_stop_only": -0.011491477280420909,
+   "spy": -0.008837375021821733,
+   "spy_n": 1,
+   "spy_gross": -0.007845716567616453,
+   "spy_whole_gains": {
+    "10000": "-86.57",
+    "25000": "-218.31",
+    "50000": "-440.39",
+    "100000": "-880.79",
+    "1000000": "-8834.20",
+    "2000000": "-17672.17"
+   },
+   "spy_hold": -0.008837375021821733,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  }
+ ]
+}
