@@ -110,6 +110,8 @@
   .bt-period:first-child { margin-top: 0; }
   .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 8px; }
   .warn-line { color: var(--down); }
+  .override-banner { margin: 0 0 8px; padding: 10px 14px; border: 1px solid var(--down); border-left: 5px solid var(--down);
+                     border-radius: 6px; color: var(--down); font-weight: 600; }
   [hidden] { display: none !important; }
   .strategy-banner { background: var(--surface); border: 1px solid var(--line); border-left: 4px solid var(--accent);
     border-radius: 8px; padding: 10px 14px; display: grid; gap: 2px; font-size: 14px; }
@@ -196,6 +198,7 @@
     <section>
       <h2 data-t="selection_title"></h2>
       <p class="intro" data-t="intro_selection"></p>
+      <p class="override-banner" id="override-warn" hidden></p>
       <div class="panel" id="selection"></div>
       <p class="note" id="selection-note"></p>
     </section>
@@ -528,6 +531,7 @@ const TEXT = {
     strategy_label: "Stratégie", home_link: "← Toutes les stratégies",
     strategy_times: st => `Achat au premier échange à partir de ${st.buy} New York (${st.buy_paris} Paris)${st.buy_alt ? ` ou, si le marché n'a pas tenu, de ${st.buy_alt} New York (${st.buy_alt_paris} Paris)` : ""}, vente ${st.sale_offset > 1 ? `${st.sale_offset} séances plus tard, ` : st.next_day ? "la séance suivante, " : ""}au dernier échange avant ${st.sell} New York (${st.sell_paris} Paris)${st.sale_offset > 1 ? ` : les actions sont gardées jusqu'à ${st.sale_offset} séances, le résultat d'une séance d'achat est connu à la vente` : st.next_day ? " : les actions sont gardées pendant la nuit, le résultat d'une séance est connu le lendemain matin" : ""}. ${st.stop_pct == null && st.target_pct == null ? " Pas de stop ni d'objectif : chaque action est gardée jusqu'à l'heure de vente." : `Vente plus tôt${st.stop_pct == null ? "" : ` à −${st.stop_pct} %`}${st.target_pct == null ? " (pas d'objectif de hausse : une action qui monte est gardée jusqu'à la vente)" : `${st.stop_pct == null ? "" : " ou"} à +${st.target_pct} %`}.`}`,
     th_last_hour: "Dernière heure (veille)", th_overnight: "Nuit (jusqu'à 9 h 15)",
+    override_warn: (c, a) => `⚠ Marché sous sa moyenne de 50 séances (S&P 500 : ${c} à la clôture de la veille, moyenne ${a}). Cette liste est faite quand même, à ta demande : en temps normal, la règle « marché en bonne forme » l'aurait laissée vide.`,
     th_day: "Journée (jusqu'à la décision)", th_hour_before: "Dernière heure avant la décision", th_pullback: "Repli depuis le plus haut (10 séances)",
     no_selection_hold: m => `Pas de liste : à la décision, le marché (${m}) avait trop baissé depuis l'ouverture. Règle « marché qui tient ».`,
     no_selection_recover: m => `Pas de liste : le marché (${m}) n'avait pas remonté sur la dernière heure. Règle « marché qui remonte ».`,
@@ -796,6 +800,7 @@ const TEXT = {
     strategy_label: "Strategy", home_link: "← All strategies",
     strategy_times: st => `Bought at the first trade from ${st.buy} New York (${st.buy_paris} Paris)${st.buy_alt ? ` or, if the market did not hold, from ${st.buy_alt} New York (${st.buy_alt_paris} Paris)` : ""}, sold ${st.sale_offset > 1 ? `${st.sale_offset} sessions later, ` : st.next_day ? "the next session, " : ""}at the last trade before ${st.sell} New York (${st.sell_paris} Paris)${st.sale_offset > 1 ? `: the stocks are held up to ${st.sale_offset} sessions, a purchase day's result is known at the sale` : st.next_day ? ": the stocks are held overnight, a session's result is known the next morning" : ""}. ${st.stop_pct == null && st.target_pct == null ? " No stop or target: each stock is kept until the selling time." : `Sold earlier${st.stop_pct == null ? "" : ` at −${st.stop_pct}%`}${st.target_pct == null ? " (no upside target: a rising stock is kept until the sale)" : `${st.stop_pct == null ? "" : " or"} at +${st.target_pct}%`}.`}`,
     th_last_hour: "Last hour (day before)", th_overnight: "Overnight (to 9:15 AM)",
+    override_warn: (c, a) => `⚠ Market below its 50-session average (S&P 500: ${c} at the previous close, average ${a}). This list is made anyway, at your request: normally the "healthy market" rule would have left it empty.`,
     th_day: "Day (up to the decision)", th_hour_before: "Last hour before the decision", th_pullback: "Dip from the high (10 sessions)",
     no_selection_hold: m => `No list: at the decision, the market (${m}) had fallen too much since the open. "Market holding" rule.`,
     no_selection_recover: m => `No list: the market (${m}) had not risen over the last hour. "Market recovering" rule.`,
@@ -1067,6 +1072,11 @@ function renderRun(run) {
     { label: th.volume, value: r => musd(r.avg_dollar_volume) },
   ], run.selection) : null;
   if (selectionTable) addCharts(selectionTable, run, inSession);
+  // Règle « marché en bonne forme » suspendue ce jour-là à la demande du propriétaire (décision T22) : on le dit.
+  const warn = document.getElementById("override-warn");
+  const ov = run.override;
+  warn.hidden = !(ov && ov.ignore_market_health && ov.market_healthy === false);
+  if (!warn.hidden) warn.textContent = TEXT.override_warn(usd(ov.market_close), usd(ov.market_average));
   document.getElementById("selection").replaceChildren(selectionTable || el("div", "empty",
     run.funnel.marche_en_bonne_forme === 0 ? TEXT.no_selection_market(run.criteria.market_symbol)
       : run.funnel.marche_tient === 0 ? TEXT.no_selection_hold(run.criteria.market_symbol)

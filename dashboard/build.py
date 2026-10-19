@@ -407,7 +407,11 @@ def _build_strategy(strategy, infos):
              for v, row in ((current or {}).get("portfolio") or {}).get("versions", {}).items()}
     # Listes du jour déjà produites (même avant que l'état en direct existe) : nombre de titres par version.
     lists_today = {variant_of(r): len(r["selection"]) for r in latest_per_session(runs) if r["session_date"] == session_today}
+    # Listes du jour faites malgré un marché sous sa moyenne (règle suspendue à la demande du propriétaire).
+    unhealthy_today = [r["override"] for r in latest_per_session(runs) if r["session_date"] == session_today
+                       and (r.get("override") or {}).get("market_healthy") is False]
     return {**info, "session_date": (live or {}).get("session_date"), "today": today, "lists_today": lists_today,
+            "unhealthy_today": unhealthy_today[0] if unhealthy_today else None,
             "observed_at": (current or {}).get("observed_at"),
             "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "spy", "per12" + NO_RULE,
                                                                 "sans_per" + NO_RULE)}}

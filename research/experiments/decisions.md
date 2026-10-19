@@ -209,3 +209,9 @@ la règle est suspendue pour cette séance seulement (research/algorithms/repris
 « ignore_market_health »), toutes stratégies ; les autres règles restent (dont « pas le lundi » de la règle en
 vigueur). Les listes du matin déjà sorties vides sont refaites avec les mêmes données, tronquées à la même heure de
 décision ; les vides restent dans l'historique. Chaque run concerné porte un champ « override ». Statut : papier.
+
+## T23 — 2026-10-19 — Règle « marché en bonne forme » suspendue aussi le 20 octobre, avec avertissement (propriétaire)
+
+Le 20 octobre 2026 est ajouté à overrides.json. Chaque liste faite ainsi enregistre si la règle l'aurait bloquée
+(« market_healthy », clôture de SPY la veille et sa moyenne de 50 séances, lues à la décision) ; si oui, un
+avertissement s'affiche au-dessus de la liste et en haut de l'accueil (⚠ sur les stratégies concernées).

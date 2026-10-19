@@ -49,6 +49,9 @@
   tr:last-child td { border-bottom: none; }
   .up { color: var(--up); } .down { color: var(--down); }
   .note { color: var(--muted); font-size: 13px; margin: 0; }
+  .override-banner { margin: 0; padding: 10px 14px; border: 1px solid var(--down); border-left: 5px solid var(--down);
+                     border-radius: 6px; color: var(--down); font-weight: 600; }
+  td .flag { color: var(--down); font-weight: 700; }
   .best { display: grid; gap: 12px; }
   .best h2 { margin: 12px 0 0; font-size: 20px; }
   .best h3 { margin: 8px 0 0; font-size: 15px; }
@@ -68,6 +71,7 @@
     <a id="other"></a>
   </header>
   <p class="intro" id="intro"></p>
+  <p class="override-banner" id="override-warn" hidden></p>
   <p class="note" id="updated"></p>
   <div class="panel"><table id="rows"></table></div>
   <p class="note" id="note"></p>
@@ -92,7 +96,8 @@ const BEST = __BEST_MONTHS_JSON__;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
-    rule_link: "Règle en vigueur (version 2) →", rule_href: "regle_en_vigueur.html",
+    rule_link: "Règle en vigueur →", rule_href: "regle_en_vigueur.html",
+    override_warn: (c, a) => `⚠ Aujourd'hui, le marché est sous sa moyenne de 50 séances (S&P 500 ${c}, moyenne ${a}). Les listes sont faites quand même, à ta demande ; en temps normal elles seraient vides. Les stratégies concernées portent ⚠.`,
     intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
     head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · PER < 25 · sans stop/objectif", "Aujourd'hui · sans PER", "Aujourd'hui · sans PER · sans stop/objectif", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · PER < 25 · sans stop/objectif", "Depuis le 16 oct. · sans PER", "Depuis le 16 oct. · sans PER · sans stop/objectif", "Séances"],
     waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)", later: k => ` (${k} séances plus tard)`, or_at: "ou",
@@ -113,7 +118,8 @@ const TEXT = {
   },
   en: {
     title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
-    rule_link: "Rule in force (version 2) →", rule_href: "regle_en_vigueur_en.html",
+    rule_link: "Rule in force →", rule_href: "regle_en_vigueur_en.html",
+    override_warn: (c, a) => `⚠ Today the market is below its 50-session average (S&P 500 ${c}, average ${a}). Lists are made anyway, at your request; normally they would be empty. The strategies concerned carry ⚠.`,
     intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
     head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · P/E < 25 · no stop/target", "Today · without P/E", "Today · without P/E · no stop/target", "Since Oct 16 · P/E < 25", "Since Oct 16 · P/E < 25 · no stop/target", "Since Oct 16 · without P/E", "Since Oct 16 · without P/E · no stop/target", "Sessions"],
     waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)", later: k => ` (${k} sessions later)`, or_at: "or",
@@ -146,6 +152,9 @@ document.getElementById("title").textContent = TEXT.title;
 const other = document.getElementById("other");
 other.textContent = TEXT.other; other.href = TEXT.other_href;
 Object.assign(document.getElementById("rule-link"), { textContent: TEXT.rule_link, href: TEXT.rule_href });
+const flagged = ROWS.find(r => r.unhealthy_today);
+const banner = document.getElementById("override-warn");
+if (flagged) { banner.hidden = false; banner.textContent = TEXT.override_warn(`$${flagged.unhealthy_today.market_close}`, `$${flagged.unhealthy_today.market_average}`); }
 document.getElementById("intro").textContent = TEXT.intro;
 document.getElementById("note").textContent = TEXT.note;
 document.getElementById("updated").textContent = TEXT.updated(
@@ -160,6 +169,7 @@ ROWS.forEach(r => {
   const a = document.createElement("a"); a.href = LANG === "fr" ? r.fr : r.en; a.textContent = LANG === "fr" ? r.name : r.name_en;
   const d = document.createElement("div"); d.className = "desc"; d.textContent = LANG === "fr" ? r.description : r.description_en;
   name.append(a, d); tr.appendChild(name);
+  if (r.unhealthy_today) { const f = document.createElement("span"); f.className = "flag"; f.textContent = " ⚠"; f.title = TEXT.override_warn(r.unhealthy_today.market_close, r.unhealthy_today.market_average); a.after(f); }
   // New York sur la première ligne, Paris en dessous : la colonne reste étroite.
   const times = document.createElement("td"); times.className = "text num"; const next = r.sale_offset > 1 ? TEXT.later(r.sale_offset) : r.next_day ? TEXT.next_day : "";
   const paris = document.createElement("div"); paris.className = "desc";

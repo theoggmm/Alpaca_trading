@@ -18,7 +18,7 @@ from core.closing import ClosingCriteria, market_moves, screen_closing
 from core.domains import domain_trends
 from core.fundamentals import split_adjusted
 from core.opening import OpeningCriteria, screen_opening
-from core.screener import Criteria, daily_candidates, liquid_universe, screen
+from core.screener import Criteria, daily_candidates, liquid_universe, market_in_uptrend, screen
 from core.strategy import load_strategies
 from core.swing import SwingCriteria, screen_swing
 from core.switch import SwitchCriteria, choose
@@ -210,7 +210,14 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
         # Règle suspendue ce jour-là par le propriétaire (décision T22) : la liste le dit dans son run.
         payload = produce(alpaca, without_market_health(criteria), session_date, market_open, now, git_sha)
         if payload is not None:
+            # La règle aurait-elle bloqué ? Repère et moyenne lus à la décision (clôtures quotidiennes d'avant).
+            decision_time = datetime.fromisoformat(payload["decision_time"])
+            spy = cached(f"{key}/market_daily_bars_SPY_health",
+                         lambda: alpaca.bars(["SPY"], "1Day", decision_time - DAILY_HISTORY, decision_time))
+            healthy, last, average = market_in_uptrend(spy, decision_time, "SPY", 50)
             payload["override"] = {"ignore_market_health": True, "criteria": criteria.to_json(),
+                                   "market_healthy": bool(healthy), "market_close": str(last),
+                                   "market_average": str(average.quantize(Decimal("0.01"))),
                                    "note": "règle « marché en bonne forme » suspendue ce jour-là par le propriétaire"}
         return payload
     if isinstance(criteria, SwitchCriteria):
