@@ -201,3 +201,11 @@ count 7, market_min_day_return 0, skip_weekdays [0]. Sur le passé (rejeu des 7 
 2022 −7,1 %, 2023 +2,5 %, 2024 +17,1 %, 2025 +36,2 %, cinq ans +89 % (version 2 : +73 %). Les cinq années ont servi au
 choix (diagnostic) ; jugement sur les séances futures. Réglages de la version 2 archivés
 (research/algorithms/reprise_apres_baisse/archive/regle_en_vigueur_v2/). Statut : papier, aucun ordre.
+
+## T22 — 2026-10-19 — Règle « marché en bonne forme » suspendue le 19 octobre 2026 (propriétaire)
+
+Le S&P 500 est sous sa moyenne de 50 séances : toutes les listes du jour sortaient vides. À la demande du propriétaire,
+la règle est suspendue pour cette séance seulement (research/algorithms/reprise_apres_baisse/overrides.json,
+« ignore_market_health »), toutes stratégies ; les autres règles restent (dont « pas le lundi » de la règle en
+vigueur). Les listes du matin déjà sorties vides sont refaites avec les mêmes données, tronquées à la même heure de
+décision ; les vides restent dans l'historique. Chaque run concerné porte un champ « override ». Statut : papier.

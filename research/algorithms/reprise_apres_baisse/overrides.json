@@ -1,0 +1,4 @@
+{
+  "_doc": "Jours où le propriétaire suspend une règle pour toutes les listes. ignore_market_health : la règle « marché en bonne forme » (repère au-dessus de sa moyenne de 50 séances) n'est pas appliquée ce jour-là. Décision T22.",
+  "ignore_market_health": ["2026-10-19"]
+}

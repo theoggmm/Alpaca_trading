@@ -5,8 +5,10 @@ Depuis la racine du dépôt :
     .venv/bin/python -m research.algorithms.reprise_apres_baisse.run
 """
 
+import json
 import sys
 import time
+from dataclasses import replace
 from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -181,12 +183,36 @@ def _produce_swing(alpaca, criteria, session_date, market_open, key):
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 
+OVERRIDES_FILE = HERE / "overrides.json"
+
+
+def market_health_ignored(key):
+    """Vrai si le propriétaire a suspendu la règle « marché en bonne forme » pour la séance key (overrides.json)."""
+    if not OVERRIDES_FILE.exists():
+        return False
+    return key in json.loads(OVERRIDES_FILE.read_text(encoding="utf-8")).get("ignore_market_health", [])
+
+
+def without_market_health(criteria):
+    """Mêmes critères sans la règle « marché en bonne forme » (bascule : dans ses deux listes)."""
+    if isinstance(criteria, SwitchCriteria):
+        return replace(criteria, first=without_market_health(criteria.first), second=without_market_health(criteria.second))
+    return replace(criteria, market_ma_sessions=None) if getattr(criteria, "market_ma_sessions", None) else criteria
+
+
 def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     """
     Calcule le run d'une séance (sans l'enregistrer) : sélection, entonnoir, domaines, sources.
     Toutes les données sont tronquées à l'instant de décision (ouverture + première heure, + confirmation).
     """
     key = session_date.isoformat()
+    if market_health_ignored(key) and without_market_health(criteria) != criteria:
+        # Règle suspendue ce jour-là par le propriétaire (décision T22) : la liste le dit dans son run.
+        payload = produce(alpaca, without_market_health(criteria), session_date, market_open, now, git_sha)
+        if payload is not None:
+            payload["override"] = {"ignore_market_health": True, "criteria": criteria.to_json(),
+                                   "note": "règle « marché en bonne forme » suspendue ce jour-là par le propriétaire"}
+        return payload
     if isinstance(criteria, SwitchCriteria):
         # Bascule : liste de la première décision si le marché tient, sinon (plus tard) celle de la seconde.
         first, day = _switch_choice(alpaca, criteria, market_open, key)
