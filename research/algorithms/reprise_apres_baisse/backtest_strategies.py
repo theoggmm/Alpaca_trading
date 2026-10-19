@@ -420,7 +420,10 @@ BASE_TESTS = {"annee_2025": TESTS,
               "annee_2024": [{"label": "janvier_juin_2024", "start": date(2024, 1, 1), "end": date(2024, 6, 30)},
                              {"label": "annee_2024", "start": date(2024, 1, 1), "end": date(2024, 12, 31)}],
               "periode_20261012_20261016": [{"label": "periode_20261012_20261016", "start": date(2026, 10, 12),
-                                             "end": date(2026, 10, 16)}]}
+                                             "end": date(2026, 10, 16)}],
+              **{f"annee_{y}": [{"label": f"janvier_juin_{y}", "start": date(y, 1, 1), "end": date(y, 6, 30)},
+                                {"label": f"annee_{y}", "start": date(y, 1, 1), "end": date(y, 12, 31)}]
+                 for y in (2021, 2022, 2023)}}
 
 
 def decisions_for(alpaca, criteria, day, market_open):
