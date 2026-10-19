@@ -297,7 +297,9 @@ def _report(payload, criteria, path):
           f"{decision_time.astimezone(NEW_YORK):%H:%M} (New York) — run {payload['run_id']}, "
           f"critères version {criteria.version}, statut diagnostic, code {payload['git_sha'][:7]}")
     print("Entonnoir : " + " → ".join(f"{step} {n}" for step, n in payload["funnel"].items()))
-    print(f"n = {len(selection)} titres sur {criteria.count} au plus :")
+    # Bascule : nombre de titres de ses listes (le même dans les deux).
+    count = getattr(criteria, "count", None) or criteria.first.count
+    print(f"n = {len(selection)} titres sur {count} au plus :")
     for item in selection:
         pe = f"  PER {item['pe_ttm']}" if item.get("pe_ttm") else ""
         # Liste « reprise » : première heure ; liste « ouverture » : dernière heure de la veille et nuit.
@@ -371,7 +373,7 @@ def run(wait=True):
     if "error" in domains:
         print(f"Domaines indisponibles : {domains['error']}")
     else:
-        print(f"Tendance sur {criteria.month_sessions} séances par domaine (SEC), "
+        print(f"Tendance sur {domains.get('measure', '')} par domaine (SEC), "
               f"{domains['unclassified']} titres non classés :")
         for bubble in domains["bubbles"]:
             print(f"     {bubble['domain']:<40} {_pct(bubble['mean_return'])}  n = {bubble['n']}")
