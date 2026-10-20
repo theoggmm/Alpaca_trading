@@ -73,6 +73,8 @@ class ClosingCriteria:
     skip_weekdays: tuple = ()                    # 5 quinquies : pas de liste ces jours-là (0 = lundi)
     market_max_fear_move: Decimal = None         # 5 quinquies : |VIXY depuis l'ouverture| au plus (ex. 0.03)
     fear_symbol: str = "VIXY"
+    exchange: str = None                 # liste « Nasdaq » : une seule bourse de cotation (ex. NASDAQ)
+    fill_to_count: bool = False          # liste « Nasdaq » : toujours count titres (critères assouplis pas à pas)
 
     @classmethod
     def from_json(cls, raw, source="critères"):

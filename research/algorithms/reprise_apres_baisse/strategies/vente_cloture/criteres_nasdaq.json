@@ -1,0 +1,22 @@
+{
+  "version": 5,
+  "count": 7,
+  "month_sessions": 21,
+  "up_days": 2,
+  "first_hour_minutes": 60,
+  "liquidity_sessions": 20,
+  "min_price_usd": "5",
+  "min_avg_dollar_volume_usd": "20000000",
+  "volatility_sessions": 60,
+  "max_volatility_quantile": 0.5,
+  "correlation_sessions": 60,
+  "max_pairwise_correlation": 0.6,
+  "min_gap_below_high": "0.002",
+  "confirmation_minutes": 15,
+  "max_below_ma": "0.05",
+  "ma_sessions": 50,
+  "market_symbol": "SPY",
+  "confirmation_tolerance": "0.002",
+  "exchange": "NASDAQ",
+  "fill_to_count": true
+}

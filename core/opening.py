@@ -53,6 +53,8 @@ class OpeningCriteria:
     market_symbol: str = None
     market_ma_sessions: int = None
     max_pe: Decimal = None
+    exchange: str = None                 # liste « Nasdaq » : une seule bourse de cotation (ex. NASDAQ)
+    fill_to_count: bool = False          # liste « Nasdaq » : toujours count titres (critères assouplis pas à pas)
 
     @classmethod
     def from_json(cls, raw, source="critères"):

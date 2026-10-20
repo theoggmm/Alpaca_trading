@@ -165,3 +165,23 @@ def test_lundi_et_peur():
     nervous = calm.assign(close=[Decimal("20"), Decimal("20.8"), Decimal("40")])               # +4 % : trop
     assert screen_closing(daily, _stocks(), MARKET_OPEN, FIRST, replace(rule, skip_weekdays=()),
                           market_minute=holds, fear_minute=nervous)[0] == []
+
+
+
+def test_liste_completee_au_plus_proche():
+    """fill_to_count : la liste stricte, puis les titres des pas assouplis, jusqu'à count ; marqués « closest_fit »."""
+    from core.fill import fill, relaxations
+    rule = replace(CLOSING, market_min_day_return=None, count=3, fill_to_count=True)
+    steps = [label for label, _ in relaxations(rule)]
+    assert steps == ["pres_du_plus_haut", "journee_en_hausse", "diversification"]
+
+    def screen_with(c):   # sélection fictive : la stricte en donne 1, chaque pas en ajoute
+        pools = {Decimal("0.01"): ["A"], Decimal("1"): ["A", "B"]}
+        symbols = pools.get(c.max_below_day_high, ["A"]) + (["C", "D"] if c.min_day_gain < 0 else [])
+        return [{"symbol": s, "rank": i} for i, s in enumerate(symbols, 1)], {"etape": len(symbols)}
+    selection, funnel = fill(screen_with, rule)
+    assert [i["symbol"] for i in selection] == ["A", "B", "C"]
+    assert [i.get("closest_fit") for i in selection] == [None, "pres_du_plus_haut", "journee_en_hausse"]
+    assert [i["rank"] for i in selection] == [1, 2, 3] and funnel["completee_au_plus_proche"] == 3
+    strict = replace(rule, fill_to_count=False)
+    assert [i["symbol"] for i in fill(screen_with, strict)[0]] == ["A"]   # liste ordinaire : jamais complétée

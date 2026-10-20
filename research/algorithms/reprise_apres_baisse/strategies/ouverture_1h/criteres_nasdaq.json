@@ -1,0 +1,20 @@
+{
+  "signal": "ouverture",
+  "version": 1,
+  "count": 7,
+  "liquidity_sessions": 20,
+  "min_price_usd": "5",
+  "min_avg_dollar_volume_usd": "20000000",
+  "volatility_sessions": 60,
+  "month_sessions": 21,
+  "correlation_sessions": 60,
+  "max_pairwise_correlation": 0.6,
+  "last_hour_minutes": 60,
+  "min_overnight": "0.005",
+  "max_overnight": "0.03",
+  "min_premarket_volume": 5000,
+  "data_delay_minutes": 15,
+  "market_symbol": "SPY",
+  "exchange": "NASDAQ",
+  "fill_to_count": true
+}

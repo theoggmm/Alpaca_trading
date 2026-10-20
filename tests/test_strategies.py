@@ -23,7 +23,7 @@ def test_strategies_de_la_famille():
     assert list(every)[0] == "principale" and every["principale"].storage == "reprise_apres_baisse"
     assert every["ouverture_1h"].storage == "reprise_apres_baisse/strategies/ouverture_1h"
     for s in every.values():
-        assert set(s.criteria_files) == {"sans_per", "per12"}
+        assert set(s.criteria_files) == {"sans_per", "per12", "nasdaq"}
     # Heures de vente : avant la clôture, ou après l'ouverture.
     assert every["principale"].exit_time(OPEN, CLOSE) == datetime(2026, 10, 16, 19, 30, tzinfo=timezone.utc)
     assert every["vente_cloture"].exit_time(OPEN, CLOSE) == datetime(2026, 10, 16, 19, 55, tzinfo=timezone.utc)

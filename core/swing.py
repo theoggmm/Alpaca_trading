@@ -63,6 +63,8 @@ class SwingCriteria:
     max_pe: Decimal = None
     min_down_days: int = None               # 9 bis : baisse lors de chacune des N dernières séances
     market_min_day_return: Decimal = None   # 9 bis : marché qui tient à la décision (ex. -0.002)
+    exchange: str = None                 # liste « Nasdaq » : une seule bourse de cotation (ex. NASDAQ)
+    fill_to_count: bool = False          # liste « Nasdaq » : toujours count titres (critères assouplis pas à pas)
 
     @classmethod
     def from_json(cls, raw, source="critères"):

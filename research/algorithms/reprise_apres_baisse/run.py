@@ -15,6 +15,7 @@ from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from core.closing import ClosingCriteria, market_moves, screen_closing
+from core.fill import fill, loosest, restrict
 from core.domains import domain_trends
 from core.fundamentals import split_adjusted
 from core.opening import OpeningCriteria, screen_opening
@@ -99,9 +100,18 @@ def _produce_opening(alpaca, criteria, session_date, market_open, key):
     market_daily = None if criteria.market_symbol is None else cached(
         f"{key}/market_daily_bars_{criteria.market_symbol}_open",
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
-    selection, funnel = screen_opening(daily, minute, market_open, previous_close, decision_time, criteria,
-                                       earnings_for=earnings(alpaca, key), market_daily=market_daily)
+    only = _exchange_symbols(alpaca, key, criteria)
+    selection, funnel = fill(lambda c: screen_opening(restrict(daily, only), minute, market_open, previous_close,
+                                                      decision_time, c, earnings_for=earnings(alpaca, key),
+                                                      market_daily=market_daily), criteria)
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
+
+
+def _exchange_symbols(alpaca, key, criteria):
+    """Titres cotés sur la bourse de la liste (actifs d'Alpaca du jour), ou None si la liste n'en retient pas une."""
+    if not criteria.exchange:
+        return None
+    return {a["symbol"] for a in cached(f"{key}/alpaca_assets", alpaca.assets) if a.get("exchange") == criteria.exchange}
 
 
 def _market_minute(alpaca, symbol, key, market_open, decision_time):
@@ -135,9 +145,10 @@ def _produce_closing(alpaca, criteria, session_date, market_open, key):
                      if _needs_market_minute(criteria) else None)
     fear_minute = (_market_minute(alpaca, criteria.fear_symbol, key, market_open, decision_time)
                    if criteria.market_max_fear_move is not None else None)
-    selection, funnel = screen_closing(daily, minute, market_open, decision_time, criteria,
-                                       earnings_for=earnings(alpaca, key), market_daily=market_daily,
-                                       market_minute=market_minute, fear_minute=fear_minute)
+    only = _exchange_symbols(alpaca, key, criteria)
+    selection, funnel = fill(lambda c: screen_closing(restrict(daily, only), minute, market_open, decision_time, c,
+                                                      earnings_for=earnings(alpaca, key), market_daily=market_daily,
+                                                      market_minute=market_minute, fear_minute=fear_minute), criteria)
     return decision_time, selection, funnel, listings, listings_created, universe_funnel, daily
 
 
@@ -171,9 +182,10 @@ def _produce_swing(alpaca, criteria, session_date, market_open, key):
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
     market_minute = (_market_minute(alpaca, criteria.market_symbol, key, market_open, decision_time)
                      if criteria.market_min_day_return is not None else None)
-    selection, funnel = screen_swing(daily, minute, market_open, decision_time, criteria,
-                                     earnings_for=earnings(alpaca, key), market_daily=market_daily,
-                                     market_minute=market_minute)
+    only = _exchange_symbols(alpaca, key, criteria)
+    selection, funnel = fill(lambda c: screen_swing(restrict(daily, only), minute, market_open, decision_time, c,
+                                                    earnings_for=earnings(alpaca, key), market_daily=market_daily,
+                                                    market_minute=market_minute), criteria)
     # Premier prix de la séance des titres retenus (colonne « depuis l'ouverture » du suivi), lu avant la décision.
     chosen = [i["symbol"] for i in selection]
     opening = (alpaca.bars(chosen, "1Min", market_open, market_open + PRICE_WINDOW) if chosen
@@ -243,7 +255,8 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     symbols, universe_funnel = eligible_symbols(assets, listings)
     daily = cached(f"{key}/daily_bars",
                    lambda: alpaca.bars(symbols, "1Day", decision_time - DAILY_HISTORY, decision_time))
-    candidates, _ = daily_candidates(daily, decision_time, criteria)
+    # Liste complétée au plus proche : barres minute des candidats du pas le plus large (un sur-ensemble).
+    candidates, _ = daily_candidates(daily, decision_time, loosest(criteria))
     minute = cached(f"{key}/minute_bars" if criteria.confirmation_minutes is None
                     else f"{key}/minute_bars_{criteria.first_hour_minutes}_{criteria.decision_minutes}",
                     lambda: alpaca.bars([c.symbol for c in candidates], "1Min", market_open, decision_time))
@@ -251,8 +264,9 @@ def produce(alpaca, criteria, session_date, market_open, now, git_sha):
     market_daily = None if criteria.market_symbol is None else cached(
         f"{key}/market_daily_bars_{criteria.market_symbol}",
         lambda: alpaca.bars([criteria.market_symbol], "1Day", decision_time - DAILY_HISTORY, decision_time))
-    selection, funnel = screen(daily, minute, market_open, decision_time, criteria,
-                               earnings_for=earnings(alpaca, key), market_daily=market_daily)
+    only = _exchange_symbols(alpaca, key, criteria)
+    selection, funnel = fill(lambda c: screen(restrict(daily, only), minute, market_open, decision_time, c,
+                                              earnings_for=earnings(alpaca, key), market_daily=market_daily), criteria)
     return _payload(alpaca, criteria, key, market_open, decision_time, now, git_sha, daily, listings,
                     listings_created, universe_funnel, funnel, selection)
 
