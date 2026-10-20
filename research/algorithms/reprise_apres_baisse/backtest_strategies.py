@@ -50,7 +50,7 @@ from infra.http import FetchError
 from infra.trace import RUNS_DIR, TraceError, committed_git_sha
 from research.algorithms.reprise_apres_baisse.backtest import BIASES, TESTED_AMOUNTS
 from research.algorithms.reprise_apres_baisse.run import (DAILY_HISTORY, FAMILY, NEW_YORK, SIP_DELAY, STRATEGIES,
-                                                          earnings)
+                                                          earnings, market_health_ignored, without_market_health)
 from core.strategy import MAX_HOLD_SESSIONS
 
 BENCHMARK = "SPY"
@@ -150,6 +150,8 @@ def _lists_for_day(alpaca, daily, market_daily, day, market_open, previous_close
         return [i["symbol"] for i in selection]
 
     kinds = {s.id: s.criteria() for s in strategies}
+    if market_health_ignored(day.isoformat()):   # comme en direct (décisions T22, T23)
+        kinds = {sid: {v: without_market_health(c) for v, c in cs.items()} for sid, cs in kinds.items()}
 
     # « Reprise après baisse » : candidats quotidiens, puis minutes de 9 h 30 jusqu'à la décision la plus tardive.
     rebound = {sid: c for sid, c in kinds.items() if _kind(c) is Criteria}
@@ -224,7 +226,8 @@ def _results_for_day(alpaca, lists, decisions, day, market_open, market_close, l
         exit_time = strategy.exit_time(market_open, market_close, sale_session)
         # Vente pas encore faite (ou pas encore servie) : la séance ne compte pas pour cette stratégie.
         if exit_time + SIP_DELAY > now:
-            records[strategy.id] = {"date": day.isoformat(), "unsold": True}
+            records[strategy.id] = {"date": day.isoformat(), "unsold": True,
+                                    **{f"{v}_symbols": list(symbols) for v, symbols in lists[strategy.id].items()}}
             continue
         entries = {v: d + SIP_DELAY for v, d in decisions[strategy.id].items()}
         entries["spy"] = min(entries.values())
@@ -302,7 +305,7 @@ def _one_day(i):
     return day, cached(_key(day, f"resultats_v{VERSION}_{_CONTEXT['criteria_hash']}{suffix}"), compute)
 
 
-def run(year=None, only=None, first=None, last=None):
+def run(year=None, only=None, first=None, last=None, exchange=None):
     """
     Rejoue l'année (2025 par défaut, avec ses trois tranches), ou les séances du first au last, pour toutes les
     stratégies ou celles de only.
@@ -325,7 +328,8 @@ def run(year=None, only=None, first=None, last=None):
                                                              s.exit_after_open_minutes, s.exit_next_open_minutes,
                                                              str(s.stop_loss), str(s.take_profit)]}
                                              if s.id not in OLD_KEYS else {v: c.to_json() for v, c in s.criteria().items()}
-                                             for s in chosen}, sort_keys=True, default=str).encode()).hexdigest()[:10]
+                                             for s in chosen} | ({"exchange": exchange} if exchange else {}),
+                                            sort_keys=True, default=str).encode()).hexdigest()[:10]
     sessions = alpaca.sessions(period[0] - timedelta(days=10), period[1] + timedelta(days=20))
     days = [i for i, s in enumerate(sessions) if period[0] <= s[0] <= period[1]]
     print(f"{len(days)} séances du {sessions[days[0]][0]} au {sessions[days[-1]][0]} · {len(chosen)} stratégies.")
@@ -334,11 +338,16 @@ def run(year=None, only=None, first=None, last=None):
     listings, _ = cached(f"{today}/nasdaq_listings", nasdaq_symbols.listings)
     assets = cached(f"{today}/alpaca_assets", alpaca.assets)
     symbols, _ = eligible_symbols(assets, listings)
+    if exchange:
+        # Une seule bourse de cotation (champ « exchange » des actifs d'Alpaca, ex. NASDAQ).
+        listed_on = {a["symbol"] for a in assets if a.get("exchange") == exchange}
+        symbols = [s for s in symbols if s in listed_on]
+        print(f"{len(symbols)} titres cotés sur {exchange}.")
     first_open = _utc(*sessions[days[0]][:2])
     last_close = min(_utc(sessions[days[-1] + MAX_HOLD_SESSIONS][0], sessions[days[-1] + MAX_HOLD_SESSIONS][2]),
                      datetime.now(timezone.utc) - SIP_DELAY - timedelta(minutes=5))   # offre gratuite : rien des 15 dernières minutes
     print("Lecture des cours quotidiens (une fois)…")
-    daily_key = _key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
+    daily_key = _key(f"daily_bars_{first_open:%Y%m%d}_{last_close:%Y%m%d}" + (f"_{exchange}" if exchange else ""))
     spy_key = _key(f"spy_daily_{first_open:%Y%m%d}_{last_close:%Y%m%d}")
     cached(daily_key, lambda: alpaca.bars(symbols, "1Day", first_open - DAILY_HISTORY, last_close))
     cached(spy_key, lambda: alpaca.bars([BENCHMARK], "1Day", first_open - DAILY_HISTORY, last_close))
@@ -359,6 +368,8 @@ def run(year=None, only=None, first=None, last=None):
     by_strategy = {s.id: [results[day][s.id] for day in sorted(results)] for s in chosen}
 
     written = []
+    if exchange:
+        tests = [{**t, "label": f"{t['label']}_{exchange.lower()}"} for t in tests]
     for strategy in chosen:
         written += _write_tests(strategy, by_strategy[strategy.id], tests, git_sha)
     print(f"{len(written)} résultats écrits.")
@@ -510,12 +521,14 @@ def main():
     parser.add_argument("--only", help="Identifiants des stratégies, séparés par des virgules (défaut : toutes)")
     parser.add_argument("--start", type=date.fromisoformat, help="Première séance (AAAA-MM-JJ), avec --end")
     parser.add_argument("--end", type=date.fromisoformat, help="Dernière séance (AAAA-MM-JJ)")
+    parser.add_argument("--exchange", help="Une seule bourse de cotation (ex. NASDAQ)")
     parser.add_argument("--top", type=int, help="Rejouer les tests déjà faits avec les N premiers titres de chaque liste")
     args = parser.parse_args()
     try:
         if args.top:
             return run_top(args.top, None if args.only is None else set(args.only.split(",")))
-        return run(args.year, None if args.only is None else set(args.only.split(",")), args.start, args.end)
+        return run(args.year, None if args.only is None else set(args.only.split(",")), args.start, args.end,
+                   args.exchange)
     except (FetchError, TraceError, ValueError) as e:
         print(f"Erreur : {e}", file=sys.stderr)
         return 1
