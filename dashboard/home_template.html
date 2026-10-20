@@ -99,7 +99,7 @@ const TEXT = {
     rule_link: "Règle en vigueur →", rule_href: "regle_en_vigueur.html",
     override_warn: (c, a) => `⚠ Aujourd'hui, le marché est sous sa moyenne de 50 séances (S&P 500 ${c}, moyenne ${a}). Les listes sont faites quand même, à ta demande ; en temps normal elles seraient vides. Les stratégies concernées portent ⚠.`,
     intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
-    head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · PER < 25 · sans stop/objectif", "Aujourd'hui · sans PER", "Aujourd'hui · sans PER · sans stop/objectif", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · PER < 25 · sans stop/objectif", "Depuis le 16 oct. · sans PER", "Depuis le 16 oct. · sans PER · sans stop/objectif", "Séances"],
+    head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · PER < 25 · sans stop/objectif", "Aujourd'hui · sans PER", "Aujourd'hui · sans PER · sans stop/objectif", "Aujourd'hui · Nasdaq (7)", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · PER < 25 · sans stop/objectif", "Depuis le 16 oct. · sans PER", "Depuis le 16 oct. · sans PER · sans stop/objectif", "Depuis le 16 oct. · Nasdaq (7)", "Séances"],
     waiting: "en attente", none: "—", no_list: "pas de liste", next_day: " (lendemain)", later: k => ` (${k} séances plus tard)`, or_at: "ou",
     updated: t => `Mise à jour à ${t} (Paris) — la page se recharge toute seule chaque minute pendant la séance.`,
     list_at: t => `liste ${t}`, bought_at: t => `prix attendu`, sold: "vendu",
@@ -121,7 +121,7 @@ const TEXT = {
     rule_link: "Rule in force →", rule_href: "regle_en_vigueur_en.html",
     override_warn: (c, a) => `⚠ Today the market is below its 50-session average (S&P 500 ${c}, average ${a}). Lists are made anyway, at your request; normally they would be empty. The strategies concerned carry ⚠.`,
     intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
-    head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · P/E < 25 · no stop/target", "Today · without P/E", "Today · without P/E · no stop/target", "Since Oct 16 · P/E < 25", "Since Oct 16 · P/E < 25 · no stop/target", "Since Oct 16 · without P/E", "Since Oct 16 · without P/E · no stop/target", "Sessions"],
+    head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · P/E < 25 · no stop/target", "Today · without P/E", "Today · without P/E · no stop/target", "Today · Nasdaq (7)", "Since Oct 16 · P/E < 25", "Since Oct 16 · P/E < 25 · no stop/target", "Since Oct 16 · without P/E", "Since Oct 16 · without P/E · no stop/target", "Since Oct 16 · Nasdaq (7)", "Sessions"],
     waiting: "waiting", none: "—", no_list: "no list", next_day: " (next day)", later: k => ` (${k} sessions later)`, or_at: "or",
     updated: t => `Updated at ${t} (Paris) — the page reloads itself every minute during the session.`,
     list_at: t => `list ${t}`, bought_at: t => `price pending`, sold: "sold",
@@ -161,7 +161,7 @@ document.getElementById("updated").textContent = TEXT.updated(
   new Date(BUILT_AT).toLocaleTimeString(TEXT.locale, { timeZone: "Europe/Paris", hour: "2-digit", minute: "2-digit" }));
 const t = document.getElementById("rows");
 const head = t.createTHead().insertRow();
-TEXT.head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; th.className = i < 2 ? "text" : i < 10 && i % 2 === 1 ? "alt" : ""; head.appendChild(th); });
+TEXT.head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; th.className = i < 2 ? "text" : [3, 5, 8, 10].includes(i) ? "alt" : ""; head.appendChild(th); });
 const body = t.createTBody();
 ROWS.forEach(r => {
   const tr = body.insertRow();
@@ -189,10 +189,16 @@ ROWS.forEach(r => {
     tr.appendChild(td);
     const alt = cell(today?.net_no_rule ?? null, TEXT.none); alt.classList.add("alt"); tr.appendChild(alt);
   });
+  // Liste Nasdaq (7 actions, toujours complète) : aujourd'hui.
+  { const today = r.today.nasdaq; const n = r.lists_today.nasdaq;
+    const td = cell(today?.net ?? null, n === undefined ? TEXT.list_at(r.buy_paris) : n === 0 ? TEXT.no_list : TEXT.bought_at(r.buy_paris));
+    if (today?.net != null && today.status === "closed") td.textContent += ` · ${TEXT.sold}`;
+    tr.appendChild(td); }
   ["per12", "sans_per"].forEach(v => {
     tr.appendChild(cell(r.totals[v]?.total ?? null, TEXT.none));
     const alt = cell(r.totals[v + "_sans_regle"]?.total ?? null, TEXT.none); alt.classList.add("alt"); tr.appendChild(alt);
   });
+  tr.appendChild(cell(r.totals.nasdaq?.total ?? null, TEXT.none));
   const n = document.createElement("td"); n.className = "num"; n.textContent = r.totals.per12?.n ?? r.totals.sans_per?.n ?? 0; tr.appendChild(n);
 });
 

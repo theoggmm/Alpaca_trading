@@ -330,7 +330,8 @@ const TEXT = {
     tabs: { today: "Aujourd'hui", market: "Marché", details: "Détail de la sélection", results: "Résultats", tests: "Tests", method: "Méthodologie" },
     locale: "fr-FR", other: "English", other_href: "index_en.html", millions: m => `${m} M$`,
     title: "Reprise après baisse", session: "Séance", version: "Version",
-    variants: { per12: "PER < 25", sans_per: "Sans PER" }, not_judged: "non jugé",
+    variants: { per12: "PER < 25", sans_per: "Sans PER", nasdaq: "Nasdaq (7)" }, not_judged: "non jugé",
+    closest_fit: "au plus proche", closest_note: " « au plus proche » : la liste Nasdaq compte toujours 7 actions ; quand les règles n'en trouvent pas assez, elles sont assouplies pas à pas et l'action complète la liste (la règle relâchée est indiquée au survol).",
     live_title: "En direct : tendance par domaine",
     disclaimer: "Ces titres remplissent, à l'heure de décision de la stratégie, les critères fixés à l'avance. C'est une liste, pas un conseil d'achat : la décision t'appartient.",
     run_bubbles_title: "Tendance sur un mois par domaine, au moment du run (clôture de la veille)",
@@ -599,7 +600,8 @@ const TEXT = {
     tabs: { today: "Today", market: "Market", details: "Selection details", results: "Results", tests: "Tests", method: "Methodology" },
     locale: "en-US", other: "Français", other_href: "index.html", millions: m => `$${m}M`,
     title: "Rebound after decline", session: "Session", version: "Version",
-    variants: { per12: "P/E < 25", sans_per: "Without P/E" }, not_judged: "not judged",
+    variants: { per12: "P/E < 25", sans_per: "Without P/E", nasdaq: "Nasdaq (7)" }, not_judged: "not judged",
+    closest_fit: "closest fit", closest_note: " \"closest fit\": the Nasdaq list always has 7 stocks; when the rules don't find enough, they are loosened step by step and the stock completes the list (the loosened rule shows on hover).",
     live_title: "Live: trend by sector",
     disclaimer: "These stocks meet, at the strategy's decision time, criteria set in advance. This is a list, not buy advice: the decision is yours.",
     run_bubbles_title: "One-month trend by sector at run time (previous close)",
@@ -1047,7 +1049,8 @@ function renderRun(run) {
   };
   const selectionTable = run.selection.length ? table([
     { label: th.rank, value: r => r.rank },
-    { label: th.symbol, cls: "text symbol", value: r => r.symbol },
+    { label: th.symbol, cls: "text symbol", value: r => r.symbol + (r.closest_fit ? ` · ${TEXT.closest_fit}` : ""),
+      title: r => r.closest_fit ? `${TEXT.closest_fit} : ${TEXT.steps[r.closest_fit] || r.closest_fit}` : "" },
     { label: th.name, cls: "text name", value: r => r.name, title: r => r.name },
     { label: th.domain, cls: "text name", value: r => domainLabel(r.domain) + (r.domain_read_later ? " *" : ""),
       title: r => [r.sic_description, r.domain_read_later ? TEXT.read_later : ""].filter(Boolean).join(" · ") },
@@ -1085,7 +1088,8 @@ function renderRun(run) {
     (run.selection.length < run.criteria.count ? TEXT.fewer(run.selection.length, run.criteria.count) : TEXT.ranked)
     + TEXT.domain_note + (run.selection.some(r => r.domain_read_later) ? TEXT.star_note : "")
     + (inSession ? TEXT.live_col_note : final ? TEXT.final_col_note : "")
-    + (entryColumn ? TEXT.entry_col_note : "");
+    + (entryColumn ? TEXT.entry_col_note : "")
+    + (run.selection.some(r => r.closest_fit) ? TEXT.closest_note : "");
 
   renderBubbles(run);
 
@@ -1735,7 +1739,7 @@ showTab(TEXT.tabs[VIEW.tab] ? VIEW.tab : "today");
 
 const picker = document.getElementById("run");
 // Deux versions de la liste chaque séance : sans PER, et avec PER (seuil dans le fichier de critères).
-const VARIANTS = ["per12", "sans_per"];
+const VARIANTS = ["per12", "sans_per", "nasdaq"];
 const variantOf = run => run.variant || (run.criteria.max_pe ? "per12" : "sans_per");
 let VARIANT = VARIANTS.includes(VIEW.variant) ? VIEW.variant : VARIANTS[0];
 // Liste la plus récente d'une séance pour une version (celle choisie par défaut).

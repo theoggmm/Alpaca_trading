@@ -196,7 +196,7 @@ RULES_SINCE = "2026-10-16"
 # Suspendue (décision 001.3) : les règles sont en réglage ; repartira de zéro quand elles seront figées.
 EXPERIMENT = {"id": "001", "start": "2026-10-15", "sessions": 40, "suspended": True,
               "file": "research/algorithms/reprise_apres_baisse/experiences/001_per12_vs_sans_per.md"}
-SERIES = ("per12", "sans_per", "per12_sans_regle", "sans_per_sans_regle", "univers", "spy")
+SERIES = ("per12", "sans_per", "nasdaq", "per12_sans_regle", "sans_per_sans_regle", "nasdaq_sans_regle", "univers", "spy")
 NO_RULE = "_sans_regle"  # même liste sans la règle stop / objectif (comparaison)
 
 
@@ -220,6 +220,8 @@ def _results(finals, slices=1):
             unsold.append(final["session_date"])
             continue
         for name, row in rows.items():
+            if name not in series:
+                continue
             if row.get("net_mean_return") is not None:
                 series[name][final["session_date"]] = row["net_mean_return"] / slices
             elif row.get("n") == 0:
@@ -413,7 +415,7 @@ def _build_strategy(strategy, infos):
     return {**info, "session_date": (live or {}).get("session_date"), "today": today, "lists_today": lists_today,
             "unhealthy_today": unhealthy_today[0] if unhealthy_today else None,
             "observed_at": (current or {}).get("observed_at"),
-            "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "spy", "per12" + NO_RULE,
+            "totals": {v: results["summaries"].get(v) for v in ("per12", "sans_per", "nasdaq", "spy", "per12" + NO_RULE,
                                                                 "sans_per" + NO_RULE)}}
 
 
