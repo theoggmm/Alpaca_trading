@@ -41,6 +41,11 @@ class Reader:
             try:
                 response = self._session.get(url, params=params, timeout=TIMEOUT_S)
             except requests.RequestException as e:
+                # Connexion peut-être cassée (coupure réseau, mise en veille) : une session neuve pour la suite.
+                headers = dict(self._session.headers)
+                self._session.close()
+                self._session = requests.Session()
+                self._session.headers.update(headers)
                 if attempt == ATTEMPTS:
                     raise FetchError(f"Requête impossible vers {url} ({ATTEMPTS} essais) : {e}") from e
                 time.sleep(RETRY_PAUSE_S * attempt)
