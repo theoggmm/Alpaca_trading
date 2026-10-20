@@ -1,0 +1,177 @@
+{
+  "run_id": "r011",
+  "variant": "per12",
+  "strategy": "achat_10h30_vente_cloture",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T14:15:00+00:00",
+  "created_at": "2026-10-20T16:54:56.442014+00:00",
+  "git_sha": "4e66e2885d1e7439d4b05ceced1e5dbff7d718c4",
+  "criteria": {
+    "version": 6,
+    "count": 20,
+    "month_sessions": 21,
+    "up_days": 2,
+    "first_hour_minutes": 30,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "max_pe": "25",
+    "min_gap_below_high": "0.002",
+    "confirmation_minutes": 15,
+    "confirmation_tolerance": "0.002",
+    "max_below_ma": "0.05",
+    "ma_sessions": 50,
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 6991,
+    "historique_complet": 6820,
+    "prix_minimum": 4691,
+    "volume_echange_minimum": 2040,
+    "volatilite_basse": 1020,
+    "en_baisse_sur_un_mois": 530,
+    "hausse_des_derniers_jours": 23,
+    "hausse_premiere_heure": 17,
+    "pas_en_chute": 14,
+    "pas_au_sommet": 9,
+    "confirmation": 4,
+    "per_maximum": 1,
+    "selection_diversifiee": 1
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022750322428142185
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "ALV",
+      "prev_close": "116.49",
+      "open_today": "117.01",
+      "price_at_decision": "117.41",
+      "return_month": -0.004188750213711746,
+      "return_day_minus_2": 0.00025870989996550536,
+      "return_day_minus_1": 0.004310716441072507,
+      "return_first_hour": 0.0034185112383556962,
+      "volatility_annualized": 0.25306292007116515,
+      "avg_dollar_volume": "84882187",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "13.85",
+      "gap_below_high": 0.007711973631388789,
+      "below_ma": 0.0034781929692632306,
+      "price_at_confirmation": "117.65",
+      "return_confirmation": 0.002044118899582659,
+      "name": "Autoliv, Inc. Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Motor Vehicle Parts & Accessories"
+    }
+  ],
+  "override": {
+    "ignore_market_health": true,
+    "criteria": {
+      "version": 6,
+      "count": 20,
+      "month_sessions": 21,
+      "up_days": 2,
+      "first_hour_minutes": 30,
+      "liquidity_sessions": 20,
+      "min_price_usd": "5",
+      "min_avg_dollar_volume_usd": "20000000",
+      "volatility_sessions": 60,
+      "max_volatility_quantile": 0.5,
+      "correlation_sessions": 60,
+      "max_pairwise_correlation": 0.6,
+      "max_pe": "25",
+      "min_gap_below_high": "0.002",
+      "confirmation_minutes": 15,
+      "confirmation_tolerance": "0.002",
+      "max_below_ma": "0.05",
+      "ma_sessions": 50,
+      "market_symbol": "SPY",
+      "market_ma_sessions": 50,
+      "exchange": null,
+      "fill_to_count": false
+    },
+    "market_healthy": false,
+    "market_close": "766.48",
+    "market_average": "767.30",
+    "note": "règle « marché en bonne forme » suspendue ce jour-là par le propriétaire"
+  }
+}

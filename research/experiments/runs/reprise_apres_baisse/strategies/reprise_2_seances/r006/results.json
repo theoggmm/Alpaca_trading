@@ -1,0 +1,252 @@
+{
+  "run_id": "r006",
+  "variant": "nasdaq",
+  "strategy": "reprise_2_seances",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T14:45:00+00:00",
+  "created_at": "2026-10-20T16:56:52.009873+00:00",
+  "git_sha": "4e66e2885d1e7439d4b05ceced1e5dbff7d718c4",
+  "criteria": {
+    "version": 5,
+    "count": 7,
+    "month_sessions": 21,
+    "up_days": 2,
+    "first_hour_minutes": 60,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "max_pe": null,
+    "min_gap_below_high": "0.002",
+    "confirmation_minutes": 15,
+    "confirmation_tolerance": "0.002",
+    "max_below_ma": "0.05",
+    "ma_sessions": 50,
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 4296,
+    "historique_complet": 4151,
+    "prix_minimum": 2392,
+    "volume_echange_minimum": 824,
+    "volatilite_basse": 412,
+    "en_baisse_sur_un_mois": 215,
+    "hausse_des_derniers_jours": 6,
+    "hausse_premiere_heure": 4,
+    "pas_en_chute": 2,
+    "pas_au_sommet": 1,
+    "confirmation": 1,
+    "selection_diversifiee": 1,
+    "completee_au_plus_proche": 6
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022750322428142185
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "NMIH",
+      "prev_close": "41.01",
+      "open_today": "41.49",
+      "price_at_decision": "41.64",
+      "return_month": -0.044055944055944055,
+      "return_day_minus_2": 0.015211970074812968,
+      "return_day_minus_1": 0.007369196757553427,
+      "return_first_hour": 0.0036153289949385392,
+      "volatility_annualized": 0.24660225769905117,
+      "avg_dollar_volume": "32260552",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "gap_below_high": 0.0073163928681261306,
+      "below_ma": 0.02713689940773104,
+      "price_at_confirmation": "41.6",
+      "return_confirmation": -0.0009606147934678194,
+      "name": "NMI Holdings Inc - Common Stock",
+      "domain": "Finance",
+      "sic_description": "Surety Insurance"
+    },
+    {
+      "rank": 2,
+      "symbol": "ALKS",
+      "prev_close": "42.97",
+      "open_today": "43.38",
+      "price_at_decision": "44.255",
+      "return_month": -0.009679649688868404,
+      "return_day_minus_2": 0.027930174563591023,
+      "return_day_minus_1": 0.04245511887433285,
+      "return_first_hour": 0.02017058552328262,
+      "volatility_annualized": 0.33833279614984046,
+      "avg_dollar_volume": "97111848",
+      "max_correlation_with_previous": 0.0074714498761679765,
+      "pe_ttm": null,
+      "below_ma": 0.0155207584861421,
+      "price_at_confirmation": "44.48",
+      "return_confirmation": 0.005084171280081346,
+      "closest_fit": "pas_au_sommet",
+      "name": "Alkermes plc - Ordinary Shares",
+      "domain": "Life Sciences",
+      "sic_description": "Pharmaceutical Preparations"
+    },
+    {
+      "rank": 3,
+      "symbol": "WFRD",
+      "prev_close": "77.09",
+      "open_today": "77.79",
+      "price_at_decision": "78.47",
+      "return_month": -0.060221870047543584,
+      "return_day_minus_2": 0.015866666666666668,
+      "return_day_minus_1": 0.011812573828586428,
+      "return_first_hour": 0.008741483481167244,
+      "volatility_annualized": 0.37859630820209517,
+      "avg_dollar_volume": "67471707",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "price_at_confirmation": "78.38",
+      "return_confirmation": -0.0011469351344462852,
+      "closest_fit": "pas_en_chute",
+      "name": "Weatherford International plc - Ordinary shares",
+      "domain": "Energy & Transportation",
+      "sic_description": "Oil & Gas Field Machinery & Equipment"
+    },
+    {
+      "rank": 4,
+      "symbol": "COGT",
+      "prev_close": "30.01",
+      "open_today": "30.12",
+      "price_at_decision": "30.88",
+      "return_month": -0.0473015873015873,
+      "return_day_minus_2": 0.00033886818027787193,
+      "return_day_minus_1": 0.01659891598915989,
+      "return_first_hour": 0.025232403718459494,
+      "volatility_annualized": 0.4617409196001193,
+      "avg_dollar_volume": "69962715",
+      "max_correlation_with_previous": -0.014681118131605317,
+      "pe_ttm": null,
+      "price_at_confirmation": "31.18",
+      "return_confirmation": 0.009715025906735751,
+      "closest_fit": "pas_en_chute",
+      "name": "Cogent Biosciences, Inc. - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "Pharmaceutical Preparations"
+    },
+    {
+      "rank": 5,
+      "symbol": "SWKS",
+      "prev_close": "80.23",
+      "open_today": "79.73",
+      "price_at_decision": "80.61",
+      "return_month": -0.09610184767913474,
+      "return_day_minus_2": 0.007585335018963337,
+      "return_day_minus_1": 0.006649937264742786,
+      "return_first_hour": 0.011037250721183996,
+      "volatility_annualized": 0.6065969042413375,
+      "avg_dollar_volume": "591477030",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "price_at_confirmation": "80.4581",
+      "return_confirmation": -0.0018843815903734028,
+      "closest_fit": "volatilite_basse",
+      "name": "Skyworks Solutions, Inc. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 6,
+      "symbol": "NTLA",
+      "prev_close": "11.58",
+      "open_today": "11.455",
+      "price_at_decision": "11.76",
+      "return_month": -0.04612850082372323,
+      "return_day_minus_2": 0.007054673721340388,
+      "return_day_minus_1": 0.014010507880910683,
+      "return_first_hour": 0.026625927542557836,
+      "volatility_annualized": 0.5905956382327774,
+      "avg_dollar_volume": "72099481",
+      "max_correlation_with_previous": 0.42465794274911567,
+      "pe_ttm": null,
+      "price_at_confirmation": "11.88",
+      "return_confirmation": 0.01020408163265306,
+      "closest_fit": "volatilite_basse",
+      "name": "Intellia Therapeutics, Inc. - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "In Vitro & In Vivo Diagnostic Substances"
+    }
+  ]
+}

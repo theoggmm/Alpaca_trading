@@ -1,0 +1,256 @@
+{
+  "run_id": "r008",
+  "variant": "nasdaq",
+  "strategy": "ouverture_2h",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T13:15:00+00:00",
+  "created_at": "2026-10-20T13:37:53.762997+00:00",
+  "git_sha": "e1f7d20013775cc236fcd99adbb5ab6a5148279b",
+  "criteria": {
+    "signal": "ouverture",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "last_hour_minutes": 60,
+    "min_overnight": "0.005",
+    "max_overnight": "0.03",
+    "min_premarket_volume": 5000,
+    "data_delay_minutes": 15,
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 4296,
+    "historique_complet": 4151,
+    "prix_minimum": 2392,
+    "volume_echange_minimum": 824,
+    "fin_de_seance_en_hausse": 357,
+    "nuit_en_hausse_moderee": 13,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022749589917329224
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "PTEN",
+      "prev_close": "12.05",
+      "open_today": "12.2",
+      "price_at_decision": "12.2",
+      "return_month": 0.022920203735144314,
+      "return_day_minus_2": 0.016799292661361626,
+      "return_day_minus_1": 0.04782608695652174,
+      "return_last_hour": 0.00667779632721202,
+      "return_overnight": 0.012448132780082987,
+      "premarket_volume": 6487,
+      "volatility_annualized": 0.5316544388669495,
+      "avg_dollar_volume": "76061706",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "name": "Patterson-UTI Energy, Inc. - Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Drilling Oil & Gas Wells"
+    },
+    {
+      "rank": 2,
+      "symbol": "GDS",
+      "prev_close": "22.47",
+      "open_today": "22.98",
+      "price_at_decision": "22.98",
+      "return_month": -0.31473010064043916,
+      "return_day_minus_2": -0.08846761453396525,
+      "return_day_minus_1": -0.026429809358752165,
+      "return_last_hour": 0.0062752129090094125,
+      "return_overnight": 0.022696929238985315,
+      "premarket_volume": 122489,
+      "volatility_annualized": 0.5770621500348869,
+      "avg_dollar_volume": "68889982",
+      "max_correlation_with_previous": 0.028151557443005185,
+      "pe_ttm": null,
+      "name": "GDS Holdings Limited - American Depositary Shares",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 3,
+      "symbol": "WAY",
+      "prev_close": "27.99",
+      "open_today": "28.15",
+      "price_at_decision": "28.15",
+      "return_month": 0.09080280592361652,
+      "return_day_minus_2": -0.031161473087818695,
+      "return_day_minus_1": 0.023026315789473683,
+      "return_last_hour": 0.006108515989938915,
+      "return_overnight": 0.0057163272597356195,
+      "premarket_volume": 8711,
+      "volatility_annualized": 0.5451254936294984,
+      "avg_dollar_volume": "53396253",
+      "max_correlation_with_previous": -0.09043374939738615,
+      "pe_ttm": null,
+      "name": "Waystar Holding Corp. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Integrated Systems Design"
+    },
+    {
+      "rank": 4,
+      "symbol": "PONY",
+      "prev_close": "5.01",
+      "open_today": "5.07",
+      "price_at_decision": "5.07",
+      "return_month": -0.2637766348273328,
+      "return_day_minus_2": -0.04642166344294004,
+      "return_day_minus_1": 0.016227180527383367,
+      "return_last_hour": 0.006036217303822937,
+      "return_overnight": 0.011976047904191617,
+      "premarket_volume": 13543,
+      "volatility_annualized": 0.5205082813833771,
+      "avg_dollar_volume": "26904427",
+      "max_correlation_with_previous": 0.4658558680541282,
+      "pe_ttm": null,
+      "name": "Pony AI Inc. - American Depositary Shares",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Integrated Systems Design"
+    },
+    {
+      "rank": 5,
+      "symbol": "PTRN",
+      "prev_close": "17.76",
+      "open_today": "17.86",
+      "price_at_decision": "17.86",
+      "return_month": -0.09248850281042412,
+      "return_day_minus_2": -0.018782014797951052,
+      "return_day_minus_1": 0.030162412993039442,
+      "return_last_hour": 0.0056625141562853904,
+      "return_overnight": 0.00563063063063063,
+      "premarket_volume": 6529,
+      "volatility_annualized": 0.4790608980784963,
+      "avg_dollar_volume": "25754593",
+      "max_correlation_with_previous": 0.2347998725731581,
+      "pe_ttm": null,
+      "name": "Pattern Group Inc. - Series A Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Retail-Catalog & Mail-Order Houses"
+    },
+    {
+      "rank": 6,
+      "symbol": "WDAY",
+      "prev_close": "195.2",
+      "open_today": "197",
+      "price_at_decision": "197",
+      "return_month": 0.0068602671893536905,
+      "return_day_minus_2": -0.029598738747902153,
+      "return_day_minus_1": 0.023007179917195114,
+      "return_last_hour": 0.005565002318750966,
+      "return_overnight": 0.009221311475409836,
+      "premarket_volume": 7847,
+      "volatility_annualized": 0.611429741424895,
+      "avg_dollar_volume": "384405712",
+      "max_correlation_with_previous": 0.5243508752445986,
+      "pe_ttm": null,
+      "name": "Workday, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Processing & Data Preparation"
+    },
+    {
+      "rank": 7,
+      "symbol": "BKR",
+      "prev_close": "55.81",
+      "open_today": "56.4847",
+      "price_at_decision": "56.4847",
+      "return_month": -0.025152838427947598,
+      "return_day_minus_2": 0.02389705882352941,
+      "return_day_minus_1": 0.0019748653500897668,
+      "return_last_hour": 0.005045045045045045,
+      "return_overnight": 0.012089231320551872,
+      "premarket_volume": 10534,
+      "volatility_annualized": 0.3022434847660114,
+      "avg_dollar_volume": "350432964",
+      "max_correlation_with_previous": 0.2833765925469152,
+      "pe_ttm": null,
+      "name": "Baker Hughes Company - Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Oil & Gas Field Machinery & Equipment"
+    }
+  ]
+}

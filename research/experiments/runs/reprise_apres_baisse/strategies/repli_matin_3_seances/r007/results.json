@@ -1,0 +1,261 @@
+{
+  "run_id": "r007",
+  "variant": "per12",
+  "strategy": "repli_matin_3_seances",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T14:15:00+00:00",
+  "created_at": "2026-10-20T16:55:33.614298+00:00",
+  "git_sha": "4e66e2885d1e7439d4b05ceced1e5dbff7d718c4",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 45,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": "25",
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 6991,
+    "historique_complet": 6820,
+    "prix_minimum": 4691,
+    "volume_echange_minimum": 2040,
+    "volatilite_basse": 1020,
+    "tendance_haussiere": 182,
+    "repli_net": 30,
+    "en_baisse_aujourd_hui": 15,
+    "per_maximum": 5,
+    "selection_diversifiee": 5
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022750322428142185
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "NTNX",
+      "prev_close": "67.53",
+      "price_at_decision": "67.46",
+      "recent_high": "74.63",
+      "pullback": 0.09607396489347447,
+      "return_day": -0.0010365763364430624,
+      "return_month": -0.032521489971346705,
+      "return_day_minus_2": -0.043440983138039437,
+      "return_day_minus_1": 0.008813863161039737,
+      "trend_gap": 0.03268952597929464,
+      "volatility_annualized": 0.3220524690585778,
+      "avg_dollar_volume": "177826759",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "13.05",
+      "open_today": "67.38",
+      "name": "Nutanix, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 2,
+      "symbol": "GTES",
+      "prev_close": "25.93",
+      "price_at_decision": "25.54",
+      "recent_high": "28.25",
+      "pullback": 0.09592920353982301,
+      "return_day": -0.01504049363671423,
+      "return_month": 0.012495119094103866,
+      "return_day_minus_2": -0.0193621867881549,
+      "return_day_minus_1": 0.0038714672861014324,
+      "trend_gap": 0.00825453829135982,
+      "volatility_annualized": 0.3669724038220243,
+      "avg_dollar_volume": "47055155",
+      "max_correlation_with_previous": 0.0567457705848883,
+      "pe_ttm": "18.11",
+      "open_today": "25.62",
+      "name": "Gates Industrial Corporation Ltd. Common Shares",
+      "domain": "Technology",
+      "sic_description": "General Industrial Machinery & Equipment"
+    },
+    {
+      "rank": 3,
+      "symbol": "KMT",
+      "prev_close": "30.62",
+      "price_at_decision": "30.57",
+      "recent_high": "33.41",
+      "pullback": 0.08500448967375038,
+      "return_day": -0.0016329196603527107,
+      "return_month": 0.028552233792408465,
+      "return_day_minus_2": -0.006453694740238786,
+      "return_day_minus_1": -0.005521273140630075,
+      "trend_gap": 0.02653073255082792,
+      "volatility_annualized": 0.350940774816889,
+      "avg_dollar_volume": "42241187",
+      "max_correlation_with_previous": 0.5691373687010796,
+      "pe_ttm": "6.92",
+      "open_today": "30.4",
+      "name": "Kennametal Inc. Common Stock",
+      "domain": "Technology",
+      "sic_description": "Machine Tools, Metal Cutting Types"
+    },
+    {
+      "rank": 4,
+      "symbol": "RL",
+      "prev_close": "381.77",
+      "price_at_decision": "374.1907",
+      "recent_high": "391.07",
+      "pullback": 0.04316183803411154,
+      "return_day": -0.019853052885245043,
+      "return_month": 0.14251084842136766,
+      "return_day_minus_2": -0.014242974403559466,
+      "return_day_minus_1": -0.0096757457846952,
+      "trend_gap": 0.012053929986643414,
+      "volatility_annualized": 0.27495099398118894,
+      "avg_dollar_volume": "198438490",
+      "max_correlation_with_previous": 0.13323458438437386,
+      "pe_ttm": "23.58",
+      "open_today": "382.12",
+      "name": "Ralph Lauren Corporation Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+    },
+    {
+      "rank": 5,
+      "symbol": "TEL",
+      "prev_close": "212.33",
+      "price_at_decision": "211.705",
+      "recent_high": "219.51",
+      "pullback": 0.035556466675777866,
+      "return_day": -0.0029435312956247353,
+      "return_month": 0.033638399376886376,
+      "return_day_minus_2": -0.001643269637072163,
+      "return_day_minus_1": -0.0014578630549285177,
+      "trend_gap": 0.023926365192340444,
+      "volatility_annualized": 0.3098756940518564,
+      "avg_dollar_volume": "366571625",
+      "max_correlation_with_previous": 0.38912554434234975,
+      "pe_ttm": "20.74",
+      "open_today": "211.54",
+      "name": "TE Connectivity plc Ordinary Shares",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Electronic Parts & Equipment, NEC"
+    }
+  ],
+  "override": {
+    "ignore_market_health": true,
+    "criteria": {
+      "signal": "repli_tendance",
+      "version": 1,
+      "count": 20,
+      "liquidity_sessions": 20,
+      "min_price_usd": "5",
+      "min_avg_dollar_volume_usd": "20000000",
+      "volatility_sessions": 60,
+      "max_volatility_quantile": 0.5,
+      "month_sessions": 21,
+      "correlation_sessions": 60,
+      "max_pairwise_correlation": 0.6,
+      "decision_after_open_minutes": 45,
+      "short_trend_sessions": 20,
+      "trend_sessions": 50,
+      "high_sessions": 10,
+      "min_pullback": "0.03",
+      "max_pullback": "0.10",
+      "market_symbol": "SPY",
+      "market_ma_sessions": 50,
+      "max_pe": "25",
+      "min_down_days": null,
+      "market_min_day_return": null,
+      "exchange": null,
+      "fill_to_count": false
+    },
+    "market_healthy": false,
+    "market_close": "766.48",
+    "market_average": "767.30",
+    "note": "règle « marché en bonne forme » suspendue ce jour-là par le propriétaire"
+  }
+}

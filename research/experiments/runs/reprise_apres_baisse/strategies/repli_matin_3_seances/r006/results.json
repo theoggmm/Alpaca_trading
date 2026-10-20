@@ -1,0 +1,269 @@
+{
+  "run_id": "r006",
+  "variant": "nasdaq",
+  "strategy": "repli_matin_3_seances",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T14:15:00+00:00",
+  "created_at": "2026-10-20T16:55:11.338617+00:00",
+  "git_sha": "4e66e2885d1e7439d4b05ceced1e5dbff7d718c4",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 45,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 4296,
+    "historique_complet": 4151,
+    "prix_minimum": 2392,
+    "volume_echange_minimum": 824,
+    "volatilite_basse": 412,
+    "tendance_haussiere": 100,
+    "repli_net": 19,
+    "en_baisse_aujourd_hui": 7,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022750322428142185
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "META",
+      "prev_close": "705.44",
+      "price_at_decision": "688.46",
+      "recent_high": "762.5",
+      "pullback": 0.09710163934426229,
+      "return_day": -0.024070083919256066,
+      "return_month": 0.06044525953429641,
+      "return_day_minus_2": -0.03718509067216853,
+      "return_day_minus_1": -0.005477038029112184,
+      "trend_gap": 0.11678186964010996,
+      "volatility_annualized": 0.4632566299755335,
+      "avg_dollar_volume": "14887425373",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "694.98",
+      "name": "Meta Platforms, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 2,
+      "symbol": "NTNX",
+      "prev_close": "67.53",
+      "price_at_decision": "67.46",
+      "recent_high": "74.63",
+      "pullback": 0.09607396489347447,
+      "return_day": -0.0010365763364430624,
+      "return_month": -0.032521489971346705,
+      "return_day_minus_2": -0.043440983138039437,
+      "return_day_minus_1": 0.008813863161039737,
+      "trend_gap": 0.03268952597929464,
+      "volatility_annualized": 0.3220524690585778,
+      "avg_dollar_volume": "177826759",
+      "max_correlation_with_previous": 0.18611688432498094,
+      "pe_ttm": null,
+      "open_today": "67.38",
+      "name": "Nutanix, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 3,
+      "symbol": "NVDA",
+      "prev_close": "217.09",
+      "price_at_decision": "216.7399",
+      "recent_high": "239.24",
+      "pullback": 0.09404823608092293,
+      "return_day": -0.00161269519554102,
+      "return_month": -0.023304989427273135,
+      "return_day_minus_2": -0.014270588776872439,
+      "return_day_minus_1": 0.013823378321580348,
+      "trend_gap": 0.021681434197724555,
+      "volatility_annualized": 0.3700704391224843,
+      "avg_dollar_volume": "24024715645",
+      "max_correlation_with_previous": 0.34381718760652225,
+      "pe_ttm": null,
+      "open_today": "215.96",
+      "name": "NVIDIA Corporation - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 4,
+      "symbol": "FFIV",
+      "prev_close": "450.8",
+      "price_at_decision": "450.48",
+      "recent_high": "479.83",
+      "pullback": 0.061167496821791054,
+      "return_day": -0.000709849157054126,
+      "return_month": 0.043446056986783325,
+      "return_day_minus_2": -0.03186736168907968,
+      "return_day_minus_1": 0.01984028233377825,
+      "trend_gap": 0.07216696777632285,
+      "volatility_annualized": 0.3652563129376226,
+      "avg_dollar_volume": "233843753",
+      "max_correlation_with_previous": 0.2984020666345666,
+      "pe_ttm": null,
+      "open_today": "451.32",
+      "name": "F5, Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Computer Communications Equipment"
+    },
+    {
+      "rank": 5,
+      "symbol": "NDSN",
+      "prev_close": "323.88",
+      "price_at_decision": "320.99",
+      "recent_high": "334.22",
+      "pullback": 0.03958470468553647,
+      "return_day": -0.008923057922687416,
+      "return_month": 0.03950958051160253,
+      "return_day_minus_2": -0.01973844282238443,
+      "return_day_minus_1": 0.004871086841860321,
+      "trend_gap": 0.022026203769971397,
+      "volatility_annualized": 0.24061077301547695,
+      "avg_dollar_volume": "115749951",
+      "max_correlation_with_previous": 0.2561432919621456,
+      "pe_ttm": null,
+      "open_today": "323.24",
+      "name": "Nordson Corporation - Common Stock",
+      "domain": "Technology",
+      "sic_description": "General Industrial Machinery & Equipment, NEC"
+    },
+    {
+      "rank": 6,
+      "symbol": "SHOO",
+      "prev_close": "44.96",
+      "price_at_decision": "44.43",
+      "recent_high": "46.24",
+      "pullback": 0.03914359861591696,
+      "return_day": -0.011788256227758007,
+      "return_month": 0.06767988601282356,
+      "return_day_minus_2": -0.02097750865051903,
+      "return_day_minus_1": -0.0068478020764303075,
+      "trend_gap": 0.009503695881731784,
+      "volatility_annualized": 0.37350784223780764,
+      "avg_dollar_volume": "46021827",
+      "max_correlation_with_previous": 0.20068853161120734,
+      "pe_ttm": null,
+      "open_today": "45.14",
+      "name": "Steven Madden, Ltd. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Footwear, (No Rubber)"
+    },
+    {
+      "rank": 7,
+      "symbol": "CHEF",
+      "prev_close": "111.28",
+      "price_at_decision": "109.97",
+      "recent_high": "114.32",
+      "pullback": 0.03805108467459762,
+      "return_day": -0.011772106398274623,
+      "return_month": 0.0038791159224176816,
+      "return_day_minus_2": -0.006125842303316706,
+      "return_day_minus_1": -0.020163775644976668,
+      "trend_gap": 0.0032214750614481527,
+      "volatility_annualized": 0.37987627009908304,
+      "avg_dollar_volume": "64468561",
+      "max_correlation_with_previous": 0.1613087687416395,
+      "pe_ttm": null,
+      "open_today": "109.36",
+      "name": "The Chefs' Warehouse, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Groceries, General Line"
+    }
+  ]
+}
