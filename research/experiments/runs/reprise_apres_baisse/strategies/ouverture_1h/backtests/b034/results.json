@@ -1,0 +1,254 @@
+{
+ "backtest_id": "b034",
+ "family": "reprise_apres_baisse",
+ "strategy": "ouverture_1h",
+ "suite": "tests_2025",
+ "label": "periode_20261019_20261019_nasdaq",
+ "top": null,
+ "status": "diagnostic",
+ "created_at": "2026-10-20T12:41:39.221769+00:00",
+ "git_sha": "982fd2ef4442da3e8d8cb4d130cfa8b85ef18fdc",
+ "period": {
+  "start": "2026-10-19",
+  "end": "2026-10-19",
+  "sessions": 1,
+  "months": null
+ },
+ "spy_month": null,
+ "capital_slices": 1,
+ "rules": {
+  "entry": "premier échange 15 min après la décision de chaque liste (New York)",
+  "exit": "heure de vente de la stratégie ouverture_1h, stop −1.500 % / objectif +3.00 %",
+  "cost_bps_per_order": "5",
+  "split": "parts égales, fractions d'action"
+ },
+ "criteria": {
+  "per12": {
+   "signal": "ouverture",
+   "version": 2,
+   "count": 20,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "month_sessions": 21,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "last_hour_minutes": 60,
+   "min_overnight": "0.005",
+   "max_overnight": "0.03",
+   "min_premarket_volume": 5000,
+   "data_delay_minutes": 15,
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50,
+   "max_pe": "25"
+  },
+  "sans_per": {
+   "signal": "ouverture",
+   "version": 1,
+   "count": 20,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "month_sessions": 21,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "last_hour_minutes": 60,
+   "min_overnight": "0.005",
+   "max_overnight": "0.03",
+   "min_premarket_volume": 5000,
+   "data_delay_minutes": 15,
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50,
+   "max_pe": null
+  }
+ },
+ "biases": [
+  "Univers = titres actifs aujourd'hui chez Alpaca : les titres disparus depuis (faillites, rachats) sont absents, ce qui embellit le passé (biais du survivant).",
+  "Indicateur ETF (Nasdaq Trader) lu aujourd'hui, appliqué au passé.",
+  "Bénéfices (PER) : seules les déclarations déposées à la SEC avant chaque jour de décision servent.",
+  "Repère univers liquide non calculé (trop coûteux sur le passé) : seul SPY sert de repère.",
+  "Plus haut de la première heure (version « pas au sommet ») : plus haute clôture minute, comme en direct.",
+  "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant la décision, est écarté (en direct il serait jugé sur ses premiers et derniers échanges) — rare pour des titres liquides."
+ ],
+ "summaries": {
+  "per12": {
+   "n": 1,
+   "mean": -0.014171199131238066,
+   "total": -0.0141711991312381,
+   "annualized": -0.9725856173802984,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.014171199131238066,
+   "worst": -0.014171199131238066,
+   "sharpe": null
+  },
+  "sans_per": {
+   "n": 1,
+   "mean": -0.010946903356058139,
+   "total": -0.01094690335605819,
+   "annualized": -0.9375775268951915,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.010946903356058139,
+   "worst": -0.010946903356058139,
+   "sharpe": null
+  },
+  "spy": {
+   "n": 1,
+   "mean": 0.00047185848833595796,
+   "total": 0.0004718584883358634,
+   "annualized": 0.12623509303962477,
+   "suspect": false,
+   "positive_share": 1.0,
+   "best": 0.00047185848833595796,
+   "worst": 0.00047185848833595796,
+   "sharpe": null
+  },
+  "per12_sans_regle": {
+   "n": 1,
+   "mean": -0.01566595936918257,
+   "total": -0.01566595936918258,
+   "annualized": -0.9812970080882404,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.01566595936918257,
+   "worst": -0.01566595936918257,
+   "sharpe": null
+  },
+  "sans_per_sans_regle": {
+   "n": 1,
+   "mean": -0.01523619891521723,
+   "total": -0.015236198915217214,
+   "annualized": -0.9791222760786611,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.01523619891521723,
+   "worst": -0.01523619891521723,
+   "sharpe": null
+  },
+  "per12_stop_seul": {
+   "n": 1,
+   "mean": -0.014171199131238066,
+   "total": -0.0141711991312381,
+   "annualized": -0.9725856173802984,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.014171199131238066,
+   "worst": -0.014171199131238066,
+   "sharpe": null
+  },
+  "sans_per_stop_seul": {
+   "n": 1,
+   "mean": -0.011147595420740083,
+   "total": -0.011147595420740064,
+   "annualized": -0.9406895207153807,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.011147595420740083,
+   "worst": -0.011147595420740083,
+   "sharpe": null
+  }
+ },
+ "days": [
+  {
+   "date": "2026-10-19",
+   "per12": -0.014171199131238066,
+   "per12_n": 6,
+   "per12_gross": -0.01318487716938838,
+   "per12_whole_gains": {
+    "10000": "-141.95",
+    "25000": "-352.63",
+    "50000": "-705.42",
+    "100000": "-1412.71",
+    "1000000": "-14168.96",
+    "2000000": "-28339.36"
+   },
+   "per12_hold": -0.01566595936918257,
+   "per12_early": {
+    "AMSC": "stop",
+    "APP": "stop",
+    "CAI": "stop",
+    "PURR": "stop",
+    "RUN": "stop"
+   },
+   "per12_symbols": [
+    "CAI",
+    "AMZN",
+    "RUN",
+    "AMSC",
+    "PURR",
+    "APP"
+   ],
+   "per12_stop_only": -0.014171199131238066,
+   "sans_per": -0.010946903356058139,
+   "sans_per_n": 20,
+   "sans_per_gross": -0.009957355485478906,
+   "sans_per_whole_gains": {
+    "10000": "-99.61",
+    "25000": "-268.38",
+    "50000": "-543.01",
+    "100000": "-1089.99",
+    "1000000": "-10938.62",
+    "2000000": "-21886.99"
+   },
+   "sans_per_hold": -0.01523619891521723,
+   "sans_per_early": {
+    "ALM": "stop",
+    "CAI": "stop",
+    "CDNL": "stop",
+    "CEG": "stop",
+    "COIN": "stop",
+    "CRML": "stop",
+    "DJT": "stop",
+    "NEO": "stop",
+    "NTLA": "stop",
+    "NVAX": "objectif",
+    "ONDS": "stop",
+    "SAIL": "stop",
+    "SYM": "stop",
+    "TXG": "stop"
+   },
+   "sans_per_symbols": [
+    "MBLY",
+    "FSLY",
+    "CDNL",
+    "NTLA",
+    "ONDS",
+    "COIN",
+    "PRCH",
+    "SPCX",
+    "NVAX",
+    "CRML",
+    "SAIL",
+    "NEO",
+    "RUM",
+    "DJT",
+    "COGT",
+    "CAI",
+    "SYM",
+    "ALM",
+    "TXG",
+    "CEG"
+   ],
+   "sans_per_stop_only": -0.011147595420740083,
+   "spy": 0.00047185848833595796,
+   "spy_n": 1,
+   "spy_gross": 0.0014728308329966242,
+   "spy_whole_gains": {
+    "10000": "4.71",
+    "25000": "11.59",
+    "50000": "23.54",
+    "100000": "47.09",
+    "1000000": "471.59",
+    "2000000": "943.54"
+   },
+   "spy_hold": 0.00047185848833595796,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,269 @@
+{
+  "run_id": "r005",
+  "variant": "nasdaq",
+  "strategy": "repli_matin_3_seances",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-19",
+  "market_open": "2026-10-19T13:30:00+00:00",
+  "decision_time": "2026-10-19T14:15:00+00:00",
+  "created_at": "2026-10-20T12:57:59.730850+00:00",
+  "git_sha": "0027b5b13a89b324a913aa0c7ff11ae38ca56e73",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 45,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1019202603:02",
+      "otherlisted": "1019202603:02"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13523,
+    "cotes_sur_une_bourse_us": 12770,
+    "hors_etf_et_titres_de_test": 6990,
+    "avec_barres_quotidiennes": 4295,
+    "historique_complet": 4146,
+    "prix_minimum": 2386,
+    "volume_echange_minimum": 824,
+    "volatilite_basse": 412,
+    "tendance_haussiere": 95,
+    "repli_net": 22,
+    "en_baisse_aujourd_hui": 12,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.024094691130423885
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.01377271766292357
+      },
+      {
+        "domain": "Technology",
+        "n": 298,
+        "mean_return": -0.018747633570080163
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.01999657827802925
+      },
+      {
+        "domain": "Finance",
+        "n": 247,
+        "mean_return": -0.029287188871203285
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 348,
+        "mean_return": -0.036604773250725996
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 168,
+        "mean_return": -0.03811452563612448
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 166,
+        "mean_return": -0.06871474079594156
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.08007952520940548
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "DJCO",
+      "prev_close": "602.99",
+      "price_at_decision": "588.27",
+      "recent_high": "651.44",
+      "pullback": 0.09696979000368415,
+      "return_day": -0.02441168178576759,
+      "return_month": -0.0951530612244898,
+      "return_day_minus_2": 0.013811716145419909,
+      "return_day_minus_1": -0.05576260569996868,
+      "trend_gap": 0.024484486030142534,
+      "volatility_annualized": 0.30684395576838,
+      "avg_dollar_volume": "32021876",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "603.3",
+      "name": "Daily Journal Corp. (S.C.) - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Newspapers: Publishing or  Publishing & Printing"
+    },
+    {
+      "rank": 2,
+      "symbol": "META",
+      "prev_close": "709.325",
+      "price_at_decision": "698.77",
+      "recent_high": "762.5",
+      "pullback": 0.08358032786885246,
+      "return_day": -0.01488034398900363,
+      "return_month": 0.04041685612449947,
+      "return_day_minus_2": -0.0011118041055400386,
+      "return_day_minus_1": -0.03718509067216853,
+      "trend_gap": 0.1233964740483737,
+      "volatility_annualized": 0.46497311403771346,
+      "avg_dollar_volume": "16119610482",
+      "max_correlation_with_previous": 0.27042894793673505,
+      "pe_ttm": null,
+      "open_today": "706.82",
+      "name": "Meta Platforms, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 3,
+      "symbol": "TRMD",
+      "prev_close": "38.2",
+      "price_at_decision": "37.935",
+      "recent_high": "41.11",
+      "pullback": 0.07723181707613719,
+      "return_day": -0.00693717277486911,
+      "return_month": 0.042861042861042864,
+      "return_day_minus_2": -0.030568779754447505,
+      "return_day_minus_1": -0.012664771258723184,
+      "trend_gap": 0.12527575214539605,
+      "volatility_annualized": 0.39249176295251564,
+      "avg_dollar_volume": "88410102",
+      "max_correlation_with_previous": -0.05696844967543792,
+      "pe_ttm": null,
+      "open_today": "38.32",
+      "name": "TORM plc - Class A Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Deep Sea Foreign Transportation of  Freight"
+    },
+    {
+      "rank": 4,
+      "symbol": "PPLI",
+      "prev_close": "38.76",
+      "price_at_decision": "38.635",
+      "recent_high": "41.73",
+      "pullback": 0.0741672657560508,
+      "return_day": -0.003224974200206398,
+      "return_month": 0.0489851150202977,
+      "return_day_minus_2": -0.009861932938856016,
+      "return_day_minus_1": -0.0348605577689243,
+      "trend_gap": 0.0153082417820455,
+      "volatility_annualized": 0.4208048330035332,
+      "avg_dollar_volume": "56624715",
+      "max_correlation_with_previous": 0.21951043370249138,
+      "pe_ttm": null,
+      "open_today": "38.77",
+      "name": "People Incorporated - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 5,
+      "symbol": "TXN",
+      "prev_close": "276.48",
+      "price_at_decision": "276.015",
+      "recent_high": "297.23",
+      "pullback": 0.07137570231807018,
+      "return_day": -0.001681857638888889,
+      "return_month": 0.07104671883474084,
+      "return_day_minus_2": -0.005451630144307857,
+      "return_day_minus_1": -0.009458297506448839,
+      "trend_gap": 0.035185255912133624,
+      "volatility_annualized": 0.30362476589067444,
+      "avg_dollar_volume": "1469224603",
+      "max_correlation_with_previous": 0.30347653920036116,
+      "pe_ttm": null,
+      "open_today": "282.07",
+      "name": "Texas Instruments Incorporated - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 6,
+      "symbol": "BGC",
+      "prev_close": "11.59",
+      "price_at_decision": "11.44",
+      "recent_high": "12.2",
+      "pullback": 0.06229508196721312,
+      "return_day": -0.012942191544434857,
+      "return_month": -0.03336113427856547,
+      "return_day_minus_2": 0.007819287576020852,
+      "return_day_minus_1": -0.0008620689655172414,
+      "trend_gap": 0.006665981218726438,
+      "volatility_annualized": 0.3420582903409352,
+      "avg_dollar_volume": "40926766",
+      "max_correlation_with_previous": 0.2622619948733826,
+      "pe_ttm": null,
+      "open_today": "11.56",
+      "name": "BGC Group, Inc. - Class A Common Stock",
+      "domain": "Crypto Assets",
+      "sic_description": "Security & Commodity Brokers, Dealers, Exchanges & Services"
+    },
+    {
+      "rank": 7,
+      "symbol": "AMRX",
+      "prev_close": "19.18",
+      "price_at_decision": "19.13",
+      "recent_high": "20.35",
+      "pullback": 0.05995085995085995,
+      "return_day": -0.0026068821689259644,
+      "return_month": 0.04923413566739606,
+      "return_day_minus_2": 0.018518518518518517,
+      "return_day_minus_1": -0.0036363636363636364,
+      "trend_gap": 0.06812329637889611,
+      "volatility_annualized": 0.3956103245206565,
+      "avg_dollar_volume": "70529680",
+      "max_correlation_with_previous": 0.3365478456880522,
+      "pe_ttm": null,
+      "open_today": "19.16",
+      "name": "Amneal Pharmaceuticals, Inc. - Class A Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "Pharmaceutical Preparations"
+    }
+  ]
+}

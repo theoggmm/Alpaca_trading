@@ -1,0 +1,256 @@
+{
+  "run_id": "r007",
+  "variant": "nasdaq",
+  "strategy": "ouverture_2h",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-19",
+  "market_open": "2026-10-19T13:30:00+00:00",
+  "decision_time": "2026-10-19T13:15:00+00:00",
+  "created_at": "2026-10-20T12:55:56.139014+00:00",
+  "git_sha": "0027b5b13a89b324a913aa0c7ff11ae38ca56e73",
+  "criteria": {
+    "signal": "ouverture",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "last_hour_minutes": 60,
+    "min_overnight": "0.005",
+    "max_overnight": "0.03",
+    "min_premarket_volume": 5000,
+    "data_delay_minutes": 15,
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1019202603:02",
+      "otherlisted": "1019202603:02"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13523,
+    "cotes_sur_une_bourse_us": 12770,
+    "hors_etf_et_titres_de_test": 6990,
+    "avec_barres_quotidiennes": 4295,
+    "historique_complet": 4146,
+    "prix_minimum": 2386,
+    "volume_echange_minimum": 824,
+    "fin_de_seance_en_hausse": 475,
+    "nuit_en_hausse_moderee": 55,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.024094691130423885
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.01377271766292357
+      },
+      {
+        "domain": "Technology",
+        "n": 298,
+        "mean_return": -0.018747633570080163
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.01999657827802925
+      },
+      {
+        "domain": "Finance",
+        "n": 247,
+        "mean_return": -0.029287188871203285
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 348,
+        "mean_return": -0.036604773250725996
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 168,
+        "mean_return": -0.03811452563612448
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 166,
+        "mean_return": -0.06871474079594156
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.08007952520940548
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "MBLY",
+      "prev_close": "7.22",
+      "open_today": "7.3095",
+      "price_at_decision": "7.3095",
+      "return_month": -0.10199004975124377,
+      "return_day_minus_2": 0.039160839160839164,
+      "return_day_minus_1": -0.02826379542395693,
+      "return_last_hour": 0.024787535410764873,
+      "return_overnight": 0.01239612188365651,
+      "premarket_volume": 28748,
+      "volatility_annualized": 0.44037135909528996,
+      "avg_dollar_volume": "48298979",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "name": "Mobileye Global Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 2,
+      "symbol": "FSLY",
+      "prev_close": "22.47",
+      "open_today": "23.0499",
+      "price_at_decision": "23.0499",
+      "return_month": -0.08547008547008547,
+      "return_day_minus_2": 0.0028,
+      "return_day_minus_1": -0.10370961308336657,
+      "return_last_hour": 0.022525597269624574,
+      "return_overnight": 0.02580774365821095,
+      "premarket_volume": 34630,
+      "volatility_annualized": 1.0595154684989214,
+      "avg_dollar_volume": "224260213",
+      "max_correlation_with_previous": 0.18641088352916171,
+      "pe_ttm": null,
+      "name": "Fastly, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 3,
+      "symbol": "CDNL",
+      "prev_close": "14.62",
+      "open_today": "15.02",
+      "price_at_decision": "15.02",
+      "return_month": -0.5395275590551181,
+      "return_day_minus_2": -0.032806804374240585,
+      "return_day_minus_1": -0.08165829145728644,
+      "return_last_hour": 0.02166317260656883,
+      "return_overnight": 0.027359781121751026,
+      "premarket_volume": 5083,
+      "volatility_annualized": 1.1427264700986255,
+      "avg_dollar_volume": "24763929",
+      "max_correlation_with_previous": -0.08913648313603788,
+      "pe_ttm": null,
+      "name": "Cardinal Infrastructure Group Inc. - Class A Common Stock",
+      "domain": "Real Estate & Construction",
+      "sic_description": "Heavy Construction Other Than Bldg Const - Contractors"
+    },
+    {
+      "rank": 4,
+      "symbol": "NTLA",
+      "prev_close": "11.42",
+      "open_today": "11.5",
+      "price_at_decision": "11.5",
+      "return_month": -0.06851549755301795,
+      "return_day_minus_2": -0.007874015748031496,
+      "return_day_minus_1": 0.007054673721340388,
+      "return_last_hour": 0.02009825815096025,
+      "return_overnight": 0.0070052539404553416,
+      "premarket_volume": 19843,
+      "volatility_annualized": 0.5944183277006214,
+      "avg_dollar_volume": "72353041",
+      "max_correlation_with_previous": 0.28270978079128606,
+      "pe_ttm": null,
+      "name": "Intellia Therapeutics, Inc. - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "In Vitro & In Vivo Diagnostic Substances"
+    },
+    {
+      "rank": 5,
+      "symbol": "ONDS",
+      "prev_close": "6.04",
+      "open_today": "6.2015",
+      "price_at_decision": "6.2015",
+      "return_month": -0.18267929634641408,
+      "return_day_minus_2": 0.03420195439739414,
+      "return_day_minus_1": -0.048818897637795275,
+      "return_last_hour": 0.0193929173693086,
+      "return_overnight": 0.02673841059602649,
+      "premarket_volume": 953502,
+      "volatility_annualized": 0.7263415629617493,
+      "avg_dollar_volume": "425297552",
+      "max_correlation_with_previous": 0.31966003886629285,
+      "pe_ttm": null,
+      "name": "Ondas Inc - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Radio & Tv Broadcasting & Communications Equipment"
+    },
+    {
+      "rank": 6,
+      "symbol": "COIN",
+      "prev_close": "173.16",
+      "open_today": "176.385",
+      "price_at_decision": "176.385",
+      "return_month": -0.0046559751681324365,
+      "return_day_minus_2": 0.06316154780496269,
+      "return_day_minus_1": -0.0579402644034601,
+      "return_last_hour": 0.01721605264704154,
+      "return_overnight": 0.018624393624393623,
+      "premarket_volume": 159528,
+      "volatility_annualized": 0.7629025236959965,
+      "avg_dollar_volume": "1540430306",
+      "max_correlation_with_previous": 0.3588267120700605,
+      "pe_ttm": null,
+      "name": "Coinbase Global, Inc. - Class A Common Stock",
+      "domain": "Crypto Assets",
+      "sic_description": "Finance Services"
+    },
+    {
+      "rank": 7,
+      "symbol": "PRCH",
+      "prev_close": "17.5",
+      "open_today": "17.6",
+      "price_at_decision": "17.6",
+      "return_month": 0.0951188986232791,
+      "return_day_minus_2": 0.06873479318734793,
+      "return_day_minus_1": -0.00398406374501992,
+      "return_last_hour": 0.017136218414173687,
+      "return_overnight": 0.005714285714285714,
+      "premarket_volume": 8261,
+      "volatility_annualized": 0.5611793705565516,
+      "avg_dollar_volume": "27229185",
+      "max_correlation_with_previous": 0.5188751020547903,
+      "pe_ttm": null,
+      "name": "Porch Group, Inc. - Common Stock",
+      "domain": "Finance",
+      "sic_description": "Accident & Health Insurance"
+    }
+  ]
+}

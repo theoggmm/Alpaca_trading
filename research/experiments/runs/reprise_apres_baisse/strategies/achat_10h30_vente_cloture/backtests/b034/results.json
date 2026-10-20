@@ -1,0 +1,219 @@
+{
+ "backtest_id": "b034",
+ "family": "reprise_apres_baisse",
+ "strategy": "achat_10h30_vente_cloture",
+ "suite": "tests_2025",
+ "label": "periode_20261019_20261019_nasdaq",
+ "top": null,
+ "status": "diagnostic",
+ "created_at": "2026-10-20T12:41:39.220659+00:00",
+ "git_sha": "982fd2ef4442da3e8d8cb4d130cfa8b85ef18fdc",
+ "period": {
+  "start": "2026-10-19",
+  "end": "2026-10-19",
+  "sessions": 1,
+  "months": null
+ },
+ "spy_month": null,
+ "capital_slices": 1,
+ "rules": {
+  "entry": "premier échange 15 min après la décision de chaque liste (New York)",
+  "exit": "heure de vente de la stratégie achat_10h30_vente_cloture, stop −1.500 % / objectif +3.00 %",
+  "cost_bps_per_order": "5",
+  "split": "parts égales, fractions d'action"
+ },
+ "criteria": {
+  "per12": {
+   "version": 6,
+   "count": 20,
+   "month_sessions": 21,
+   "up_days": 2,
+   "first_hour_minutes": 30,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "max_volatility_quantile": 0.5,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "max_pe": "25",
+   "min_gap_below_high": "0.002",
+   "confirmation_minutes": 15,
+   "confirmation_tolerance": "0.002",
+   "max_below_ma": "0.05",
+   "ma_sessions": 50,
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50
+  },
+  "sans_per": {
+   "version": 5,
+   "count": 20,
+   "month_sessions": 21,
+   "up_days": 2,
+   "first_hour_minutes": 30,
+   "liquidity_sessions": 20,
+   "min_price_usd": "5",
+   "min_avg_dollar_volume_usd": "20000000",
+   "volatility_sessions": 60,
+   "max_volatility_quantile": 0.5,
+   "correlation_sessions": 60,
+   "max_pairwise_correlation": 0.6,
+   "max_pe": null,
+   "min_gap_below_high": "0.002",
+   "confirmation_minutes": 15,
+   "confirmation_tolerance": "0.002",
+   "max_below_ma": "0.05",
+   "ma_sessions": 50,
+   "market_symbol": "SPY",
+   "market_ma_sessions": 50
+  }
+ },
+ "biases": [
+  "Univers = titres actifs aujourd'hui chez Alpaca : les titres disparus depuis (faillites, rachats) sont absents, ce qui embellit le passé (biais du survivant).",
+  "Indicateur ETF (Nasdaq Trader) lu aujourd'hui, appliqué au passé.",
+  "Bénéfices (PER) : seules les déclarations déposées à la SEC avant chaque jour de décision servent.",
+  "Repère univers liquide non calculé (trop coûteux sur le passé) : seul SPY sert de repère.",
+  "Plus haut de la première heure (version « pas au sommet ») : plus haute clôture minute, comme en direct.",
+  "Liste « fin de journée » : un titre sans échange dans les 15 premières minutes, ou dans les 15 minutes avant la décision, est écarté (en direct il serait jugé sur ses premiers et derniers échanges) — rare pour des titres liquides."
+ ],
+ "summaries": {
+  "per12": {
+   "n": 1,
+   "mean": -0.0033335170332073555,
+   "total": -0.0033335170332073893,
+   "annualized": -0.568914816168333,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.0033335170332073555,
+   "worst": -0.0033335170332073555,
+   "sharpe": null
+  },
+  "sans_per": {
+   "n": 1,
+   "mean": 0.006634591117371193,
+   "total": 0.006634591117371302,
+   "annualized": 4.293052591173862,
+   "suspect": true,
+   "positive_share": 1.0,
+   "best": 0.006634591117371193,
+   "worst": 0.006634591117371193,
+   "sharpe": null
+  },
+  "spy": {
+   "n": 1,
+   "mean": -0.0027286170816024817,
+   "total": -0.0027286170816024358,
+   "annualized": -0.49769678556561114,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.0027286170816024817,
+   "worst": -0.0027286170816024817,
+   "sharpe": null
+  },
+  "per12_sans_regle": {
+   "n": 1,
+   "mean": -0.0033335170332073555,
+   "total": -0.0033335170332073893,
+   "annualized": -0.568914816168333,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.0033335170332073555,
+   "worst": -0.0033335170332073555,
+   "sharpe": null
+  },
+  "sans_per_sans_regle": {
+   "n": 1,
+   "mean": 0.0010008448248919988,
+   "total": 0.0010008448248919333,
+   "annualized": 0.2867076762538756,
+   "suspect": false,
+   "positive_share": 1.0,
+   "best": 0.0010008448248919988,
+   "worst": 0.0010008448248919988,
+   "sharpe": null
+  },
+  "per12_stop_seul": {
+   "n": 1,
+   "mean": -0.0033335170332073555,
+   "total": -0.0033335170332073893,
+   "annualized": -0.568914816168333,
+   "suspect": false,
+   "positive_share": 0.0,
+   "best": -0.0033335170332073555,
+   "worst": -0.0033335170332073555,
+   "sharpe": null
+  },
+  "sans_per_stop_seul": {
+   "n": 1,
+   "mean": 0.0010008448248919988,
+   "total": 0.0010008448248919333,
+   "annualized": 0.2867076762538756,
+   "suspect": false,
+   "positive_share": 1.0,
+   "best": 0.0010008448248919988,
+   "worst": 0.0010008448248919988,
+   "sharpe": null
+  }
+ },
+ "days": [
+  {
+   "date": "2026-10-19",
+   "per12": -0.0033335170332073555,
+   "per12_n": 2,
+   "per12_gross": -0.002336351967707813,
+   "per12_whole_gains": {
+    "10000": "-33.22",
+    "25000": "-82.99",
+    "50000": "-166.44",
+    "100000": "-333.20",
+    "1000000": "-3333.22",
+    "2000000": "-6666.76"
+   },
+   "per12_hold": -0.0033335170332073555,
+   "per12_early": {},
+   "per12_symbols": [
+    "ANIP",
+    "ZION"
+   ],
+   "per12_stop_only": -0.0033335170332073555,
+   "sans_per": 0.006634591117371193,
+   "sans_per_n": 4,
+   "sans_per_gross": 0.007641729277568662,
+   "sans_per_whole_gains": {
+    "10000": "65.45",
+    "25000": "163.53",
+    "50000": "329.54",
+    "100000": "661.23",
+    "1000000": "6633.68",
+    "2000000": "13267.36"
+   },
+   "sans_per_hold": 0.0010008448248919988,
+   "sans_per_early": {
+    "IRON": "objectif"
+   },
+   "sans_per_symbols": [
+    "IRON",
+    "ANIP",
+    "ZION",
+    "PAGP"
+   ],
+   "sans_per_stop_only": 0.0010008448248919988,
+   "spy": -0.0027286170816024817,
+   "spy_n": 1,
+   "spy_gross": -0.001730846813550058,
+   "spy_whole_gains": {
+    "10000": "-27.27",
+    "25000": "-67.13",
+    "50000": "-136.35",
+    "100000": "-272.71",
+    "1000000": "-2727.07",
+    "2000000": "-5456.23"
+   },
+   "spy_hold": -0.0027286170816024817,
+   "spy_early": {},
+   "spy_symbols": [
+    "SPY"
+   ]
+  }
+ ]
+}

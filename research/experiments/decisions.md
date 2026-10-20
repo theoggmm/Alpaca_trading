@@ -215,3 +215,11 @@ décision ; les vides restent dans l'historique. Chaque run concerné porte un c
 Le 20 octobre 2026 est ajouté à overrides.json. Chaque liste faite ainsi enregistre si la règle l'aurait bloquée
 (« market_healthy », clôture de SPY la veille et sa moyenne de 50 séances, lues à la décision) ; si oui, un
 avertissement s'affiche au-dessus de la liste et en haut de l'accueil (⚠ sur les stratégies concernées).
+
+## T24 — 2026-10-20 — Liste « Nasdaq (7) » pour chaque stratégie (propriétaire)
+
+Troisième liste (criteres_nasdaq.json) : règles de la liste sans PER, actions cotées sur le Nasdaq (champ exchange des
+actifs d'Alpaca), toujours 7 titres (fill_to_count : critères relâchés pas à pas, core/fill.py, titres ajoutés marqués
+« closest_fit »), sans règle de marché bloquante (bonne forme, tient / remonte — sauf le choix de l'heure d'une bascule —,
+lundi, peur). Faite pour le 19 octobre (rejouée, données tronquées à chaque décision) et en direct dès le 20 octobre.
+Statut : papier, aucun ordre.

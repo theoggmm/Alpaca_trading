@@ -302,6 +302,17 @@
   <p class="plain">Autrement dit : on n'achète que les jours où le marché monte déjà dans l'après-midi, jamais le lundi ; c'est ce qui a
   le mieux marché sur cinq ans, années difficiles comprises.</p>
 
+  <h2 id="nasdaq"><span class="n">7 sexies</span>La liste « Nasdaq (7) »</h2>
+  <p>Depuis le 20 octobre 2026 (décision T24), chaque stratégie a une troisième liste, à côté de « PER &lt; 25 » et « Sans PER » :
+  les mêmes règles de sélection que la liste sans PER, mais seulement des actions cotées sur le Nasdaq (bourse indiquée par
+  Alpaca), et <b>toujours 7 actions</b>. Les règles qui bloquent toute la journée (marché en bonne forme, marché qui tient ou qui
+  remonte, pas le lundi, peur) ne s'appliquent pas à cette liste. Quand les règles d'actions en trouvent moins de 7, la même
+  sélection est refaite en relâchant les règles une à une, de la moins essentielle à la plus essentielle (par exemple « près du
+  plus haut », puis « journée en hausse », puis la diversification), et les actions qui passent alors complètent la liste ;
+  elles sont marquées « au plus proche », avec la règle relâchée.</p>
+  <p class="plain">Autrement dit : chaque jour, pour chaque stratégie, les 7 actions du Nasdaq qui ressemblent le plus à ce que la
+  règle cherche, même quand la règle n'en trouve pas assez.</p>
+
   <h2 id="datation"><span class="n">8</span>Pas de donnée du futur</h2>
   <p>Toute fonction qui calcule un critère reçoit l'instant de décision et, dès sa première ligne, retire
   toute donnée qui n'était pas encore terminée à cet instant (une barre d'une minute n'est utilisable que
@@ -674,6 +685,16 @@
   really judge it.</p>
   <p class="plain">In other words: buy only on days when the market is already rising in the afternoon, never on Mondays; that is what
   worked best over five years, difficult years included.</p>
+
+  <h2 id="nasdaq-list"><span class="n">7f</span>The "Nasdaq (7)" list</h2>
+  <p>Since October 20, 2026 (decision T24), each strategy has a third list, next to "P/E &lt; 25" and "Without P/E": the same selection
+  rules as the list without P/E, but only stocks listed on the Nasdaq (exchange given by Alpaca), and <b>always 7 stocks</b>. The rules
+  that block a whole day (healthy market, market holding or recovering, no Mondays, fear) do not apply to this list. When the stock
+  rules find fewer than 7, the same selection is redone loosening the rules one by one, from the least essential to the most essential
+  (for example "near the high", then "up on the day", then diversification), and the stocks that then pass complete the list; they are
+  marked "closest fit", with the loosened rule.</p>
+  <p class="plain">In other words: each day, for each strategy, the 7 Nasdaq stocks that look most like what the rule is looking for,
+  even when the rule does not find enough.</p>
 
   <h2 id="datation"><span class="n">8</span>No data from the future</h2>
   <p>Every function that computes a criterion receives the decision time and, on its very first line, drops any
