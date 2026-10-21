@@ -39,6 +39,8 @@ CHARTS_FILE = HERE / "charts_data.js"
 SESSIONS_DIR = HERE / "sessions"
 # États de fin de séance, durables (commités avec l'historique) : <famille>/<date>.json.
 FINALS_DIR = ROOT / "research" / "experiments" / "final"
+# Stratégie « Volatilité » (dashboard/volatility.py) : dernier état du tour en cours, résumé sur l'accueil (volatil).
+VOLATILITY_LIVE = ROOT / "research" / "outputs" / "live" / "volatilite.json"
 # Compléments d'une séance définitive (simulation recalculée après coup), à côté de l'état, jamais dedans.
 SUPPLEMENTS = "supplements"
 
@@ -462,6 +464,16 @@ def _best_by_month(every, suffix=""):
             for year, months in sorted(by_year.items(), reverse=True)}
 
 
+def _volatility_summary():
+    """Tour en cours et tours vendus de la stratégie « Volatilité » (résumé de l'accueil), None avant le premier."""
+    if not VOLATILITY_LIVE.exists():
+        return None
+    page = json.loads(VOLATILITY_LIVE.read_text(encoding="utf-8"))
+    current = {k: v for k, v in page["current"].items() if k not in ("stocks", "summary")}
+    return {"amount": page["amount"], "target_gain": page["target_gain"], "current": current,
+            "rounds": page["rounds"]}
+
+
 def build(family):
     """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
     every = strategies(family)
@@ -470,6 +482,7 @@ def build(family):
     rows = sorted((_build_strategy(s, infos) for s in every), key=lambda r: r["order"])
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
             .replace("__BEST_MONTHS_JSON__", _embed({k: _best_by_month(every, v) for k, v in BEST_MONTH_SELECTIONS.items()}))
+            .replace("__VOLATILITY_JSON__", _embed(_volatility_summary()))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")

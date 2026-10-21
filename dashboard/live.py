@@ -32,6 +32,7 @@ from core.screener import (Criteria, changes_since_open, last_session_prices, li
                            session_open_prices, session_trades)
 from core.strategy import MAX_HOLD_SESSIONS, criteria_from_json, load_strategies
 from core.universe import eligible_symbols
+from dashboard import volatility
 from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, SUPPLEMENTS, build, live_file
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
@@ -496,6 +497,14 @@ def _missing_lists(every, key, market_open, now):
     return False
 
 
+def _volatility(alpaca, now):
+    """Stratégie « Volatilité » (dashboard/volatility.py) : un échec n'arrête pas le suivi des autres stratégies."""
+    try:
+        volatility.update(alpaca, now)
+    except (FetchError, TraceError, ValueError, KeyError) as e:
+        print(f"{now.astimezone(NEW_YORK):%H:%M} — stratégie Volatilité non mise à jour : {e}")
+
+
 def _single_instance():
     """Verrou tenu tant que le processus vit : un seul suivi à la fois. None si un autre tourne déjà."""
     LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -553,6 +562,8 @@ def run(family):
             print("Clôture passée : états de fin de séance reconstitués depuis l'historique minute…")
             for path in catch_up(family):
                 print(f"État de fin de séance : {path}")
+            _volatility(alpaca, datetime.now(timezone.utc))
+            build(family)
             return 0
         # Listes prêtes et pas encore produites : le suivi les produit lui-même (une liste « ouverture » sort à
         # 9 h 30, avant la tâche planifiée). La tâche planifiée commite et envoie l'historique ensuite.
@@ -628,6 +639,7 @@ def run(family):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)
+        _volatility(alpaca, now)
         day = state["measures"]["day"]["bubbles"]
         up = sum(1 for b in day if b["mean_return"] > 0)
         took = (datetime.now(timezone.utc) - now).total_seconds()

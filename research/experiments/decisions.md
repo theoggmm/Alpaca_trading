@@ -223,3 +223,16 @@ actifs d'Alpaca), toujours 7 titres (fill_to_count : critères relâchés pas à
 « closest_fit »), sans règle de marché bloquante (bonne forme, tient / remonte — sauf le choix de l'heure d'une bascule —,
 lundi, peur). Faite pour le 19 octobre (rejouée, données tronquées à chaque décision) et en direct dès le 20 octobre.
 Statut : papier, aucun ordre.
+
+## T25 — 2026-10-21 — Nouvelle stratégie « Volatilité » (propriétaire)
+
+Nouvelle famille research/algorithms/volatilite (mécanisme différent : un panier gardé jusqu'à un gain, pas une
+liste vendue à heure fixe). Liste (core/volatility.py, regles.json) décidée à l'ouverture avec les séances terminées
+avant : par domaine SEC (hors « Crypto Assets »), 5 actions cotées au Nasdaq (ETF exclus), montant moyen ≥ 50 M$/jour
+(20 séances), prix ≥ 5 $, volatilité annualisée (60 séances) dans les 20 % les plus hautes des titres très échangés,
+variation sur 126 séances ≥ −5 %, puis le jeu de 5 le moins corrélé (rendements quotidiens, 126 séances). Domaine
+incomplet : critères relâchés pas à pas (échelle de regles.json), titres marqués. Simulation : 5 000 $ à parts égales
+à l'ouverture, frais 0,05 % par ordre, vente de tout le panier à la première minute de séance où le gain net atteint
+200 $, sans limite de durée ni stop ; tour suivant à l'ouverture d'après, liste refaite. Premier tour : ouverture du
+21 octobre 2026 (choix du propriétaire), 39 actions (l'immobilier n'en a que 4). Suivi : dashboard/volatility.py,
+appelé par le suivi en direct ; pages volatilite.html / volatility_en.html. Statut : diagnostic, papier, aucun ordre.

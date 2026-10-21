@@ -6,12 +6,14 @@ set -e
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 PY="$ROOT/.venv/bin/python"
 FAMILY="reprise_apres_baisse"
-HISTORY="research/experiments/runs/$FAMILY research/experiments/final/$FAMILY research/experiments/registry.csv"
+HISTORY="research/experiments/runs/$FAMILY research/experiments/final/$FAMILY research/experiments/runs/volatilite research/experiments/final/volatilite research/experiments/registry.csv"
 cd "$ROOT"
 
 # Un échec du rattrapage n'empêche pas la liste du jour ; il sera retenté au prochain lancement.
 "$PY" -m dashboard.final "$FAMILY" || echo "Rattrapage des fins de séance impossible, nouvel essai au prochain lancement."
 "$PY" -m research.algorithms.$FAMILY.run
+# Stratégie « Volatilité » (panier gardé jusqu'à l'objectif) : liste du tour et tours vendus.
+"$PY" -m dashboard.volatility || echo "Stratégie Volatilité non mise à jour, nouvel essai au prochain passage."
 "$PY" -m dashboard.build "$FAMILY"
 
 # Historique : seuls les runs, les fins de séance et le registre sont commités ; tests verts et git pull avant git push.

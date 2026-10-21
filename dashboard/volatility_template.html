@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="__LANG__">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Régénérée à chaque passage du suivi en direct (dashboard/volatility.py) : elle se recharge seule. -->
+<meta http-equiv="refresh" content="60">
+<title>Volatilité</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --ink: #17202b; --muted: #5d6877; --line: #dde1e7;
+    --accent: #2b5d8c; --up: #1d7a4c; --down: #b23a3a; --track: #e7eaef;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+      --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --track: #24303c; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+    --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --track: #24303c; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 20px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+  h1 { margin: 0; font-size: 26px; flex: 1 1 auto; }
+  h2 { margin: 8px 0 0; font-size: 20px; }
+  header a { color: var(--accent); font-weight: 600; }
+  .intro { margin: 0; max-width: 85ch; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+  .round { padding: 18px 20px; display: grid; gap: 14px; }
+  .status { font-weight: 700; color: var(--accent); }
+  .status.sold { color: var(--up); }
+  .figures { display: flex; flex-wrap: wrap; gap: 12px 36px; }
+  .figure .label { color: var(--muted); font-size: 12px; font-weight: 600; }
+  .figure .value { font-family: var(--font-data); font-size: 22px; }
+  .bar { height: 12px; border-radius: 6px; background: var(--track); overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--up); }
+  .bar span.neg { background: var(--down); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  th.text, td.text { text-align: left; }
+  td.num { font-family: var(--font-data); white-space: nowrap; }
+  td .desc { color: var(--muted); font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .note { color: var(--muted); font-size: 13px; margin: 0; max-width: 100ch; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title"></h1>
+    <a id="home"></a>
+    <a id="other"></a>
+  </header>
+  <p class="intro" id="intro"></p>
+  <p class="note" id="updated"></p>
+  <div class="panel round" id="round"></div>
+  <h2 id="stocks-title"></h2>
+  <div class="panel"><table id="stocks"></table></div>
+  <h2 id="rounds-title"></h2>
+  <div class="panel"><table id="rounds"></table></div>
+  <p class="note" id="note"></p>
+</main>
+<script>
+const LANG = "__LANG__";
+const STATE = __STATE_JSON__;
+const TEXT = {
+  fr: {
+    title: "Volatilité", home: "← Mes stratégies", home_href: "accueil.html", other: "English", other_href: "volatility_en.html", locale: "fr-FR",
+    intro: (a, t, k) => `But : investir ${a} et gagner ${t} dans la journée. À l'ouverture de New York (15 h 30 à Paris), le montant est réparti à parts égales sur la liste « Volatilité » : ${k} actions cotées au Nasdaq par domaine (hors crypto et ETF), très échangées, très volatiles, en tendance neutre ou positive sur 6 mois et les moins liées entre elles. Le panier est gardé jusqu'à la première minute où le gain net de frais atteint ${t} — que ce soit en 1 heure ou en 3 jours — puis tout est vendu. Le tour suivant commence à l'ouverture d'après, avec une liste refaite.`,
+    updated: t => `Mise à jour à ${t} (Paris) — prix avec 15 minutes de retard ; la page se recharge toute seule.`,
+    waiting: d => `Prochain achat à l'ouverture du ${d} (15 h 30 à Paris).`,
+    live: "Tour en cours", sold: "Objectif atteint — tout est vendu",
+    started: (d, ny, paris) => `Acheté le ${d} à ${ny} (New York), ${paris} (Paris)`,
+    sold_at: (d, ny, paris) => `Vendu le ${d} à ${ny} (New York), ${paris} (Paris)`,
+    f_gain: "Gain net", f_value: "Valeur du panier", f_best: "Meilleur gain atteint", f_elapsed: "Temps écoulé", f_market: "Dont marché ouvert", f_sessions: "Séances",
+    progress: (g, t) => `${g} sur ${t}`,
+    stocks_title: "Les actions du tour en cours",
+    stocks_head: ["Action", "Domaine", "Achat", "Dernier", "Variation", "Gain", "Règle relâchée"],
+    rounds_title: "Tours vendus",
+    rounds_head: ["Début", "Vente", "Temps pour l'objectif", "Dont marché ouvert", "Séances", "Gain net"],
+    no_rounds: "Aucun tour vendu pour l'instant.",
+    steps: { strict: "—", volatilite_top_35: "volatilité (top 35 %)", volume_20M: "montant (20 M$)", volatilite_top_50: "volatilité (top 50 %)", "tendance_-10": "tendance (−10 %)", volume_10M: "montant (10 M$)" },
+    day: "j", days: "j",
+    note: c => `Simulation en papier : aucun ordre n'est passé. Frais comptés : ${c} % par ordre (achat et vente). Le prix d'achat est le premier échange de chaque action à l'ouverture ; la vente se fait au cours de la minute où l'objectif est atteint (contrôle à chaque minute de séance, jamais la nuit : un saut à l'ouverture est vendu à la première minute). « Règle relâchée » : un domaine qui n'avait pas 5 actions remplissant toutes les règles est complété au plus proche.`,
+  },
+  en: {
+    title: "Volatility", home: "← My strategies", home_href: "home.html", other: "Français", other_href: "volatilite.html", locale: "en-US",
+    intro: (a, t, k) => `Goal: invest ${a} and make ${t} within the day. At the New York open (15:30 in Paris), the amount is split equally across the "Volatility" list: ${k} Nasdaq-listed stocks per domain (no crypto, no ETFs), heavily traded, extremely volatile, with a neutral or positive 6-month trend, and the least tied to each other. The basket is held until the first minute its net gain after costs reaches ${t} — whether that takes 1 hour or 3 days — then everything is sold. The next round starts at the following open, with a fresh list.`,
+    updated: t => `Updated at ${t} (Paris) — prices 15 minutes late; the page reloads itself.`,
+    waiting: d => `Next purchase at the open on ${d} (15:30 in Paris).`,
+    live: "Round in progress", sold: "Target reached — everything sold",
+    started: (d, ny, paris) => `Bought on ${d} at ${ny} (New York), ${paris} (Paris)`,
+    sold_at: (d, ny, paris) => `Sold on ${d} at ${ny} (New York), ${paris} (Paris)`,
+    f_gain: "Net gain", f_value: "Basket value", f_best: "Best gain reached", f_elapsed: "Time elapsed", f_market: "Of which market open", f_sessions: "Sessions",
+    progress: (g, t) => `${g} of ${t}`,
+    stocks_title: "Stocks in the current round",
+    stocks_head: ["Stock", "Domain", "Bought", "Last", "Change", "Gain", "Loosened rule"],
+    rounds_title: "Sold rounds",
+    rounds_head: ["Start", "Sale", "Time to target", "Of which market open", "Sessions", "Net gain"],
+    no_rounds: "No round sold yet.",
+    steps: { strict: "—", volatilite_top_35: "volatility (top 35%)", volume_20M: "traded value ($20M)", volatilite_top_50: "volatility (top 50%)", "tendance_-10": "trend (−10%)", volume_10M: "traded value ($10M)" },
+    day: "day", days: "days",
+    note: c => `Paper simulation: no order is placed. Costs counted: ${c}% per order (buy and sell). The purchase price is each stock's first trade at the open; the sale happens at the price of the minute the target is reached (checked every session minute, never overnight: a jump at the open is sold at the first minute). "Loosened rule": a domain that didn't have 5 stocks meeting every rule is filled with the closest fits.`,
+  },
+}[LANG];
+const usd = (v, sign) => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", signDisplay: sign ? "exceptZero" : "auto" }).format(v);
+const pct = v => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(v);
+const clock = (iso, tz) => new Date(iso).toLocaleTimeString(TEXT.locale, { timeZone: tz, hour: "2-digit", minute: "2-digit" });
+const dayOf = iso => new Date(iso).toLocaleDateString(TEXT.locale, { timeZone: "America/New_York", day: "numeric", month: "long" });
+const span = s => {
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.round(s % 3600 / 60);
+  return [d ? `${d} ${d > 1 ? TEXT.days : TEXT.day}` : "", h ? `${h} h` : "", `${m} min`].filter(Boolean).join(" ");
+};
+const signClass = v => v > 0 ? "up" : v < 0 ? "down" : "";
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+document.documentElement.lang = LANG;
+document.title = TEXT.title;
+document.getElementById("title").textContent = TEXT.title;
+Object.assign(document.getElementById("home"), { textContent: TEXT.home, href: TEXT.home_href });
+Object.assign(document.getElementById("other"), { textContent: TEXT.other, href: TEXT.other_href });
+document.getElementById("intro").textContent = TEXT.intro(usd(+STATE.amount), usd(+STATE.target_gain), STATE.per_domain);
+document.getElementById("updated").textContent = TEXT.updated(clock(STATE.updated, "Europe/Paris"));
+document.getElementById("note").textContent = TEXT.note((+STATE.cost_bps / 100).toLocaleString(TEXT.locale));
+
+const c = STATE.current, box = document.getElementById("round");
+if (c.status === "waiting") {
+  box.append(el("div", "status", TEXT.waiting(dayOf(c.entry_time))));
+} else {
+  box.append(el("div", "status" + (c.status === "sold" ? " sold" : ""), c.status === "sold" ? TEXT.sold : TEXT.live));
+  box.append(el("div", "note", TEXT.started(dayOf(c.entry_time), clock(c.entry_time, "America/New_York"), clock(c.entry_time, "Europe/Paris"))));
+  const gain = c.gain == null ? null : +c.gain, target = +c.target_gain;
+  const bar = el("div", "bar"), fill = el("span", gain < 0 ? "neg" : "");
+  fill.style.width = `${Math.max(0, Math.min(100, Math.abs(gain || 0) / target * 100))}%`; bar.append(fill);
+  box.append(el("div", null, TEXT.progress(gain == null ? "—" : usd(gain, true), usd(target))), bar);
+  const figs = el("div", "figures");
+  [[TEXT.f_gain, gain == null ? "—" : usd(gain, true), signClass(gain)], [TEXT.f_value, c.value == null ? "—" : usd(+c.value)],
+   [TEXT.f_best, c.best_gain == null ? "—" : usd(+c.best_gain, true), signClass(+c.best_gain)],
+   [TEXT.f_elapsed, span(c.elapsed_seconds)], [TEXT.f_market, span(c.market_seconds)], [TEXT.f_sessions, c.sessions_held]]
+    .forEach(([label, value, cls]) => { const f = el("div", "figure"); f.append(el("div", "label", label), el("div", "value " + (cls || ""), value)); figs.append(f); });
+  box.append(figs);
+}
+
+document.getElementById("stocks-title").textContent = TEXT.stocks_title;
+const st = document.getElementById("stocks");
+const sh = st.createTHead().insertRow();
+TEXT.stocks_head.forEach((h, i) => sh.append(el("th", i < 2 || i === 6 ? "text" : "", h)));
+const sb = st.createTBody();
+(c.stocks || []).slice().sort((a, b) => (b.return ?? -9) - (a.return ?? -9)).forEach(s => {
+  const tr = sb.insertRow();
+  const name = el("td", "text"); name.append(el("b", null, s.symbol), el("div", "desc", s.name.split(" - ")[0])); tr.append(name);
+  tr.append(el("td", "text", s.domain));
+  tr.append(el("td", "num", s.entry == null ? "—" : usd(+s.entry)), el("td", "num", s.last == null ? "—" : usd(+s.last)));
+  tr.append(el("td", "num " + signClass(s.return), s.return == null ? "—" : pct(s.return)));
+  tr.append(el("td", "num " + signClass(+s.gain), s.gain == null ? "—" : usd(+s.gain, true)));
+  tr.append(el("td", "text", TEXT.steps[s.step] ?? s.step));
+});
+
+document.getElementById("rounds-title").textContent = TEXT.rounds_title;
+const rt = document.getElementById("rounds");
+const rh = rt.createTHead().insertRow();
+TEXT.rounds_head.forEach((h, i) => rh.append(el("th", i < 2 ? "text" : "", h)));
+const rb = rt.createTBody();
+if (!STATE.rounds.length) { const td = el("td", "text", TEXT.no_rounds); td.colSpan = 6; rb.insertRow().append(td); }
+STATE.rounds.slice().reverse().forEach(r => {
+  const tr = rb.insertRow();
+  tr.append(el("td", "text", `${dayOf(r.entry_time)} · ${clock(r.entry_time, "America/New_York")} NY`));
+  tr.append(el("td", "text", `${dayOf(r.sold_at)} · ${clock(r.sold_at, "America/New_York")} NY · ${clock(r.sold_at, "Europe/Paris")} Paris`));
+  tr.append(el("td", "num", span(r.elapsed_seconds)), el("td", "num", span(r.market_seconds)), el("td", "num", r.sessions_held));
+  tr.append(el("td", "num " + signClass(+r.sold_gain), usd(+r.sold_gain, true)));
+});
+</script>
+</body>
+</html>

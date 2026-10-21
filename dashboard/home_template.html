@@ -60,6 +60,8 @@
   .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; }
   .pickers select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
   #best-table td.text { min-width: 0; }
+  .vol-line { margin: 0; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+  .vol-line a { color: var(--accent); font-weight: 700; text-decoration: none; }
   #best-table tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
 </style>
 </head>
@@ -68,11 +70,13 @@
   <header>
     <h1 id="title"></h1>
     <a id="rule-link"></a>
+    <a id="vol-link"></a>
     <a id="other"></a>
   </header>
   <p class="intro" id="intro"></p>
   <p class="override-banner" id="override-warn" hidden></p>
   <p class="note" id="updated"></p>
+  <p class="vol-line" id="vol-line" hidden></p>
   <div class="panel"><table id="rows"></table></div>
   <p class="note" id="note"></p>
 
@@ -93,10 +97,14 @@ const LANG = "__LANG__";
 const ROWS = __ROWS_JSON__;
 const BUILT_AT = __BUILT_AT__;
 const BEST = __BEST_MONTHS_JSON__;
+const VOL = __VOLATILITY_JSON__;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
     rule_link: "Règle en vigueur →", rule_href: "regle_en_vigueur.html",
+    vol_link: "Volatilité →", vol_href: "volatilite.html", vol_name: "Volatilité",
+    vol_line: (gain, target, held, n) => ` : tour en cours, gain net ${gain} sur l'objectif de ${target}, depuis ${held}.` + (n ? ` ${n} tour(s) déjà vendu(s).` : ""),
+    vol_wait: (day, n) => ` : prochain achat à l'ouverture du ${day}.` + (n ? ` ${n} tour(s) déjà vendu(s).` : ""),
     override_warn: (c, a) => `⚠ Aujourd'hui, le marché est sous sa moyenne de 50 séances (S&P 500 ${c}, moyenne ${a}). Les listes sont faites quand même, à ta demande ; en temps normal elles seraient vides. Les stratégies concernées portent ⚠.`,
     intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
     head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · PER < 25 · sans stop/objectif", "Aujourd'hui · sans PER", "Aujourd'hui · sans PER · sans stop/objectif", "Aujourd'hui · Nasdaq (7)", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · PER < 25 · sans stop/objectif", "Depuis le 16 oct. · sans PER", "Depuis le 16 oct. · sans PER · sans stop/objectif", "Depuis le 16 oct. · Nasdaq (7)", "Séances"],
@@ -119,6 +127,9 @@ const TEXT = {
   en: {
     title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
     rule_link: "Rule in force →", rule_href: "regle_en_vigueur_en.html",
+    vol_link: "Volatility →", vol_href: "volatility_en.html", vol_name: "Volatility",
+    vol_line: (gain, target, held, n) => `: round in progress, net gain ${gain} of the ${target} target, held ${held}.` + (n ? ` ${n} round(s) already sold.` : ""),
+    vol_wait: (day, n) => `: next purchase at the open on ${day}.` + (n ? ` ${n} round(s) already sold.` : ""),
     override_warn: (c, a) => `⚠ Today the market is below its 50-session average (S&P 500 ${c}, average ${a}). Lists are made anyway, at your request; normally they would be empty. The strategies concerned carry ⚠.`,
     intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
     head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · P/E < 25 · no stop/target", "Today · without P/E", "Today · without P/E · no stop/target", "Today · Nasdaq (7)", "Since Oct 16 · P/E < 25", "Since Oct 16 · P/E < 25 · no stop/target", "Since Oct 16 · without P/E", "Since Oct 16 · without P/E · no stop/target", "Since Oct 16 · Nasdaq (7)", "Sessions"],
@@ -152,6 +163,16 @@ document.getElementById("title").textContent = TEXT.title;
 const other = document.getElementById("other");
 other.textContent = TEXT.other; other.href = TEXT.other_href;
 Object.assign(document.getElementById("rule-link"), { textContent: TEXT.rule_link, href: TEXT.rule_href });
+Object.assign(document.getElementById("vol-link"), { textContent: TEXT.vol_link, href: TEXT.vol_href });
+if (VOL) {
+  const line = document.getElementById("vol-line"); line.hidden = false;
+  const usd = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", signDisplay: "exceptZero" }).format(v);
+  const a = document.createElement("a"); a.href = TEXT.vol_href; a.textContent = TEXT.vol_name;
+  const c = VOL.current, n = VOL.rounds.length;
+  const hours = s => s < 3600 ? `${Math.round(s / 60)} min` : s < 86400 ? `${Math.floor(s / 3600)} h ${String(Math.round(s % 3600 / 60)).padStart(2, "0")}` : `${(s / 86400).toFixed(1)} ${LANG === "fr" ? "j" : "days"}`;
+  line.append(a, c.status === "waiting" ? TEXT.vol_wait(c.session_date, n)
+    : TEXT.vol_line(c.gain == null ? "—" : usd(+c.gain), usd(+VOL.target_gain), hours(c.elapsed_seconds || 0), n));
+}
 const flagged = ROWS.find(r => r.unhealthy_today);
 const banner = document.getElementById("override-warn");
 if (flagged) { banner.hidden = false; banner.textContent = TEXT.override_warn(`$${flagged.unhealthy_today.market_close}`, `$${flagged.unhealthy_today.market_average}`); }
