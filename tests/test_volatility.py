@@ -125,3 +125,15 @@ def test_une_vague_par_seance_avec_la_meme_liste(monkeypatch):
         ("AAA", "2026-10-22", "live"), ("BBB", "2026-10-22", "live")]
     assert every[0]["sold_at"] == (open1 + timedelta(minutes=3)).isoformat()
     assert every[0]["elapsed_seconds"] == 180 and upcoming is None
+
+
+def test_objectif_franchi_la_nuit_puis_reperdu_pas_de_vente():
+    # Après la clôture, AAA passe à 110 (+10 %, au-delà de +200 $) ; à l'ouverture suivante elle est retombée à 102 :
+    # rien n'est vendu (seules les minutes de séance régulière comptent).
+    close1 = DECISION + timedelta(hours=6, minutes=30)
+    bars = pd.concat([_minutes({"AAA": [100, 101]}, DECISION), _minutes({"AAA": [110, 110]}, close1 + timedelta(hours=1)),
+                      _minutes({"AAA": [102, 102]}, OPEN_2)], ignore_index=True)
+    sessions = [(DECISION, close1), (OPEN_2, OPEN_2 + timedelta(hours=6, minutes=30))]
+    r = track_round(["AAA"], bars, DECISION, sessions, OPEN_2 + timedelta(hours=1),
+                    Decimal("5000"), Decimal("200"), Decimal("5"))
+    assert r["status"] == "live" and r["sold_at"] is None and r["last"]["AAA"] == Decimal("102")
