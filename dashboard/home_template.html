@@ -171,7 +171,7 @@ if (VOL) {
   const c = VOL.current, n = VOL.rounds.length;
   const hours = s => s < 3600 ? `${Math.round(s / 60)} min` : s < 86400 ? `${Math.floor(s / 3600)} h ${String(Math.round(s % 3600 / 60)).padStart(2, "0")}` : `${(s / 86400).toFixed(1)} ${LANG === "fr" ? "j" : "days"}`;
   line.append(a, c.status === "waiting" ? TEXT.vol_wait(c.session_date, n)
-    : TEXT.vol_line(c.gain == null ? "—" : usd(+c.gain), usd(+VOL.target_gain), hours(c.elapsed_seconds || 0), n));
+    : TEXT.vol_line(c.gain == null ? "—" : usd(+c.gain), new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD" }).format(+VOL.target_gain), hours(c.elapsed_seconds || 0), n));
 }
 const flagged = ROWS.find(r => r.unhealthy_today);
 const banner = document.getElementById("override-warn");
