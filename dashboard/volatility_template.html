@@ -49,6 +49,8 @@
   td .desc { color: var(--muted); font-size: 12px; }
   tr:last-child td { border-bottom: none; }
   .up { color: var(--up); } .down { color: var(--down); }
+  .progress { display: grid; gap: 3px; min-width: 120px; }
+  .progress .bar { height: 6px; }
   .note { color: var(--muted); font-size: 13px; margin: 0; max-width: 100ch; }
 </style>
 </head>
@@ -61,11 +63,11 @@
   </header>
   <p class="intro" id="intro"></p>
   <p class="note" id="updated"></p>
-  <div class="panel round" id="round"></div>
-  <h2 id="stocks-title"></h2>
-  <div class="panel"><table id="stocks"></table></div>
-  <h2 id="rounds-title"></h2>
-  <div class="panel"><table id="rounds"></table></div>
+  <div class="panel round" id="summary"></div>
+  <h2 id="open-title"></h2>
+  <div class="panel"><table id="open"></table></div>
+  <h2 id="sold-title"></h2>
+  <div class="panel"><table id="sold"></table></div>
   <p class="note" id="note"></p>
 </main>
 <script>
@@ -74,108 +76,102 @@ const STATE = __STATE_JSON__;
 const TEXT = {
   fr: {
     title: "Volatilité", home: "← Mes stratégies", home_href: "accueil.html", other: "English", other_href: "volatility_en.html", locale: "fr-FR",
-    intro: (a, t, k) => `But : investir ${a} et gagner ${t} dans la journée. À l'ouverture de New York (15 h 30 à Paris), le montant est réparti à parts égales sur la liste « Volatilité » : ${k} actions cotées au Nasdaq par domaine (hors crypto et ETF), très échangées, très volatiles, en tendance neutre ou positive sur 6 mois et les moins liées entre elles. Le panier est gardé jusqu'à la première minute où le gain net de frais atteint ${t} — que ce soit en 1 heure ou en 3 jours — puis tout est vendu. Le tour suivant commence à l'ouverture d'après, avec une liste refaite.`,
+    intro: (a, t, k) => `But : investir ${a} dans chaque action et gagner ${t} sur chacune, si possible dans la journée. Chaque jour, à l'ouverture de New York (15 h 30 à Paris), la liste « Volatilité » est refaite : ${k} actions cotées au Nasdaq par domaine (hors crypto et ETF), très échangées, très volatiles, en tendance neutre ou positive sur 6 mois et les moins liées entre elles. Chaque action de la liste qui n'est pas déjà détenue est achetée pour ${a}. Chaque action est gardée seule jusqu'à la première minute où son gain net de frais atteint ${t} — que ce soit en 1 heure ou en 3 jours — puis vendue. Une action vendue est rachetée à une ouverture suivante si elle est encore dans la liste.`,
     updated: t => `Mise à jour à ${t} (Paris) — prix avec 15 minutes de retard ; la page se recharge toute seule.`,
-    waiting: d => `Prochain achat à l'ouverture du ${d} (15 h 30 à Paris).`,
-    live: "Tour en cours", sold: "Objectif atteint — tout est vendu",
-    started: (d, ny, paris) => `Acheté le ${d} à ${ny} (New York), ${paris} (Paris)`,
-    sold_at: (d, ny, paris) => `Vendu le ${d} à ${ny} (New York), ${paris} (Paris)`,
-    f_gain: "Gain net", f_value: "Valeur du panier", f_best: "Meilleur gain atteint", f_elapsed: "Temps écoulé", f_market: "Dont marché ouvert", f_sessions: "Séances",
-    progress: (g, t) => `${g} sur ${t}`,
-    stocks_title: "Les actions du tour en cours",
-    stocks_head: ["Action", "Domaine", "Achat", "Dernier", "Variation", "Gain", "Règle relâchée"],
-    rounds_title: "Tours vendus",
-    rounds_head: ["Début", "Vente", "Temps pour l'objectif", "Dont marché ouvert", "Séances", "Gain net"],
-    no_rounds: "Aucun tour vendu pour l'instant.",
+    f_held: "Actions détenues", f_invested: "Montant investi", f_open_gain: "Gain net en cours", f_sold: "Actions vendues à l'objectif", f_banked: "Gains encaissés", f_mean: "Temps moyen pour l'objectif",
+    next_open: d => `Prochains achats à l'ouverture du ${d} (15 h 30 à Paris), liste refaite.`,
+    open_title: "Actions détenues",
+    open_head: ["Action", "Domaine", "Achetée", "Prix d'achat", "Dernier", "Variation", "Gain net", "Vers l'objectif", "Détenue depuis", "Règle relâchée"],
+    none_open: "Aucune action détenue.",
+    sold_title: "Actions vendues à l'objectif",
+    sold_head: ["Action", "Achetée", "Vendue", "Temps pour l'objectif", "Dont marché ouvert", "Séances", "Gain net"],
+    none_sold: "Aucune action n'a encore atteint l'objectif.",
     steps: { strict: "—", volatilite_top_35: "volatilité (top 35 %)", volume_20M: "montant (20 M$)", volatilite_top_50: "volatilité (top 50 %)", "tendance_-10": "tendance (−10 %)", volume_10M: "montant (10 M$)" },
     day: "j", days: "j",
-    note: c => `Simulation en papier : aucun ordre n'est passé. Frais comptés : ${c} % par ordre (achat et vente). Le prix d'achat est le premier échange de chaque action à l'ouverture ; la vente se fait au cours de la minute où l'objectif est atteint (contrôle à chaque minute de séance, jamais la nuit : un saut à l'ouverture est vendu à la première minute). « Règle relâchée » : un domaine qui n'avait pas 5 actions remplissant toutes les règles est complété au plus proche.`,
+    note: c => `Simulation en papier : aucun ordre n'est passé. Frais comptés : ${c} % par ordre (achat et vente), donc chaque action doit monter d'environ 4,1 % pour rapporter 200 $ nets. Le prix d'achat est le premier échange de l'action à l'ouverture ; la vente se fait au cours de la minute où l'objectif est atteint (contrôle à chaque minute de séance, jamais la nuit : un saut à l'ouverture est vendu à la première minute). Pas de stop : une action qui baisse est gardée. « Règle relâchée » : un domaine qui n'avait pas 5 actions remplissant toutes les règles est complété au plus proche.`,
   },
   en: {
     title: "Volatility", home: "← My strategies", home_href: "home.html", other: "Français", other_href: "volatilite.html", locale: "en-US",
-    intro: (a, t, k) => `Goal: invest ${a} and make ${t} within the day. At the New York open (15:30 in Paris), the amount is split equally across the "Volatility" list: ${k} Nasdaq-listed stocks per domain (no crypto, no ETFs), heavily traded, extremely volatile, with a neutral or positive 6-month trend, and the least tied to each other. The basket is held until the first minute its net gain after costs reaches ${t} — whether that takes 1 hour or 3 days — then everything is sold. The next round starts at the following open, with a fresh list.`,
+    intro: (a, t, k) => `Goal: invest ${a} in each stock and make ${t} on each one, ideally within the day. Every day at the New York open (15:30 in Paris), the "Volatility" list is rebuilt: ${k} Nasdaq-listed stocks per domain (no crypto, no ETFs), heavily traded, extremely volatile, with a neutral or positive 6-month trend, and the least tied to each other. Every stock on the list that isn't already held is bought for ${a}. Each stock is held on its own until the first minute its net gain after costs reaches ${t} — whether that takes 1 hour or 3 days — then sold. A sold stock is bought again at a later open if it's still on the list.`,
     updated: t => `Updated at ${t} (Paris) — prices 15 minutes late; the page reloads itself.`,
-    waiting: d => `Next purchase at the open on ${d} (15:30 in Paris).`,
-    live: "Round in progress", sold: "Target reached — everything sold",
-    started: (d, ny, paris) => `Bought on ${d} at ${ny} (New York), ${paris} (Paris)`,
-    sold_at: (d, ny, paris) => `Sold on ${d} at ${ny} (New York), ${paris} (Paris)`,
-    f_gain: "Net gain", f_value: "Basket value", f_best: "Best gain reached", f_elapsed: "Time elapsed", f_market: "Of which market open", f_sessions: "Sessions",
-    progress: (g, t) => `${g} of ${t}`,
-    stocks_title: "Stocks in the current round",
-    stocks_head: ["Stock", "Domain", "Bought", "Last", "Change", "Gain", "Loosened rule"],
-    rounds_title: "Sold rounds",
-    rounds_head: ["Start", "Sale", "Time to target", "Of which market open", "Sessions", "Net gain"],
-    no_rounds: "No round sold yet.",
+    f_held: "Stocks held", f_invested: "Amount invested", f_open_gain: "Current net gain", f_sold: "Stocks sold at target", f_banked: "Gains banked", f_mean: "Average time to target",
+    next_open: d => `Next purchases at the open on ${d} (15:30 in Paris), with a fresh list.`,
+    open_title: "Stocks held",
+    open_head: ["Stock", "Domain", "Bought", "Buy price", "Last", "Change", "Net gain", "Towards target", "Held for", "Loosened rule"],
+    none_open: "No stock held.",
+    sold_title: "Stocks sold at target",
+    sold_head: ["Stock", "Bought", "Sold", "Time to target", "Of which market open", "Sessions", "Net gain"],
+    none_sold: "No stock has reached the target yet.",
     steps: { strict: "—", volatilite_top_35: "volatility (top 35%)", volume_20M: "traded value ($20M)", volatilite_top_50: "volatility (top 50%)", "tendance_-10": "trend (−10%)", volume_10M: "traded value ($10M)" },
     day: "day", days: "days",
-    note: c => `Paper simulation: no order is placed. Costs counted: ${c}% per order (buy and sell). The purchase price is each stock's first trade at the open; the sale happens at the price of the minute the target is reached (checked every session minute, never overnight: a jump at the open is sold at the first minute). "Loosened rule": a domain that didn't have 5 stocks meeting every rule is filled with the closest fits.`,
+    note: c => `Paper simulation: no order is placed. Costs counted: ${c}% per order (buy and sell), so each stock must rise about 4.1% to make $200 net. The purchase price is the stock's first trade at the open; the sale happens at the price of the minute the target is reached (checked every session minute, never overnight: a jump at the open is sold at the first minute). No stop: a falling stock is kept. "Loosened rule": a domain that didn't have 5 stocks meeting every rule is filled with the closest fits.`,
   },
 }[LANG];
 const usd = (v, sign) => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", signDisplay: sign ? "exceptZero" : "auto" }).format(v);
+const whole = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
 const pct = v => new Intl.NumberFormat(TEXT.locale, { style: "percent", minimumFractionDigits: 2, maximumFractionDigits: 2, signDisplay: "exceptZero" }).format(v);
 const clock = (iso, tz) => new Date(iso).toLocaleTimeString(TEXT.locale, { timeZone: tz, hour: "2-digit", minute: "2-digit" });
-const dayOf = iso => new Date(iso).toLocaleDateString(TEXT.locale, { timeZone: "America/New_York", day: "numeric", month: "long" });
+const dayOf = iso => new Date(iso).toLocaleDateString(TEXT.locale, { timeZone: "America/New_York", day: "numeric", month: "short" });
+const when = iso => `${dayOf(iso)} · ${clock(iso, "America/New_York")} NY · ${clock(iso, "Europe/Paris")} Paris`;
 const span = s => {
   const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.round(s % 3600 / 60);
   return [d ? `${d} ${d > 1 ? TEXT.days : TEXT.day}` : "", h ? `${h} h` : "", `${m} min`].filter(Boolean).join(" ");
 };
 const signClass = v => v > 0 ? "up" : v < 0 ? "down" : "";
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const header = (table, labels, textCols) => { const r = table.createTHead().insertRow(); labels.forEach((h, i) => r.append(el("th", textCols.includes(i) ? "text" : "", h))); };
+const empty = (body, text, n) => { const td = el("td", "text", text); td.colSpan = n; body.insertRow().append(td); };
 
 document.documentElement.lang = LANG;
 document.title = TEXT.title;
 document.getElementById("title").textContent = TEXT.title;
 Object.assign(document.getElementById("home"), { textContent: TEXT.home, href: TEXT.home_href });
 Object.assign(document.getElementById("other"), { textContent: TEXT.other, href: TEXT.other_href });
-document.getElementById("intro").textContent = TEXT.intro(usd(+STATE.amount), usd(+STATE.target_gain), STATE.per_domain);
+const target = +STATE.target_gain, each = +STATE.amount_per_stock;
+document.getElementById("intro").textContent = TEXT.intro(whole(each), whole(target), STATE.per_domain);
 document.getElementById("updated").textContent = TEXT.updated(clock(STATE.updated, "Europe/Paris"));
 document.getElementById("note").textContent = TEXT.note((+STATE.cost_bps / 100).toLocaleString(TEXT.locale));
 
-const c = STATE.current, box = document.getElementById("round");
-if (c.status === "waiting") {
-  box.append(el("div", "status", TEXT.waiting(dayOf(c.entry_time))));
-} else {
-  box.append(el("div", "status" + (c.status === "sold" ? " sold" : ""), c.status === "sold" ? TEXT.sold : TEXT.live));
-  box.append(el("div", "note", TEXT.started(dayOf(c.entry_time), clock(c.entry_time, "America/New_York"), clock(c.entry_time, "Europe/Paris"))));
-  const gain = c.gain == null ? null : +c.gain, target = +c.target_gain;
-  const bar = el("div", "bar"), fill = el("span", gain < 0 ? "neg" : "");
-  fill.style.width = `${Math.max(0, Math.min(100, Math.abs(gain || 0) / target * 100))}%`; bar.append(fill);
-  box.append(el("div", null, TEXT.progress(gain == null ? "—" : usd(gain, true), usd(target))), bar);
-  const figs = el("div", "figures");
-  [[TEXT.f_gain, gain == null ? "—" : usd(gain, true), signClass(gain)], [TEXT.f_value, c.value == null ? "—" : usd(+c.value)],
-   [TEXT.f_best, c.best_gain == null ? "—" : usd(+c.best_gain, true), signClass(+c.best_gain)],
-   [TEXT.f_elapsed, span(c.elapsed_seconds)], [TEXT.f_market, span(c.market_seconds)], [TEXT.f_sessions, c.sessions_held]]
-    .forEach(([label, value, cls]) => { const f = el("div", "figure"); f.append(el("div", "label", label), el("div", "value " + (cls || ""), value)); figs.append(f); });
-  box.append(figs);
-}
+const openGain = STATE.open.reduce((t, p) => t + (p.gain == null ? 0 : +p.gain), 0);
+const banked = STATE.sold.reduce((t, p) => t + +p.sold_gain, 0);
+const mean = STATE.sold.length ? STATE.sold.reduce((t, p) => t + p.elapsed_seconds, 0) / STATE.sold.length : null;
+const box = document.getElementById("summary"), figs = el("div", "figures");
+[[TEXT.f_held, STATE.open.length], [TEXT.f_invested, whole(STATE.open.length * each)],
+ [TEXT.f_open_gain, usd(openGain, true), signClass(openGain)], [TEXT.f_sold, STATE.sold.length],
+ [TEXT.f_banked, usd(banked, true), signClass(banked)], [TEXT.f_mean, mean == null ? "—" : span(mean)]]
+  .forEach(([label, value, cls]) => { const f = el("div", "figure"); f.append(el("div", "label", label), el("div", "value " + (cls || ""), value)); figs.append(f); });
+box.append(figs);
+if (STATE.next_open) box.append(el("div", "note", TEXT.next_open(dayOf(STATE.next_open))));
 
-document.getElementById("stocks-title").textContent = TEXT.stocks_title;
-const st = document.getElementById("stocks");
-const sh = st.createTHead().insertRow();
-TEXT.stocks_head.forEach((h, i) => sh.append(el("th", i < 2 || i === 6 ? "text" : "", h)));
-const sb = st.createTBody();
-(c.stocks || []).slice().sort((a, b) => (b.return ?? -9) - (a.return ?? -9)).forEach(s => {
-  const tr = sb.insertRow();
-  const name = el("td", "text"); name.append(el("b", null, s.symbol), el("div", "desc", s.name.split(" - ")[0])); tr.append(name);
-  tr.append(el("td", "text", s.domain));
-  tr.append(el("td", "num", s.entry == null ? "—" : usd(+s.entry)), el("td", "num", s.last == null ? "—" : usd(+s.last)));
-  tr.append(el("td", "num " + signClass(s.return), s.return == null ? "—" : pct(s.return)));
-  tr.append(el("td", "num " + signClass(+s.gain), s.gain == null ? "—" : usd(+s.gain, true)));
-  tr.append(el("td", "text", TEXT.steps[s.step] ?? s.step));
+document.getElementById("open-title").textContent = TEXT.open_title;
+const ot = document.getElementById("open");
+header(ot, TEXT.open_head, [0, 1, 2, 9]);
+const ob = ot.createTBody();
+if (!STATE.open.length) empty(ob, TEXT.none_open, TEXT.open_head.length);
+STATE.open.slice().sort((a, b) => (b.gain == null ? -1e9 : +b.gain) - (a.gain == null ? -1e9 : +a.gain)).forEach(p => {
+  const tr = ob.insertRow(), gain = p.gain == null ? null : +p.gain;
+  const name = el("td", "text"); name.append(el("b", null, p.symbol), el("div", "desc", p.name.split(" - ")[0])); tr.append(name);
+  tr.append(el("td", "text", p.domain), el("td", "text", `${dayOf(p.entry_time)} · ${clock(p.entry_time, "America/New_York")} NY`));
+  tr.append(el("td", "num", p.entry == null ? "—" : usd(+p.entry)), el("td", "num", p.last == null ? "—" : usd(+p.last)));
+  tr.append(el("td", "num " + signClass(p.return), p.return == null ? "—" : pct(p.return)));
+  tr.append(el("td", "num " + signClass(gain), gain == null ? "—" : usd(gain, true)));
+  const prog = el("td"), wrap = el("div", "progress"), bar = el("div", "bar"), fill = el("span", gain < 0 ? "neg" : "");
+  fill.style.width = `${Math.max(0, Math.min(100, Math.abs(gain || 0) / target * 100))}%`; bar.append(fill);
+  wrap.append(bar, el("div", "desc", gain == null ? "—" : `${Math.round(gain / target * 100)} %`)); prog.append(wrap); tr.append(prog);
+  tr.append(el("td", "num", span(p.elapsed_seconds)), el("td", "text", TEXT.steps[p.step] ?? p.step));
 });
 
-document.getElementById("rounds-title").textContent = TEXT.rounds_title;
-const rt = document.getElementById("rounds");
-const rh = rt.createTHead().insertRow();
-TEXT.rounds_head.forEach((h, i) => rh.append(el("th", i < 2 ? "text" : "", h)));
-const rb = rt.createTBody();
-if (!STATE.rounds.length) { const td = el("td", "text", TEXT.no_rounds); td.colSpan = 6; rb.insertRow().append(td); }
-STATE.rounds.slice().reverse().forEach(r => {
-  const tr = rb.insertRow();
-  tr.append(el("td", "text", `${dayOf(r.entry_time)} · ${clock(r.entry_time, "America/New_York")} NY`));
-  tr.append(el("td", "text", `${dayOf(r.sold_at)} · ${clock(r.sold_at, "America/New_York")} NY · ${clock(r.sold_at, "Europe/Paris")} Paris`));
-  tr.append(el("td", "num", span(r.elapsed_seconds)), el("td", "num", span(r.market_seconds)), el("td", "num", r.sessions_held));
-  tr.append(el("td", "num " + signClass(+r.sold_gain), usd(+r.sold_gain, true)));
+document.getElementById("sold-title").textContent = TEXT.sold_title;
+const st = document.getElementById("sold");
+header(st, TEXT.sold_head, [0, 1, 2]);
+const sb = st.createTBody();
+if (!STATE.sold.length) empty(sb, TEXT.none_sold, TEXT.sold_head.length);
+STATE.sold.slice().sort((a, b) => b.sold_at.localeCompare(a.sold_at)).forEach(p => {
+  const tr = sb.insertRow();
+  const name = el("td", "text"); name.append(el("b", null, p.symbol), el("div", "desc", p.domain)); tr.append(name);
+  tr.append(el("td", "text", when(p.entry_time)), el("td", "text", when(p.sold_at)));
+  tr.append(el("td", "num", span(p.elapsed_seconds)), el("td", "num", span(p.market_seconds)), el("td", "num", p.sessions_held));
+  tr.append(el("td", "num " + signClass(+p.sold_gain), usd(+p.sold_gain, true)));
 });
 </script>
 </body>

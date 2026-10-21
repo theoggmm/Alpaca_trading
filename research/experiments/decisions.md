@@ -236,3 +236,13 @@ incomplet : critères relâchés pas à pas (échelle de regles.json), titres ma
 200 $, sans limite de durée ni stop ; tour suivant à l'ouverture d'après, liste refaite. Premier tour : ouverture du
 21 octobre 2026 (choix du propriétaire), 39 actions (l'immobilier n'en a que 4). Suivi : dashboard/volatility.py,
 appelé par le suivi en direct ; pages volatilite.html / volatility_en.html. Statut : diagnostic, papier, aucun ordre.
+
+## T26 — 2026-10-21 — Volatilité : 5 000 $ par action, chacune vendue à +200 $ (propriétaire)
+
+Remplace la simulation de T25 (5 000 $ au total, panier vendu d'un bloc). Désormais : chaque action de la liste du
+jour qui n'est pas déjà détenue est achetée à l'ouverture pour 5 000 $ (regles.json version 2, amount_per_stock) ;
+chaque action est vendue seule à la première minute de séance où son gain net de frais atteint 200 $ (environ +4,1 %),
+sans limite de durée ni stop ; une action vendue est rachetée à une ouverture suivante si elle est encore dans la
+liste du jour ; une action détenue qui sort de la liste reste détenue jusqu'à son objectif. Liste refaite à chaque
+ouverture. S'applique depuis la première ouverture (21 octobre 2026, 39 actions, 195 000 $). Ventes gardées dans
+research/experiments/final/volatilite/ventes.json. Statut : diagnostic, papier, aucun ordre.

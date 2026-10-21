@@ -1,6 +1,7 @@
 """
-Stratégie « Volatilité » (famille volatilite, décision T25) : un panier de titres très volatils, peu corrélés entre
-eux, acheté à l'ouverture et gardé jusqu'à ce que le gain net atteigne un objectif (ex. 200 $ sur 5 000 $).
+Stratégie « Volatilité » (famille volatilite, décisions T25, T26) : des titres très volatils, peu corrélés entre eux,
+achetés à l'ouverture (un montant fixe par titre, ex. 5 000 $) ; chaque titre est gardé jusqu'à ce que son propre gain
+net atteigne l'objectif (ex. 200 $), puis vendu.
 
 Liste (screen_basket), décidée à l'ouverture d'une séance avec les seules séances terminées avant (datation
 structurelle, première ligne) : par domaine SEC (hors domaines exclus), les per_domain titres d'une bourse donnée
@@ -14,9 +15,10 @@ structurelle, première ligne) : par domaine SEC (hors domaines exclus), les per
 Un domaine qui n'a pas assez de titres est complété au plus proche : les règles sont relâchées pas à pas (échelle
 cumulative « ladder »), chaque titre ajouté porte le pas qui l'a laissé passer.
 
-Suivi (track_round) : montant réparti à parts égales (fractions d'action), achat au premier échange de chaque titre
-à partir de l'ouverture ; à chaque clôture de minute de séance régulière, valeur du panier (dernier cours connu de
-chaque titre) ; vente de tout le panier à la première minute où le gain net de frais atteint l'objectif.
+Suivi (track_round) : montant réparti à parts égales (fractions d'action) sur les titres donnés, achat au premier
+échange de chaque titre à partir de l'ouverture ; à chaque clôture de minute de séance régulière, valeur (dernier
+cours connu de chaque titre) ; vente à la première minute où le gain net de frais atteint l'objectif. La stratégie
+suit chaque titre seul (un titre, son montant, son objectif).
 Montants en Decimal (règle des nombres d'argent de CLAUDE.md).
 """
 
@@ -52,7 +54,7 @@ class VolatilityRules:
     trend_sessions: int
     # Échelle : [{"label", "min_dollar_volume", "volatility_quantile", "min_trend"}], du pas strict au plus large.
     ladder: tuple
-    amount: Decimal
+    amount_per_stock: Decimal
     target_gain: Decimal
     cost_bps: Decimal
 
@@ -68,7 +70,7 @@ class VolatilityRules:
                    excluded_domains=tuple(raw["excluded_domains"]), per_domain=int(raw["per_domain"]),
                    min_price=Decimal(raw["min_price"]), liquidity_sessions=int(raw["liquidity_sessions"]),
                    volatility_sessions=int(raw["volatility_sessions"]), trend_sessions=int(raw["trend_sessions"]),
-                   ladder=steps, amount=Decimal(raw["amount"]), target_gain=Decimal(raw["target_gain"]),
+                   ladder=steps, amount_per_stock=Decimal(raw["amount_per_stock"]), target_gain=Decimal(raw["target_gain"]),
                    cost_bps=Decimal(raw["cost_bps"]))
 
     @classmethod

@@ -1,6 +1,6 @@
 {
   "signal": "volatilite",
-  "version": 1,
+  "version": 2,
   "exchange": "NASDAQ",
   "excluded_domains": ["Crypto Assets"],
   "per_domain": 5,
@@ -16,7 +16,7 @@
     {"label": "tendance_-10", "min_dollar_volume": "20000000", "volatility_quantile": 0.50, "min_trend": "-0.10"},
     {"label": "volume_10M", "min_dollar_volume": "10000000", "volatility_quantile": 0.50, "min_trend": "-0.10"}
   ],
-  "amount": "5000",
+  "amount_per_stock": "5000",
   "target_gain": "200",
   "cost_bps": "5"
 }

@@ -465,13 +465,17 @@ def _best_by_month(every, suffix=""):
 
 
 def _volatility_summary():
-    """Tour en cours et tours vendus de la stratégie « Volatilité » (résumé de l'accueil), None avant le premier."""
+    """Positions détenues et ventes de la stratégie « Volatilité » (résumé de l'accueil), None avant le premier achat."""
     if not VOLATILITY_LIVE.exists():
         return None
     page = json.loads(VOLATILITY_LIVE.read_text(encoding="utf-8"))
-    current = {k: v for k, v in page["current"].items() if k not in ("stocks", "summary")}
-    return {"amount": page["amount"], "target_gain": page["target_gain"], "current": current,
-            "rounds": page["rounds"]}
+    if "open" not in page:      # état d'avant T26 (un seul panier) : attendre le prochain passage du suivi
+        return None
+    held = [p for p in page["open"] if p["gain"] is not None]
+    return {"amount_per_stock": page["amount_per_stock"], "target_gain": page["target_gain"], "held": len(page["open"]),
+            "open_gain": str(sum((Decimal(p["gain"]) for p in held), Decimal(0))),
+            "sold": len(page["sold"]), "sold_gain": str(sum((Decimal(p["sold_gain"]) for p in page["sold"]), Decimal(0))),
+            "mean_seconds": (sum(p["elapsed_seconds"] for p in page["sold"]) / len(page["sold"])) if page["sold"] else None}
 
 
 def build(family):
