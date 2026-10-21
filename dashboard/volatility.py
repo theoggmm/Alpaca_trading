@@ -2,13 +2,14 @@
 Suivi de la stratégie « Volatilité » (core/volatility.py, décisions T25, T26) et ses pages : dashboard/volatilite.html
 (anglais : volatility_en.html).
 
-Chaque séance, la liste est décidée à l'ouverture. Chaque titre de la liste qui n'est pas déjà détenu est acheté à
-l'ouverture pour un montant fixe (5 000 $) ; chaque titre est ensuite gardé seul — sur autant de séances qu'il faut —
-jusqu'à la première minute où son gain net atteint l'objectif (200 $), puis vendu. Un titre vendu peut être racheté
-à une ouverture suivante s'il est encore dans la liste du jour ; un titre détenu qui sort de la liste reste détenu
-jusqu'à son objectif. Tout est recalculé depuis les barres minute à chaque passage ; les ventes sont gardées dans
-research/experiments/final/volatilite/ventes.json (durable), l'état en cours dans research/outputs/live/volatilite.json
-(volatil). Rien n'achète : simulation seulement.
+Une vague par séance (T27) : à chaque ouverture, chaque action de la liste fixe — celle du premier jour, la même
+pour toutes les vagues — est achetée de zéro pour un montant fixe (5 000 $), même si une vague précédente la détient
+encore. Dans une vague, chaque action est gardée seule — sur autant de séances qu'il faut — jusqu'à la première
+minute de séance où son gain net atteint l'objectif (200 $), puis vendue ; rien ne se vend la nuit (un objectif
+franchi pendant la fermeture est vendu à la première minute de l'ouverture). Les vagues tournent côte à côte jusqu'à
+ce que toutes leurs actions aient atteint l'objectif. Tout est recalculé depuis les barres minute à chaque passage ;
+les ventes sont gardées dans research/experiments/final/volatilite/ventes.json (durable), l'état en cours dans
+research/outputs/live/volatilite.json (volatil). Rien n'achète : simulation seulement.
 
 Appelé à chaque passage du suivi en direct (dashboard/live.py) ; à la main, depuis la racine du dépôt :
     .venv/bin/python -m dashboard.volatility
@@ -37,7 +38,7 @@ TEMPLATE = HERE / "volatility_template.html"
 PAGES = {"fr": HERE / "volatilite.html", "en": HERE / "volatility_en.html"}
 SALES_FILE = FINALS_DIR / basket.FAMILY / "ventes.json"
 NEW_YORK = ZoneInfo("America/New_York")
-# Premiers achats : ouverture du 21 octobre 2026 (décision du propriétaire, T25).
+# Premiers achats : ouverture du 21 octobre 2026 (décision du propriétaire, T25). Sa liste sert à toutes les vagues (T27).
 FIRST_SESSION = date(2026, 10, 21)
 # Offre gratuite Alpaca : les 15 dernières minutes ne sont pas servies.
 FEED_DELAY = timedelta(minutes=15)
@@ -83,22 +84,20 @@ def positions(alpaca, now):
     every = _sessions(alpaca, now)
     started = [s for s in every if s[1] <= now]
     upcoming = next((s for s in every if s[1] > now), None)
-    lists = {day: basket.list_for(day) or basket.produce(alpaca, day) for day, _, _ in started}
-    symbols = sorted({i["symbol"] for run in lists.values() for i in run["selection"]})
+    fixed = (basket.list_for(FIRST_SESSION) or basket.produce(alpaca, FIRST_SESSION)) if started else None
+    lists = {day: fixed for day, _, _ in started}
+    symbols = sorted({i["symbol"] for i in fixed["selection"]}) if fixed else []
     bars = [_bars(alpaca, symbols, s, now) for s in started]
     bars = [b for b in bars if not b.empty]
     bars = pd.concat(bars, ignore_index=True) if bars else EMPTY_BARS
     by_symbol = {s: g for s, g in bars.groupby("symbol", sort=True)}
 
-    result, held = [], {}
+    result = []
     money = lambda v: None if v is None else str(v.quantize(Decimal("0.01")))
     for day, market_open, _ in started:
-        # Libéré à cette ouverture : vendu avant elle.
-        held = {s: p for s, p in held.items() if p["sold_at"] is None or datetime.fromisoformat(p["sold_at"]) > market_open}
+        # Une vague : toute la liste achetée de zéro à cette ouverture, indépendamment des vagues précédentes.
         for item in lists[day]["selection"]:
             s = item["symbol"]
-            if s in held:
-                continue
             windows = [(o, c) for d, o, c in started if o >= market_open]
             state = track_round([s], by_symbol.get(s, EMPTY_BARS), market_open, windows, now,
                                 rules.amount_per_stock, rules.target_gain, rules.cost_bps)
@@ -116,7 +115,6 @@ def positions(alpaca, now):
                 "sold_at": state["sold_at"], "sold_gain": money(state["sold_gain"]),
                 "sessions_held": state["sessions_held"], "elapsed_seconds": elapsed, "market_seconds": market,
             }
-            held[s] = position
             result.append(position)
     return result, upcoming, lists
 

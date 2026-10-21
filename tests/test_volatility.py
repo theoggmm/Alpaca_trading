@@ -97,8 +97,9 @@ def test_panier_garde_sur_plusieurs_seances_et_rien_de_futur():
     assert later["sessions_held"] == 2
 
 
-def test_chaque_action_vendue_seule_puis_rachetee_si_encore_dans_la_liste(monkeypatch):
-    # AAA atteint +200 $ (sur 5 000 $) le 1er jour, BBB jamais : le 2e jour, AAA est rachetée, BBB reste détenue.
+def test_une_vague_par_seance_avec_la_meme_liste(monkeypatch):
+    # AAA atteint +200 $ (sur 5 000 $) le 1er jour, BBB jamais : le 2e jour, une nouvelle vague rachète les deux de
+    # zéro (liste du premier jour), la vague du 1er jour garde BBB.
     from datetime import date, time
     from dashboard import volatility
 
@@ -115,12 +116,12 @@ def test_chaque_action_vendue_seule_puis_rachetee_si_encore_dans_la_liste(monkey
             return bars[bars["symbol"].isin(symbols) & (bars["timestamp"] >= start) & (bars["timestamp"] < end)]
 
     item = lambda s: {"symbol": s, "name": s, "domain": "D", "step": "strict"}
-    lists = {d: {"run_id": f"r{i}", "session_date": d.isoformat(), "selection": [item("AAA"), item("BBB")]}
-             for i, d in enumerate((day1, day2), start=1)}
-    monkeypatch.setattr(volatility.basket, "list_for", lambda d: lists[d])
+    first = {"run_id": "r1", "session_date": day1.isoformat(), "selection": [item("AAA"), item("BBB")]}
+    monkeypatch.setattr(volatility.basket, "list_for", lambda d: first if d == day1 else None)
     monkeypatch.setattr(volatility, "cached", lambda key, fetch, **_: fetch())
     every, upcoming, _ = volatility.positions(Reader(), open2 + timedelta(hours=1))
     assert [(p["symbol"], p["session_date"], p["status"]) for p in every] == [
-        ("AAA", "2026-10-21", "sold"), ("BBB", "2026-10-21", "live"), ("AAA", "2026-10-22", "live")]
+        ("AAA", "2026-10-21", "sold"), ("BBB", "2026-10-21", "live"),
+        ("AAA", "2026-10-22", "live"), ("BBB", "2026-10-22", "live")]
     assert every[0]["sold_at"] == (open1 + timedelta(minutes=3)).isoformat()
     assert every[0]["elapsed_seconds"] == 180 and upcoming is None

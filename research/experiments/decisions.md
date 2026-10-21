@@ -246,3 +246,12 @@ sans limite de durée ni stop ; une action vendue est rachetée à une ouverture
 liste du jour ; une action détenue qui sort de la liste reste détenue jusqu'à son objectif. Liste refaite à chaque
 ouverture. S'applique depuis la première ouverture (21 octobre 2026, 39 actions, 195 000 $). Ventes gardées dans
 research/experiments/final/volatilite/ventes.json. Statut : diagnostic, papier, aucun ordre.
+
+## T27 — 2026-10-21 — Volatilité : une vague par jour, même liste, de zéro (propriétaire)
+
+Remplace le rachat de T26. La liste du 21 octobre 2026 (run r001, 39 actions) sert à toutes les vagues ; elle n'est
+plus refaite. À chaque ouverture, une nouvelle vague achète de zéro chaque action de cette liste pour 5 000 $, même si
+une vague précédente la détient encore. Dans chaque vague, chaque action est vendue seule à la première minute de
+séance où son gain net atteint 200 $ ; rien ne se vend la nuit (objectif franchi pendant la fermeture : vente à la
+première minute de l'ouverture) ; pas de limite de durée ni de stop. Les vagues tournent côte à côte jusqu'à ce que
+toutes leurs actions aient atteint l'objectif. Statut : diagnostic, papier, aucun ordre.
