@@ -9,3 +9,7 @@ dashboard/methodologie.html
 dashboard/methodology_en.html
 dashboard/charts_data.js
 dashboard/sessions/
+
+# Fichiers système macOS et fichiers temporaires (écriture atomique du cache)
+.DS_Store
+*.tmp
