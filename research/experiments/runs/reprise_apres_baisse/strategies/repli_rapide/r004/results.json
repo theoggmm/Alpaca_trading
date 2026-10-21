@@ -1,0 +1,232 @@
+{
+  "run_id": "r004",
+  "variant": "nasdaq",
+  "strategy": "repli_rapide",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T19:40:00+00:00",
+  "created_at": "2026-10-20T20:01:45.329755+00:00",
+  "git_sha": "8b11e152f7fc114149c94b461d5a2c027ea2ca65",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": 2,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 4296,
+    "historique_complet": 4151,
+    "prix_minimum": 2392,
+    "volume_echange_minimum": 824,
+    "volatilite_basse": 412,
+    "tendance_haussiere": 100,
+    "repli_net": 20,
+    "en_baisse_aujourd_hui": 8,
+    "baisse_des_derniers_jours": 2,
+    "selection_diversifiee": 2,
+    "completee_au_plus_proche": 5
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022750322428142185
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "META",
+      "prev_close": "705.44",
+      "price_at_decision": "688.41",
+      "recent_high": "762.5",
+      "pullback": 0.0971672131147541,
+      "return_day": -0.02414096166931277,
+      "return_month": 0.06044525953429641,
+      "return_day_minus_2": -0.03718509067216853,
+      "return_day_minus_1": -0.005477038029112184,
+      "trend_gap": 0.11678186964010996,
+      "volatility_annualized": 0.4632566299755335,
+      "avg_dollar_volume": "14887425373",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "694.98",
+      "name": "Meta Platforms, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 2,
+      "symbol": "CHEF",
+      "prev_close": "111.28",
+      "price_at_decision": "110.42",
+      "recent_high": "114.32",
+      "pullback": 0.0341147655703289,
+      "return_day": -0.007728253055355859,
+      "return_month": 0.0038791159224176816,
+      "return_day_minus_2": -0.006125842303316706,
+      "return_day_minus_1": -0.020163775644976668,
+      "trend_gap": 0.0032214750614481527,
+      "volatility_annualized": 0.37987627009908304,
+      "avg_dollar_volume": "64468561",
+      "max_correlation_with_previous": -0.22953810137261013,
+      "pe_ttm": null,
+      "open_today": "109.36",
+      "name": "The Chefs' Warehouse, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Groceries, General Line"
+    },
+    {
+      "rank": 3,
+      "symbol": "XRPN",
+      "prev_close": "15.23",
+      "price_at_decision": "14.67",
+      "recent_high": "25.01",
+      "pullback": 0.4134346261495402,
+      "return_day": -0.036769533814839134,
+      "return_month": 0.44360189573459713,
+      "return_day_minus_2": -0.038581207218419414,
+      "return_day_minus_1": -0.01423948220064725,
+      "trend_gap": 0.33969978436332793,
+      "volatility_annualized": 2.263549522413723,
+      "avg_dollar_volume": "51201007",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "closest_fit": "volatilite_basse",
+      "open_today": "15",
+      "name": "Evernorth Holdings Inc. - Class A Ordinary Shares",
+      "domain": "Crypto Assets",
+      "sic_description": "Commodity Contracts Brokers & Dealers"
+    },
+    {
+      "rank": 4,
+      "symbol": "PENG",
+      "prev_close": "56.54",
+      "price_at_decision": "56.345",
+      "recent_high": "79.155",
+      "pullback": 0.28816878276798685,
+      "return_day": -0.003448885744605589,
+      "return_month": 0.06078799249530957,
+      "return_day_minus_2": -0.07694794697704493,
+      "return_day_minus_1": -0.009807355516637478,
+      "trend_gap": 0.10339816045021026,
+      "volatility_annualized": 0.9224723284512122,
+      "avg_dollar_volume": "319635950",
+      "max_correlation_with_previous": 0.1587340650833678,
+      "pe_ttm": null,
+      "closest_fit": "volatilite_basse",
+      "open_today": "54.915",
+      "name": "Penguin Solutions, Inc. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 5,
+      "symbol": "SNPS",
+      "prev_close": "454.58",
+      "price_at_decision": "449.96",
+      "recent_high": "509.99",
+      "pullback": 0.11770819035667367,
+      "return_day": -0.010163227594702803,
+      "return_month": 0.18081928461958074,
+      "return_day_minus_2": -0.02879665035995813,
+      "return_day_minus_1": -0.0001099795438048523,
+      "trend_gap": 0.08207110342829929,
+      "volatility_annualized": 0.5302830897344244,
+      "avg_dollar_volume": "1238119306",
+      "max_correlation_with_previous": 0.2588158059195735,
+      "pe_ttm": null,
+      "closest_fit": "volatilite_basse",
+      "open_today": "450.88",
+      "name": "Synopsys, Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    }
+  ]
+}

@@ -1,0 +1,272 @@
+{
+  "run_id": "r004",
+  "variant": "nasdaq",
+  "strategy": "repli_tendance_3j",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T19:40:00+00:00",
+  "created_at": "2026-10-20T20:00:32.564932+00:00",
+  "git_sha": "8b11e152f7fc114149c94b461d5a2c027ea2ca65",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 4296,
+    "historique_complet": 4151,
+    "prix_minimum": 2392,
+    "volume_echange_minimum": 824,
+    "volatilite_basse": 412,
+    "tendance_haussiere": 100,
+    "repli_net": 20,
+    "en_baisse_aujourd_hui": 8,
+    "selection_diversifiee": 5,
+    "completee_au_plus_proche": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022750322428142185
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "META",
+      "prev_close": "705.44",
+      "price_at_decision": "688.41",
+      "recent_high": "762.5",
+      "pullback": 0.0971672131147541,
+      "return_day": -0.02414096166931277,
+      "return_month": 0.06044525953429641,
+      "return_day_minus_2": -0.03718509067216853,
+      "return_day_minus_1": -0.005477038029112184,
+      "trend_gap": 0.11678186964010996,
+      "volatility_annualized": 0.4632566299755335,
+      "avg_dollar_volume": "14887425373",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "694.98",
+      "name": "Meta Platforms, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 2,
+      "symbol": "NVDA",
+      "prev_close": "217.09",
+      "price_at_decision": "216.22",
+      "recent_high": "239.24",
+      "pullback": 0.09622136766427018,
+      "return_day": -0.004007554470496107,
+      "return_month": -0.023304989427273135,
+      "return_day_minus_2": -0.014270588776872439,
+      "return_day_minus_1": 0.013823378321580348,
+      "trend_gap": 0.021681434197724555,
+      "volatility_annualized": 0.3700704391224843,
+      "avg_dollar_volume": "24024715645",
+      "max_correlation_with_previous": 0.06400598323923866,
+      "pe_ttm": null,
+      "open_today": "215.96",
+      "name": "NVIDIA Corporation - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 3,
+      "symbol": "GOOGL",
+      "prev_close": "344.18",
+      "price_at_decision": "339.24",
+      "recent_high": "353.78",
+      "pullback": 0.04109898807168297,
+      "return_day": -0.01435295484920681,
+      "return_month": -0.015334439549121703,
+      "return_day_minus_2": -0.024712215795200734,
+      "return_day_minus_1": 0.01054053260518512,
+      "trend_gap": 0.004589969857174475,
+      "volatility_annualized": 0.2907855581802756,
+      "avg_dollar_volume": "8548264904",
+      "max_correlation_with_previous": 0.28303780184884936,
+      "pe_ttm": null,
+      "open_today": "343.645",
+      "name": "Alphabet Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 4,
+      "symbol": "CHEF",
+      "prev_close": "111.28",
+      "price_at_decision": "110.42",
+      "recent_high": "114.32",
+      "pullback": 0.0341147655703289,
+      "return_day": -0.007728253055355859,
+      "return_month": 0.0038791159224176816,
+      "return_day_minus_2": -0.006125842303316706,
+      "return_day_minus_1": -0.020163775644976668,
+      "trend_gap": 0.0032214750614481527,
+      "volatility_annualized": 0.37987627009908304,
+      "avg_dollar_volume": "64468561",
+      "max_correlation_with_previous": 0.11196902130531274,
+      "pe_ttm": null,
+      "open_today": "109.36",
+      "name": "The Chefs' Warehouse, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Groceries, General Line"
+    },
+    {
+      "rank": 5,
+      "symbol": "OLLI",
+      "prev_close": "93.62",
+      "price_at_decision": "92.64",
+      "recent_high": "95.555",
+      "pullback": 0.030505991313902987,
+      "return_day": -0.010467848750267038,
+      "return_month": 0.2344409282700422,
+      "return_day_minus_2": -0.02485479566741667,
+      "return_day_minus_1": 0.00472204335694355,
+      "trend_gap": 0.09044478078616763,
+      "volatility_annualized": 0.41741475434392905,
+      "avg_dollar_volume": "157850961",
+      "max_correlation_with_previous": 0.21318040102446925,
+      "pe_ttm": null,
+      "open_today": "93.77",
+      "name": "Ollie's Bargain Outlet Holdings, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Retail-Variety Stores"
+    },
+    {
+      "rank": 6,
+      "symbol": "LFUS",
+      "prev_close": "384.13",
+      "price_at_decision": "381.895",
+      "recent_high": "454.28",
+      "pullback": 0.15934005459188166,
+      "return_day": -0.005818342748548668,
+      "return_month": -0.05822791016965774,
+      "return_day_minus_2": -0.02792027154633387,
+      "return_day_minus_1": 0.008506392921840952,
+      "trend_gap": 0.0015596368358941819,
+      "volatility_annualized": 0.43765382914399753,
+      "avg_dollar_volume": "75473894",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "closest_fit": "repli_net",
+      "open_today": "377.55",
+      "name": "Littelfuse, Inc. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Switchgear & Switchboard Apparatus"
+    },
+    {
+      "rank": 7,
+      "symbol": "FTNT",
+      "prev_close": "171.5",
+      "price_at_decision": "170.63",
+      "recent_high": "194.75",
+      "pullback": 0.12385109114249038,
+      "return_day": -0.005072886297376093,
+      "return_month": 0.009773904851625059,
+      "return_day_minus_2": -0.07025452146665934,
+      "return_day_minus_1": 0.014012889493289186,
+      "trend_gap": 0.07134098677252732,
+      "volatility_annualized": 0.46241274480302175,
+      "avg_dollar_volume": "639977822",
+      "max_correlation_with_previous": 0.052507035539209615,
+      "pe_ttm": null,
+      "closest_fit": "repli_net",
+      "open_today": "170.68",
+      "name": "Fortinet, Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Computer Peripheral Equipment, NEC"
+    }
+  ]
+}

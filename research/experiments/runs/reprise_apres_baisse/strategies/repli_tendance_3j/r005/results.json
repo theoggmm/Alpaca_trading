@@ -1,0 +1,219 @@
+{
+  "run_id": "r005",
+  "variant": "per12",
+  "strategy": "repli_tendance_3j",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-20",
+  "market_open": "2026-10-20T13:30:00+00:00",
+  "decision_time": "2026-10-20T19:40:00+00:00",
+  "created_at": "2026-10-20T20:01:04.323210+00:00",
+  "git_sha": "8b11e152f7fc114149c94b461d5a2c027ea2ca65",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": "25",
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1020202608:01",
+      "otherlisted": "1020202608:01"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13504,
+    "cotes_sur_une_bourse_us": 12756,
+    "hors_etf_et_titres_de_test": 6992,
+    "avec_barres_quotidiennes": 6991,
+    "historique_complet": 6820,
+    "prix_minimum": 4691,
+    "volume_echange_minimum": 2040,
+    "volatilite_basse": 1020,
+    "tendance_haussiere": 182,
+    "repli_net": 27,
+    "en_baisse_aujourd_hui": 12,
+    "per_maximum": 6,
+    "selection_diversifiee": 3
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 262,
+        "mean_return": 0.02991473000868168
+      },
+      {
+        "domain": "Technology",
+        "n": 301,
+        "mean_return": -0.002829970937905768
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.00918836820178301
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 303,
+        "mean_return": -0.022750322428142185
+      },
+      {
+        "domain": "Finance",
+        "n": 249,
+        "mean_return": -0.03343645133808759
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03351439387130738
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.03404833338995212
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.04145240085149123
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.13576044723122918
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "EHC",
+      "prev_close": "121.71",
+      "price_at_decision": "121.51",
+      "recent_high": "127.87",
+      "pullback": 0.04973801517165872,
+      "return_day": -0.001643250349190699,
+      "return_month": 0.0013987164719433932,
+      "return_day_minus_2": 0.0007826563356030367,
+      "return_day_minus_1": -0.048173926644248063,
+      "trend_gap": 0.006834893430590112,
+      "volatility_annualized": 0.32449965031477773,
+      "avg_dollar_volume": "128385627",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "19.79",
+      "open_today": "122.73",
+      "name": "Encompass Health Corporation Common Stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Services-Hospitals"
+    },
+    {
+      "rank": 2,
+      "symbol": "GOOGL",
+      "prev_close": "344.18",
+      "price_at_decision": "339.24",
+      "recent_high": "353.78",
+      "pullback": 0.04109898807168297,
+      "return_day": -0.01435295484920681,
+      "return_month": -0.015334439549121703,
+      "return_day_minus_2": -0.024712215795200734,
+      "return_day_minus_1": 0.01054053260518512,
+      "trend_gap": 0.004589969857174475,
+      "volatility_annualized": 0.2907855581802756,
+      "avg_dollar_volume": "8548264904",
+      "max_correlation_with_previous": -0.028460093213841853,
+      "pe_ttm": "17.02",
+      "open_today": "343.645",
+      "name": "Alphabet Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 3,
+      "symbol": "RL",
+      "prev_close": "381.77",
+      "price_at_decision": "378.25",
+      "recent_high": "391.07",
+      "pullback": 0.03278185491088552,
+      "return_day": -0.009220211121879665,
+      "return_month": 0.14251084842136766,
+      "return_day_minus_2": -0.014242974403559466,
+      "return_day_minus_1": -0.0096757457846952,
+      "trend_gap": 0.012053929986643414,
+      "volatility_annualized": 0.27495099398118894,
+      "avg_dollar_volume": "198438490",
+      "max_correlation_with_previous": 0.3746726927155752,
+      "pe_ttm": "23.83",
+      "open_today": "382.12",
+      "name": "Ralph Lauren Corporation Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Men's & Boys' Furnishgs, Work Clothg, & Allied Garments"
+    }
+  ],
+  "override": {
+    "ignore_market_health": true,
+    "criteria": {
+      "signal": "repli_tendance",
+      "version": 1,
+      "count": 20,
+      "liquidity_sessions": 20,
+      "min_price_usd": "5",
+      "min_avg_dollar_volume_usd": "20000000",
+      "volatility_sessions": 60,
+      "max_volatility_quantile": 0.5,
+      "month_sessions": 21,
+      "correlation_sessions": 60,
+      "max_pairwise_correlation": 0.6,
+      "decision_after_open_minutes": 370,
+      "short_trend_sessions": 20,
+      "trend_sessions": 50,
+      "high_sessions": 10,
+      "min_pullback": "0.03",
+      "max_pullback": "0.10",
+      "market_symbol": "SPY",
+      "market_ma_sessions": 50,
+      "max_pe": "25",
+      "min_down_days": null,
+      "market_min_day_return": null,
+      "exchange": null,
+      "fill_to_count": false
+    },
+    "market_healthy": false,
+    "market_close": "766.48",
+    "market_average": "767.30",
+    "note": "règle « marché en bonne forme » suspendue ce jour-là par le propriétaire"
+  }
+}
