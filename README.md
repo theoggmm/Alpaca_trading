@@ -222,5 +222,14 @@ Les règles propres à Alpaca (fractions, `--notional`, `--tif` autorisés selon
 
 ## Sécurité
 
+- **Garde-fou anti-secrets** (`deploy/hooks/pre-commit`) : avant chaque commit, refuse un fichier `.env` ou de clé,
+  une chaîne qui ressemble à une clé (Alpaca, GitHub, AWS, clé privée) ou un secret écrit en clair, et tout fichier de
+  plus de 50 Mo ; n'affiche jamais la valeur trouvée. Prouvé par `tests/test_garde_fou.py`. À activer une fois par copie
+  du dépôt :
+
+```bash
+git -C /Users/theodoremeyer/Documents/Alpaca_trading config core.hooksPath deploy/hooks
+```
+
 - Paper trading par défaut. Le compte réel exige `ALPACA_PAPER=false` dans `.env` **et** des clés de compte réel.
 - Le marché actions US est ouvert de 9h30 à 16h00, heure de New York. En dehors de ces horaires, un ordre `market` en `day` reste en attente jusqu'à l'ouverture.

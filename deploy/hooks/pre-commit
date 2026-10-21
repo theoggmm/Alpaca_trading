@@ -1,0 +1,64 @@
+#!/bin/bash
+# Garde-fou anti-secrets (règle 7 de CLAUDE.md), lancé par git avant chaque commit.
+# Refuse le commit si les fichiers préparés contiennent :
+#   1. un fichier .env (sauf .env.example) ou un fichier de clé (.pem, .key, .p12, id_rsa…) ;
+#   2. dans les lignes ajoutées, une chaîne qui ressemble à une clé (Alpaca, GitHub, AWS, clé privée) ou un
+#      mot de passe / jeton / secret écrit en clair ;
+#   3. un fichier de plus de 50 Mo (GitHub refuse au-delà de 100 Mo et prévient dès 50 Mo).
+# N'affiche jamais une valeur trouvée : seulement le nom du fichier et la raison.
+# Activé une fois par dépôt : git config core.hooksPath deploy/hooks
+
+GREP=/usr/bin/grep                       # le grep du système (une autre version peut refuser les motifs)
+MAX_BYTES="${GARDE_FOU_MAX_OCTETS:-52428800}"
+problems=0
+
+refuse() {
+  echo "Commit refusé — $1 : $2" >&2
+  problems=$((problems + 1))
+}
+
+# Fichiers ajoutés ou modifiés dans ce commit (noms avec espaces compris).
+while IFS= read -r -d '' file; do
+  name="$(basename "$file")"
+  case "$name" in
+    .env.example) ;;
+    .env|.env.*|*.pem|*.key|*.p12|*.pfx|id_rsa*|id_ed25519*|credentials*.json)
+      refuse "$file" "fichier de secrets (à ne jamais commiter)" ;;
+  esac
+  size="$(git cat-file -s ":$file" 2>/dev/null || echo 0)"
+  if [ "$size" -gt "$MAX_BYTES" ]; then
+    refuse "$file" "fichier trop gros ($((size / 1048576)) Mo, limite $((MAX_BYTES / 1048576)) Mo)"
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+# Lignes ajoutées, précédées de leur fichier : « fichier<TAB>ligne ». uv.lock (empreintes) n'est pas lu.
+added="$(git diff --cached -U0 --no-color --diff-filter=ACMR -- . ':(exclude)uv.lock' | awk '
+  /^\+\+\+ b\// { file = substr($0, 7); next }
+  /^\+\+\+ /     { file = ""; next }
+  /^\+/ && file != "" { print file "\t" substr($0, 2) }')"
+
+check() {   # check "<motif>" "<raison>" : signale chaque fichier dont une ligne ajoutée correspond
+  local files
+  files="$(printf '%s\n' "$added" | $GREP -E -e "$1" | cut -f1 | sort -u)"
+  [ -z "$files" ] && return 0
+  while IFS= read -r file; do
+    refuse "$file" "$2"
+  done <<< "$files"
+}
+
+for rule in \
+  '(^|[^A-Za-z0-9])[PAC]K[A-Z0-9]{16,}([^A-Za-z0-9]|$)|ressemble à une clé Alpaca' \
+  'ghp_[A-Za-z0-9]{20,}|gho_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|ressemble à un jeton GitHub' \
+  'AKIA[A-Z0-9]{16}|ressemble à une clé AWS' \
+  '-----BEGIN [A-Z ]*PRIVATE KEY-----|contient une clé privée' \
+  '(SECRET|PASSWORD|PASSWD|TOKEN|API_KEY)[A-Z_]*["'"'"']?[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9/+_-]{20,}|mot de passe, jeton ou secret écrit en clair'
+do
+  check "${rule%|*}" "${rule##*|}"
+done
+if [ "$problems" -gt 0 ]; then
+  echo "" >&2
+  echo "Rien n'a été commité. Retirer le fichier du commit (git restore --staged <fichier>) ou en enlever le secret," >&2
+  echo "puis recommencer. Une clé déjà partie sur GitHub doit être révoquée chez le fournisseur." >&2
+  exit 1
+fi
+exit 0
