@@ -505,3 +505,17 @@ hausse à 14 h 45. Règle en vigueur version 3 (décision T21) : cinq ans +89 %,
 
 Autrement dit : la nouvelle règle gagne moins en 2025 mais beaucoup mieux les années difficiles ; rien ne garantit
 l'avenir, les prochaines semaines en papier le diront.
+
+## 2026-10-21 — Audit du dépôt Git
+
+**Question posée** : pourquoi les envois vers GitHub échouaient, et corriger.
+
+**Constat** : aucun blocage dans Git (pas de gros fichier, pas de secret dans l'historique, pas de divergence,
+authentification par le trousseau macOS valide). Échecs expliqués par la coupure réseau du 20 octobre et par des
+commandes lancées depuis Documents au lieu de Documents/Alpaca_trading. **Fait** : branche de sauvegarde locale
+backup/avant-audit-2026-10-21 ; .gitignore complété ; données du 20 octobre commitées en deux lots ; CLAUDE.md ne
+renvoie plus à des fichiers inexistants ; garde-fou avant chaque commit (deploy/hooks/pre-commit, test
+tests/test_garde_fou.py) ; identité Git du propriétaire configurée (adresse noreply de GitHub).
+
+Autrement dit : le dépôt était sain ; les envois échouaient faute de réseau ou depuis le mauvais dossier, et un
+contrôle bloque désormais tout secret avant qu'il parte.
