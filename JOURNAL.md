@@ -519,3 +519,18 @@ tests/test_garde_fou.py) ; identité Git du propriétaire configurée (adresse n
 
 Autrement dit : le dépôt était sain ; les envois échouaient faute de réseau ou depuis le mauvais dossier, et un
 contrôle bloque désormais tout secret avant qu'il parte.
+
+## 2026-10-21 — Stratégie « Volatilité »
+
+**Question posée** : une stratégie qui investit 5 000 $ dans les 39 actions de la liste « 5 par domaine » (Nasdaq,
+très échangées, très volatiles, tendance neutre ou positive, peu corrélées) et les garde jusqu'à +200 $, en disant
+combien de temps il a fallu.
+
+**Fait** (décision T25) : liste par domaine dans core/volatility.py (complétée au plus proche si un domaine manque de
+titres), décidée à l'ouverture ; suivi minute par minute du panier (dashboard/volatility.py, appelé par le suivi en
+direct) ; vente de tout le panier à la première minute où le gain net de frais atteint 200 $ ; tour suivant à
+l'ouverture d'après avec une liste refaite. Premier tour acheté à l'ouverture du 21 octobre (run r001, 39 actions).
+Pages volatilite.html / volatility_en.html, ligne de résumé sur l'accueil. Tests : tests/test_volatility.py.
+
+Autrement dit : le tableau de bord montre maintenant, minute par minute, où en est le panier de 5 000 $ par rapport
+aux 200 $ visés, et le temps qu'il a fallu pour les atteindre.
