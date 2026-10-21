@@ -34,7 +34,7 @@ en écrire une.
    L'invariant est **structurel**, pas conventionnel : la fonction qui calcule un signal reçoit
    l'indice de décision et **tronque les données à `[0, i)` dès sa première ligne**, ce qui rend une
    donnée de date `≥ i` physiquement inatteignable. Chaque famille livre le test qui le prouve
-   (`tests/test_datation_modele.py` en est le modèle).
+   (`tests/test_datation_reprise_apres_baisse.py` en est le modèle).
 2. **Métriques.** Un seul module : `core/performance_metrics.py`. Le Sharpe se calcule sur des
    rendements de **portefeuille indexés par date**, jamais par trade. `sharpe()` lève
    `UndatedReturnsError` sur une série non datée et `DuplicateDateError` sur des dates dupliquées —
@@ -106,9 +106,9 @@ en écrire une.
 - **Nomenclature** : le vocabulaire du courtier tel quel pour ses objets (`account.cash`,
   `position.qty`, `order.side`) ; le reste en `snake_case` ; l'objet de configuration racine
   s'appelle `config`. Les nombres d'argent en `Decimal`, jamais en `float`.
-- **Python <3.12>**, `venv/`. **Un seul environnement** : `requirements.txt` épinglé (`==`),
-  identique en local et sur le serveur, `pytest` inclus. Rien n'est installé à la main hors de ce
-  fichier.
+- **Python 3.12**, `.venv/` géré par `uv`. **Un seul environnement** : dépendances déclarées dans
+  `pyproject.toml`, versions figées dans `uv.lock`, identique en local et sur le serveur, `pytest`
+  inclus. Rien n'est installé à la main hors de ces fichiers.
 - Chemins auto-détectés par `Path(__file__).resolve().parents[N]`, aucun chemin absolu en dur.
 - **Un objectif par commit**, message explicite. Branche `main` par défaut ; chantier long =
   branche + worktree. Jamais `--force`, `--amend`, `--no-verify` sans demande explicite.
@@ -142,10 +142,6 @@ en écrire une.
 | [`JOURNAL.md`](JOURNAL.md) | Journal de bord append-only, une entrée par session |
 | `research/experiments/decisions.md` | Journal des décisions, append-only — **on n'édite jamais une entrée passée** |
 | `research/experiments/registry.csv` | Registre des runs |
-
-**Compétences disponibles** (`.claude/skills/`) : pré-enregistrement d'expérience, écriture d'un
-verdict, ouverture de juge, vérification de l'invariant de datation, métriques de performance.
-Elles se déclenchent seules quand la tâche correspond.
 
 ## En cas de doute
 
