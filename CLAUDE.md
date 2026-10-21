@@ -9,10 +9,10 @@
 <Deux ou trois phrases, à remplir. Exemple de forme :>
 
 1. **Une recherche de stratégies sur <marché : actions US, crypto, …>**, backtestée en local, selon
-   le protocole de [`PROTOCOL.md`](PROTOCOL.md). État : <aucune expérience en cours / expérience 00N
+   les règles 1 à 6 ci-dessous. État : <aucune expérience en cours / expérience 00N
    en cours, jugée sur le futur>.
 2. **<Un serveur / rien>** : <ce qui tourne en continu, s'il y a quelque chose — un tableau de bord,
-   un rafraîchissement quotidien>. → [`RUNBOOK.md`](RUNBOOK.md)
+   un rafraîchissement quotidien>.
 
 **Rien n'achète tout seul.** Tant qu'aucune décision humaine datée ne dit le contraire dans
 `research/experiments/decisions.md`, aucun programme de ce dépôt ne passe d'ordre. Un ordre
@@ -34,7 +34,7 @@ en écrire une.
    L'invariant est **structurel**, pas conventionnel : la fonction qui calcule un signal reçoit
    l'indice de décision et **tronque les données à `[0, i)` dès sa première ligne**, ce qui rend une
    donnée de date `≥ i` physiquement inatteignable. Chaque famille livre le test qui le prouve
-   (`tests/test_datation_modele.py` en est le modèle). → [`PROTOCOL.md`](PROTOCOL.md) §2
+   (`tests/test_datation_modele.py` en est le modèle).
 2. **Métriques.** Un seul module : `core/performance_metrics.py`. Le Sharpe se calcule sur des
    rendements de **portefeuille indexés par date**, jamais par trade. `sharpe()` lève
    `UndatedReturnsError` sur une série non datée et `DuplicateDateError` sur des dates dupliquées —
@@ -44,7 +44,7 @@ en écrire une.
    pré-enregistrement**. Une fenêtre déjà regardée est consommée : un re-run dessus est un
    **diagnostic**, jamais un verdict. Ouvrir un juge = acte humain explicite, une seule fois.
 4. **Pré-enregistrement.** Hypothèse, méthode et critères chiffrés écrits et **commités AVANT** de
-   regarder la donnée. Les seuils ne se réécrivent jamais après lecture. → [`PROTOCOL.md`](PROTOCOL.md) §1
+   regarder la donnée. Les seuils ne se réécrivent jamais après lecture.
 5. **Trace.** Pas de verdict sans `research/experiments/runs/<famille>/<run_id>/` contenant les
    trades, `results.json` et un **`git_sha` réel** — jamais `working-tree`.
 6. **Garde-fou de plausibilité.** Tout run affichant un **rendement annualisé > 100 %** est SUSPECT
@@ -54,7 +54,7 @@ en écrire une.
    dans un log, un rapport ou un message de commit. **Aucun agent ne lit, n'affiche ni ne copie un
    fichier `.env`, sur le poste comme sur le serveur** ; les secrets ne sont chargés que par le code,
    via `load_dotenv`, et jamais imprimés. Un agent ne source donc jamais un `.env` dans un shell et
-   n'en fait aucune copie. `tests/test_secrets.py` le vérifie. → [`SECURITE.md`](SECURITE.md)
+   n'en fait aucune copie. `tests/test_secrets.py` le vérifie.
 8. **Un seul module de logique.** Backtest, paper et live importent le **même** module métier de
    `core/`. Aucune réimplémentation parallèle : la divergence entre « la version du backtest » et
    « la version du live » est la cause racine classique d'une perte réelle.
@@ -128,7 +128,7 @@ en écrire une.
   seule**.
 - **Historique des délistés** : <le fournisseur sert-il l'historique des titres disparus ? à
   vérifier avant tout backtest — sinon l'univers est biaisé>.
-- **Serveur** : <aucun / un, décrit dans `RUNBOOK.md` : système, utilisateur de service sans
+- **Serveur** : <aucun / un : système, utilisateur de service sans
   privilège, clé SSH dédiée, dépôt cloné depuis GitHub, `.env` en `640` propriété de l'utilisateur de
   service>.
 - **Fuseau horaire des marchés** : <ex. heure de New York>. Tout horaire de timer s'écrit dans ce
@@ -139,13 +139,7 @@ en écrire une.
 | Fichier | Contenu |
 |---|---|
 | [`README.md`](README.md) | Entrée humaine : à quoi sert ce dépôt, comment démarrer |
-| [`SPEC.md`](SPEC.md) | Ce que le système EST : arborescence, modules, contrats de données |
-| [`PROTOCOL.md`](PROTOCOL.md) | Protocole expérimental : pré-enregistrement → juge → verdict |
-| [`SECURITE.md`](SECURITE.md) | Secrets, clés, serveur, kill switch |
-| [`ROADMAP.md`](ROADMAP.md) | Où on va, et ce qui est réfuté (à ne pas ressusciter) |
 | [`JOURNAL.md`](JOURNAL.md) | Journal de bord append-only, une entrée par session |
-| [`RUNBOOK.md`](RUNBOOK.md) | Opérations du serveur |
-| [`GLOSSAIRE.md`](GLOSSAIRE.md) | Les mots techniques, expliqués |
 | `research/experiments/decisions.md` | Journal des décisions, append-only — **on n'édite jamais une entrée passée** |
 | `research/experiments/registry.csv` | Registre des runs |
 
