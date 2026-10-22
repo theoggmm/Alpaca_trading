@@ -174,7 +174,8 @@ const other = document.getElementById("other");
 other.textContent = TEXT.other; other.href = TEXT.other_href;
 Object.assign(document.getElementById("rule-link"), { textContent: TEXT.rule_link, href: TEXT.rule_href });
 Object.assign(document.getElementById("vol-link"), { textContent: TEXT.vol_link, href: TEXT.vol_href });
-if (VOL) {
+// Résumé d'un autre format (suivi lancé avec un code plus ancien) : la section reste cachée, le reste de la page s'affiche.
+if (VOL && Array.isArray(VOL.batches)) {
   document.getElementById("vol").hidden = false;
   const usd = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", signDisplay: "exceptZero" }).format(v);
   const plain = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
