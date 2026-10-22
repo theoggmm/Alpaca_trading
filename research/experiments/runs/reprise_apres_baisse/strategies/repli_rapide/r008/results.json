@@ -1,0 +1,146 @@
+{
+  "run_id": "r008",
+  "variant": "per12",
+  "strategy": "repli_rapide",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-21",
+  "market_open": "2026-10-21T13:30:00+00:00",
+  "decision_time": "2026-10-21T19:40:00+00:00",
+  "created_at": "2026-10-21T19:58:08.021579+00:00",
+  "git_sha": "72d90ea019ea00a81ae4a09a66cdfdc4dd546525",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": 50,
+    "max_pe": "25",
+    "min_down_days": 2,
+    "market_min_day_return": null,
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1021202606:00",
+      "otherlisted": "1021202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13516,
+    "cotes_sur_une_bourse_us": 12758,
+    "hors_etf_et_titres_de_test": 6993,
+    "avec_barres_quotidiennes": 6992,
+    "historique_complet": 6825,
+    "prix_minimum": 4706,
+    "volume_echange_minimum": 2035,
+    "marche_en_bonne_forme": 2035,
+    "volatilite_basse": 1018,
+    "tendance_haussiere": 199,
+    "repli_net": 30,
+    "en_baisse_aujourd_hui": 15,
+    "baisse_des_derniers_jours": 3,
+    "per_maximum": 1,
+    "selection_diversifiee": 1
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 261,
+        "mean_return": 0.03763726319058999
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 192,
+        "mean_return": 0.0010207690848078857
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": -0.0021232232140648783
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.00992082710177979
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.017779146898486014
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.019028630616516867
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.03300852297221565
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.038231456598023676
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.14523441462973954
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "EHC",
+      "prev_close": "121.67",
+      "price_at_decision": "120.34",
+      "recent_high": "127.87",
+      "pullback": 0.058887933057011024,
+      "return_day": -0.010931207364181803,
+      "return_month": 0.0026370004120313145,
+      "return_day_minus_2": -0.048173926644248063,
+      "return_day_minus_1": -0.0003286500698381398,
+      "trend_gap": 0.0071206336431536895,
+      "volatility_annualized": 0.3241607390935337,
+      "avg_dollar_volume": "129887349",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "19.60",
+      "open_today": "121.28",
+      "name": "Encompass Health Corporation Common Stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Services-Hospitals"
+    }
+  ]
+}

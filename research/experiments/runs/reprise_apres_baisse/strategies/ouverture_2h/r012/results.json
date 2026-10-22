@@ -1,0 +1,278 @@
+{
+  "run_id": "r012",
+  "variant": "per12",
+  "strategy": "ouverture_2h",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-21",
+  "market_open": "2026-10-21T13:30:00+00:00",
+  "decision_time": "2026-10-21T13:15:00+00:00",
+  "created_at": "2026-10-21T13:34:52.997356+00:00",
+  "git_sha": "4853266ed14753964528cfa18113bcdce3413f4c",
+  "criteria": {
+    "signal": "ouverture",
+    "version": 2,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "last_hour_minutes": 60,
+    "min_overnight": "0.005",
+    "max_overnight": "0.03",
+    "min_premarket_volume": 5000,
+    "data_delay_minutes": 15,
+    "market_symbol": "SPY",
+    "market_ma_sessions": 50,
+    "max_pe": "25",
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1021202606:00",
+      "otherlisted": "1021202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13516,
+    "cotes_sur_une_bourse_us": 12758,
+    "hors_etf_et_titres_de_test": 6993,
+    "avec_barres_quotidiennes": 6992,
+    "historique_complet": 6825,
+    "prix_minimum": 4706,
+    "volume_echange_minimum": 2035,
+    "marche_en_bonne_forme": 2035,
+    "fin_de_seance_en_hausse": 1036,
+    "nuit_en_hausse_moderee": 64,
+    "per_maximum": 14,
+    "selection_diversifiee": 8
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 261,
+        "mean_return": 0.03763726319058999
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 192,
+        "mean_return": 0.0010207690848078857
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": -0.0021232232140648783
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.00992082710177979
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.017779146898486014
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.019028630616516867
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.03300852297221565
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.03823036902937077
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.14523441462973954
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "AMBQ",
+      "prev_close": "50.98",
+      "open_today": "52.25",
+      "price_at_decision": "52.25",
+      "return_month": -0.2828808552539035,
+      "return_day_minus_2": -0.0052125100240577385,
+      "return_day_minus_1": 0.027408303103587262,
+      "return_last_hour": 0.012093576526566218,
+      "return_overnight": 0.024911730090231465,
+      "premarket_volume": 5397,
+      "volatility_annualized": 0.6956511169662986,
+      "avg_dollar_volume": "27219748",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "1.62",
+      "name": "Ambiq Micro, Inc. Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 2,
+      "symbol": "ELV",
+      "prev_close": "440.18",
+      "open_today": "444.01",
+      "price_at_decision": "444.01",
+      "return_month": 0.07541960860961129,
+      "return_day_minus_2": 0.004600009340120488,
+      "return_day_minus_1": 0.023127164539897264,
+      "return_last_hour": 0.009116104354199593,
+      "return_overnight": 0.008700985960288973,
+      "premarket_volume": 8145,
+      "volatility_annualized": 0.2475198305283944,
+      "avg_dollar_volume": "514501999",
+      "max_correlation_with_previous": -0.3923132638749623,
+      "pe_ttm": "19.64",
+      "name": "Elevance Health, Inc. Common Stock",
+      "domain": "Finance",
+      "sic_description": "Hospital & Medical Service Plans"
+    },
+    {
+      "rank": 3,
+      "symbol": "NLY",
+      "prev_close": "18.29",
+      "open_today": "18.6",
+      "price_at_decision": "18.6",
+      "return_month": -0.10867446393762183,
+      "return_day_minus_2": -0.027975863960504662,
+      "return_day_minus_1": 0.03216704288939052,
+      "return_last_hour": 0.007427785419532325,
+      "return_overnight": 0.01694915254237288,
+      "premarket_volume": 76744,
+      "volatility_annualized": 0.20376521128954306,
+      "avg_dollar_volume": "264456195",
+      "max_correlation_with_previous": 0.029648267624181036,
+      "pe_ttm": "4.49",
+      "name": "Annaly Capital Management Inc. Common Stock",
+      "domain": "Real Estate & Construction",
+      "sic_description": "Real Estate Investment Trusts"
+    },
+    {
+      "rank": 4,
+      "symbol": "WFC",
+      "prev_close": "82.2",
+      "open_today": "82.66",
+      "price_at_decision": "82.66",
+      "return_month": -0.050150219551652414,
+      "return_day_minus_2": -0.02468105401216168,
+      "return_day_minus_1": 0.004889975550122249,
+      "return_last_hour": 0.0068602229572461105,
+      "return_overnight": 0.00559610705596107,
+      "premarket_volume": 13458,
+      "volatility_annualized": 0.24339335218490968,
+      "avg_dollar_volume": "1372228926",
+      "max_correlation_with_previous": 0.25546955866317667,
+      "pe_ttm": "12.01",
+      "name": "Wells Fargo & Company Common Stock",
+      "domain": "Finance",
+      "sic_description": "National Commercial Banks"
+    },
+    {
+      "rank": 5,
+      "symbol": "VCTR",
+      "prev_close": "108.45",
+      "open_today": "109.19",
+      "price_at_decision": "109.19",
+      "return_month": 0.006403118040089087,
+      "return_day_minus_2": -0.008241252302025782,
+      "return_day_minus_1": 0.0069170419200594215,
+      "return_last_hour": 0.003143200517703615,
+      "return_overnight": 0.006823420931304749,
+      "premarket_volume": 5001,
+      "volatility_annualized": 0.32604079216457404,
+      "avg_dollar_volume": "64626679",
+      "max_correlation_with_previous": 0.2748566759339796,
+      "pe_ttm": "19.85",
+      "name": "Victory Capital Holdings, Inc. - Common Stock",
+      "domain": "Finance",
+      "sic_description": "Investment Advice"
+    },
+    {
+      "rank": 6,
+      "symbol": "GS",
+      "prev_close": "884.81",
+      "open_today": "896",
+      "price_at_decision": "896",
+      "return_month": -0.07773689531890055,
+      "return_day_minus_2": -0.006218369153257836,
+      "return_day_minus_1": 0.010310808650574346,
+      "return_last_hour": 0.0016634792744061831,
+      "return_overnight": 0.012646782925147771,
+      "premarket_volume": 5028,
+      "volatility_annualized": 0.2729180047583147,
+      "avg_dollar_volume": "2080599076",
+      "max_correlation_with_previous": 0.4896012188815965,
+      "pe_ttm": "13.84",
+      "name": "Goldman Sachs Group, Inc. (The) Common Stock",
+      "domain": "Finance",
+      "sic_description": "Security Brokers, Dealers & Flotation Companies"
+    },
+    {
+      "rank": 7,
+      "symbol": "ACA",
+      "prev_close": "147.45",
+      "open_today": "148.75",
+      "price_at_decision": "148.75",
+      "return_month": 0.008756926865977972,
+      "return_day_minus_2": 0.0018359853121175031,
+      "return_day_minus_1": 0.0008144980655670943,
+      "return_last_hour": 0.0009162792276105474,
+      "return_overnight": 0.008816547982366904,
+      "premarket_volume": 34652,
+      "volatility_annualized": 0.02643672043172155,
+      "avg_dollar_volume": "88478084",
+      "max_correlation_with_previous": 0.15583168367568354,
+      "pe_ttm": "14.92",
+      "name": "Arcosa, Inc. Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Fabricated Structural Metal Products"
+    },
+    {
+      "rank": 8,
+      "symbol": "CRCL",
+      "prev_close": "85.87",
+      "open_today": "87.36",
+      "price_at_decision": "87.36",
+      "return_month": -0.09122658482379088,
+      "return_day_minus_2": -0.010338117246412065,
+      "return_day_minus_1": 0.05530293720044242,
+      "return_last_hour": 0.0002327475852438031,
+      "return_overnight": 0.017351810876906952,
+      "premarket_volume": 352817,
+      "volatility_annualized": 0.8195429266216792,
+      "avg_dollar_volume": "847559675",
+      "max_correlation_with_previous": 0.42575669738436644,
+      "pe_ttm": "17.51",
+      "name": "Circle Internet Group, Inc. Class A Common Stock",
+      "domain": "Crypto Assets",
+      "sic_description": "Finance Services"
+    }
+  ]
+}

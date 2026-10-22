@@ -1,0 +1,232 @@
+{
+  "run_id": "r007",
+  "variant": "nasdaq",
+  "strategy": "repli_rapide",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-21",
+  "market_open": "2026-10-21T13:30:00+00:00",
+  "decision_time": "2026-10-21T19:40:00+00:00",
+  "created_at": "2026-10-21T19:57:56.851709+00:00",
+  "git_sha": "72d90ea019ea00a81ae4a09a66cdfdc4dd546525",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": 2,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1021202606:00",
+      "otherlisted": "1021202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13516,
+    "cotes_sur_une_bourse_us": 12758,
+    "hors_etf_et_titres_de_test": 6993,
+    "avec_barres_quotidiennes": 4297,
+    "historique_complet": 4154,
+    "prix_minimum": 2403,
+    "volume_echange_minimum": 824,
+    "volatilite_basse": 412,
+    "tendance_haussiere": 107,
+    "repli_net": 27,
+    "en_baisse_aujourd_hui": 14,
+    "baisse_des_derniers_jours": 2,
+    "selection_diversifiee": 2,
+    "completee_au_plus_proche": 5
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 261,
+        "mean_return": 0.03763726319058999
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 192,
+        "mean_return": 0.0010207690848078857
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": -0.0021232232140648783
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.00992082710177979
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.017779146898486014
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.019028630616516867
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.03300852297221565
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.038231456598023676
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.14523441462973954
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "CHEF",
+      "prev_close": "110.88",
+      "price_at_decision": "108.85",
+      "recent_high": "114.32",
+      "pullback": 0.0478481455563331,
+      "return_day": -0.018308080808080808,
+      "return_month": 0.0016260162601626016,
+      "return_day_minus_2": -0.020163775644976668,
+      "return_day_minus_1": -0.0035945363048166786,
+      "trend_gap": 0.003984454155852212,
+      "volatility_annualized": 0.37992010967285367,
+      "avg_dollar_volume": "62764657",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "112.43",
+      "name": "The Chefs' Warehouse, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Groceries, General Line"
+    },
+    {
+      "rank": 2,
+      "symbol": "NTES",
+      "prev_close": "125.11",
+      "price_at_decision": "122.89",
+      "recent_high": "127.11",
+      "pullback": 0.03319959090551491,
+      "return_day": -0.0177443849412517,
+      "return_month": 0.0650378820124287,
+      "return_day_minus_2": -0.006425511661113755,
+      "return_day_minus_1": -0.0011177644710578841,
+      "trend_gap": 0.0038516972727738,
+      "volatility_annualized": 0.3592094400409189,
+      "avg_dollar_volume": "72176546",
+      "max_correlation_with_previous": -0.011138842586256368,
+      "pe_ttm": null,
+      "open_today": "123.17",
+      "name": "NetEase, Inc. - American Depositary Shares, each representing 5 ordinary shares",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 3,
+      "symbol": "MEOH",
+      "prev_close": "63.31",
+      "price_at_decision": "63.075",
+      "recent_high": "64.96",
+      "pullback": 0.029017857142857144,
+      "return_day": -0.003711893855631022,
+      "return_month": 0.07853492333901192,
+      "return_day_minus_2": -0.007235221674876847,
+      "return_day_minus_1": -0.01829741045123275,
+      "trend_gap": 0.0225277866944868,
+      "volatility_annualized": 0.3302908607122632,
+      "avg_dollar_volume": "35134609",
+      "max_correlation_with_previous": 0.06129787943937641,
+      "pe_ttm": null,
+      "closest_fit": "repli_net",
+      "open_today": "63.21",
+      "name": "Methanex Corporation - Common Stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Industrial Organic Chemicals"
+    },
+    {
+      "rank": 4,
+      "symbol": "WMT",
+      "prev_close": "117.85",
+      "price_at_decision": "117.42",
+      "recent_high": "118.81",
+      "pullback": 0.011699351906405185,
+      "return_day": -0.003648705982180738,
+      "return_month": 0.09689128816083395,
+      "return_day_minus_2": -0.0009258479925932161,
+      "return_day_minus_1": -0.007160909856781803,
+      "trend_gap": 0.013269153571343468,
+      "volatility_annualized": 0.282939200041696,
+      "avg_dollar_volume": "2369870585",
+      "max_correlation_with_previous": 0.15737582754801396,
+      "pe_ttm": null,
+      "closest_fit": "repli_net",
+      "open_today": "116.9",
+      "name": "Walmart Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Retail-Variety Stores"
+    },
+    {
+      "rank": 5,
+      "symbol": "MKTX",
+      "prev_close": "164.49",
+      "price_at_decision": "164.39",
+      "recent_high": "164.64",
+      "pullback": 0.0015184645286686104,
+      "return_day": -0.0006079396923825156,
+      "return_month": 0.006424375917767988,
+      "return_day_minus_2": -0.0006681243926141885,
+      "return_day_minus_1": -0.000243116756822464,
+      "trend_gap": 0.005742973461559189,
+      "volatility_annualized": 0.6080227063481997,
+      "avg_dollar_volume": "122007714",
+      "max_correlation_with_previous": 0.3833270891434122,
+      "pe_ttm": null,
+      "closest_fit": "volatilite_basse",
+      "open_today": "164.49",
+      "name": "MarketAxess Holdings, Inc. - Common Stock",
+      "domain": "Crypto Assets",
+      "sic_description": "Security Brokers, Dealers & Flotation Companies"
+    }
+  ]
+}

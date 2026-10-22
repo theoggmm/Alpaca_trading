@@ -1,0 +1,601 @@
+{
+  "run_id": "r001",
+  "family": "volatilite",
+  "variant": "panier",
+  "strategy": "volatilite",
+  "status": "diagnostic",
+  "session_date": "2026-10-21",
+  "market_open": "2026-10-21T13:30:00+00:00",
+  "decision_time": "2026-10-21T13:30:00+00:00",
+  "created_at": "2026-10-21T13:50:39.530349+00:00",
+  "git_sha": "db4dd4d70c8fa5dcee9a2ecf593667d45d380aed",
+  "criteria": {
+    "signal": "volatilite",
+    "version": 1,
+    "exchange": "NASDAQ",
+    "excluded_domains": [
+      "Crypto Assets"
+    ],
+    "per_domain": 5,
+    "min_price": "5",
+    "liquidity_sessions": 20,
+    "volatility_sessions": 60,
+    "trend_sessions": 126,
+    "ladder": [
+      {
+        "label": "strict",
+        "min_dollar_volume": "50000000",
+        "volatility_quantile": 0.8,
+        "min_trend": "-0.05"
+      },
+      {
+        "label": "volatilite_top_35",
+        "min_dollar_volume": "50000000",
+        "volatility_quantile": 0.65,
+        "min_trend": "-0.05"
+      },
+      {
+        "label": "volume_20M",
+        "min_dollar_volume": "20000000",
+        "volatility_quantile": 0.65,
+        "min_trend": "-0.05"
+      },
+      {
+        "label": "volatilite_top_50",
+        "min_dollar_volume": "20000000",
+        "volatility_quantile": 0.5,
+        "min_trend": "-0.05"
+      },
+      {
+        "label": "tendance_-10",
+        "min_dollar_volume": "20000000",
+        "volatility_quantile": 0.5,
+        "min_trend": "-0.10"
+      },
+      {
+        "label": "volume_10M",
+        "min_dollar_volume": "10000000",
+        "volatility_quantile": 0.5,
+        "min_trend": "-0.10"
+      }
+    ],
+    "amount": "5000",
+    "target_gain": "200",
+    "cost_bps": "5"
+  },
+  "sources": {
+    "alpaca": {
+      "bars": "1Day, feed sip",
+      "assets": "exchange"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1021202606:00",
+      "otherlisted": "1021202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg)"
+    }
+  },
+  "universe": {
+    "exchange_symbols": 4298,
+    "liquid_strict": 541
+  },
+  "summary": {
+    "floors": {
+      "strict": 0.7160607724445617,
+      "volatilite_top_35": 0.5612679668527712,
+      "volume_20M": 0.5612679668527712,
+      "volatilite_top_50": 0.45829800462457976,
+      "tendance_-10": 0.45829800462457976,
+      "volume_10M": 0.45829800462457976
+    },
+    "liquid": 541,
+    "domains": {
+      "Energy & Transportation": {
+        "strict": 0,
+        "mean_corr": 0.0380593088686794
+      },
+      "Finance": {
+        "strict": 1,
+        "mean_corr": 0.2095803275068273
+      },
+      "Industrial Applications and Services": {
+        "strict": 8,
+        "mean_corr": 0.14250542563660712
+      },
+      "Life Sciences": {
+        "strict": 14,
+        "mean_corr": 0.019008846240450718
+      },
+      "Manufacturing": {
+        "strict": 10,
+        "mean_corr": 0.4881155315082399
+      },
+      "Real Estate & Construction": {
+        "strict": 0,
+        "mean_corr": 0.17925417236431762
+      },
+      "Technology": {
+        "strict": 16,
+        "mean_corr": 0.0024844450821053855
+      },
+      "Trade & Services": {
+        "strict": 1,
+        "mean_corr": 0.10366942753232586
+      }
+    },
+    "mean_corr": 0.0848329348108767,
+    "share_negative": 0.30229419703103916
+  },
+  "selection": [
+    {
+      "symbol": "SSRM",
+      "domain": "Energy & Transportation",
+      "step": "volatilite_top_35",
+      "price": 31.27,
+      "dollar_volume": 75113866,
+      "volatility": 0.6103,
+      "trend": 0.0476,
+      "corr_with_others": 0.0447,
+      "rank": 1,
+      "name": "SSR Mining Inc. - Common Stock"
+    },
+    {
+      "symbol": "TLN",
+      "domain": "Energy & Transportation",
+      "step": "volatilite_top_50",
+      "price": 349.43,
+      "dollar_volume": 411128658,
+      "volatility": 0.5532,
+      "trend": 0.0597,
+      "corr_with_others": 0.1419,
+      "rank": 2,
+      "name": "Talen Energy Corporation - Common Stock"
+    },
+    {
+      "symbol": "CLMT",
+      "domain": "Energy & Transportation",
+      "step": "volatilite_top_50",
+      "price": 56.05,
+      "dollar_volume": 82051173,
+      "volatility": 0.4855,
+      "trend": 0.723,
+      "corr_with_others": 0.0162,
+      "rank": 3,
+      "name": "Calumet, Inc - Common Stock"
+    },
+    {
+      "symbol": "PTEN",
+      "domain": "Energy & Transportation",
+      "step": "volatilite_top_50",
+      "price": 11.63,
+      "dollar_volume": 75968688,
+      "volatility": 0.5033,
+      "trend": 0.1204,
+      "corr_with_others": -0.0182,
+      "rank": 4,
+      "name": "Patterson-UTI Energy, Inc. - Common Stock"
+    },
+    {
+      "symbol": "LIND",
+      "domain": "Energy & Transportation",
+      "step": "volatilite_top_50",
+      "price": 35.45,
+      "dollar_volume": 31499918,
+      "volatility": 0.5103,
+      "trend": 0.9018,
+      "corr_with_others": 0.0056,
+      "rank": 5,
+      "name": "Lindblad Expeditions Holdings Inc.  - Common Stock"
+    },
+    {
+      "symbol": "DAVE",
+      "domain": "Finance",
+      "step": "strict",
+      "price": 363.67,
+      "dollar_volume": 96842623,
+      "volatility": 0.7393,
+      "trend": 0.3273,
+      "corr_with_others": 0.2789,
+      "rank": 6,
+      "name": "Dave Inc.  - Class A Common Stock"
+    },
+    {
+      "symbol": "CHYM",
+      "domain": "Finance",
+      "step": "volatilite_top_35",
+      "price": 30.46,
+      "dollar_volume": 129969409,
+      "volatility": 0.625,
+      "trend": 0.3,
+      "corr_with_others": 0.2275,
+      "rank": 7,
+      "name": "Chime Financial, Inc. - Class A Common Stock"
+    },
+    {
+      "symbol": "LIFE",
+      "domain": "Finance",
+      "step": "volatilite_top_35",
+      "price": 41.07,
+      "dollar_volume": 51292546,
+      "volatility": 0.7154,
+      "trend": 1.5104,
+      "corr_with_others": 0.1846,
+      "rank": 8,
+      "name": "Ethos Technologies Inc. - Class A Common Stock"
+    },
+    {
+      "symbol": "PGY",
+      "domain": "Finance",
+      "step": "volume_20M",
+      "price": 18.34,
+      "dollar_volume": 43916120,
+      "volatility": 0.6807,
+      "trend": 0.2807,
+      "corr_with_others": 0.2982,
+      "rank": 9,
+      "name": "Pagaya Technologies Ltd. - Class A Ordinary Shares"
+    },
+    {
+      "symbol": "GSHD",
+      "domain": "Finance",
+      "step": "volume_20M",
+      "price": 47.01,
+      "dollar_volume": 20682374,
+      "volatility": 0.6349,
+      "trend": 0.0524,
+      "corr_with_others": 0.0588,
+      "rank": 10,
+      "name": "Goosehead Insurance, Inc. - Class A Common Stock"
+    },
+    {
+      "symbol": "BRKR",
+      "domain": "Industrial Applications and Services",
+      "step": "strict",
+      "price": 55.93,
+      "dollar_volume": 131680762,
+      "volatility": 0.7161,
+      "trend": 0.3976,
+      "corr_with_others": 0.2006,
+      "rank": 11,
+      "name": "Bruker Corporation - Common Stock"
+    },
+    {
+      "symbol": "CAI",
+      "domain": "Industrial Applications and Services",
+      "step": "strict",
+      "price": 31.11,
+      "dollar_volume": 119723304,
+      "volatility": 0.7712,
+      "trend": 0.4935,
+      "corr_with_others": 0.1367,
+      "rank": 12,
+      "name": "Caris Life Sciences, Inc. - Common Stock"
+    },
+    {
+      "symbol": "HTFL",
+      "domain": "Industrial Applications and Services",
+      "step": "strict",
+      "price": 55.59,
+      "dollar_volume": 84056372,
+      "volatility": 0.7947,
+      "trend": 0.7454,
+      "corr_with_others": 0.1504,
+      "rank": 13,
+      "name": "Heartflow, Inc. - Common Stock"
+    },
+    {
+      "symbol": "COHU",
+      "domain": "Industrial Applications and Services",
+      "step": "strict",
+      "price": 52.74,
+      "dollar_volume": 68429425,
+      "volatility": 0.8729,
+      "trend": 0.1751,
+      "corr_with_others": 0.0902,
+      "rank": 14,
+      "name": "Cohu, Inc. - Common Stock"
+    },
+    {
+      "symbol": "BLLN",
+      "domain": "Industrial Applications and Services",
+      "step": "strict",
+      "price": 103.5,
+      "dollar_volume": 58511170,
+      "volatility": 1.1913,
+      "trend": 0.1629,
+      "corr_with_others": 0.1347,
+      "rank": 15,
+      "name": "BillionToOne, Inc. - Class A common stock"
+    },
+    {
+      "symbol": "TWST",
+      "domain": "Life Sciences",
+      "step": "strict",
+      "price": 142.7,
+      "dollar_volume": 537885570,
+      "volatility": 1.009,
+      "trend": 1.2792,
+      "corr_with_others": 0.0244,
+      "rank": 16,
+      "name": "Twist Bioscience Corporation - Common Stock"
+    },
+    {
+      "symbol": "IOVA",
+      "domain": "Life Sciences",
+      "step": "strict",
+      "price": 14.86,
+      "dollar_volume": 231334372,
+      "volatility": 1.1634,
+      "trend": 3.0162,
+      "corr_with_others": 0.0402,
+      "rank": 17,
+      "name": "Iovance Biotherapeutics, Inc. - Common Stock"
+    },
+    {
+      "symbol": "LQDA",
+      "domain": "Life Sciences",
+      "step": "strict",
+      "price": 36.35,
+      "dollar_volume": 220661812,
+      "volatility": 1.8963,
+      "trend": 0.0028,
+      "corr_with_others": 0.0584,
+      "rank": 18,
+      "name": "Liquidia Corporation - Common Stock"
+    },
+    {
+      "symbol": "QURE",
+      "domain": "Life Sciences",
+      "step": "strict",
+      "price": 22.715,
+      "dollar_volume": 95220331,
+      "volatility": 1.0865,
+      "trend": 0.3017,
+      "corr_with_others": -0.0555,
+      "rank": 19,
+      "name": "uniQure N.V. - Ordinary Shares"
+    },
+    {
+      "symbol": "PCRX",
+      "domain": "Life Sciences",
+      "step": "strict",
+      "price": 36.38,
+      "dollar_volume": 90186494,
+      "volatility": 0.8337,
+      "trend": 0.4765,
+      "corr_with_others": 0.0276,
+      "rank": 20,
+      "name": "Pacira BioSciences, Inc. - Common Stock"
+    },
+    {
+      "symbol": "LITE",
+      "domain": "Manufacturing",
+      "step": "strict",
+      "price": 822.51,
+      "dollar_volume": 4638901217,
+      "volatility": 0.9314,
+      "trend": -0.0172,
+      "corr_with_others": 0.5157,
+      "rank": 21,
+      "name": "Lumentum Holdings Inc. - Common Stock"
+    },
+    {
+      "symbol": "ARM",
+      "domain": "Manufacturing",
+      "step": "strict",
+      "price": 221.06,
+      "dollar_volume": 1528003239,
+      "volatility": 0.8185,
+      "trend": 0.2597,
+      "corr_with_others": 0.4762,
+      "rank": 22,
+      "name": "Arm Holdings plc - American Depositary Shares"
+    },
+    {
+      "symbol": "PENG",
+      "domain": "Manufacturing",
+      "step": "strict",
+      "price": 56.32,
+      "dollar_volume": 325756861,
+      "volatility": 0.915,
+      "trend": 1.0172,
+      "corr_with_others": 0.4995,
+      "rank": 23,
+      "name": "Penguin Solutions, Inc. - Common Stock"
+    },
+    {
+      "symbol": "MXL",
+      "domain": "Manufacturing",
+      "step": "strict",
+      "price": 73.51,
+      "dollar_volume": 290184670,
+      "volatility": 1.0761,
+      "trend": 1.1813,
+      "corr_with_others": 0.5204,
+      "rank": 24,
+      "name": "MaxLinear, Inc - Common Stock"
+    },
+    {
+      "symbol": "FCEL",
+      "domain": "Manufacturing",
+      "step": "strict",
+      "price": 12.4,
+      "dollar_volume": 111187074,
+      "volatility": 1.1902,
+      "trend": 0.3066,
+      "corr_with_others": 0.4287,
+      "rank": 25,
+      "name": "FuelCell Energy, Inc. - Common Stock"
+    },
+    {
+      "symbol": "TH",
+      "domain": "Real Estate & Construction",
+      "step": "volume_20M",
+      "price": 15.47,
+      "dollar_volume": 43352567,
+      "volatility": 0.6286,
+      "trend": -0.027,
+      "corr_with_others": 0.1314,
+      "rank": 26,
+      "name": "Target Hospitality Corp. - Common Stock"
+    },
+    {
+      "symbol": "APPS",
+      "domain": "Real Estate & Construction",
+      "step": "volume_20M",
+      "price": 9.8,
+      "dollar_volume": 30266490,
+      "volatility": 1.0289,
+      "trend": 1.6558,
+      "corr_with_others": 0.1739,
+      "rank": 27,
+      "name": "Digital Turbine, Inc. - Common Stock"
+    },
+    {
+      "symbol": "PLPC",
+      "domain": "Real Estate & Construction",
+      "step": "volume_20M",
+      "price": 356.31,
+      "dollar_volume": 29023249,
+      "volatility": 0.8081,
+      "trend": 0.1093,
+      "corr_with_others": 0.2542,
+      "rank": 28,
+      "name": "Preformed Line Products Company - Common Stock"
+    },
+    {
+      "symbol": "LGIH",
+      "domain": "Real Estate & Construction",
+      "step": "volume_10M",
+      "price": 43.1,
+      "dollar_volume": 16371529,
+      "volatility": 0.5307,
+      "trend": -0.0462,
+      "corr_with_others": 0.1575,
+      "rank": 29,
+      "name": "LGI Homes, Inc. - Common Stock"
+    },
+    {
+      "symbol": "TTAN",
+      "domain": "Technology",
+      "step": "strict",
+      "price": 80.71,
+      "dollar_volume": 128777213,
+      "volatility": 0.9538,
+      "trend": 0.2591,
+      "corr_with_others": 0.0232,
+      "rank": 30,
+      "name": "ServiceTitan, Inc. - Class A Common Stock"
+    },
+    {
+      "symbol": "ACMR",
+      "domain": "Technology",
+      "step": "strict",
+      "price": 54.96,
+      "dollar_volume": 95726076,
+      "volatility": 0.8103,
+      "trend": 0.0732,
+      "corr_with_others": -0.0441,
+      "rank": 31,
+      "name": "ACM Research, Inc. - Class A Common Stock"
+    },
+    {
+      "symbol": "WIX",
+      "domain": "Technology",
+      "step": "strict",
+      "price": 79.04,
+      "dollar_volume": 71531966,
+      "volatility": 0.7778,
+      "trend": 0.025,
+      "corr_with_others": 0.0712,
+      "rank": 32,
+      "name": "Wix.com Ltd. - Ordinary Shares"
+    },
+    {
+      "symbol": "BMBL",
+      "domain": "Technology",
+      "step": "strict",
+      "price": 5.95,
+      "dollar_volume": 66805207,
+      "volatility": 1.31,
+      "trend": 0.3311,
+      "corr_with_others": -0.0486,
+      "rank": 33,
+      "name": "Bumble Inc. - common stock"
+    },
+    {
+      "symbol": "QMCO",
+      "domain": "Technology",
+      "step": "strict",
+      "price": 18.99,
+      "dollar_volume": 64344138,
+      "volatility": 1.3939,
+      "trend": 1.7245,
+      "corr_with_others": 0.0107,
+      "rank": 34,
+      "name": "Quantum Corporation - Common Stock"
+    },
+    {
+      "symbol": "SEZL",
+      "domain": "Trade & Services",
+      "step": "strict",
+      "price": 130.19,
+      "dollar_volume": 56587884,
+      "volatility": 1.0093,
+      "trend": 0.5825,
+      "corr_with_others": 0.094,
+      "rank": 35,
+      "name": "Sezzle Inc. - Common Stock"
+    },
+    {
+      "symbol": "XMTR",
+      "domain": "Trade & Services",
+      "step": "volatilite_top_35",
+      "price": 93.64,
+      "dollar_volume": 82962733,
+      "volatility": 0.6259,
+      "trend": 0.9957,
+      "corr_with_others": 0.1296,
+      "rank": 36,
+      "name": "Xometry, Inc. - Class A Common Stock"
+    },
+    {
+      "symbol": "CNXC",
+      "domain": "Trade & Services",
+      "step": "volatilite_top_35",
+      "price": 29.25,
+      "dollar_volume": 50959606,
+      "volatility": 0.6736,
+      "trend": 0.0202,
+      "corr_with_others": 0.1991,
+      "rank": 37,
+      "name": "Concentrix Corporation - Common Stock"
+    },
+    {
+      "symbol": "HURN",
+      "domain": "Trade & Services",
+      "step": "volume_20M",
+      "price": 180.81,
+      "dollar_volume": 41850527,
+      "volatility": 0.7956,
+      "trend": 0.4095,
+      "corr_with_others": 0.0601,
+      "rank": 38,
+      "name": "Huron Consulting Group Inc. - Common Stock"
+    },
+    {
+      "symbol": "BLMN",
+      "domain": "Trade & Services",
+      "step": "volume_20M",
+      "price": 10.34,
+      "dollar_volume": 23547548,
+      "volatility": 0.8238,
+      "trend": 0.5932,
+      "corr_with_others": 0.0355,
+      "rank": 39,
+      "name": "Bloomin' Brands, Inc. - Common Stock"
+    }
+  ]
+}

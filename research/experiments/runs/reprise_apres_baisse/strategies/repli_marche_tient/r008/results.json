@@ -1,0 +1,251 @@
+{
+  "run_id": "r008",
+  "variant": "per12",
+  "strategy": "repli_marche_tient",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-21",
+  "market_open": "2026-10-21T13:30:00+00:00",
+  "decision_time": "2026-10-21T19:40:00+00:00",
+  "created_at": "2026-10-21T19:57:40.392139+00:00",
+  "git_sha": "72d90ea019ea00a81ae4a09a66cdfdc4dd546525",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": 50,
+    "max_pe": "25",
+    "min_down_days": null,
+    "market_min_day_return": "-0.002",
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1021202606:00",
+      "otherlisted": "1021202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13516,
+    "cotes_sur_une_bourse_us": 12758,
+    "hors_etf_et_titres_de_test": 6993,
+    "avec_barres_quotidiennes": 6992,
+    "historique_complet": 6825,
+    "prix_minimum": 4706,
+    "volume_echange_minimum": 2035,
+    "marche_en_bonne_forme": 2035,
+    "marche_tient": 2035,
+    "volatilite_basse": 1018,
+    "tendance_haussiere": 199,
+    "repli_net": 30,
+    "en_baisse_aujourd_hui": 15,
+    "per_maximum": 9,
+    "selection_diversifiee": 6
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 261,
+        "mean_return": 0.03763726319058999
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 192,
+        "mean_return": 0.0010207690848078857
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": -0.0021232232140648783
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.00992082710177979
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.017779146898486014
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.019028630616516867
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.03300852297221565
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.038231456598023676
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.14523441462973954
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "EHC",
+      "prev_close": "121.67",
+      "price_at_decision": "120.34",
+      "recent_high": "127.87",
+      "pullback": 0.058887933057011024,
+      "return_day": -0.010931207364181803,
+      "return_month": 0.0026370004120313145,
+      "return_day_minus_2": -0.048173926644248063,
+      "return_day_minus_1": -0.0003286500698381398,
+      "trend_gap": 0.0071206336431536895,
+      "volatility_annualized": 0.3241607390935337,
+      "avg_dollar_volume": "129887349",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "19.60",
+      "open_today": "121.28",
+      "name": "Encompass Health Corporation Common Stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Services-Hospitals"
+    },
+    {
+      "rank": 2,
+      "symbol": "GOOG",
+      "prev_close": "336.4",
+      "price_at_decision": "330.22",
+      "recent_high": "349.52",
+      "pullback": 0.055218585488670174,
+      "return_day": -0.018370986920332937,
+      "return_month": -0.04124034542708126,
+      "return_day_minus_2": 0.00964649312872874,
+      "return_day_minus_1": -0.011053621825023518,
+      "trend_gap": 0.003283130532174738,
+      "volatility_annualized": 0.2780481481042392,
+      "avg_dollar_volume": "5361094496",
+      "max_correlation_with_previous": -0.01758680379457789,
+      "pe_ttm": "16.57",
+      "open_today": "333.32",
+      "name": "Alphabet Inc. - Class C Capital Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 3,
+      "symbol": "NTCT",
+      "prev_close": "38.7",
+      "price_at_decision": "38.65",
+      "recent_high": "40.69",
+      "pullback": 0.05013516834603097,
+      "return_day": -0.0012919896640826874,
+      "return_month": -0.0061633281972265025,
+      "return_day_minus_2": 0.013659049120042028,
+      "return_day_minus_1": 0.0028504793988079814,
+      "trend_gap": 0.019347093437258194,
+      "volatility_annualized": 0.27232844230205216,
+      "avg_dollar_volume": "20922273",
+      "max_correlation_with_previous": 0.2566475095251773,
+      "pe_ttm": "23.57",
+      "open_today": "38.99",
+      "name": "NetScout Systems, Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Integrated Systems Design"
+    },
+    {
+      "rank": 4,
+      "symbol": "KMT",
+      "prev_close": "31.21",
+      "price_at_decision": "30.995",
+      "recent_high": "32.27",
+      "pullback": 0.03951038115897118,
+      "return_day": -0.006888817686638898,
+      "return_month": 0.059043094672548355,
+      "return_day_minus_2": -0.005521273140630075,
+      "return_day_minus_1": 0.019268451992161987,
+      "trend_gap": 0.02928845624746158,
+      "volatility_annualized": 0.35352627681354654,
+      "avg_dollar_volume": "42658788",
+      "max_correlation_with_previous": 0.38454614737166704,
+      "pe_ttm": "7.01",
+      "open_today": "31.45",
+      "name": "Kennametal Inc. Common Stock",
+      "domain": "Technology",
+      "sic_description": "Machine Tools, Metal Cutting Types"
+    },
+    {
+      "rank": 5,
+      "symbol": "LAUR",
+      "prev_close": "38.96",
+      "price_at_decision": "38.18",
+      "recent_high": "39.59",
+      "pullback": 0.03561505430664309,
+      "return_day": -0.02002053388090349,
+      "return_month": 0.07386990077177508,
+      "return_day_minus_2": 0.017871017871017872,
+      "return_day_minus_1": -0.008651399491094147,
+      "trend_gap": 0.024868483978957436,
+      "volatility_annualized": 0.22521511243068462,
+      "avg_dollar_volume": "45113536",
+      "max_correlation_with_previous": 0.069700011301105,
+      "pe_ttm": "17.28",
+      "open_today": "39.23",
+      "name": "Laureate Education, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Services-Educational Services"
+    },
+    {
+      "rank": 6,
+      "symbol": "LTC",
+      "prev_close": "42.87",
+      "price_at_decision": "42.34",
+      "recent_high": "43.68",
+      "pullback": 0.030677655677655676,
+      "return_day": -0.012362957779332866,
+      "return_month": 0.004216444132115249,
+      "return_day_minus_2": -0.031135531135531136,
+      "return_day_minus_1": 0.012996219281663515,
+      "trend_gap": 0.025841037955147837,
+      "volatility_annualized": 0.22011013186065645,
+      "avg_dollar_volume": "25365760",
+      "max_correlation_with_previous": 0.3140194589097706,
+      "pe_ttm": "15.12",
+      "open_today": "42.73",
+      "name": "LTC Properties, Inc. Common Stock",
+      "domain": "Real Estate & Construction",
+      "sic_description": "Real Estate Investment Trusts"
+    }
+  ]
+}

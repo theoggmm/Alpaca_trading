@@ -1,0 +1,256 @@
+{
+  "run_id": "r014",
+  "variant": "nasdaq",
+  "strategy": "ouverture_2h",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-22",
+  "market_open": "2026-10-22T13:30:00+00:00",
+  "decision_time": "2026-10-22T13:15:00+00:00",
+  "created_at": "2026-10-22T13:38:18.488059+00:00",
+  "git_sha": "72d90ea019ea00a81ae4a09a66cdfdc4dd546525",
+  "criteria": {
+    "signal": "ouverture",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "last_hour_minutes": 60,
+    "min_overnight": "0.005",
+    "max_overnight": "0.03",
+    "min_premarket_volume": 5000,
+    "data_delay_minutes": 15,
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1022202608:16",
+      "otherlisted": "1022202608:16"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13513,
+    "cotes_sur_une_bourse_us": 12769,
+    "hors_etf_et_titres_de_test": 6996,
+    "avec_barres_quotidiennes": 4299,
+    "historique_complet": 4158,
+    "prix_minimum": 2404,
+    "volume_echange_minimum": 820,
+    "fin_de_seance_en_hausse": 487,
+    "nuit_en_hausse_moderee": 23,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 259,
+        "mean_return": 0.03013418496161646
+      },
+      {
+        "domain": "Technology",
+        "n": 300,
+        "mean_return": 0.009395643159980644
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.00046104206908167234
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.0042033856823749305
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.0068784536354602
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.039373556140447005
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.042605046274609565
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 165,
+        "mean_return": -0.043512497035186254
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 44,
+        "mean_return": -0.12236916699362674
+      }
+    ],
+    "unclassified": 11,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "COCO",
+      "prev_close": "63.5",
+      "open_today": "64",
+      "price_at_decision": "64",
+      "return_month": 0.06543624161073826,
+      "return_day_minus_2": 0.04553148273527421,
+      "return_day_minus_1": 0.0280071231989639,
+      "return_last_hour": 0.016136763061191883,
+      "return_overnight": 0.007874015748031496,
+      "premarket_volume": 14656,
+      "volatility_annualized": 0.46751195009374086,
+      "avg_dollar_volume": "66839122",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "name": "The Vita Coco Company, Inc. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Beverages"
+    },
+    {
+      "rank": 2,
+      "symbol": "REPL",
+      "prev_close": "11.72",
+      "open_today": "11.8507",
+      "price_at_decision": "11.8507",
+      "return_month": -0.12991833704528583,
+      "return_day_minus_2": 0.0334841628959276,
+      "return_day_minus_1": 0.02626970227670753,
+      "return_last_hour": 0.01340250756593169,
+      "return_overnight": 0.011151877133105802,
+      "premarket_volume": 28417,
+      "volatility_annualized": 2.2897478571906413,
+      "avg_dollar_volume": "25737453",
+      "max_correlation_with_previous": -0.04008236288310283,
+      "pe_ttm": null,
+      "name": "Replimune Group, Inc. - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "Biological Products, (No Diagnostic Substances)"
+    },
+    {
+      "rank": 3,
+      "symbol": "CHTR",
+      "prev_close": "107.26",
+      "open_today": "108.49",
+      "price_at_decision": "108.49",
+      "return_month": -0.08528057308545113,
+      "return_day_minus_2": 0.014007925536816884,
+      "return_day_minus_1": -0.02517495228574025,
+      "return_last_hour": 0.011215834118755891,
+      "return_overnight": 0.011467462241282865,
+      "premarket_volume": 5787,
+      "volatility_annualized": 0.5346429588922292,
+      "avg_dollar_volume": "331480639",
+      "max_correlation_with_previous": 0.10412608291052014,
+      "pe_ttm": null,
+      "name": "Charter Communications, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Cable & Other Pay Television Services"
+    },
+    {
+      "rank": 4,
+      "symbol": "OCUL",
+      "prev_close": "6.48",
+      "open_today": "6.55",
+      "price_at_decision": "6.55",
+      "return_month": -0.38285714285714284,
+      "return_day_minus_2": 0.057233704292527825,
+      "return_day_minus_1": -0.02556390977443609,
+      "return_last_hour": 0.006987577639751553,
+      "return_overnight": 0.010802469135802469,
+      "premarket_volume": 16400,
+      "volatility_annualized": 0.7142264194344291,
+      "avg_dollar_volume": "31155946",
+      "max_correlation_with_previous": 0.20131745715338692,
+      "pe_ttm": null,
+      "name": "Ocular Therapeutix, Inc. - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "Pharmaceutical Preparations"
+    },
+    {
+      "rank": 5,
+      "symbol": "GO",
+      "prev_close": "13.15",
+      "open_today": "13.3",
+      "price_at_decision": "13.3",
+      "return_month": 0.144473455178416,
+      "return_day_minus_2": 0.017982799061767005,
+      "return_day_minus_1": 0.009984639016897081,
+      "return_last_hour": 0.006118546845124283,
+      "return_overnight": 0.011406844106463879,
+      "premarket_volume": 9454,
+      "volatility_annualized": 0.4065915560441445,
+      "avg_dollar_volume": "26143894",
+      "max_correlation_with_previous": 0.18533908152497416,
+      "pe_ttm": null,
+      "name": "Grocery Outlet Holding Corp. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Retail-Grocery Stores"
+    },
+    {
+      "rank": 6,
+      "symbol": "INTU",
+      "prev_close": "335.61",
+      "open_today": "339.16",
+      "price_at_decision": "339.16",
+      "return_month": 0.15333860270112376,
+      "return_day_minus_2": 0.02969719304711013,
+      "return_day_minus_1": 0.0009543976855856124,
+      "return_last_hour": 0.005680285363148587,
+      "return_overnight": 0.010577753940585799,
+      "premarket_volume": 11570,
+      "volatility_annualized": 0.44935678449077965,
+      "avg_dollar_volume": "1041745038",
+      "max_correlation_with_previous": 0.43778208224067944,
+      "pe_ttm": null,
+      "name": "Intuit Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 7,
+      "symbol": "STRA",
+      "prev_close": "79.55",
+      "open_today": "79.95",
+      "price_at_decision": "79.95",
+      "return_month": 0.040277232901791554,
+      "return_day_minus_2": -0.0049261083743842365,
+      "return_day_minus_1": -0.01547029702970297,
+      "return_last_hour": 0.0054375316135558925,
+      "return_overnight": 0.00502828409805154,
+      "premarket_volume": 5775,
+      "volatility_annualized": 0.3025781250000521,
+      "avg_dollar_volume": "22032338",
+      "max_correlation_with_previous": 0.411514682388619,
+      "pe_ttm": null,
+      "name": "Strategic Education, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Services-Educational Services"
+    }
+  ]
+}

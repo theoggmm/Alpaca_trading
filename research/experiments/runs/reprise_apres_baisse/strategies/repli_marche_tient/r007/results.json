@@ -1,0 +1,269 @@
+{
+  "run_id": "r007",
+  "variant": "nasdaq",
+  "strategy": "repli_marche_tient",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-21",
+  "market_open": "2026-10-21T13:30:00+00:00",
+  "decision_time": "2026-10-21T19:40:00+00:00",
+  "created_at": "2026-10-21T19:57:32.946956+00:00",
+  "git_sha": "72d90ea019ea00a81ae4a09a66cdfdc4dd546525",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1021202606:00",
+      "otherlisted": "1021202606:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13516,
+    "cotes_sur_une_bourse_us": 12758,
+    "hors_etf_et_titres_de_test": 6993,
+    "avec_barres_quotidiennes": 4297,
+    "historique_complet": 4154,
+    "prix_minimum": 2403,
+    "volume_echange_minimum": 824,
+    "volatilite_basse": 412,
+    "tendance_haussiere": 107,
+    "repli_net": 27,
+    "en_baisse_aujourd_hui": 14,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 261,
+        "mean_return": 0.03763726319058999
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 192,
+        "mean_return": 0.0010207690848078857
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": -0.0021232232140648783
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.00992082710177979
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.017779146898486014
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 167,
+        "mean_return": -0.019028630616516867
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.03300852297221565
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.038231456598023676
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 43,
+        "mean_return": -0.14523441462973954
+      }
+    ],
+    "unclassified": 12,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "GOOG",
+      "prev_close": "336.4",
+      "price_at_decision": "330.22",
+      "recent_high": "349.52",
+      "pullback": 0.055218585488670174,
+      "return_day": -0.018370986920332937,
+      "return_month": -0.04124034542708126,
+      "return_day_minus_2": 0.00964649312872874,
+      "return_day_minus_1": -0.011053621825023518,
+      "trend_gap": 0.003283130532174738,
+      "volatility_annualized": 0.2780481481042392,
+      "avg_dollar_volume": "5361094496",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "333.32",
+      "name": "Alphabet Inc. - Class C Capital Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 2,
+      "symbol": "PPLI",
+      "prev_close": "39.32",
+      "price_at_decision": "38.815",
+      "recent_high": "40.93",
+      "pullback": 0.051673589054483264,
+      "return_day": -0.012843336724313327,
+      "return_month": 0.06964091403699674,
+      "return_day_minus_2": -0.008255933952528379,
+      "return_day_minus_1": 0.022892819979188347,
+      "trend_gap": 0.022765876472195898,
+      "volatility_annualized": 0.42202170136541056,
+      "avg_dollar_volume": "55714809",
+      "max_correlation_with_previous": 0.37415484088173023,
+      "pe_ttm": null,
+      "open_today": "39.31",
+      "name": "People Incorporated - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 3,
+      "symbol": "NTCT",
+      "prev_close": "38.7",
+      "price_at_decision": "38.65",
+      "recent_high": "40.69",
+      "pullback": 0.05013516834603097,
+      "return_day": -0.0012919896640826874,
+      "return_month": -0.0061633281972265025,
+      "return_day_minus_2": 0.013659049120042028,
+      "return_day_minus_1": 0.0028504793988079814,
+      "trend_gap": 0.019347093437258194,
+      "volatility_annualized": 0.27232844230205216,
+      "avg_dollar_volume": "20922273",
+      "max_correlation_with_previous": 0.33741183146210246,
+      "pe_ttm": null,
+      "open_today": "38.99",
+      "name": "NetScout Systems, Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Integrated Systems Design"
+    },
+    {
+      "rank": 4,
+      "symbol": "TGTX",
+      "prev_close": "54.53",
+      "price_at_decision": "53.275",
+      "recent_high": "56",
+      "pullback": 0.048660714285714286,
+      "return_day": -0.023014854208692464,
+      "return_month": -0.046011196641007696,
+      "return_day_minus_2": -0.012414304243098017,
+      "return_day_minus_1": 0.023076923076923078,
+      "trend_gap": 0.00936499549883743,
+      "volatility_annualized": 0.44313853796758074,
+      "avg_dollar_volume": "85779210",
+      "max_correlation_with_previous": 0.1770892387456254,
+      "pe_ttm": null,
+      "open_today": "54.51",
+      "name": "TG Therapeutics, Inc. - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "Pharmaceutical Preparations"
+    },
+    {
+      "rank": 5,
+      "symbol": "CHEF",
+      "prev_close": "110.88",
+      "price_at_decision": "108.85",
+      "recent_high": "114.32",
+      "pullback": 0.0478481455563331,
+      "return_day": -0.018308080808080808,
+      "return_month": 0.0016260162601626016,
+      "return_day_minus_2": -0.020163775644976668,
+      "return_day_minus_1": -0.0035945363048166786,
+      "trend_gap": 0.003984454155852212,
+      "volatility_annualized": 0.37992010967285367,
+      "avg_dollar_volume": "62764657",
+      "max_correlation_with_previous": 0.12999876073902897,
+      "pe_ttm": null,
+      "open_today": "112.43",
+      "name": "The Chefs' Warehouse, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Groceries, General Line"
+    },
+    {
+      "rank": 6,
+      "symbol": "BATRK",
+      "prev_close": "50.16",
+      "price_at_decision": "50.13",
+      "recent_high": "52.5",
+      "pullback": 0.045142857142857144,
+      "return_day": -0.0005980861244019139,
+      "return_month": -0.03944848716966679,
+      "return_day_minus_2": 0.008807865628840639,
+      "return_day_minus_1": 0.01847715736040609,
+      "trend_gap": 0.00749485201105728,
+      "volatility_annualized": 0.24867761721691517,
+      "avg_dollar_volume": "30476584",
+      "max_correlation_with_previous": 0.21771104072835992,
+      "pe_ttm": null,
+      "open_today": "50.29",
+      "name": "Atlanta Braves Holdings, Inc. - Series C Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Services-Amusement & Recreation Services"
+    },
+    {
+      "rank": 7,
+      "symbol": "OLLI",
+      "prev_close": "92.67",
+      "price_at_decision": "91.35",
+      "recent_high": "95.555",
+      "pullback": 0.04400606980273141,
+      "return_day": -0.01424409193913888,
+      "return_month": 0.16258938652615731,
+      "return_day_minus_2": 0.00472204335694355,
+      "return_day_minus_1": -0.010147404400769066,
+      "trend_gap": 0.09317207445124427,
+      "volatility_annualized": 0.4187357072812327,
+      "avg_dollar_volume": "157486716",
+      "max_correlation_with_previous": 0.20818031200274198,
+      "pe_ttm": null,
+      "open_today": "92.615",
+      "name": "Ollie's Bargain Outlet Holdings, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Retail-Variety Stores"
+    }
+  ]
+}
