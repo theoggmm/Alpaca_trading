@@ -60,8 +60,10 @@
   .pickers { display: flex; flex-wrap: wrap; gap: 8px 20px; }
   .pickers select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
   #best-table td.text { min-width: 0; }
-  .vol-line { margin: 0; padding: 10px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
-  .vol-line a { color: var(--accent); font-weight: 700; text-decoration: none; }
+  .vol { display: grid; gap: 8px; }
+  .vol h2 { margin: 4px 0 0; font-size: 20px; }
+  .vol h2 a { color: var(--accent); text-decoration: none; }
+  #vol-table td.text { min-width: 0; }
   #best-table tr.total td { font-weight: 700; border-top: 2px solid var(--line); }
 </style>
 </head>
@@ -76,7 +78,11 @@
   <p class="intro" id="intro"></p>
   <p class="override-banner" id="override-warn" hidden></p>
   <p class="note" id="updated"></p>
-  <p class="vol-line" id="vol-line" hidden></p>
+  <section class="vol" id="vol" hidden>
+    <h2 id="vol-title"></h2>
+    <p class="note" id="vol-intro"></p>
+    <div class="panel"><table id="vol-table"></table></div>
+  </section>
   <div class="panel"><table id="rows"></table></div>
   <p class="note" id="note"></p>
 
@@ -103,7 +109,10 @@ const TEXT = {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
     rule_link: "Règle en vigueur →", rule_href: "regle_en_vigueur.html",
     vol_link: "Volatilité →", vol_href: "volatilite.html", vol_name: "Volatilité",
-    vol_line: (held, each, gain, target, sold, sold_gain, mean) => ` : ${held} actions détenues (${each} chacune), gain net en cours ${gain}. Chacune est vendue à +${target}.` + (sold ? ` ${sold} déjà vendue(s), ${sold_gain} encaissés, en ${mean} en moyenne.` : " Aucune vendue pour l'instant."),
+    vol_title: "Volatilité — par jour d'achat",
+    vol_intro: (each, target) => `Chaque jour, une vague achète les 39 actions de la liste pour ${each} chacune ; chaque action est vendue seule dès qu'elle a rapporté ${target} nets. Une ligne par vague : les jours ne se mélangent pas. Clique sur un jour pour voir ses actions.`,
+    vol_head: ["Jour d'achat", "Objectif atteint", "Encore détenues", "Gains encaissés", "Gain net en cours", "Total", "Plus rapide", "Plus lente (vendue)"],
+    vol_today: "aujourd'hui",
     override_warn: (c, a) => `⚠ Aujourd'hui, le marché est sous sa moyenne de 50 séances (S&P 500 ${c}, moyenne ${a}). Les listes sont faites quand même, à ta demande ; en temps normal elles seraient vides. Les stratégies concernées portent ⚠.`,
     intro: "Chaque ligne est une façon de suivre les listes, avec ses propres heures d'achat et de vente (heures de New York et de Paris). Clique sur un nom pour ouvrir son tableau de bord. Les chiffres sont après frais ; « depuis le 16 octobre » cumule chaque séance terminée.",
     head: ["Stratégie", "Achat → vente", "Aujourd'hui · PER < 25", "Aujourd'hui · PER < 25 · sans stop/objectif", "Aujourd'hui · sans PER", "Aujourd'hui · sans PER · sans stop/objectif", "Aujourd'hui · Nasdaq (7)", "Depuis le 16 oct. · PER < 25", "Depuis le 16 oct. · PER < 25 · sans stop/objectif", "Depuis le 16 oct. · sans PER", "Depuis le 16 oct. · sans PER · sans stop/objectif", "Depuis le 16 oct. · Nasdaq (7)", "Séances"],
@@ -127,7 +136,10 @@ const TEXT = {
     title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
     rule_link: "Rule in force →", rule_href: "regle_en_vigueur_en.html",
     vol_link: "Volatility →", vol_href: "volatility_en.html", vol_name: "Volatility",
-    vol_line: (held, each, gain, target, sold, sold_gain, mean) => `: ${held} stocks held (${each} each), current net gain ${gain}. Each is sold at +${target}.` + (sold ? ` ${sold} already sold, ${sold_gain} banked, in ${mean} on average.` : " None sold yet."),
+    vol_title: "Volatility — by day bought",
+    vol_intro: (each, target) => `Each day, a batch buys the list's 39 stocks for ${each} each; each stock is sold on its own once it has made ${target} net. One row per batch: days are never mixed. Click a day to see its stocks.`,
+    vol_head: ["Day bought", "Target reached", "Still held", "Gains banked", "Current net gain", "Total", "Fastest", "Slowest (sold)"],
+    vol_today: "today",
     override_warn: (c, a) => `⚠ Today the market is below its 50-session average (S&P 500 ${c}, average ${a}). Lists are made anyway, at your request; normally they would be empty. The strategies concerned carry ⚠.`,
     intro: "Each row is a way of following the lists, with its own buying and selling times (New York and Paris times). Click a name to open its dashboard. Figures are after costs; \"since Oct 16\" compounds every completed session.",
     head: ["Strategy", "Buy → sell", "Today · P/E < 25", "Today · P/E < 25 · no stop/target", "Today · without P/E", "Today · without P/E · no stop/target", "Today · Nasdaq (7)", "Since Oct 16 · P/E < 25", "Since Oct 16 · P/E < 25 · no stop/target", "Since Oct 16 · without P/E", "Since Oct 16 · without P/E · no stop/target", "Since Oct 16 · Nasdaq (7)", "Sessions"],
@@ -163,13 +175,29 @@ other.textContent = TEXT.other; other.href = TEXT.other_href;
 Object.assign(document.getElementById("rule-link"), { textContent: TEXT.rule_link, href: TEXT.rule_href });
 Object.assign(document.getElementById("vol-link"), { textContent: TEXT.vol_link, href: TEXT.vol_href });
 if (VOL) {
-  const line = document.getElementById("vol-line"); line.hidden = false;
+  document.getElementById("vol").hidden = false;
   const usd = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", signDisplay: "exceptZero" }).format(v);
-  const a = document.createElement("a"); a.href = TEXT.vol_href; a.textContent = TEXT.vol_name;
   const plain = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
-  const hours = s => s < 3600 ? `${Math.round(s / 60)} min` : s < 86400 ? `${Math.floor(s / 3600)} h ${String(Math.round(s % 3600 / 60)).padStart(2, "0")}` : `${(s / 86400).toFixed(1)} ${LANG === "fr" ? "j" : "days"}`;
-  line.append(a, TEXT.vol_line(VOL.held, plain(+VOL.amount_per_stock), usd(+VOL.open_gain), plain(+VOL.target_gain),
-    VOL.sold, usd(+VOL.sold_gain), VOL.mean_seconds == null ? "" : hours(VOL.mean_seconds)));
+  const span = s => s == null ? "—" : s < 3600 ? `${Math.round(s / 60)} min` : s < 86400 ? `${Math.floor(s / 3600)} h ${String(Math.round(s % 3600 / 60)).padStart(2, "0")}` : `${(s / 86400).toFixed(1)} ${LANG === "fr" ? "j" : "days"}`;
+  const title = document.getElementById("vol-title");
+  const link = document.createElement("a"); link.href = TEXT.vol_href; link.textContent = TEXT.vol_title; title.appendChild(link);
+  document.getElementById("vol-intro").textContent = TEXT.vol_intro(plain(+VOL.amount_per_stock), plain(+VOL.target_gain));
+  const vt = document.getElementById("vol-table");
+  const vh = vt.createTHead().insertRow();
+  TEXT.vol_head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i === 0) th.className = "text"; vh.appendChild(th); });
+  const vb = vt.createTBody();
+  const nyToday = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+  const money = v => { const td = document.createElement("td"); td.className = "num" + (v > 0 ? " up" : v < 0 ? " down" : ""); td.textContent = usd(v); return td; };
+  const plainCell = v => { const td = document.createElement("td"); td.className = "num"; td.textContent = v; return td; };
+  VOL.batches.forEach(b => {
+    const tr = vb.insertRow();
+    const name = document.createElement("td"); name.className = "text";
+    const a = document.createElement("a"); a.href = `${TEXT.vol_href}#${b.day}`;
+    a.textContent = new Date(b.entry_time).toLocaleDateString(TEXT.locale, { timeZone: "America/New_York", day: "numeric", month: "long" }) + (b.day === nyToday ? ` (${TEXT.vol_today})` : "");
+    name.appendChild(a); tr.appendChild(name);
+    tr.append(plainCell(`${b.sold} / ${b.n}`), plainCell(b.held), money(+b.banked), money(+b.open_gain), money(+b.banked + +b.open_gain),
+              plainCell(span(b.fastest)), plainCell(span(b.slowest)));
+  });
 }
 const flagged = ROWS.find(r => r.unhealthy_today);
 const banner = document.getElementById("override-warn");

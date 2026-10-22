@@ -51,6 +51,10 @@
   .up { color: var(--up); } .down { color: var(--down); }
   .progress { display: grid; gap: 3px; min-width: 120px; }
   .progress .bar { height: 6px; }
+  .picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .picker select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  #batches tbody tr { cursor: pointer; }
+  #batches tbody tr.chosen td { background: color-mix(in srgb, var(--accent) 12%, transparent); font-weight: 700; }
   .note { color: var(--muted); font-size: 13px; margin: 0; max-width: 100ch; }
 </style>
 </head>
@@ -63,6 +67,7 @@
   </header>
   <p class="intro" id="intro"></p>
   <p class="note" id="updated"></p>
+  <div class="picker"><label><span id="picker-label"></span> <select id="picker"></select></label><span class="note" id="picker-note"></span></div>
   <div class="panel round" id="summary"></div>
   <h2 id="batches-title"></h2>
   <div class="panel"><table id="batches"></table></div>
@@ -81,6 +86,8 @@ const TEXT = {
     intro: (a, t, k) => `But : investir ${a} dans chaque action et gagner ${t} sur chacune, si possible dans la journée. La liste « Volatilité » a été faite le 21 octobre : ${k} actions cotées au Nasdaq par domaine (hors crypto et ETF), très échangées, très volatiles, en tendance neutre ou positive sur 6 mois et les moins liées entre elles. Chaque jour, à l'ouverture de New York (15 h 30 à Paris), une nouvelle vague achète de zéro chaque action de cette même liste pour ${a}, même celles qu'une vague précédente détient encore. Dans chaque vague, chaque action est gardée seule jusqu'à ce que son gain net de frais atteigne ${t} — en 1 heure ou en 3 jours — puis vendue. Rien ne se vend la nuit : un objectif atteint pendant la fermeture est vendu à la première minute de l'ouverture. Les vagues tournent côte à côte jusqu'à ce que toutes leurs actions aient atteint l'objectif.`,
     updated: t => `Mise à jour à ${t} (Paris) — prix avec 15 minutes de retard ; la page se recharge toute seule.`,
     f_held: "Actions détenues", f_invested: "Montant investi", f_open_gain: "Gain net en cours", f_sold: "Actions vendues à l'objectif", f_banked: "Gains encaissés", f_mean: "Temps moyen pour l'objectif",
+    picker: "Jour d'achat :", picker_note: "Chaque jour est une vague à part : ses 39 achats, ses ventes, ses gains. Clique aussi sur une ligne du tableau des vagues.",
+    today: "aujourd'hui", batch_of: d => `Vague du ${d}`,
     next_open: d => `Prochaine vague à l'ouverture du ${d} (15 h 30 à Paris), même liste.`,
     batches_title: "Vagues (une par jour)",
     batches_head: ["Vague (achat)", "Objectif atteint", "Encore détenues", "Gains encaissés", "Gain net en cours", "Plus rapide", "Plus lente (vendue)"],
@@ -99,6 +106,8 @@ const TEXT = {
     intro: (a, t, k) => `Goal: invest ${a} in each stock and make ${t} on each one, ideally within the day. The "Volatility" list was made on October 21: ${k} Nasdaq-listed stocks per domain (no crypto, no ETFs), heavily traded, extremely volatile, with a neutral or positive 6-month trend, and the least tied to each other. Every day at the New York open (15:30 in Paris), a new batch buys every stock on that same list from zero for ${a}, even those an earlier batch still holds. In each batch, each stock is held on its own until its net gain after costs reaches ${t} — whether in 1 hour or 3 days — then sold. Nothing is sold overnight: a target reached while the market is closed is sold in the first minute after the open. Batches run side by side until all their stocks have reached the target.`,
     updated: t => `Updated at ${t} (Paris) — prices 15 minutes late; the page reloads itself.`,
     f_held: "Stocks held", f_invested: "Amount invested", f_open_gain: "Current net gain", f_sold: "Stocks sold at target", f_banked: "Gains banked", f_mean: "Average time to target",
+    picker: "Day bought:", picker_note: "Each day is a separate batch: its 39 purchases, its sales, its gains. You can also click a row of the batches table.",
+    today: "today", batch_of: d => `Batch of ${d}`,
     next_open: d => `Next batch at the open on ${d} (15:30 in Paris), same list.`,
     batches_title: "Batches (one per day)",
     batches_head: ["Batch (bought)", "Target reached", "Still held", "Gains banked", "Current net gain", "Fastest", "Slowest (sold)"],
@@ -138,12 +147,26 @@ document.getElementById("intro").textContent = TEXT.intro(whole(each), whole(tar
 document.getElementById("updated").textContent = TEXT.updated(clock(STATE.updated, "Europe/Paris"));
 document.getElementById("note").textContent = TEXT.note((+STATE.cost_bps / 100).toLocaleString(TEXT.locale));
 
-const openGain = STATE.open.reduce((t, p) => t + (p.gain == null ? 0 : +p.gain), 0);
-const banked = STATE.sold.reduce((t, p) => t + +p.sold_gain, 0);
-const mean = STATE.sold.length ? STATE.sold.reduce((t, p) => t + p.elapsed_seconds, 0) / STATE.sold.length : null;
+// Un jour d'achat = une vague, affichée seule (choix gardé dans l'adresse, #AAAA-MM-JJ, à travers les rechargements).
+const DAYS = [...new Set([...STATE.open, ...STATE.sold].map(p => p.session_date))].sort().reverse();
+const wanted = decodeURIComponent(location.hash.slice(1));
+const DAY = DAYS.includes(wanted) ? wanted : DAYS[0];
+const OPEN = STATE.open.filter(p => p.session_date === DAY), SOLD = STATE.sold.filter(p => p.session_date === DAY);
+const choose = d => { location.hash = d; location.reload(); };
+const nyToday = new Date().toLocaleDateString("en-CA", { timeZone: "America/New_York" });
+const dayLabel = d => { const at = [...STATE.open, ...STATE.sold].find(p => p.session_date === d).entry_time; return `${dayOf(at)}${d === nyToday ? ` (${TEXT.today})` : ""}`; };
+document.getElementById("picker-label").textContent = TEXT.picker;
+document.getElementById("picker-note").textContent = TEXT.picker_note;
+const picker = document.getElementById("picker");
+DAYS.forEach(d => { const o = el("option", null, dayLabel(d)); o.value = d; o.selected = d === DAY; picker.append(o); });
+picker.addEventListener("change", () => choose(picker.value));
+const openGain = OPEN.reduce((t, p) => t + (p.gain == null ? 0 : +p.gain), 0);
+const banked = SOLD.reduce((t, p) => t + +p.sold_gain, 0);
+const mean = SOLD.length ? SOLD.reduce((t, p) => t + p.elapsed_seconds, 0) / SOLD.length : null;
 const box = document.getElementById("summary"), figs = el("div", "figures");
-[[TEXT.f_held, STATE.open.length], [TEXT.f_invested, whole(STATE.open.length * each)],
- [TEXT.f_open_gain, usd(openGain, true), signClass(openGain)], [TEXT.f_sold, STATE.sold.length],
+if (DAY) box.append(el("div", "status", TEXT.batch_of(dayLabel(DAY))));
+[[TEXT.f_held, OPEN.length], [TEXT.f_invested, whole(OPEN.length * each)],
+ [TEXT.f_open_gain, usd(openGain, true), signClass(openGain)], [TEXT.f_sold, SOLD.length],
  [TEXT.f_banked, usd(banked, true), signClass(banked)], [TEXT.f_mean, mean == null ? "—" : span(mean)]]
   .forEach(([label, value, cls]) => { const f = el("div", "figure"); f.append(el("div", "label", label), el("div", "value " + (cls || ""), value)); figs.append(f); });
 box.append(figs);
@@ -156,7 +179,9 @@ const bb = bt.createTBody();
 const batches = {};
 [...STATE.open, ...STATE.sold].forEach(p => (batches[p.entry_time] ??= { open: [], sold: [] })[p.status === "sold" ? "sold" : "open"].push(p));
 Object.entries(batches).sort((a, b) => b[0].localeCompare(a[0])).forEach(([at, g]) => {
-  const tr = bb.insertRow(), n = g.open.length + g.sold.length;
+  const tr = bb.insertRow(), n = g.open.length + g.sold.length, d = (g.open[0] || g.sold[0]).session_date;
+  if (d === DAY) tr.className = "chosen";
+  tr.addEventListener("click", () => choose(d));
   const times = g.sold.map(p => p.elapsed_seconds);
   const bank = g.sold.reduce((t, p) => t + +p.sold_gain, 0), live = g.open.reduce((t, p) => t + (p.gain == null ? 0 : +p.gain), 0);
   tr.append(el("td", "text", `${dayOf(at)} · ${clock(at, "America/New_York")} NY`));
@@ -169,8 +194,8 @@ document.getElementById("open-title").textContent = TEXT.open_title;
 const ot = document.getElementById("open");
 header(ot, TEXT.open_head, [0, 1, 2, 9]);
 const ob = ot.createTBody();
-if (!STATE.open.length) empty(ob, TEXT.none_open, TEXT.open_head.length);
-STATE.open.slice().sort((a, b) => (b.gain == null ? -1e9 : +b.gain) - (a.gain == null ? -1e9 : +a.gain)).forEach(p => {
+if (!OPEN.length) empty(ob, TEXT.none_open, TEXT.open_head.length);
+OPEN.slice().sort((a, b) => (b.gain == null ? -1e9 : +b.gain) - (a.gain == null ? -1e9 : +a.gain)).forEach(p => {
   const tr = ob.insertRow(), gain = p.gain == null ? null : +p.gain;
   const name = el("td", "text"); name.append(el("b", null, p.symbol), el("div", "desc", p.name.split(" - ")[0])); tr.append(name);
   tr.append(el("td", "text", p.domain), el("td", "text", `${dayOf(p.entry_time)} · ${clock(p.entry_time, "America/New_York")} NY`));
@@ -187,8 +212,8 @@ document.getElementById("sold-title").textContent = TEXT.sold_title;
 const st = document.getElementById("sold");
 header(st, TEXT.sold_head, [0, 1, 2]);
 const sb = st.createTBody();
-if (!STATE.sold.length) empty(sb, TEXT.none_sold, TEXT.sold_head.length);
-STATE.sold.slice().sort((a, b) => b.sold_at.localeCompare(a.sold_at)).forEach(p => {
+if (!SOLD.length) empty(sb, TEXT.none_sold, TEXT.sold_head.length);
+SOLD.slice().sort((a, b) => b.sold_at.localeCompare(a.sold_at)).forEach(p => {
   const tr = sb.insertRow();
   const name = el("td", "text"); name.append(el("b", null, p.symbol), el("div", "desc", p.domain)); tr.append(name);
   tr.append(el("td", "text", when(p.entry_time)), el("td", "text", when(p.sold_at)));

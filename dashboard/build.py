@@ -465,17 +465,26 @@ def _best_by_month(every, suffix=""):
 
 
 def _volatility_summary():
-    """Positions détenues et ventes de la stratégie « Volatilité » (résumé de l'accueil), None avant le premier achat."""
+    """Stratégie « Volatilité » sur l'accueil : une ligne par vague (jour d'achat), None avant le premier achat."""
     if not VOLATILITY_LIVE.exists():
         return None
     page = json.loads(VOLATILITY_LIVE.read_text(encoding="utf-8"))
     if "open" not in page:      # état d'avant T26 (un seul panier) : attendre le prochain passage du suivi
         return None
-    held = [p for p in page["open"] if p["gain"] is not None]
-    return {"amount_per_stock": page["amount_per_stock"], "target_gain": page["target_gain"], "held": len(page["open"]),
-            "open_gain": str(sum((Decimal(p["gain"]) for p in held), Decimal(0))),
-            "sold": len(page["sold"]), "sold_gain": str(sum((Decimal(p["sold_gain"]) for p in page["sold"]), Decimal(0))),
-            "mean_seconds": (sum(p["elapsed_seconds"] for p in page["sold"]) / len(page["sold"])) if page["sold"] else None}
+    days = {}
+    for p in page["open"] + page["sold"]:
+        days.setdefault(p["session_date"], []).append(p)
+    batches = []
+    for day, group in sorted(days.items(), reverse=True):
+        sold = [p for p in group if p["status"] == "sold"]
+        held = [p for p in group if p["status"] != "sold"]
+        batches.append({
+            "day": day, "entry_time": group[0]["entry_time"], "n": len(group), "sold": len(sold), "held": len(held),
+            "banked": str(sum((Decimal(p["sold_gain"]) for p in sold), Decimal(0))),
+            "open_gain": str(sum((Decimal(p["gain"]) for p in held if p["gain"] is not None), Decimal(0))),
+            "fastest": min((p["elapsed_seconds"] for p in sold), default=None),
+            "slowest": max((p["elapsed_seconds"] for p in sold), default=None)})
+    return {"amount_per_stock": page["amount_per_stock"], "target_gain": page["target_gain"], "batches": batches}
 
 
 def build(family):
