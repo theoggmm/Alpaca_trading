@@ -57,6 +57,7 @@
   #batches tbody tr.chosen td { background: color-mix(in srgb, var(--accent) 12%, transparent); font-weight: 700; }
   tr.day-total td { font-weight: 700; border-bottom: 2px solid var(--line); }
   tr.day-first td { border-top: 2px solid var(--line); }
+  th.alt, td.alt { background: color-mix(in srgb, var(--line) 35%, transparent); }
   .note { color: var(--muted); font-size: 13px; margin: 0; max-width: 100ch; }
 </style>
 </head>
@@ -71,6 +72,7 @@
   <p class="note" id="updated"></p>
   <div class="panel round" id="summary"></div>
   <h2 id="days-title"></h2>
+  <p class="note" id="alt-note"></p>
   <div class="panel"><table id="days"></table></div>
   <p class="note" id="note"></p>
 </main>
@@ -84,7 +86,9 @@ const TEXT = {
     updated: t => `Mise à jour à ${t} (Paris) — prix avec 15 minutes de retard ; la page se recharge toute seule.`,
     f_days: "Jours", f_total: "Résultat net total", f_target: "Ventes à +200 $", f_deadline: "Ventes à 3 h 30 (positives)", f_close: "Ventes à la clôture", f_mean: "Temps moyen jusqu'à +200 $",
     days_title: "Jour par jour",
-    head: ["Jour", "Action", "Achat", "Prix d'achat", "Vente / dernier", "Pourquoi", "Temps", "Gain net"],
+    head: ["Jour", "Action", "Achat", "Prix d'achat", "Vente / dernier", "Pourquoi", "Temps", "Gain net", "Si vendue à 2 h", "Si vendue à 3 h 30", "Si vendue à la clôture"],
+    alt_note: "Trois colonnes de comparaison (en gris), mêmes actions, même achat : vente dès +200 $, sinon à 2 h, à 3 h 30 ou à la clôture, gain ou perte. « en cours » : pas encore déclenchée.",
+    alt_target: "objectif", f_alt: { "2h": "Total si vente à 2 h", "3h30": "Total si vente à 3 h 30", close: "Total si vente à la clôture" },
     day_total: "Total du jour", waiting: "achat à 9 h 31", next: "Les 2 actions sont connues après la clôture de la veille.", live: "en cours",
     reason: { objectif: "objectif +200 $", positif_echeance: "3 h 30, positive", cloture: "clôture" },
     note: c => `Simulation en papier : aucun ordre n'est passé. Frais comptés : ${c} % par ordre. Achat au premier cours de la minute 9 h 31 ; vente au cours de la minute où la règle se déclenche. Volatilité : écart des variations quotidiennes sur 20 séances, ramené à l'année. Résultat passé : le test sur 12 mois est marqué « suspect » (plus de +100 % sur un an, et la liste des 39 a été faite avec du recul) ; seuls les jours à venir jugent la règle.`,
@@ -95,7 +99,9 @@ const TEXT = {
     updated: t => `Updated at ${t} (Paris) — prices 15 minutes late; the page reloads itself.`,
     f_days: "Days", f_total: "Total net result", f_target: "Sold at +$200", f_deadline: "Sold at 3 h 30 (positive)", f_close: "Sold at the close", f_mean: "Average time to +$200",
     days_title: "Day by day",
-    head: ["Day", "Stock", "Bought", "Buy price", "Sold / last", "Why", "Time", "Net gain"],
+    head: ["Day", "Stock", "Bought", "Buy price", "Sold / last", "Why", "Time", "Net gain", "If sold at 2 h", "If sold at 3 h 30", "If sold at the close"],
+    alt_note: "Three comparison columns (grey), same stocks, same purchase: sold as soon as it reaches +$200, otherwise at 2 h, at 3 h 30 or at the close, gain or loss. \"in progress\": not triggered yet.",
+    alt_target: "target", f_alt: { "2h": "Total if sold at 2 h", "3h30": "Total if sold at 3 h 30", close: "Total if sold at the close" },
     day_total: "Day total", waiting: "buy at 9:31", next: "The 2 stocks are known after the previous close.", live: "in progress",
     reason: { objectif: "target +$200", positif_echeance: "3 h 30, positive", cloture: "close" },
     note: c => `Paper simulation: no order is placed. Costs counted: ${c}% per order. Bought at the first price of the 9:31 minute; sold at the price of the minute the rule triggers. Volatility: spread of daily moves over 20 sessions, annualized. Past result: the 12-month test is flagged "suspect" (over +100% in a year, and the list of 39 was made with hindsight); only the days ahead judge the rule.`,
@@ -127,32 +133,44 @@ const figs = el("div", "figures");
 [[TEXT.f_days, STATE.days.filter(d => d.positions.length && d.positions[0].status !== "waiting").length],
  [TEXT.f_total, usd(total, true), signClass(total)],
  [TEXT.f_target, `${hits.length} / ${sold.length}`], [TEXT.f_deadline, byReason("positif_echeance").length], [TEXT.f_close, byReason("cloture").length],
- [TEXT.f_mean, hits.length ? span(hits.reduce((t, p) => t + p.held_seconds, 0) / hits.length) : "—"]]
+ [TEXT.f_mean, hits.length ? span(hits.reduce((t, p) => t + p.held_seconds, 0) / hits.length) : "—"],
+ ...["2h", "3h30", "close"].map(k => { const v = STATE.days.reduce((t, d) => t + (d.alternatives?.[k] == null ? 0 : +d.alternatives[k]), 0); return [TEXT.f_alt[k], usd(v, true), signClass(v)]; })]
   .forEach(([label, value, cls]) => { const f = el("div", "figure"); f.append(el("div", "label", label), el("div", "value " + (cls || ""), value)); figs.append(f); });
 document.getElementById("summary").append(figs);
 
 document.getElementById("days-title").textContent = TEXT.days_title;
+document.getElementById("alt-note").textContent = TEXT.alt_note;
+const ALTS = ["2h", "3h30", "close"];
+const altCell = a => {
+  if (!a) return el("td", "num alt", "—");
+  const g = +a.gain, td = el("td", "num alt " + signClass(g), usd(g, true));
+  if (a.status === "sold") td.append(el("div", "desc", `${a.reason === "objectif" ? TEXT.alt_target : clock(a.exit_at, "America/New_York")} · ${span(a.held_seconds)}`));
+  else td.append(el("div", "desc", TEXT.live));
+  return td;
+};
 const t = document.getElementById("days");
 const hr = t.createTHead().insertRow();
-TEXT.head.forEach((h, i) => hr.append(el("th", i < 3 || i === 5 ? "text" : "", h)));
+TEXT.head.forEach((h, i) => hr.append(el("th", i < 3 || i === 5 ? "text" : i > 7 ? "alt" : "", h)));
 const body = t.createTBody();
 STATE.days.slice().reverse().forEach(d => {
   const label = new Date(`${d.day}T12:00:00Z`).toLocaleDateString(TEXT.locale, { weekday: "long", day: "numeric", month: "long" });
-  if (!d.positions.length) { const tr = body.insertRow(); tr.className = "day-first"; tr.append(el("td", "text", label)); const td = el("td", "text note", TEXT.next); td.colSpan = 7; tr.append(td); return; }
+  if (!d.positions.length) { const tr = body.insertRow(); tr.className = "day-first"; tr.append(el("td", "text", label)); const td = el("td", "text note", TEXT.next); td.colSpan = 10; tr.append(td); return; }
   d.positions.forEach((p, i) => {
     const tr = body.insertRow(); if (i === 0) tr.className = "day-first";
     tr.append(el("td", "text", i === 0 ? label : ""));
     const name = el("td", "text"); name.append(el("b", null, p.symbol), el("div", "desc", `${p.name.split(" - ")[0]} · ${pct(p.volatility_20)}`)); tr.append(name);
-    if (p.status === "waiting") { const td = el("td", "text note", TEXT.waiting); td.colSpan = 6; tr.append(td); return; }
+    if (p.status === "waiting") { const td = el("td", "text note", TEXT.waiting); td.colSpan = 9; tr.append(td); return; }
     const g = +p.gain;
     tr.append(el("td", "text", `${clock(p.buy_at, "America/New_York")} NY`), el("td", "num", usd(+p.entry)));
     tr.append(el("td", "num", (p.status === "sold" ? `${clock(p.exit_at, "America/New_York")} · ` : "") + usd(+p.price)));
     tr.append(el("td", "text", p.status === "sold" ? (TEXT.reason[p.reason] ?? p.reason) : TEXT.live));
     tr.append(el("td", "num", span(p.held_seconds)), el("td", "num " + signClass(g), usd(g, true)));
+    ALTS.forEach(k => tr.append(altCell(p.alternatives?.[k])));
   });
   const tr = body.insertRow(); tr.className = "day-total";
   const lab = el("td", "text", TEXT.day_total); lab.colSpan = 7; tr.append(lab);
   const g = d.gain == null ? null : +d.gain; tr.append(el("td", "num " + signClass(g), g == null ? "—" : usd(g, true)));
+  ALTS.forEach(k => { const v = d.alternatives?.[k]; tr.append(el("td", "num alt " + (v == null ? "" : signClass(+v)), v == null ? "—" : usd(+v, true))); });
 });
 </script>
 </body>

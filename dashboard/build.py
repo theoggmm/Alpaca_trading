@@ -495,7 +495,7 @@ def _volatility_pairs_summary():
         return None
     page = json.loads(VOLATILITY_PAIRS_LIVE.read_text(encoding="utf-8"))
     return {"amount": page["amount"], "target_gain": page["target_gain"],
-            "days": [{"day": d["day"], "gain": d["gain"],
+            "days": [{"day": d["day"], "gain": d["gain"], "alternatives": d.get("alternatives"),
                       "positions": [{k: p.get(k) for k in ("symbol", "status", "gain", "reason", "held_seconds")}
                                     for p in d["positions"]]} for d in reversed(page["days"])]}
 

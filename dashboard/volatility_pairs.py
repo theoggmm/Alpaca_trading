@@ -22,7 +22,7 @@ from zoneinfo import ZoneInfo
 
 import pandas as pd
 
-from core.volatility import exit_with_deadline, net_gain, rank_by_volatility
+from core.volatility import exit_target_or_time, exit_with_deadline, net_gain, rank_by_volatility
 from dashboard.build import FINALS_DIR, VOLATILITY_PAIRS_LIVE, _embed
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
@@ -41,6 +41,8 @@ PICKS = 2
 AMOUNT, TARGET, COST_BPS = Decimal("5000"), Decimal("200"), Decimal("5")
 BUY_AFTER_OPEN = timedelta(minutes=1)    # cours d'ouverture de la minute 9 h 31
 DEADLINE = timedelta(hours=3, minutes=30)
+# Colonnes de comparaison (T30) : mêmes achats, vente à +200 $ sinon à heure fixe (gain ou perte).
+ALTERNATIVES = {"2h": timedelta(hours=2), "3h30": timedelta(hours=3, minutes=30), "close": None}
 VOLATILITY_SESSIONS = 20
 DAILY_HISTORY = timedelta(days=60)
 FEED_DELAY = timedelta(minutes=15)
@@ -100,13 +102,19 @@ def _position(symbol, volatility, bars, market_open, market_close, listing):
     sale = exit_with_deadline(path, entry, AMOUNT, TARGET, COST_BPS, buy_at + DEADLINE, market_close, "cloture")
     last_at, last = path[-1]
     money = lambda v: str(v.quantize(Decimal("0.01")))
-    position = {**base, "buy_at": buy_at.isoformat(), "entry": str(entry)}
+    current = net_gain(AMOUNT / entry * last, AMOUNT, COST_BPS)
+    alternatives = {}
+    for name, after in ALTERNATIVES.items():
+        alt = exit_target_or_time(path, entry, AMOUNT, TARGET, COST_BPS, market_close if after is None else buy_at + after)
+        alternatives[name] = ({"status": "sold", "gain": money(alt["gain"]), "reason": alt["reason"],
+                               "exit_at": alt["exit_at"].isoformat(), "held_seconds": (alt["exit_at"] - buy_at).total_seconds()}
+                              if alt else {"status": "live", "gain": money(current)})
+    position = {**base, "buy_at": buy_at.isoformat(), "entry": str(entry), "alternatives": alternatives}
     if sale:
         return {**position, "status": "sold", "exit_at": sale["exit_at"].isoformat(), "price": str(sale["price"]),
                 "gain": money(sale["gain"]), "reason": sale["reason"],
                 "held_seconds": (sale["exit_at"] - buy_at).total_seconds()}
-    gain = net_gain(AMOUNT / entry * last, AMOUNT, COST_BPS)
-    return {**position, "status": "live", "price": str(last), "gain": money(gain), "checked_at": last_at.isoformat(),
+    return {**position, "status": "live", "price": str(last), "gain": money(current), "checked_at": last_at.isoformat(),
             "held_seconds": (last_at - buy_at).total_seconds(), "deadline": (buy_at + DEADLINE).isoformat()}
 
 
@@ -131,9 +139,13 @@ def update(alpaca, now=None):
         bars = _bars(alpaca, [s for s, _ in picks], day, market_open, market_close, now)
         positions = [_position(s, v, bars, market_open, market_close, listing) for s, v in picks]
         gains = [Decimal(p["gain"]) for p in positions if p.get("gain") is not None]
+        alt_gains = {name: [Decimal(p["alternatives"][name]["gain"]) for p in positions if p.get("alternatives")]
+                     for name in ALTERNATIVES}
         record = {"day": day.isoformat(), "market_open": market_open.isoformat(), "market_close": market_close.isoformat(),
                   "positions": positions, "gain": str(sum(gains, Decimal(0))) if gains else None,
-                  "done": all(p["status"] == "sold" for p in positions) and now >= market_close + FEED_DELAY}
+                  "alternatives": {name: str(sum(v, Decimal(0))) if v else None for name, v in alt_gains.items()},
+                  "done": all(p["status"] == "sold" and all(a["status"] == "sold" for a in p["alternatives"].values())
+                              for p in positions) and now >= market_close + FEED_DELAY}
         if record["done"]:
             DAYS_DIR.mkdir(parents=True, exist_ok=True)
             saved.write_text(json.dumps(record, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

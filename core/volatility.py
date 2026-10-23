@@ -309,3 +309,19 @@ def rank_by_volatility(daily, decision_time, symbols, sessions=20):
             continue
         scored.append((s, float(np.log(series.tail(sessions + 1)).diff().std())))
     return sorted(scored, key=lambda x: (-x[1], x[0]))
+
+
+def exit_target_or_time(path, entry_price, amount, target_gain, cost_bps, sell_at):
+    """
+    Variante de comparaison (T30) : vente dès que le gain net atteint target_gain, sinon à la première minute qui
+    atteint sell_at (ex. achat + 2 h, achat + 3 h 30, clôture), gain ou perte. path comme exit_with_deadline.
+    Retourne {"exit_at", "price", "gain", "reason": objectif | heure}, ou None si rien n'est encore déclenché.
+    """
+    shares = amount / entry_price
+    for at, price in path:
+        gain = net_gain(shares * price, amount, cost_bps)
+        if gain >= target_gain:
+            return {"exit_at": at, "price": price, "gain": gain, "reason": "objectif"}
+        if at >= sell_at:
+            return {"exit_at": at, "price": price, "gain": gain, "reason": "heure"}
+    return None

@@ -117,7 +117,7 @@ const TEXT = {
     vol_link: "Volatilité →", vol_href: "volatilite.html", vol_name: "Volatilité",
     pairs_title: "Volatilité — 2 actions par jour", pairs_href: "volatilite_2.html",
     pairs_intro: (each, target) => `Chaque jour à 9 h 31 (15 h 31 à Paris), les 2 actions les plus volatiles des 20 dernières séances (parmi les 39) sont achetées ${each} chacune. Vente à +${target} nets, sinon à 3 h 30 si positive, sinon à la clôture. Rien n'est gardé la nuit : chaque jour est à part.`,
-    pairs_head: ["Jour", "Action 1", "Action 2", "Résultat du jour"],
+    pairs_head: ["Jour", "Action 1", "Action 2", "Résultat du jour", "Si vente à 2 h", "Si vente à 3 h 30", "Si vente à la clôture"],
     pairs_wait: "à acheter à 9 h 31", pairs_next: "connues après la clôture de la veille",
     pairs_reason: { objectif: "objectif", positif_echeance: "3 h 30, positif", cloture: "clôture" }, pairs_live: "en cours",
     vol_title: "Volatilité — par jour d'achat",
@@ -149,7 +149,7 @@ const TEXT = {
     vol_link: "Volatility →", vol_href: "volatility_en.html", vol_name: "Volatility",
     pairs_title: "Volatility — 2 stocks a day", pairs_href: "volatility_2_en.html",
     pairs_intro: (each, target) => `Every day at 9:31 AM (15:31 in Paris), the 2 most volatile stocks of the last 20 sessions (out of the 39) are bought for ${each} each. Sold at +${target} net, otherwise at 3 h 30 if positive, otherwise at the close. Nothing is held overnight: each day stands alone.`,
-    pairs_head: ["Day", "Stock 1", "Stock 2", "Day's result"],
+    pairs_head: ["Day", "Stock 1", "Stock 2", "Day's result", "If sold at 2 h", "If sold at 3 h 30", "If sold at the close"],
     pairs_wait: "to buy at 9:31", pairs_next: "known after the previous close",
     pairs_reason: { objectif: "target", positif_echeance: "3 h 30, positive", cloture: "close" }, pairs_live: "in progress",
     vol_title: "Volatility — by day bought",
@@ -200,7 +200,7 @@ if (PAIRS && Array.isArray(PAIRS.days)) {
   document.getElementById("pairs-intro").textContent = TEXT.pairs_intro(plain(+PAIRS.amount), plain(+PAIRS.target_gain));
   const pt = document.getElementById("pairs-table");
   const ph = pt.createTHead().insertRow();
-  TEXT.pairs_head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i < 3) th.className = "text"; ph.appendChild(th); });
+  TEXT.pairs_head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i < 3) th.className = "text"; if (i > 3) th.className = "alt"; ph.appendChild(th); });
   const pb = pt.createTBody();
   PAIRS.days.forEach(d => {
     const tr = pb.insertRow();
@@ -221,6 +221,11 @@ if (PAIRS && Array.isArray(PAIRS.days)) {
     const g = d.gain == null ? null : +d.gain;
     total.textContent = g == null ? "—" : usd(g); if (g != null) total.classList.add(g > 0 ? "up" : g < 0 ? "down" : "x");
     tr.appendChild(total);
+    ["2h", "3h30", "close"].forEach(k => {
+      const v = d.alternatives?.[k], td = document.createElement("td"); td.className = "num alt";
+      td.textContent = v == null ? "—" : usd(+v); if (v != null) td.classList.add(+v > 0 ? "up" : +v < 0 ? "down" : "x");
+      tr.appendChild(td);
+    });
   });
 }
 // Résumé d'un autre format (suivi lancé avec un code plus ancien) : la section reste cachée, le reste de la page s'affiche.

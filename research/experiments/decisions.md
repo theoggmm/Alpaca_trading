@@ -301,3 +301,9 @@ clôture de la veille, achetées 5 000 $ chacune au cours d'ouverture de la minu
 Suivi : dashboard/volatility_pairs.py (suivi en direct, script du soir) ; pages volatilite_2.html / volatility_2_en.html ;
 jours terminés dans research/experiments/final/volatilite/paires/. La stratégie 39 actions (T27) continue inchangée.
 Statut : diagnostic, papier, aucun ordre ; résultat du test passé SUSPECT (règle 6) : jugée sur les séances à venir.
+
+## T30 — 2026-10-23 — Volatilité 2 actions : trois colonnes de comparaison (propriétaire)
+
+Mêmes 2 actions, même achat à 9 h 31 que T29 ; trois ventes de comparaison affichées à côté de la règle C : vente dès
++200 $ nets, sinon 2 h après l'achat, sinon 3 h 30 après l'achat, sinon à la clôture — gain ou perte, quel que soit le
+signe (core/volatility.exit_target_or_time). La règle C (T29) reste la règle suivie. Statut : diagnostic, papier.

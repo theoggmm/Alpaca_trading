@@ -182,3 +182,15 @@ def test_journee_deux_actions_vente_selon_la_regle():
     assert a["status"] == "sold" and a["reason"] == "objectif"
     assert b["status"] == "sold" and b["reason"] == "cloture"
     assert datetime.fromisoformat(a["buy_at"]) == DECISION + timedelta(minutes=1)      # achat à 9 h 31
+
+
+def test_colonnes_de_comparaison_vente_a_heure_fixe():
+    from core.volatility import exit_target_or_time
+    minute = lambda k: DECISION + timedelta(minutes=k)
+    path = [(minute(k), Decimal("99")) for k in range(1, 391)]
+    args = (Decimal("100"), Decimal("5000"), Decimal("200"), Decimal("5"))
+    r = exit_target_or_time(path, *args, minute(120))
+    assert r["reason"] == "heure" and r["exit_at"] == minute(120) and r["gain"] < 0      # vendue à 2 h, à perte
+    assert exit_target_or_time(path[:100], *args, minute(120)) is None                     # pas encore 2 h
+    up = [(minute(1), Decimal("105"))]
+    assert exit_target_or_time(up, *args, minute(120))["reason"] == "objectif"
