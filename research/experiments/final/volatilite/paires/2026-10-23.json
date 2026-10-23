@@ -1,0 +1,88 @@
+{
+ "day": "2026-10-23",
+ "market_open": "2026-10-23T13:30:00+00:00",
+ "market_close": "2026-10-23T20:00:00+00:00",
+ "positions": [
+  {
+   "symbol": "LQDA",
+   "name": "Liquidia Corporation - Common Stock",
+   "domain": "Life Sciences",
+   "volatility_20": 3.2446,
+   "status": "sold",
+   "buy_at": "2026-10-23T13:31:00+00:00",
+   "entry": "39.695",
+   "alternatives": {
+    "2h": {
+     "status": "sold",
+     "gain": "113.97",
+     "reason": "heure",
+     "exit_at": "2026-10-23T15:31:00+00:00",
+     "held_seconds": 7200.0
+    },
+    "3h30": {
+     "status": "sold",
+     "gain": "215.95",
+     "reason": "objectif",
+     "exit_at": "2026-10-23T16:07:00+00:00",
+     "held_seconds": 9360.0
+    },
+    "close": {
+     "status": "sold",
+     "gain": "215.95",
+     "reason": "objectif",
+     "exit_at": "2026-10-23T16:07:00+00:00",
+     "held_seconds": 9360.0
+    }
+   },
+   "exit_at": "2026-10-23T16:07:00+00:00",
+   "price": "41.45",
+   "gain": "215.95",
+   "reason": "objectif",
+   "held_seconds": 9360.0
+  },
+  {
+   "symbol": "BMBL",
+   "name": "Bumble Inc. - common stock",
+   "domain": "Technology",
+   "volatility_20": 2.1144,
+   "status": "sold",
+   "buy_at": "2026-10-23T13:31:00+00:00",
+   "entry": "5.945",
+   "alternatives": {
+    "2h": {
+     "status": "sold",
+     "gain": "-5.00",
+     "reason": "heure",
+     "exit_at": "2026-10-23T15:31:00+00:00",
+     "held_seconds": 7200.0
+    },
+    "3h30": {
+     "status": "sold",
+     "gain": "-5.00",
+     "reason": "heure",
+     "exit_at": "2026-10-23T17:01:00+00:00",
+     "held_seconds": 12600.0
+    },
+    "close": {
+     "status": "sold",
+     "gain": "3.41",
+     "reason": "heure",
+     "exit_at": "2026-10-23T20:00:00+00:00",
+     "held_seconds": 23340.0
+    }
+   },
+   "exit_at": "2026-10-23T20:00:00+00:00",
+   "price": "5.955",
+   "gain": "3.41",
+   "reason": "cloture",
+   "held_seconds": 23340.0
+  }
+ ],
+ "gain": "219.36",
+ "alternatives": {
+  "2h": "108.97",
+  "3h30": "210.95",
+  "close": "219.36"
+ },
+ "done": true
+}

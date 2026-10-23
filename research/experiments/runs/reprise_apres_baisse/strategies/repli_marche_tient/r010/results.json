@@ -1,0 +1,269 @@
+{
+  "run_id": "r010",
+  "variant": "nasdaq",
+  "strategy": "repli_marche_tient",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-22",
+  "market_open": "2026-10-22T13:30:00+00:00",
+  "decision_time": "2026-10-22T19:40:00+00:00",
+  "created_at": "2026-10-22T20:02:46.335725+00:00",
+  "git_sha": "82b566ad3a1164bf24a200089817353cbd39e965",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1022202608:16",
+      "otherlisted": "1022202608:16"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13513,
+    "cotes_sur_une_bourse_us": 12769,
+    "hors_etf_et_titres_de_test": 6996,
+    "avec_barres_quotidiennes": 4299,
+    "historique_complet": 4158,
+    "prix_minimum": 2404,
+    "volume_echange_minimum": 820,
+    "volatilite_basse": 410,
+    "tendance_haussiere": 114,
+    "repli_net": 30,
+    "en_baisse_aujourd_hui": 28,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 259,
+        "mean_return": 0.03013418496161646
+      },
+      {
+        "domain": "Technology",
+        "n": 300,
+        "mean_return": 0.009395643159980644
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.00046104206908167234
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.0042033856823749305
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.0068784536354602
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.039373556140447005
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.042605046274609565
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 165,
+        "mean_return": -0.043512497035186254
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 44,
+        "mean_return": -0.12236916699362674
+      }
+    ],
+    "unclassified": 11,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "ECHO",
+      "prev_close": "92.64",
+      "price_at_decision": "85.78",
+      "recent_high": "95.1",
+      "pullback": 0.09800210304942167,
+      "return_day": -0.07405008635578583,
+      "return_month": -0.0295411690760528,
+      "return_day_minus_2": 0.0022041763341067284,
+      "return_day_minus_1": 0.07234633638152564,
+      "trend_gap": 0.006800180251051373,
+      "volatility_annualized": 0.4132908518784906,
+      "avg_dollar_volume": "372097481",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "90.85",
+      "name": "EchoStar Corporation - Common stock",
+      "domain": "Technology",
+      "sic_description": "Communications Services, NEC"
+    },
+    {
+      "rank": 2,
+      "symbol": "GOOGL",
+      "prev_close": "334.76",
+      "price_at_decision": "322.73",
+      "recent_high": "353.78",
+      "pullback": 0.08776640850245916,
+      "return_day": -0.03593619309355957,
+      "return_month": -0.046702357899532976,
+      "return_day_minus_2": -0.01134580742634668,
+      "return_day_minus_1": -0.01620747924472853,
+      "trend_gap": 0.004070219836958498,
+      "volatility_annualized": 0.2876175532406488,
+      "avg_dollar_volume": "8224987334",
+      "max_correlation_with_previous": 0.22527595686299515,
+      "pe_ttm": null,
+      "open_today": "330.455",
+      "name": "Alphabet Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 3,
+      "symbol": "NVDA",
+      "prev_close": "221.97",
+      "price_at_decision": "211.7235",
+      "recent_high": "230.48",
+      "pullback": 0.08138016313779937,
+      "return_day": -0.046161643465333156,
+      "return_month": -0.03014811901953074,
+      "return_day_minus_2": -0.0028559583582845826,
+      "return_day_minus_1": 0.025407677738254725,
+      "trend_gap": 0.017751221801222565,
+      "volatility_annualized": 0.35785535524912365,
+      "avg_dollar_volume": "23716714709",
+      "max_correlation_with_previous": 0.3961864498958639,
+      "pe_ttm": null,
+      "open_today": "217.22",
+      "name": "NVIDIA Corporation - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 4,
+      "symbol": "NTNX",
+      "prev_close": "70.11",
+      "price_at_decision": "69.065",
+      "recent_high": "74.63",
+      "pullback": 0.07456786814953772,
+      "return_day": -0.014905149051490514,
+      "return_month": 0.012418772563176896,
+      "return_day_minus_2": 0.009921516363097882,
+      "return_day_minus_1": 0.028005865102639298,
+      "trend_gap": 0.029379934485288244,
+      "volatility_annualized": 0.3121401286705371,
+      "avg_dollar_volume": "179179633",
+      "max_correlation_with_previous": 0.44524330266582374,
+      "pe_ttm": null,
+      "open_today": "70.09",
+      "name": "Nutanix, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 5,
+      "symbol": "ADI",
+      "prev_close": "405.96",
+      "price_at_decision": "386",
+      "recent_high": "414.7",
+      "pullback": 0.06920665541355196,
+      "return_day": -0.04916740565572963,
+      "return_month": 0.039936470527960656,
+      "return_day_minus_2": 0.006846709775580068,
+      "return_day_minus_1": 0.022440498677748395,
+      "trend_gap": 0.05164153295039714,
+      "volatility_annualized": 0.31076965171726983,
+      "avg_dollar_volume": "1208559285",
+      "max_correlation_with_previous": 0.5322340793056882,
+      "pe_ttm": null,
+      "open_today": "398.03",
+      "name": "Analog Devices, Inc. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 6,
+      "symbol": "NTES",
+      "prev_close": "122.98",
+      "price_at_decision": "118.48",
+      "recent_high": "127.11",
+      "pullback": 0.06789395012194163,
+      "return_day": -0.036591315661083104,
+      "return_month": 0.03553384978107107,
+      "return_day_minus_2": -0.0011177644710578841,
+      "return_day_minus_1": -0.017025017984173926,
+      "trend_gap": 0.007043172682469059,
+      "volatility_annualized": 0.3560230119437783,
+      "avg_dollar_volume": "71208967",
+      "max_correlation_with_previous": 0.24969291717848227,
+      "pe_ttm": null,
+      "open_today": "116.43",
+      "name": "NetEase, Inc. - American Depositary Shares, each representing 5 ordinary shares",
+      "domain": "Technology",
+      "sic_description": "Services-Prepackaged Software"
+    },
+    {
+      "rank": 7,
+      "symbol": "MEOH",
+      "prev_close": "63.14",
+      "price_at_decision": "60.75",
+      "recent_high": "64.96",
+      "pullback": 0.0648091133004926,
+      "return_day": -0.0378523915109281,
+      "return_month": 0.09219858156028368,
+      "return_day_minus_2": -0.01829741045123275,
+      "return_day_minus_1": -0.002685199810456484,
+      "trend_gap": 0.02278523422810737,
+      "volatility_annualized": 0.32760574349936533,
+      "avg_dollar_volume": "34307593",
+      "max_correlation_with_previous": 0.08814582965539895,
+      "pe_ttm": null,
+      "open_today": "63.4",
+      "name": "Methanex Corporation - Common Stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Industrial Organic Chemicals"
+    }
+  ]
+}

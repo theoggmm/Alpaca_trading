@@ -1,0 +1,256 @@
+{
+  "run_id": "r017",
+  "variant": "nasdaq",
+  "strategy": "ouverture_2h",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-23",
+  "market_open": "2026-10-23T13:30:00+00:00",
+  "decision_time": "2026-10-23T13:15:00+00:00",
+  "created_at": "2026-10-23T22:20:56.658873+00:00",
+  "git_sha": "c88e8e6305216196302a514224293bc3208ffbed",
+  "criteria": {
+    "signal": "ouverture",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "last_hour_minutes": 60,
+    "min_overnight": "0.005",
+    "max_overnight": "0.03",
+    "min_premarket_volume": 5000,
+    "data_delay_minutes": 15,
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1023202607:00",
+      "otherlisted": "1023202607:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13517,
+    "cotes_sur_une_bourse_us": 12764,
+    "hors_etf_et_titres_de_test": 6988,
+    "avec_barres_quotidiennes": 4294,
+    "historique_complet": 4152,
+    "prix_minimum": 2398,
+    "volume_echange_minimum": 822,
+    "fin_de_seance_en_hausse": 627,
+    "nuit_en_hausse_moderee": 17,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 257,
+        "mean_return": 0.0636190994569171
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": 0.028613757185141833
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": 0.012802963669955321
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": 0.00904097045468757
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 302,
+        "mean_return": -0.001668549414464493
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 166,
+        "mean_return": -0.013853367455217962
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.015881754642571015
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 342,
+        "mean_return": -0.0493200777769115
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 44,
+        "mean_return": -0.14020851849042038
+      }
+    ],
+    "unclassified": 10,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "INIO",
+      "prev_close": "15.11",
+      "open_today": "15.25",
+      "price_at_decision": "15.25",
+      "return_month": -0.24412206103051526,
+      "return_day_minus_2": 0.039433148490449786,
+      "return_day_minus_1": -0.1043272080616479,
+      "return_last_hour": 0.029291553133514985,
+      "return_overnight": 0.009265387160820648,
+      "premarket_volume": 12756,
+      "volatility_annualized": 0.8719988260783896,
+      "avg_dollar_volume": "93844645",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "name": "INNIO N.V. - Ordinary Shares",
+      "domain": "Manufacturing",
+      "sic_description": "Motors & Generators"
+    },
+    {
+      "rank": 2,
+      "symbol": "TEM",
+      "prev_close": "63.81",
+      "open_today": "64.3",
+      "price_at_decision": "64.3",
+      "return_month": -0.16686251468860164,
+      "return_day_minus_2": 0.015131086142322097,
+      "return_day_minus_1": -0.058293978748524204,
+      "return_last_hour": 0.025864286862839685,
+      "return_overnight": 0.007679047171289767,
+      "premarket_volume": 63553,
+      "volatility_annualized": 0.9727477188481181,
+      "avg_dollar_volume": "481803148",
+      "max_correlation_with_previous": 0.12450682041608316,
+      "pe_ttm": null,
+      "name": "Tempus AI, Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 3,
+      "symbol": "LPTH",
+      "prev_close": "7.02",
+      "open_today": "7.1622",
+      "price_at_decision": "7.1622",
+      "return_month": -0.28440366972477066,
+      "return_day_minus_2": 0.001326259946949602,
+      "return_day_minus_1": -0.07019867549668875,
+      "return_last_hour": 0.021897810218978103,
+      "return_overnight": 0.020256410256410257,
+      "premarket_volume": 21713,
+      "volatility_annualized": 0.9758185102709931,
+      "avg_dollar_volume": "25169194",
+      "max_correlation_with_previous": 0.5544547639568217,
+      "pe_ttm": null,
+      "name": "LightPath Technologies, Inc. - Class A Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 4,
+      "symbol": "ZYME",
+      "prev_close": "28.44",
+      "open_today": "29.29",
+      "price_at_decision": "29.29",
+      "return_month": 0.03418181818181818,
+      "return_day_minus_2": 0.04477889260497956,
+      "return_day_minus_1": 0.011559665658900943,
+      "return_last_hour": 0.009219858156028368,
+      "return_overnight": 0.02988748241912799,
+      "premarket_volume": 7791,
+      "volatility_annualized": 0.49346544707920237,
+      "avg_dollar_volume": "35424597",
+      "max_correlation_with_previous": 0.3392931584191305,
+      "pe_ttm": null,
+      "name": "Zymeworks Inc. - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "Pharmaceutical Preparations"
+    },
+    {
+      "rank": 5,
+      "symbol": "SNDK",
+      "prev_close": "1260.93",
+      "open_today": "1276.83",
+      "price_at_decision": "1276.83",
+      "return_month": -0.3058731565532845,
+      "return_day_minus_2": 0.00940397545005786,
+      "return_day_minus_1": -0.08510252354486221,
+      "return_last_hour": 0.008875597703539045,
+      "return_overnight": 0.012609740429682853,
+      "premarket_volume": 428167,
+      "volatility_annualized": 0.9684365979132844,
+      "avg_dollar_volume": "12415292777",
+      "max_correlation_with_previous": 0.44289495348764596,
+      "pe_ttm": null,
+      "name": "Sandisk Corporation - Common Stock When-Issued",
+      "domain": "Technology",
+      "sic_description": "Computer Storage Devices"
+    },
+    {
+      "rank": 6,
+      "symbol": "FUTU",
+      "prev_close": "98.92",
+      "open_today": "99.75",
+      "price_at_decision": "99.75",
+      "return_month": -0.10064551322847531,
+      "return_day_minus_2": -0.004549331816889394,
+      "return_day_minus_1": -0.05817385508902218,
+      "return_last_hour": 0.006917599186164801,
+      "return_overnight": 0.00839061868176304,
+      "premarket_volume": 41433,
+      "volatility_annualized": 0.49949690383866685,
+      "avg_dollar_volume": "134276959",
+      "max_correlation_with_previous": 0.40968293323966903,
+      "pe_ttm": null,
+      "name": "Futu Holdings Limited - American Depositary Shares",
+      "domain": "Crypto Assets",
+      "sic_description": "Security Brokers, Dealers & Flotation Companies"
+    },
+    {
+      "rank": 7,
+      "symbol": "FLNC",
+      "prev_close": "5.7",
+      "open_today": "5.7297",
+      "price_at_decision": "5.7297",
+      "return_month": -0.24802110817941952,
+      "return_day_minus_2": 0.011804384485666104,
+      "return_day_minus_1": -0.05,
+      "return_last_hour": 0.006183745583038869,
+      "return_overnight": 0.005210526315789474,
+      "premarket_volume": 98067,
+      "volatility_annualized": 0.7691484913552863,
+      "avg_dollar_volume": "41757831",
+      "max_correlation_with_previous": 0.46149137765367265,
+      "pe_ttm": null,
+      "name": "Fluence Energy, Inc. - Class A Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Miscellaneous Electrical Machinery, Equipment & Supplies"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "run_id": "r011",
+  "variant": "per12",
+  "strategy": "repli_rapide",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-22",
+  "market_open": "2026-10-22T13:30:00+00:00",
+  "decision_time": "2026-10-22T19:40:00+00:00",
+  "created_at": "2026-10-22T20:03:18.285713+00:00",
+  "git_sha": "82b566ad3a1164bf24a200089817353cbd39e965",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": 50,
+    "max_pe": "25",
+    "min_down_days": 2,
+    "market_min_day_return": null,
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1022202608:16",
+      "otherlisted": "1022202608:16"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13513,
+    "cotes_sur_une_bourse_us": 12769,
+    "hors_etf_et_titres_de_test": 6996,
+    "avec_barres_quotidiennes": 6994,
+    "historique_complet": 6829,
+    "prix_minimum": 4706,
+    "volume_echange_minimum": 2027,
+    "marche_en_bonne_forme": 2027,
+    "volatilite_basse": 1014,
+    "tendance_haussiere": 216,
+    "repli_net": 39,
+    "en_baisse_aujourd_hui": 39,
+    "baisse_des_derniers_jours": 7,
+    "per_maximum": 5,
+    "selection_diversifiee": 2
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 259,
+        "mean_return": 0.03013418496161646
+      },
+      {
+        "domain": "Technology",
+        "n": 300,
+        "mean_return": 0.009395643159980644
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": -0.00046104206908167234
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 301,
+        "mean_return": -0.0042033856823749305
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": -0.0068784536354602
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.039373556140447005
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 345,
+        "mean_return": -0.042605046274609565
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 165,
+        "mean_return": -0.043512497035186254
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 44,
+        "mean_return": -0.12236916699362674
+      }
+    ],
+    "unclassified": 11,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "GOOGL",
+      "prev_close": "334.76",
+      "price_at_decision": "322.73",
+      "recent_high": "353.78",
+      "pullback": 0.08776640850245916,
+      "return_day": -0.03593619309355957,
+      "return_month": -0.046702357899532976,
+      "return_day_minus_2": -0.01134580742634668,
+      "return_day_minus_1": -0.01620747924472853,
+      "trend_gap": 0.004070219836958498,
+      "volatility_annualized": 0.2876175532406488,
+      "avg_dollar_volume": "8224987334",
+      "max_correlation_with_previous": null,
+      "pe_ttm": "16.19",
+      "open_today": "330.455",
+      "name": "Alphabet Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 2,
+      "symbol": "DVN",
+      "prev_close": "49.87",
+      "price_at_decision": "49.24",
+      "recent_high": "50.92",
+      "pullback": 0.032992930086410056,
+      "return_day": -0.01263284539803489,
+      "return_month": 0.06264649477945877,
+      "return_day_minus_2": -0.010604870384917517,
+      "return_day_minus_1": -0.010123064708217546,
+      "trend_gap": 0.008412608116132193,
+      "volatility_annualized": 0.3296238597639219,
+      "avg_dollar_volume": "442387559",
+      "max_correlation_with_previous": -0.01777452464149464,
+      "pe_ttm": "10.70",
+      "open_today": "50.42",
+      "name": "Devon Energy Corporation Common Stock",
+      "domain": "Energy & Transportation",
+      "sic_description": "Crude Petroleum & Natural Gas"
+    }
+  ]
+}
