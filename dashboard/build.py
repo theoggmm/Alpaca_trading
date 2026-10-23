@@ -514,9 +514,23 @@ def _build_lock():
             fcntl.flock(lock, fcntl.LOCK_UN)
 
 
+# Résumés Volatilité de l'accueil, dans un petit fichier lu par la page : le fil Volatilité du suivi en direct le
+# réécrit chaque minute sans regénérer toutes les pages.
+VOLATILITY_DATA = HERE / "volatility_data.js"
+
+
+def write_volatility_data():
+    """dashboard/volatility_data.js : window.VOL et window.PAIRS (écriture atomique)."""
+    text = f"window.VOL={_embed(_volatility_summary())};\nwindow.PAIRS={_embed(_volatility_pairs_summary())};\n"
+    tmp = VOLATILITY_DATA.with_suffix(".js.tmp")
+    tmp.write_text(text, encoding="utf-8")
+    tmp.replace(VOLATILITY_DATA)
+
+
 def build(family):
     """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
     with _build_lock():
+        write_volatility_data()
         return _build(family)
 
 
@@ -527,8 +541,6 @@ def _build(family):
     rows = sorted((_build_strategy(s, infos) for s in every), key=lambda r: r["order"])
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
             .replace("__BEST_MONTHS_JSON__", _embed({k: _best_by_month(every, v) for k, v in BEST_MONTH_SELECTIONS.items()}))
-            .replace("__VOLATILITY_JSON__", _embed(_volatility_summary()))
-            .replace("__VOLATILITY_PAIRS_JSON__", _embed(_volatility_pairs_summary()))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")

@@ -103,13 +103,15 @@
     <p class="note" id="best-note"></p>
   </section>
 </main>
+<script src="volatility_data.js"></script>
 <script>
 const LANG = "__LANG__";
 const ROWS = __ROWS_JSON__;
 const BUILT_AT = __BUILT_AT__;
 const BEST = __BEST_MONTHS_JSON__;
-const VOL = __VOLATILITY_JSON__;
-const PAIRS = __VOLATILITY_PAIRS_JSON__;
+// Résumés Volatilité : volatility_data.js, réécrit chaque minute par le suivi en direct (absent : sections cachées).
+const VOL = window.VOL ?? null;
+const PAIRS = window.PAIRS ?? null;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",

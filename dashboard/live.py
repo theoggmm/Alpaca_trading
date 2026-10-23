@@ -34,6 +34,7 @@ from core.screener import (Criteria, changes_since_open, last_session_prices, li
 from core.strategy import MAX_HOLD_SESSIONS, criteria_from_json, load_strategies
 from core.universe import eligible_symbols
 from dashboard import volatility, volatility_pairs
+from dashboard.build import write_volatility_data
 from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, SUPPLEMENTS, build, live_file
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
@@ -515,16 +516,16 @@ def _volatility_loop(family, stop_at):
     """
     Fil à part pour les deux stratégies Volatilité : une mise à jour par minute avec sa propre connexion, qui ne
     dépend pas du passage principal (lent quand il lit tout le marché sur un réseau lent). Quelques dizaines de
-    titres seulement ; l'accueil est regénéré après chaque mise à jour.
+    titres seulement ; l'accueil lit leurs résumés dans dashboard/volatility_data.js (aucune autre page regénérée ici).
     """
     alpaca = AlpacaReader()
     while datetime.now(timezone.utc) < stop_at:
         now = datetime.now(timezone.utc)
         _volatility(alpaca, now)
         try:
-            build(family)
-        except Exception as e:      # le fil ne doit jamais s'arrêter : la page se refait au passage suivant
-            print(f"{now.astimezone(NEW_YORK):%H:%M} — pages non regénérées (fil Volatilité) : {e}")
+            write_volatility_data()
+        except Exception as e:      # le fil ne doit jamais s'arrêter : nouvel essai à la minute suivante
+            print(f"{now.astimezone(NEW_YORK):%H:%M} — résumé Volatilité de l'accueil non écrit : {e}")
         time.sleep(REFRESH_S)
 
 
