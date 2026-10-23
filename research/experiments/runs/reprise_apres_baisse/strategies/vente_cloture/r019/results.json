@@ -1,0 +1,271 @@
+{
+  "run_id": "r019",
+  "variant": "nasdaq",
+  "strategy": "vente_cloture",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-23",
+  "market_open": "2026-10-23T13:30:00+00:00",
+  "decision_time": "2026-10-23T14:45:00+00:00",
+  "created_at": "2026-10-23T22:25:22.714493+00:00",
+  "git_sha": "c88e8e6305216196302a514224293bc3208ffbed",
+  "criteria": {
+    "version": 5,
+    "count": 7,
+    "month_sessions": 21,
+    "up_days": 2,
+    "first_hour_minutes": 60,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "max_pe": null,
+    "min_gap_below_high": "0.002",
+    "confirmation_minutes": 15,
+    "confirmation_tolerance": "0.002",
+    "max_below_ma": "0.05",
+    "ma_sessions": 50,
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1023202607:00",
+      "otherlisted": "1023202607:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13517,
+    "cotes_sur_une_bourse_us": 12764,
+    "hors_etf_et_titres_de_test": 6988,
+    "avec_barres_quotidiennes": 4294,
+    "historique_complet": 4152,
+    "prix_minimum": 2398,
+    "volume_echange_minimum": 822,
+    "volatilite_basse": 411,
+    "en_baisse_sur_un_mois": 153,
+    "hausse_des_derniers_jours": 17,
+    "hausse_premiere_heure": 0,
+    "pas_en_chute": 0,
+    "pas_au_sommet": 0,
+    "confirmation": 0,
+    "selection_diversifiee": 0,
+    "completee_au_plus_proche": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 257,
+        "mean_return": 0.0636190994569171
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": 0.028613757185141833
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": 0.012802963669955321
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": 0.00904097045468757
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 302,
+        "mean_return": -0.001668549414464493
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 166,
+        "mean_return": -0.013853367455217962
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.015881754642571015
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 342,
+        "mean_return": -0.0493200777769115
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 44,
+        "mean_return": -0.14020851849042038
+      }
+    ],
+    "unclassified": 10,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "AKAM",
+      "prev_close": "91.13",
+      "open_today": "90.25",
+      "price_at_decision": "91.59",
+      "return_month": -0.23058088483620398,
+      "return_day_minus_2": 0.007140466361709249,
+      "return_day_minus_1": 0.009526974631660573,
+      "return_first_hour": 0.014847645429362882,
+      "volatility_annualized": 0.5744361618805344,
+      "avg_dollar_volume": "692912666",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "price_at_confirmation": "92.67",
+      "return_confirmation": 0.011791680314444808,
+      "closest_fit": "volatilite_basse",
+      "name": "Akamai Technologies, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Services-Business Services, NEC"
+    },
+    {
+      "rank": 2,
+      "symbol": "AXGN",
+      "prev_close": "36.68",
+      "open_today": "36.67",
+      "price_at_decision": "37.45",
+      "return_month": -0.15327793167128348,
+      "return_day_minus_2": 0.008570638650815593,
+      "return_day_minus_1": 0.005482456140350877,
+      "return_first_hour": 0.021270793564221433,
+      "volatility_annualized": 0.5123830581279201,
+      "avg_dollar_volume": "53842432",
+      "max_correlation_with_previous": 0.23868440791707227,
+      "pe_ttm": null,
+      "price_at_confirmation": "37.47",
+      "return_confirmation": 0.000534045393858478,
+      "closest_fit": "volatilite_basse",
+      "name": "Axogen, Inc. - Common Stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Electromedical & Electrotherapeutic Apparatus"
+    },
+    {
+      "rank": 3,
+      "symbol": "NEOG",
+      "prev_close": "11.98",
+      "open_today": "11.97",
+      "price_at_decision": "12.13",
+      "return_month": -0.11717022844509949,
+      "return_day_minus_2": 0.005972696245733789,
+      "return_day_minus_1": 0.016115351993214587,
+      "return_first_hour": 0.013366750208855471,
+      "volatility_annualized": 0.6240003064830584,
+      "avg_dollar_volume": "62405315",
+      "max_correlation_with_previous": 0.2553203440212905,
+      "pe_ttm": null,
+      "price_at_confirmation": "12.18",
+      "return_confirmation": 0.004122011541632316,
+      "closest_fit": "volatilite_basse",
+      "name": "Neogen Corporation - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "In Vitro & In Vivo Diagnostic Substances"
+    },
+    {
+      "rank": 4,
+      "symbol": "SWKS",
+      "prev_close": "82.39",
+      "open_today": "81.95",
+      "price_at_decision": "82.84",
+      "return_month": -0.09907053034445051,
+      "return_day_minus_2": 0.01131611316113161,
+      "return_day_minus_1": 0.002067623449282413,
+      "return_first_hour": 0.010860280658938378,
+      "volatility_annualized": 0.5852947442590862,
+      "avg_dollar_volume": "579759979",
+      "max_correlation_with_previous": 0.08473142412600822,
+      "pe_ttm": null,
+      "price_at_confirmation": "83.12",
+      "return_confirmation": 0.003380009657170449,
+      "closest_fit": "volatilite_basse",
+      "name": "Skyworks Solutions, Inc. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Semiconductors & Related Devices"
+    },
+    {
+      "rank": 5,
+      "symbol": "PANW",
+      "prev_close": "354.92",
+      "open_today": "354.3",
+      "price_at_decision": "368.3",
+      "return_month": -0.09758454106280193,
+      "return_day_minus_2": 0.02048313153873281,
+      "return_day_minus_1": 0.022087832973362132,
+      "return_first_hour": 0.039514535704205475,
+      "volatility_annualized": 0.6197504939863967,
+      "avg_dollar_volume": "2015068148",
+      "max_correlation_with_previous": 0.4188782234861742,
+      "pe_ttm": null,
+      "price_at_confirmation": "374.65",
+      "return_confirmation": 0.017241379310344827,
+      "closest_fit": "volatilite_basse",
+      "name": "Palo Alto Networks, Inc. - Common Stock",
+      "domain": "Technology",
+      "sic_description": "Computer Peripheral Equipment, NEC"
+    },
+    {
+      "rank": 6,
+      "symbol": "ESTA",
+      "prev_close": "63.52",
+      "open_today": "63.14",
+      "price_at_decision": "63.53",
+      "return_month": -0.06257378984651712,
+      "return_day_minus_2": 0.019813328966759455,
+      "return_day_minus_1": 0.01991008349389852,
+      "return_first_hour": 0.006176750079189104,
+      "volatility_annualized": 0.5071645457072739,
+      "avg_dollar_volume": "26525012",
+      "max_correlation_with_previous": 0.2938443570893126,
+      "pe_ttm": null,
+      "price_at_confirmation": "63.34",
+      "return_confirmation": -0.0029907130489532506,
+      "closest_fit": "volatilite_basse",
+      "name": "Establishment Labs Holdings Inc. - Common Shares",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Orthopedic, Prosthetic & Surgical Appliances & Supplies"
+    },
+    {
+      "rank": 7,
+      "symbol": "HONA",
+      "prev_close": "163.02",
+      "open_today": "160.37",
+      "price_at_decision": "160.66",
+      "return_month": -0.0018979979183248639,
+      "return_day_minus_2": 0.016010006253908693,
+      "return_day_minus_1": 0.0034470023390373015,
+      "return_first_hour": 0.0018083182640144665,
+      "volatility_annualized": 0.6350332074734567,
+      "avg_dollar_volume": "404673875",
+      "max_correlation_with_previous": 0.476782660711833,
+      "pe_ttm": null,
+      "price_at_confirmation": "162.86",
+      "return_confirmation": 0.013693514253703474,
+      "closest_fit": "volatilite_basse",
+      "name": "Honeywell Aerospace Inc. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Aircraft Engines & Engine Parts"
+    }
+  ]
+}

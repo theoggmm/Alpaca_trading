@@ -1,0 +1,123 @@
+{
+  "run_id": "r016",
+  "variant": "per12",
+  "strategy": "repli_matin_3_seances",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-23",
+  "market_open": "2026-10-23T13:30:00+00:00",
+  "decision_time": "2026-10-23T14:15:00+00:00",
+  "created_at": "2026-10-23T22:24:33.398619+00:00",
+  "git_sha": "c88e8e6305216196302a514224293bc3208ffbed",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 20,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 45,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": 50,
+    "max_pe": "25",
+    "min_down_days": null,
+    "market_min_day_return": null,
+    "exchange": null,
+    "fill_to_count": false
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1023202607:00",
+      "otherlisted": "1023202607:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13517,
+    "cotes_sur_une_bourse_us": 12764,
+    "hors_etf_et_titres_de_test": 6988,
+    "avec_barres_quotidiennes": 6987,
+    "historique_complet": 6822,
+    "prix_minimum": 4697,
+    "volume_echange_minimum": 2026,
+    "marche_en_bonne_forme": 0,
+    "volatilite_basse": 0,
+    "tendance_haussiere": 0,
+    "repli_net": 0,
+    "en_baisse_aujourd_hui": 0,
+    "per_maximum": 0,
+    "selection_diversifiee": 0
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 257,
+        "mean_return": 0.0636190994569171
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": 0.028613757185141833
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": 0.012802963669955321
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": 0.00904097045468757
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 302,
+        "mean_return": -0.001668549414464493
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 166,
+        "mean_return": -0.013853367455217962
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.015881754642571015
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 342,
+        "mean_return": -0.0493200777769115
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 44,
+        "mean_return": -0.14020851849042038
+      }
+    ],
+    "unclassified": 10,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": []
+}

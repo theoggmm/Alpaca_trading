@@ -1,0 +1,270 @@
+{
+  "run_id": "r013",
+  "variant": "nasdaq",
+  "strategy": "repli_rapide",
+  "family": "reprise_apres_baisse",
+  "status": "diagnostic",
+  "session_date": "2026-10-23",
+  "market_open": "2026-10-23T13:30:00+00:00",
+  "decision_time": "2026-10-23T19:40:00+00:00",
+  "created_at": "2026-10-23T22:37:25.028581+00:00",
+  "git_sha": "c88e8e6305216196302a514224293bc3208ffbed",
+  "criteria": {
+    "signal": "repli_tendance",
+    "version": 1,
+    "count": 7,
+    "liquidity_sessions": 20,
+    "min_price_usd": "5",
+    "min_avg_dollar_volume_usd": "20000000",
+    "volatility_sessions": 60,
+    "max_volatility_quantile": 0.5,
+    "month_sessions": 21,
+    "correlation_sessions": 60,
+    "max_pairwise_correlation": 0.6,
+    "decision_after_open_minutes": 370,
+    "short_trend_sessions": 20,
+    "trend_sessions": 50,
+    "high_sessions": 10,
+    "min_pullback": "0.03",
+    "max_pullback": "0.10",
+    "market_symbol": "SPY",
+    "market_ma_sessions": null,
+    "max_pe": null,
+    "min_down_days": 2,
+    "market_min_day_return": null,
+    "exchange": "NASDAQ",
+    "fill_to_count": true
+  },
+  "sources": {
+    "alpaca": {
+      "trading_api": "https://paper-api.alpaca.markets",
+      "data_api": "https://data.alpaca.markets",
+      "feed": "sip",
+      "adjustment": "all"
+    },
+    "nasdaq_trader": {
+      "nasdaqlisted": "1023202607:00",
+      "otherlisted": "1023202607:00"
+    },
+    "sec": {
+      "tickers": "https://www.sec.gov/files/company_tickers.json",
+      "profiles": "data.sec.gov/submissions (ownerOrg, sic)"
+    }
+  },
+  "funnel": {
+    "actifs_negociables": 13517,
+    "cotes_sur_une_bourse_us": 12764,
+    "hors_etf_et_titres_de_test": 6988,
+    "avec_barres_quotidiennes": 4294,
+    "historique_complet": 4152,
+    "prix_minimum": 2398,
+    "volume_echange_minimum": 822,
+    "volatilite_basse": 411,
+    "tendance_haussiere": 122,
+    "repli_net": 32,
+    "en_baisse_aujourd_hui": 22,
+    "baisse_des_derniers_jours": 10,
+    "selection_diversifiee": 7
+  },
+  "domains": {
+    "bubbles": [
+      {
+        "domain": "Trade & Services",
+        "n": 257,
+        "mean_return": 0.0636190994569171
+      },
+      {
+        "domain": "Finance",
+        "n": 244,
+        "mean_return": 0.028613757185141833
+      },
+      {
+        "domain": "Technology",
+        "n": 303,
+        "mean_return": 0.012802963669955321
+      },
+      {
+        "domain": "Industrial Applications and Services",
+        "n": 191,
+        "mean_return": 0.00904097045468757
+      },
+      {
+        "domain": "Energy & Transportation",
+        "n": 302,
+        "mean_return": -0.001668549414464493
+      },
+      {
+        "domain": "Life Sciences",
+        "n": 166,
+        "mean_return": -0.013853367455217962
+      },
+      {
+        "domain": "Real Estate & Construction",
+        "n": 167,
+        "mean_return": -0.015881754642571015
+      },
+      {
+        "domain": "Manufacturing",
+        "n": 342,
+        "mean_return": -0.0493200777769115
+      },
+      {
+        "domain": "Crypto Assets",
+        "n": 44,
+        "mean_return": -0.14020851849042038
+      }
+    ],
+    "unclassified": 10,
+    "measure": "moyenne simple des variations sur 21 séances",
+    "universe": "titres à l'historique complet, au prix et au volume échangé suffisants"
+  },
+  "selection": [
+    {
+      "rank": 1,
+      "symbol": "GOOGL",
+      "prev_close": "324.22",
+      "price_at_decision": "320.7833",
+      "recent_high": "353.78",
+      "pullback": 0.0932689807224829,
+      "return_day": -0.010599901301585344,
+      "return_month": -0.040286534647603824,
+      "return_day_minus_2": -0.01620747924472853,
+      "return_day_minus_1": -0.03148524315927829,
+      "trend_gap": 0.0025458982426968322,
+      "volatility_annualized": 0.2942367112128669,
+      "avg_dollar_volume": "8268261849",
+      "max_correlation_with_previous": null,
+      "pe_ttm": null,
+      "open_today": "321.145",
+      "name": "Alphabet Inc. - Class A Common Stock",
+      "domain": "Technology",
+      "sic_description": "Services-Computer Programming, Data Processing, Etc."
+    },
+    {
+      "rank": 2,
+      "symbol": "CHEF",
+      "prev_close": "107.29",
+      "price_at_decision": "105.48",
+      "recent_high": "114.32",
+      "pullback": 0.07732680195941218,
+      "return_day": -0.01687016497343648,
+      "return_month": -0.014693727615024337,
+      "return_day_minus_2": -0.007034632034632035,
+      "return_day_minus_1": -0.025522252497729336,
+      "trend_gap": 0.0036879624007735727,
+      "volatility_annualized": 0.3565164194240958,
+      "avg_dollar_volume": "63823801",
+      "max_correlation_with_previous": 0.0982579809843911,
+      "pe_ttm": null,
+      "open_today": "107.15",
+      "name": "The Chefs' Warehouse, Inc. - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Wholesale-Groceries, General Line"
+    },
+    {
+      "rank": 3,
+      "symbol": "CAKE",
+      "prev_close": "112.44",
+      "price_at_decision": "108.2",
+      "recent_high": "116.59",
+      "pullback": 0.07196157474912085,
+      "return_day": -0.03770900035574529,
+      "return_month": 0.07690834211282445,
+      "return_day_minus_2": -0.017521257407884565,
+      "return_day_minus_1": -0.017046944662995018,
+      "trend_gap": 0.02146606804460939,
+      "volatility_annualized": 0.37953356993442183,
+      "avg_dollar_volume": "132776327",
+      "max_correlation_with_previous": 0.2222892107771373,
+      "pe_ttm": null,
+      "open_today": "111.86",
+      "name": "The Cheesecake Factory Incorporated - Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Retail-Eating  Places"
+    },
+    {
+      "rank": 4,
+      "symbol": "MDLN",
+      "prev_close": "34.88",
+      "price_at_decision": "34.12",
+      "recent_high": "36.57",
+      "pullback": 0.06699480448455018,
+      "return_day": -0.021788990825688075,
+      "return_month": 0.016909620991253645,
+      "return_day_minus_2": -0.004230118443316413,
+      "return_day_minus_1": -0.012177853299348626,
+      "trend_gap": 0.02209085252022402,
+      "volatility_annualized": 0.46607927552034645,
+      "avg_dollar_volume": "304047988",
+      "max_correlation_with_previous": 0.31911355012616804,
+      "pe_ttm": null,
+      "open_today": "34.66",
+      "name": "Medline Inc. - Class A common stock",
+      "domain": "Industrial Applications and Services",
+      "sic_description": "Surgical & Medical Instruments & Apparatus"
+    },
+    {
+      "rank": 5,
+      "symbol": "SHOO",
+      "prev_close": "44.42",
+      "price_at_decision": "43.16",
+      "recent_high": "46.24",
+      "pullback": 0.06660899653979238,
+      "return_day": -0.028365601080594327,
+      "return_month": 0.023502304147465437,
+      "return_day_minus_2": -0.008322237017310254,
+      "return_day_minus_1": -0.00593040170079445,
+      "trend_gap": 0.016401674584457057,
+      "volatility_annualized": 0.370348437846823,
+      "avg_dollar_volume": "46300671",
+      "max_correlation_with_previous": 0.3590684148492559,
+      "pe_ttm": null,
+      "open_today": "43.53",
+      "name": "Steven Madden, Ltd. - Common Stock",
+      "domain": "Manufacturing",
+      "sic_description": "Footwear, (No Rubber)"
+    },
+    {
+      "rank": 6,
+      "symbol": "BATRK",
+      "prev_close": "49.71",
+      "price_at_decision": "49.465",
+      "recent_high": "52.5",
+      "pullback": 0.05780952380952381,
+      "return_day": -0.0049285857976262325,
+      "return_month": -0.06770442610652663,
+      "return_day_minus_2": -0.0017942583732057417,
+      "return_day_minus_1": -0.007189934092270821,
+      "trend_gap": 0.0017559688388292247,
+      "volatility_annualized": 0.24868495308096242,
+      "avg_dollar_volume": "29966961",
+      "max_correlation_with_previous": 0.3624054443817432,
+      "pe_ttm": null,
+      "open_today": "49.33",
+      "name": "Atlanta Braves Holdings, Inc. - Series C Common Stock",
+      "domain": "Trade & Services",
+      "sic_description": "Services-Amusement & Recreation Services"
+    },
+    {
+      "rank": 7,
+      "symbol": "ADMA",
+      "prev_close": "10.95",
+      "price_at_decision": "10.66",
+      "recent_high": "11.23",
+      "pullback": 0.05075690115761353,
+      "return_day": -0.026484018264840183,
+      "return_month": 0.12886597938144329,
+      "return_day_minus_2": -0.019590382902938557,
+      "return_day_minus_1": -0.005449591280653951,
+      "trend_gap": 0.05452134441780997,
+      "volatility_annualized": 0.418836276661295,
+      "avg_dollar_volume": "31403091",
+      "max_correlation_with_previous": 0.31987591126596354,
+      "pe_ttm": null,
+      "open_today": "10.88",
+      "name": "ADMA Biologics Inc - Common Stock",
+      "domain": "Life Sciences",
+      "sic_description": "Biological Products, (No Diagnostic Substances)"
+    }
+  ]
+}
