@@ -290,3 +290,22 @@ def exit_with_deadline(path, entry_price, amount, target_gain, cost_bps, deadlin
         if sale:
             return {"exit_at": at, "price": price, "gain": gain, "reason": sale}
     return None
+
+
+def rank_by_volatility(daily, decision_time, symbols, sessions=20):
+    """
+    Choix « 2 actions » (méthode M7 du test T28) : symboles classés de la plus forte à la plus faible volatilité des
+    rendements quotidiens (log) sur les sessions dernières séances terminées avant decision_time. [(symbole, écart-type)].
+    """
+    daily = usable_bars(daily, DAY, decision_time)
+
+    closes = daily.pivot_table(index="timestamp", columns="symbol", values="close", aggfunc="last").sort_index().astype(float)
+    scored = []
+    for s in symbols:
+        if s not in closes:
+            continue
+        series = closes[s].dropna()
+        if len(series) < sessions + 2:
+            continue
+        scored.append((s, float(np.log(series.tail(sessions + 1)).diff().std())))
+    return sorted(scored, key=lambda x: (-x[1], x[0]))

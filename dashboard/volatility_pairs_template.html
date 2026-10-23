@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="__LANG__">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Régénérée à chaque passage du suivi en direct (dashboard/volatility_pairs.py) : elle se recharge seule. -->
+<meta http-equiv="refresh" content="60">
+<title>Volatilité — 2 actions</title>
+<style>
+  :root {
+    --bg: #f5f6f8; --surface: #ffffff; --ink: #17202b; --muted: #5d6877; --line: #dde1e7;
+    --accent: #2b5d8c; --up: #1d7a4c; --down: #b23a3a; --track: #e7eaef;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    --font-data: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+      --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --track: #24303c; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1419; --surface: #171e26; --ink: #e6ebf1; --muted: #93a0b0; --line: #2a3542;
+    --accent: #7fb0de; --up: #4cc38a; --down: #f07a7a; --track: #24303c; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-ui); }
+  main { max-width: 1200px; margin: 0 auto; padding: 32px 16px 64px; display: grid; gap: 20px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 20px; }
+  h1 { margin: 0; font-size: 26px; flex: 1 1 auto; }
+  h2 { margin: 8px 0 0; font-size: 20px; }
+  header a { color: var(--accent); font-weight: 600; }
+  .intro { margin: 0; max-width: 85ch; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; overflow-x: auto; }
+  .round { padding: 18px 20px; display: grid; gap: 14px; }
+  .status { font-weight: 700; color: var(--accent); }
+  .status.sold { color: var(--up); }
+  .figures { display: flex; flex-wrap: wrap; gap: 12px 36px; }
+  .figure .label { color: var(--muted); font-size: 12px; font-weight: 600; }
+  .figure .value { font-family: var(--font-data); font-size: 22px; }
+  .bar { height: 12px; border-radius: 6px; background: var(--track); overflow: hidden; }
+  .bar span { display: block; height: 100%; background: var(--up); }
+  .bar span.neg { background: var(--down); }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 8px 12px; text-align: right; border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  th.text, td.text { text-align: left; }
+  td.num { font-family: var(--font-data); white-space: nowrap; }
+  td .desc { color: var(--muted); font-size: 12px; }
+  tr:last-child td { border-bottom: none; }
+  .up { color: var(--up); } .down { color: var(--down); }
+  .progress { display: grid; gap: 3px; min-width: 120px; }
+  .progress .bar { height: 6px; }
+  .picker { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+  .picker select { font: inherit; padding: 4px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); color: var(--ink); }
+  #batches tbody tr { cursor: pointer; }
+  #batches tbody tr.chosen td { background: color-mix(in srgb, var(--accent) 12%, transparent); font-weight: 700; }
+  tr.day-total td { font-weight: 700; border-bottom: 2px solid var(--line); }
+  tr.day-first td { border-top: 2px solid var(--line); }
+  .note { color: var(--muted); font-size: 13px; margin: 0; max-width: 100ch; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1 id="title"></h1>
+    <a id="home"></a>
+    <a id="other"></a>
+  </header>
+  <p class="intro" id="intro"></p>
+  <p class="note" id="updated"></p>
+  <div class="panel round" id="summary"></div>
+  <h2 id="days-title"></h2>
+  <div class="panel"><table id="days"></table></div>
+  <p class="note" id="note"></p>
+</main>
+<script>
+const LANG = "__LANG__";
+const STATE = __STATE_JSON__;
+const TEXT = {
+  fr: {
+    title: "Volatilité — 2 actions", home: "← Mes stratégies", home_href: "accueil.html", other: "English", other_href: "volatility_2_en.html", locale: "fr-FR",
+    intro: (a, t) => `Chaque jour de bourse, à 9 h 31 à New York (15 h 31 à Paris), les 2 actions les plus volatiles des 20 dernières séances, parmi les 39 de la liste « Volatilité », sont achetées ${a} chacune (10 000 $ en tout). Chaque action est vendue dès que son gain net atteint ${t} ; sinon, 3 h 30 après l'achat, elle est vendue si elle est positive ; sinon, elle est vendue à la clôture. Rien n'est gardé la nuit : chaque jour est à part. Règle choisie par le test sur 12 mois (méthode la meilleure : 37,5 % des actions à +200 $ en 3 h 30, contre 19 % en moyenne).`,
+    updated: t => `Mise à jour à ${t} (Paris) — prix avec 15 minutes de retard ; la page se recharge toute seule.`,
+    f_days: "Jours", f_total: "Résultat net total", f_target: "Ventes à +200 $", f_deadline: "Ventes à 3 h 30 (positives)", f_close: "Ventes à la clôture", f_mean: "Temps moyen jusqu'à +200 $",
+    days_title: "Jour par jour",
+    head: ["Jour", "Action", "Achat", "Prix d'achat", "Vente / dernier", "Pourquoi", "Temps", "Gain net"],
+    day_total: "Total du jour", waiting: "achat à 9 h 31", next: "Les 2 actions sont connues après la clôture de la veille.", live: "en cours",
+    reason: { objectif: "objectif +200 $", positif_echeance: "3 h 30, positive", cloture: "clôture" },
+    note: c => `Simulation en papier : aucun ordre n'est passé. Frais comptés : ${c} % par ordre. Achat au premier cours de la minute 9 h 31 ; vente au cours de la minute où la règle se déclenche. Volatilité : écart des variations quotidiennes sur 20 séances, ramené à l'année. Résultat passé : le test sur 12 mois est marqué « suspect » (plus de +100 % sur un an, et la liste des 39 a été faite avec du recul) ; seuls les jours à venir jugent la règle.`,
+  },
+  en: {
+    title: "Volatility — 2 stocks", home: "← My strategies", home_href: "home.html", other: "Français", other_href: "volatilite_2.html", locale: "en-US",
+    intro: (a, t) => `Every trading day at 9:31 AM New York (15:31 in Paris), the 2 most volatile stocks of the last 20 sessions, out of the 39 on the "Volatility" list, are bought for ${a} each ($10,000 in total). Each stock is sold as soon as its net gain reaches ${t}; otherwise, 3 h 30 after buying, it is sold if it is positive; otherwise it is sold at the close. Nothing is held overnight: each day stands alone. Rule chosen by the 12-month test (best method: 37.5% of stocks reached +$200 within 3 h 30, versus 19% on average).`,
+    updated: t => `Updated at ${t} (Paris) — prices 15 minutes late; the page reloads itself.`,
+    f_days: "Days", f_total: "Total net result", f_target: "Sold at +$200", f_deadline: "Sold at 3 h 30 (positive)", f_close: "Sold at the close", f_mean: "Average time to +$200",
+    days_title: "Day by day",
+    head: ["Day", "Stock", "Bought", "Buy price", "Sold / last", "Why", "Time", "Net gain"],
+    day_total: "Day total", waiting: "buy at 9:31", next: "The 2 stocks are known after the previous close.", live: "in progress",
+    reason: { objectif: "target +$200", positif_echeance: "3 h 30, positive", cloture: "close" },
+    note: c => `Paper simulation: no order is placed. Costs counted: ${c}% per order. Bought at the first price of the 9:31 minute; sold at the price of the minute the rule triggers. Volatility: spread of daily moves over 20 sessions, annualized. Past result: the 12-month test is flagged "suspect" (over +100% in a year, and the list of 39 was made with hindsight); only the days ahead judge the rule.`,
+  },
+}[LANG];
+const usd = (v, sign) => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", signDisplay: sign ? "exceptZero" : "auto" }).format(v);
+const whole = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
+const pct = v => new Intl.NumberFormat(TEXT.locale, { style: "percent", maximumFractionDigits: 0 }).format(v);
+const clock = (iso, tz) => new Date(iso).toLocaleTimeString(TEXT.locale, { timeZone: tz, hour: "2-digit", minute: "2-digit" });
+const span = s => s < 3600 ? `${Math.round(s / 60)} min` : `${Math.floor(s / 3600)} h ${String(Math.round(s % 3600 / 60)).padStart(2, "0")}`;
+const signClass = v => v > 0 ? "up" : v < 0 ? "down" : "";
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+document.documentElement.lang = LANG;
+document.title = TEXT.title;
+document.getElementById("title").textContent = TEXT.title;
+Object.assign(document.getElementById("home"), { textContent: TEXT.home, href: TEXT.home_href });
+Object.assign(document.getElementById("other"), { textContent: TEXT.other, href: TEXT.other_href });
+document.getElementById("intro").textContent = TEXT.intro(whole(+STATE.amount), whole(+STATE.target_gain));
+document.getElementById("updated").textContent = TEXT.updated(clock(STATE.updated, "Europe/Paris"));
+document.getElementById("note").textContent = TEXT.note((+STATE.cost_bps / 100).toLocaleString(TEXT.locale));
+
+const all = STATE.days.flatMap(d => d.positions);
+const sold = all.filter(p => p.status === "sold");
+const byReason = r => sold.filter(p => p.reason === r);
+const total = STATE.days.reduce((t, d) => t + (d.gain == null ? 0 : +d.gain), 0);
+const hits = byReason("objectif");
+const figs = el("div", "figures");
+[[TEXT.f_days, STATE.days.filter(d => d.positions.length && d.positions[0].status !== "waiting").length],
+ [TEXT.f_total, usd(total, true), signClass(total)],
+ [TEXT.f_target, `${hits.length} / ${sold.length}`], [TEXT.f_deadline, byReason("positif_echeance").length], [TEXT.f_close, byReason("cloture").length],
+ [TEXT.f_mean, hits.length ? span(hits.reduce((t, p) => t + p.held_seconds, 0) / hits.length) : "—"]]
+  .forEach(([label, value, cls]) => { const f = el("div", "figure"); f.append(el("div", "label", label), el("div", "value " + (cls || ""), value)); figs.append(f); });
+document.getElementById("summary").append(figs);
+
+document.getElementById("days-title").textContent = TEXT.days_title;
+const t = document.getElementById("days");
+const hr = t.createTHead().insertRow();
+TEXT.head.forEach((h, i) => hr.append(el("th", i < 3 || i === 5 ? "text" : "", h)));
+const body = t.createTBody();
+STATE.days.slice().reverse().forEach(d => {
+  const label = new Date(`${d.day}T12:00:00Z`).toLocaleDateString(TEXT.locale, { weekday: "long", day: "numeric", month: "long" });
+  if (!d.positions.length) { const tr = body.insertRow(); tr.className = "day-first"; tr.append(el("td", "text", label)); const td = el("td", "text note", TEXT.next); td.colSpan = 7; tr.append(td); return; }
+  d.positions.forEach((p, i) => {
+    const tr = body.insertRow(); if (i === 0) tr.className = "day-first";
+    tr.append(el("td", "text", i === 0 ? label : ""));
+    const name = el("td", "text"); name.append(el("b", null, p.symbol), el("div", "desc", `${p.name.split(" - ")[0]} · ${pct(p.volatility_20)}`)); tr.append(name);
+    if (p.status === "waiting") { const td = el("td", "text note", TEXT.waiting); td.colSpan = 6; tr.append(td); return; }
+    const g = +p.gain;
+    tr.append(el("td", "text", `${clock(p.buy_at, "America/New_York")} NY`), el("td", "num", usd(+p.entry)));
+    tr.append(el("td", "num", (p.status === "sold" ? `${clock(p.exit_at, "America/New_York")} · ` : "") + usd(+p.price)));
+    tr.append(el("td", "text", p.status === "sold" ? (TEXT.reason[p.reason] ?? p.reason) : TEXT.live));
+    tr.append(el("td", "num", span(p.held_seconds)), el("td", "num " + signClass(g), usd(g, true)));
+  });
+  const tr = body.insertRow(); tr.className = "day-total";
+  const lab = el("td", "text", TEXT.day_total); lab.colSpan = 7; tr.append(lab);
+  const g = d.gain == null ? null : +d.gain; tr.append(el("td", "num " + signClass(g), g == null ? "—" : usd(g, true)));
+});
+</script>
+</body>
+</html>

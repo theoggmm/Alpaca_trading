@@ -41,6 +41,8 @@ SESSIONS_DIR = HERE / "sessions"
 FINALS_DIR = ROOT / "research" / "experiments" / "final"
 # Stratégie « Volatilité » (dashboard/volatility.py) : dernier état du tour en cours, résumé sur l'accueil (volatil).
 VOLATILITY_LIVE = ROOT / "research" / "outputs" / "live" / "volatilite.json"
+# Stratégie « Volatilité — 2 actions » (dashboard/volatility_pairs.py) : jours suivis, résumé sur l'accueil (volatil).
+VOLATILITY_PAIRS_LIVE = ROOT / "research" / "outputs" / "live" / "volatilite_paires.json"
 # Compléments d'une séance définitive (simulation recalculée après coup), à côté de l'état, jamais dedans.
 SUPPLEMENTS = "supplements"
 
@@ -487,6 +489,17 @@ def _volatility_summary():
     return {"amount_per_stock": page["amount_per_stock"], "target_gain": page["target_gain"], "batches": batches}
 
 
+def _volatility_pairs_summary():
+    """Stratégie « Volatilité — 2 actions » sur l'accueil : une ligne par jour, None avant le premier jour suivi."""
+    if not VOLATILITY_PAIRS_LIVE.exists():
+        return None
+    page = json.loads(VOLATILITY_PAIRS_LIVE.read_text(encoding="utf-8"))
+    return {"amount": page["amount"], "target_gain": page["target_gain"],
+            "days": [{"day": d["day"], "gain": d["gain"],
+                      "positions": [{k: p.get(k) for k in ("symbol", "status", "gain", "reason", "held_seconds")}
+                                    for p in d["positions"]]} for d in reversed(page["days"])]}
+
+
 def build(family):
     """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
     every = strategies(family)
@@ -496,6 +509,7 @@ def build(family):
     home = (HOME_TEMPLATE.read_text(encoding="utf-8").replace("__ROWS_JSON__", _embed(rows))
             .replace("__BEST_MONTHS_JSON__", _embed({k: _best_by_month(every, v) for k, v in BEST_MONTH_SELECTIONS.items()}))
             .replace("__VOLATILITY_JSON__", _embed(_volatility_summary()))
+            .replace("__VOLATILITY_PAIRS_JSON__", _embed(_volatility_pairs_summary()))
             .replace("__BUILT_AT__", _embed(datetime.now(ZoneInfo("UTC")).isoformat())))
     for lang, out in HOME.items():
         out.write_text(home.replace("__LANG__", lang), encoding="utf-8")

@@ -16,6 +16,7 @@ cd "$ROOT"
 "$PY" -m research.algorithms.$FAMILY.run || echo "Listes incomplètes (pas encore prêtes ou erreur) : la suite continue, nouvel essai au prochain lancement."
 # Stratégie « Volatilité » (panier gardé jusqu'à l'objectif) : liste du tour et tours vendus.
 "$PY" -m dashboard.volatility || echo "Stratégie Volatilité non mise à jour, nouvel essai au prochain passage."
+"$PY" -m dashboard.volatility_pairs || echo "Stratégie Volatilité 2 actions non mise à jour, nouvel essai au prochain passage."
 "$PY" -m dashboard.build "$FAMILY"
 
 # Historique : seuls les runs, les fins de séance et le registre sont commités ; tests verts et git pull avant git push.

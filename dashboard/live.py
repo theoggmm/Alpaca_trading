@@ -32,7 +32,7 @@ from core.screener import (Criteria, changes_since_open, last_session_prices, li
                            session_open_prices, session_trades)
 from core.strategy import MAX_HOLD_SESSIONS, criteria_from_json, load_strategies
 from core.universe import eligible_symbols
-from dashboard import volatility
+from dashboard import volatility, volatility_pairs
 from dashboard.build import CHARTS_FILE, FINALS_DIR, LIVE_FILE, SUPPLEMENTS, build, live_file
 from infra import nasdaq_symbols, sec
 from infra.alpaca_api import AlpacaReader
@@ -503,6 +503,10 @@ def _volatility(alpaca, now):
         volatility.update(alpaca, now)
     except (FetchError, TraceError, ValueError, KeyError) as e:
         print(f"{now.astimezone(NEW_YORK):%H:%M} — stratégie Volatilité non mise à jour : {e}")
+    try:
+        volatility_pairs.update(alpaca, now)
+    except (FetchError, TraceError, ValueError, KeyError) as e:
+        print(f"{now.astimezone(NEW_YORK):%H:%M} — stratégie Volatilité 2 actions non mise à jour : {e}")
 
 
 def _single_instance():

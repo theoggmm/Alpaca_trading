@@ -157,3 +157,28 @@ def test_vente_a_l_echeance_selon_le_signe():
     assert exit_with_deadline(neg, *args, "objectif") is None
     assert exit_with_deadline(neg, *args, "retour_a_zero")["exit_at"] == minute(300)
     assert exit_with_deadline(neg, *args, "cloture")["exit_at"] == minute(390)
+
+
+def test_deux_actions_les_plus_volatiles_sans_donnee_future():
+    from core.volatility import rank_by_volatility
+    spec = {"CALME": (0.01, 0.0, 1_000_000), "VIF": (0.05, 0.0, 1_000_000), "MOYEN": (0.03, 0.0, 1_000_000)}
+    daily = _daily(spec, sessions=40)
+    ranked = rank_by_volatility(daily, DECISION, list(spec))
+    assert [s for s, _ in ranked] == ["VIF", "MOYEN", "CALME"]
+    # Une séance future folle ne change rien.
+    future = daily[daily["symbol"] == "CALME"].tail(1).assign(timestamp=lambda d: d["timestamp"] + timedelta(days=2),
+                                                               close=Decimal("1000"))
+    assert rank_by_volatility(pd.concat([daily, future], ignore_index=True), DECISION, list(spec)) == ranked
+
+
+def test_journee_deux_actions_vente_selon_la_regle():
+    from dashboard.volatility_pairs import _position
+    close = DECISION + timedelta(hours=6, minutes=30)
+    listing = {"AAA": {"name": "A", "domain": "D"}, "BBB": {"name": "B", "domain": "D"}}
+    bars = pd.concat([_minutes({"AAA": [100] + [101] * 30 + [106]}, DECISION),           # +5 % : objectif
+                      _minutes({"BBB": [100] * 2 + [99] * 389}, DECISION)], ignore_index=True)  # négative : clôture
+    a = _position("AAA", 0.03, bars, DECISION, close, listing)
+    b = _position("BBB", 0.03, bars, DECISION, close, listing)
+    assert a["status"] == "sold" and a["reason"] == "objectif"
+    assert b["status"] == "sold" and b["reason"] == "cloture"
+    assert datetime.fromisoformat(a["buy_at"]) == DECISION + timedelta(minutes=1)      # achat à 9 h 31

@@ -78,6 +78,11 @@
   <p class="intro" id="intro"></p>
   <p class="override-banner" id="override-warn" hidden></p>
   <p class="note" id="updated"></p>
+  <section class="vol" id="pairs" hidden>
+    <h2 id="pairs-title"></h2>
+    <p class="note" id="pairs-intro"></p>
+    <div class="panel"><table id="pairs-table"></table></div>
+  </section>
   <section class="vol" id="vol" hidden>
     <h2 id="vol-title"></h2>
     <p class="note" id="vol-intro"></p>
@@ -104,11 +109,17 @@ const ROWS = __ROWS_JSON__;
 const BUILT_AT = __BUILT_AT__;
 const BEST = __BEST_MONTHS_JSON__;
 const VOL = __VOLATILITY_JSON__;
+const PAIRS = __VOLATILITY_PAIRS_JSON__;
 const TEXT = {
   fr: {
     title: "Mes stratégies", other: "English", other_href: "home.html", locale: "fr-FR",
     rule_link: "Règle en vigueur →", rule_href: "regle_en_vigueur.html",
     vol_link: "Volatilité →", vol_href: "volatilite.html", vol_name: "Volatilité",
+    pairs_title: "Volatilité — 2 actions par jour", pairs_href: "volatilite_2.html",
+    pairs_intro: (each, target) => `Chaque jour à 9 h 31 (15 h 31 à Paris), les 2 actions les plus volatiles des 20 dernières séances (parmi les 39) sont achetées ${each} chacune. Vente à +${target} nets, sinon à 3 h 30 si positive, sinon à la clôture. Rien n'est gardé la nuit : chaque jour est à part.`,
+    pairs_head: ["Jour", "Action 1", "Action 2", "Résultat du jour"],
+    pairs_wait: "à acheter à 9 h 31", pairs_next: "connues après la clôture de la veille",
+    pairs_reason: { objectif: "objectif", positif_echeance: "3 h 30, positif", cloture: "clôture" }, pairs_live: "en cours",
     vol_title: "Volatilité — par jour d'achat",
     vol_intro: (each, target) => `Chaque jour, une vague achète les 39 actions de la liste pour ${each} chacune ; chaque action est vendue seule dès qu'elle a rapporté ${target} nets. Une ligne par vague : les jours ne se mélangent pas. Clique sur un jour pour voir ses actions.`,
     vol_head: ["Jour d'achat", "Objectif atteint", "Encore détenues", "Gains encaissés", "Gain net en cours", "Total", "Plus rapide", "Plus lente (vendue)"],
@@ -136,6 +147,11 @@ const TEXT = {
     title: "My strategies", other: "Français", other_href: "accueil.html", locale: "en-US",
     rule_link: "Rule in force →", rule_href: "regle_en_vigueur_en.html",
     vol_link: "Volatility →", vol_href: "volatility_en.html", vol_name: "Volatility",
+    pairs_title: "Volatility — 2 stocks a day", pairs_href: "volatility_2_en.html",
+    pairs_intro: (each, target) => `Every day at 9:31 AM (15:31 in Paris), the 2 most volatile stocks of the last 20 sessions (out of the 39) are bought for ${each} each. Sold at +${target} net, otherwise at 3 h 30 if positive, otherwise at the close. Nothing is held overnight: each day stands alone.`,
+    pairs_head: ["Day", "Stock 1", "Stock 2", "Day's result"],
+    pairs_wait: "to buy at 9:31", pairs_next: "known after the previous close",
+    pairs_reason: { objectif: "target", positif_echeance: "3 h 30, positive", cloture: "close" }, pairs_live: "in progress",
     vol_title: "Volatility — by day bought",
     vol_intro: (each, target) => `Each day, a batch buys the list's 39 stocks for ${each} each; each stock is sold on its own once it has made ${target} net. One row per batch: days are never mixed. Click a day to see its stocks.`,
     vol_head: ["Day bought", "Target reached", "Still held", "Gains banked", "Current net gain", "Total", "Fastest", "Slowest (sold)"],
@@ -174,6 +190,39 @@ const other = document.getElementById("other");
 other.textContent = TEXT.other; other.href = TEXT.other_href;
 Object.assign(document.getElementById("rule-link"), { textContent: TEXT.rule_link, href: TEXT.rule_href });
 Object.assign(document.getElementById("vol-link"), { textContent: TEXT.vol_link, href: TEXT.vol_href });
+if (PAIRS && Array.isArray(PAIRS.days)) {
+  document.getElementById("pairs").hidden = false;
+  const usd = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", signDisplay: "exceptZero" }).format(v);
+  const plain = v => new Intl.NumberFormat(TEXT.locale, { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(v);
+  const span = s => s < 3600 ? `${Math.round(s / 60)} min` : `${Math.floor(s / 3600)} h ${String(Math.round(s % 3600 / 60)).padStart(2, "0")}`;
+  const title = document.getElementById("pairs-title");
+  const link = document.createElement("a"); link.href = TEXT.pairs_href; link.textContent = TEXT.pairs_title; title.appendChild(link);
+  document.getElementById("pairs-intro").textContent = TEXT.pairs_intro(plain(+PAIRS.amount), plain(+PAIRS.target_gain));
+  const pt = document.getElementById("pairs-table");
+  const ph = pt.createTHead().insertRow();
+  TEXT.pairs_head.forEach((h, i) => { const th = document.createElement("th"); th.textContent = h; if (i < 3) th.className = "text"; ph.appendChild(th); });
+  const pb = pt.createTBody();
+  PAIRS.days.forEach(d => {
+    const tr = pb.insertRow();
+    const day = document.createElement("td"); day.className = "text";
+    day.textContent = new Date(`${d.day}T12:00:00Z`).toLocaleDateString(TEXT.locale, { weekday: "short", day: "numeric", month: "long" });
+    tr.appendChild(day);
+    [0, 1].forEach(i => {
+      const p = d.positions[i], td = document.createElement("td"); td.className = "text num";
+      if (!p) { td.textContent = d.positions.length ? "—" : TEXT.pairs_next; td.classList.add("state"); }
+      else {
+        const g = p.gain == null ? null : +p.gain;
+        td.textContent = `${p.symbol} ` + (g == null ? `· ${TEXT.pairs_wait}` : `${usd(g)} · ` + (p.status === "sold" ? `${TEXT.pairs_reason[p.reason] ?? p.reason}, ${span(p.held_seconds)}` : TEXT.pairs_live));
+        if (g != null) td.classList.add(g > 0 ? "up" : g < 0 ? "down" : "x");
+      }
+      tr.appendChild(td);
+    });
+    const total = document.createElement("td"); total.className = "num";
+    const g = d.gain == null ? null : +d.gain;
+    total.textContent = g == null ? "—" : usd(g); if (g != null) total.classList.add(g > 0 ? "up" : g < 0 ? "down" : "x");
+    tr.appendChild(total);
+  });
+}
 // Résumé d'un autre format (suivi lancé avec un code plus ancien) : la section reste cachée, le reste de la page s'affiche.
 if (VOL && Array.isArray(VOL.batches)) {
   document.getElementById("vol").hidden = false;

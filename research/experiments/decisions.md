@@ -291,3 +291,13 @@ plus ; C (clôture du jour) 504 ventes, +10 810 $, 4 mois perdants sur 13, rien 
 10 000 $ en un an, au-delà de 100 % : SUSPECT, aucune promotion sans explication. Explication probable : la liste des 39
 a été choisie avec la tendance et la volatilité connues en octobre 2026 (titres qui ont monté pendant la période testée).
 Statut : diagnostic ; jugement seulement sur les séances qui suivent.
+
+## T29 — 2026-10-23 — Stratégie « Volatilité — 2 actions », variante C (propriétaire)
+
+Après le test T28, le propriétaire retient la variante C. Chaque séance depuis le 23 octobre 2026 : parmi les 39 actions
+du run r001, les 2 plus volatiles sur 20 séances (core/volatility.rank_by_volatility, méthode M7), connues après la
+clôture de la veille, achetées 5 000 $ chacune au cours d'ouverture de la minute 9 h 31 ; vente dès +200 $ nets, sinon
+3 h 30 après l'achat si positive, sinon à la clôture du jour (exit_with_deadline, « cloture »). Rien n'est gardé la nuit.
+Suivi : dashboard/volatility_pairs.py (suivi en direct, script du soir) ; pages volatilite_2.html / volatility_2_en.html ;
+jours terminés dans research/experiments/final/volatilite/paires/. La stratégie 39 actions (T27) continue inchangée.
+Statut : diagnostic, papier, aucun ordre ; résultat du test passé SUSPECT (règle 6) : jugée sur les séances à venir.

@@ -17,7 +17,7 @@ from zoneinfo import ZoneInfo
 import numpy as np
 import pandas as pd
 
-from core.volatility import IF_NEGATIVE, exit_with_deadline
+from core.volatility import IF_NEGATIVE, exit_with_deadline, rank_by_volatility
 from infra.alpaca_api import AlpacaReader
 from infra.cache import cached
 from infra.trace import committed_git_sha, next_run_id, save_run
@@ -118,6 +118,8 @@ def main():
         info = day_info[d]
         out = {}
         hist = closes[closes.index < d]
+        # M7 : le même calcul que la stratégie en direct (core/volatility.rank_by_volatility, règle 8).
+        m7 = dict(rank_by_volatility(daily, next(x[1] for x in sessions if x[0] == d), list(info)))
         for s, x in info.items():
             if s not in hist or hist[s].dropna().shape[0] < 22:
                 continue
@@ -131,7 +133,7 @@ def main():
                 "M4": None if x["close_30"] is None else x["close_30"] / x["open"] - 1,
                 "M5": (early_volume[s].get(d, 0) / np.mean(vols)) if vols else None,
                 "M6": -(series.iloc[-1] / series.iloc[-2] - 1),
-                "M7": float(np.log(series.tail(21)).diff().std()),
+                "M7": m7.get(s),
             }
         return out
 
