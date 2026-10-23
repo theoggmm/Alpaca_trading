@@ -1,0 +1,830 @@
+{
+  "run_id": "r001",
+  "family": "volatilite",
+  "variant": "test_paires",
+  "status": "diagnostic",
+  "session_date": "2026-10-22",
+  "decision_time": "2026-10-23T11:55:08.539520+00:00",
+  "created_at": "2026-10-23T11:55:08.539537+00:00",
+  "git_sha": "75af99cbd0005615036bb5e8a699080723a329cc",
+  "preregistration": "T28",
+  "period": [
+    "2025-10-22",
+    "2026-10-22"
+  ],
+  "sessions": 252,
+  "symbols": [
+    "ACMR",
+    "APPS",
+    "ARM",
+    "BLLN",
+    "BLMN",
+    "BMBL",
+    "BRKR",
+    "CAI",
+    "CHYM",
+    "CLMT",
+    "CNXC",
+    "COHU",
+    "DAVE",
+    "FCEL",
+    "GSHD",
+    "HTFL",
+    "HURN",
+    "IOVA",
+    "LGIH",
+    "LIFE",
+    "LIND",
+    "LITE",
+    "LQDA",
+    "MXL",
+    "PCRX",
+    "PENG",
+    "PGY",
+    "PLPC",
+    "PTEN",
+    "QMCO",
+    "QURE",
+    "SEZL",
+    "SSRM",
+    "TH",
+    "TLN",
+    "TTAN",
+    "TWST",
+    "WIX",
+    "XMTR"
+  ],
+  "baseline": {
+    "hit_rate_3h30": 0.19400370904595096,
+    "positions": 9706,
+    "mean_minutes_to_target": 69.28571428571428
+  },
+  "winner": "M7_volatilite_20_seances",
+  "selection": [
+    {
+      "method": "M1_ouverture_en_hausse",
+      "label": "plus forte ouverture en hausse, achat 9 h 31",
+      "hit_rate_3h30": 0.30357142857142855,
+      "positions": 504,
+      "months_better_than_baseline": 12,
+      "months": 13,
+      "mean_minutes_to_target": 43.20261437908496,
+      "passed": true,
+      "accounts": {
+        "objectif": {
+          "method": "M1_ouverture_en_hausse",
+          "variant": "objectif",
+          "trades": 42,
+          "reasons": {
+            "objectif": 34,
+            "positif_echeance": 6
+          },
+          "net": "12297.26",
+          "by_month": {
+            "2025-10": "1206.79",
+            "2026-01": "1095.13",
+            "2026-02": "709.00",
+            "2026-03": "258.28",
+            "2026-04": "5078.33",
+            "2026-05": "1487.69",
+            "2026-06": "226.14",
+            "2026-08": "410.54",
+            "2026-10": "1825.35"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 160.0,
+          "still_held": [
+            {
+              "symbol": "BLMN",
+              "bought": "2026-08-05",
+              "open_gain": "-864.06"
+            },
+            {
+              "symbol": "PCRX",
+              "bought": "2026-10-08",
+              "open_gain": "5.51"
+            }
+          ]
+        },
+        "retour_a_zero": {
+          "method": "M1_ouverture_en_hausse",
+          "variant": "retour_a_zero",
+          "trades": 55,
+          "reasons": {
+            "objectif": 18,
+            "retour_a_zero": 30,
+            "positif_echeance": 5
+          },
+          "net": "4785.10",
+          "by_month": {
+            "2025-10": "314.65",
+            "2025-11": "324.03",
+            "2025-12": "208.07",
+            "2026-01": "3.94",
+            "2026-05": "992.17",
+            "2026-06": "787.45",
+            "2026-07": "471.84",
+            "2026-08": "1051.66",
+            "2026-10": "631.29"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 218.0,
+          "still_held": [
+            {
+              "symbol": "PENG",
+              "bought": "2026-07-15",
+              "open_gain": "-1777.24"
+            },
+            {
+              "symbol": "LITE",
+              "bought": "2026-10-21",
+              "open_gain": "-693.28"
+            }
+          ]
+        },
+        "cloture": {
+          "method": "M1_ouverture_en_hausse",
+          "variant": "cloture",
+          "trades": 504,
+          "reasons": {
+            "objectif": 153,
+            "cloture": 254,
+            "positif_echeance": 97
+          },
+          "net": "669.79",
+          "by_month": {
+            "2025-10": "-1222.92",
+            "2025-11": "888.35",
+            "2025-12": "-445.48",
+            "2026-01": "-2648.12",
+            "2026-02": "1145.49",
+            "2026-03": "-221.71",
+            "2026-04": "1202.29",
+            "2026-05": "-120.51",
+            "2026-06": "3201.52",
+            "2026-07": "-883.40",
+            "2026-08": "-538.32",
+            "2026-09": "-555.41",
+            "2026-10": "868.00"
+          },
+          "losing_months": 8,
+          "longest_hold_days": 3.0,
+          "still_held": []
+        }
+      }
+    },
+    {
+      "method": "M2_ouverture_en_baisse",
+      "label": "plus forte ouverture en baisse, achat 9 h 31",
+      "hit_rate_3h30": 0.27380952380952384,
+      "positions": 504,
+      "months_better_than_baseline": 9,
+      "months": 13,
+      "mean_minutes_to_target": 55.528985507246375,
+      "passed": false,
+      "accounts": {
+        "objectif": {
+          "method": "M2_ouverture_en_baisse",
+          "variant": "objectif",
+          "trades": 73,
+          "reasons": {
+            "positif_echeance": 23,
+            "objectif": 48
+          },
+          "net": "12799.69",
+          "by_month": {
+            "2025-10": "854.91",
+            "2025-11": "2624.97",
+            "2025-12": "1460.31",
+            "2026-01": "420.04",
+            "2026-03": "802.06",
+            "2026-04": "1339.03",
+            "2026-05": "1087.36",
+            "2026-06": "1391.30",
+            "2026-07": "1552.93",
+            "2026-08": "818.47",
+            "2026-09": "243.66",
+            "2026-10": "204.66"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 104.1,
+          "still_held": [
+            {
+              "symbol": "CLMT",
+              "bought": "2026-09-21",
+              "open_gain": "-786.78"
+            },
+            {
+              "symbol": "TH",
+              "bought": "2026-10-02",
+              "open_gain": "-1356.51"
+            }
+          ]
+        },
+        "retour_a_zero": {
+          "method": "M2_ouverture_en_baisse",
+          "variant": "retour_a_zero",
+          "trades": 117,
+          "reasons": {
+            "positif_echeance": 25,
+            "retour_a_zero": 52,
+            "objectif": 38
+          },
+          "net": "12053.73",
+          "by_month": {
+            "2025-10": "645.18",
+            "2025-11": "2705.76",
+            "2025-12": "1120.61",
+            "2026-01": "115.26",
+            "2026-03": "207.68",
+            "2026-04": "766.11",
+            "2026-05": "2601.08",
+            "2026-06": "1302.49",
+            "2026-07": "1615.17",
+            "2026-08": "845.38",
+            "2026-09": "129.00"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 99.0,
+          "still_held": [
+            {
+              "symbol": "LQDA",
+              "bought": "2026-08-12",
+              "open_gain": "-2630.67"
+            },
+            {
+              "symbol": "SSRM",
+              "bought": "2026-09-23",
+              "open_gain": "-1063.92"
+            }
+          ]
+        },
+        "cloture": {
+          "method": "M2_ouverture_en_baisse",
+          "variant": "cloture",
+          "trades": 504,
+          "reasons": {
+            "positif_echeance": 137,
+            "cloture": 229,
+            "objectif": 138
+          },
+          "net": "330.11",
+          "by_month": {
+            "2025-10": "-61.73",
+            "2025-11": "2027.37",
+            "2025-12": "720.23",
+            "2026-01": "-1865.16",
+            "2026-02": "-1233.43",
+            "2026-03": "1251.11",
+            "2026-04": "637.28",
+            "2026-05": "905.26",
+            "2026-06": "545.59",
+            "2026-07": "-1375.19",
+            "2026-08": "-1542.43",
+            "2026-09": "75.69",
+            "2026-10": "245.52"
+          },
+          "losing_months": 5,
+          "longest_hold_days": 3.0,
+          "still_held": []
+        }
+      }
+    },
+    {
+      "method": "M3_hausse_15_min",
+      "label": "plus forte hausse 9 h 30 – 9 h 45, achat 9 h 45",
+      "hit_rate_3h30": 0.2638888888888889,
+      "positions": 504,
+      "months_better_than_baseline": 9,
+      "months": 13,
+      "mean_minutes_to_target": 71.0,
+      "passed": false,
+      "accounts": {
+        "objectif": {
+          "method": "M3_hausse_15_min",
+          "variant": "objectif",
+          "trades": 47,
+          "reasons": {
+            "objectif": 35,
+            "positif_echeance": 10
+          },
+          "net": "8466.41",
+          "by_month": {
+            "2025-10": "565.04",
+            "2025-11": "828.26",
+            "2025-12": "203.23",
+            "2026-02": "698.76",
+            "2026-05": "1894.65",
+            "2026-06": "2927.40",
+            "2026-08": "691.51",
+            "2026-09": "227.90",
+            "2026-10": "429.66"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 221.0,
+          "still_held": [
+            {
+              "symbol": "FCEL",
+              "bought": "2026-07-01",
+              "open_gain": "-3413.36"
+            },
+            {
+              "symbol": "APPS",
+              "bought": "2026-10-05",
+              "open_gain": "-678.66"
+            }
+          ]
+        },
+        "retour_a_zero": {
+          "method": "M3_hausse_15_min",
+          "variant": "retour_a_zero",
+          "trades": 74,
+          "reasons": {
+            "retour_a_zero": 37,
+            "positif_echeance": 14,
+            "objectif": 21
+          },
+          "net": "6530.04",
+          "by_month": {
+            "2025-10": "296.69",
+            "2025-11": "865.51",
+            "2025-12": "32.86",
+            "2026-01": "247.40",
+            "2026-02": "0.09",
+            "2026-04": "466.96",
+            "2026-05": "1383.07",
+            "2026-06": "2217.12",
+            "2026-08": "541.44",
+            "2026-09": "478.90"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 221.0,
+          "still_held": [
+            {
+              "symbol": "FCEL",
+              "bought": "2026-07-01",
+              "open_gain": "-3413.36"
+            },
+            {
+              "symbol": "QURE",
+              "bought": "2026-09-30",
+              "open_gain": "-553.85"
+            }
+          ]
+        },
+        "cloture": {
+          "method": "M3_hausse_15_min",
+          "variant": "cloture",
+          "trades": 504,
+          "reasons": {
+            "cloture": 254,
+            "positif_echeance": 117,
+            "objectif": 133
+          },
+          "net": "-2301.81",
+          "by_month": {
+            "2025-10": "17.06",
+            "2025-11": "-960.75",
+            "2025-12": "-1539.34",
+            "2026-01": "-802.51",
+            "2026-02": "555.29",
+            "2026-03": "1699.09",
+            "2026-04": "1120.88",
+            "2026-05": "651.11",
+            "2026-06": "785.03",
+            "2026-07": "-2105.63",
+            "2026-08": "1246.68",
+            "2026-09": "-221.32",
+            "2026-10": "-2747.40"
+          },
+          "losing_months": 6,
+          "longest_hold_days": 3.0,
+          "still_held": []
+        }
+      }
+    },
+    {
+      "method": "M4_hausse_30_min",
+      "label": "plus forte hausse 9 h 30 – 10 h 00, achat 10 h 00",
+      "hit_rate_3h30": 0.24206349206349206,
+      "positions": 504,
+      "months_better_than_baseline": 9,
+      "months": 13,
+      "mean_minutes_to_target": 89.1311475409836,
+      "passed": false,
+      "accounts": {
+        "objectif": {
+          "method": "M4_hausse_30_min",
+          "variant": "objectif",
+          "trades": 5,
+          "reasons": {
+            "objectif": 3
+          },
+          "net": "759.09",
+          "by_month": {
+            "2025-10": "216.86",
+            "2025-11": "542.23"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 16.0,
+          "still_held": [
+            {
+              "symbol": "PGY",
+              "bought": "2025-10-23",
+              "open_gain": "-1806.11"
+            },
+            {
+              "symbol": "WIX",
+              "bought": "2025-11-11",
+              "open_gain": "-1977.06"
+            }
+          ]
+        },
+        "retour_a_zero": {
+          "method": "M4_hausse_30_min",
+          "variant": "retour_a_zero",
+          "trades": 63,
+          "reasons": {
+            "retour_a_zero": 31,
+            "positif_echeance": 13,
+            "objectif": 18
+          },
+          "net": "5204.30",
+          "by_month": {
+            "2025-10": "492.51",
+            "2025-11": "585.26",
+            "2025-12": "436.22",
+            "2026-05": "27.29",
+            "2026-06": "2463.66",
+            "2026-08": "3.52",
+            "2026-09": "417.27",
+            "2026-10": "778.58"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 221.0,
+          "still_held": [
+            {
+              "symbol": "FCEL",
+              "bought": "2026-07-01",
+              "open_gain": "-3423.10"
+            }
+          ]
+        },
+        "cloture": {
+          "method": "M4_hausse_30_min",
+          "variant": "cloture",
+          "trades": 504,
+          "reasons": {
+            "cloture": 235,
+            "positif_echeance": 147,
+            "objectif": 122
+          },
+          "net": "4617.37",
+          "by_month": {
+            "2025-10": "152.43",
+            "2025-11": "-2157.86",
+            "2025-12": "-846.30",
+            "2026-01": "758.54",
+            "2026-02": "1102.66",
+            "2026-03": "941.31",
+            "2026-04": "2109.78",
+            "2026-05": "4043.65",
+            "2026-06": "1053.76",
+            "2026-07": "-3656.26",
+            "2026-08": "1370.84",
+            "2026-09": "-41.97",
+            "2026-10": "-213.21"
+          },
+          "losing_months": 5,
+          "longest_hold_days": 3.0,
+          "still_held": []
+        }
+      }
+    },
+    {
+      "method": "M5_volume_relatif_15_min",
+      "label": "plus fort volume relatif 9 h 30 – 9 h 45, achat 9 h 45",
+      "hit_rate_3h30": 0.26785714285714285,
+      "positions": 504,
+      "months_better_than_baseline": 9,
+      "months": 13,
+      "mean_minutes_to_target": 88.77777777777779,
+      "passed": false,
+      "accounts": {
+        "objectif": {
+          "method": "M5_volume_relatif_15_min",
+          "variant": "objectif",
+          "trades": 47,
+          "reasons": {
+            "objectif": 38,
+            "positif_echeance": 8
+          },
+          "net": "11232.87",
+          "by_month": {
+            "2025-10": "812.17",
+            "2025-11": "217.25",
+            "2025-12": "645.33",
+            "2026-01": "444.32",
+            "2026-04": "5790.76",
+            "2026-07": "417.48",
+            "2026-08": "2280.51",
+            "2026-09": "413.77",
+            "2026-10": "211.27"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 168.0,
+          "still_held": [
+            {
+              "symbol": "DAVE",
+              "bought": "2026-09-15",
+              "open_gain": "21.40"
+            }
+          ]
+        },
+        "retour_a_zero": {
+          "method": "M5_volume_relatif_15_min",
+          "variant": "retour_a_zero",
+          "trades": 49,
+          "reasons": {
+            "retour_a_zero": 21,
+            "positif_echeance": 14,
+            "objectif": 12
+          },
+          "net": "3943.04",
+          "by_month": {
+            "2025-10": "680.14",
+            "2025-11": "0.39",
+            "2025-12": "495.98",
+            "2026-02": "12.85",
+            "2026-04": "509.90",
+            "2026-05": "476.53",
+            "2026-06": "49.98",
+            "2026-07": "832.93",
+            "2026-08": "863.48",
+            "2026-09": "20.85"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 167.9,
+          "still_held": [
+            {
+              "symbol": "LQDA",
+              "bought": "2026-08-12",
+              "open_gain": "-2638.57"
+            },
+            {
+              "symbol": "SSRM",
+              "bought": "2026-09-03",
+              "open_gain": "-1258.65"
+            }
+          ]
+        },
+        "cloture": {
+          "method": "M5_volume_relatif_15_min",
+          "variant": "cloture",
+          "trades": 504,
+          "reasons": {
+            "cloture": 241,
+            "positif_echeance": 128,
+            "objectif": 135
+          },
+          "net": "3253.79",
+          "by_month": {
+            "2025-10": "-122.77",
+            "2025-11": "1031.20",
+            "2025-12": "-530.47",
+            "2026-01": "-2060.01",
+            "2026-02": "-394.68",
+            "2026-03": "648.66",
+            "2026-04": "3093.14",
+            "2026-05": "1860.39",
+            "2026-06": "-175.70",
+            "2026-07": "-290.61",
+            "2026-08": "-1188.54",
+            "2026-09": "1045.61",
+            "2026-10": "337.57"
+          },
+          "losing_months": 7,
+          "longest_hold_days": 3.0,
+          "still_held": []
+        }
+      }
+    },
+    {
+      "method": "M6_baisse_la_veille",
+      "label": "plus forte baisse la veille, achat 9 h 31",
+      "hit_rate_3h30": 0.25793650793650796,
+      "positions": 504,
+      "months_better_than_baseline": 11,
+      "months": 13,
+      "mean_minutes_to_target": 62.83846153846154,
+      "passed": false,
+      "accounts": {
+        "objectif": {
+          "method": "M6_baisse_la_veille",
+          "variant": "objectif",
+          "trades": 68,
+          "reasons": {
+            "positif_echeance": 28,
+            "objectif": 38
+          },
+          "net": "12068.15",
+          "by_month": {
+            "2025-10": "1007.51",
+            "2025-11": "758.33",
+            "2025-12": "1280.99",
+            "2026-01": "1360.68",
+            "2026-02": "1762.40",
+            "2026-03": "558.28",
+            "2026-04": "1759.25",
+            "2026-05": "755.06",
+            "2026-06": "680.39",
+            "2026-08": "2145.27"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 95.0,
+          "still_held": [
+            {
+              "symbol": "APPS",
+              "bought": "2026-08-12",
+              "open_gain": "-1249.53"
+            },
+            {
+              "symbol": "BLMN",
+              "bought": "2026-08-28",
+              "open_gain": "-171.68"
+            }
+          ]
+        },
+        "retour_a_zero": {
+          "method": "M6_baisse_la_veille",
+          "variant": "retour_a_zero",
+          "trades": 78,
+          "reasons": {
+            "positif_echeance": 27,
+            "retour_a_zero": 30,
+            "objectif": 19
+          },
+          "net": "6876.09",
+          "by_month": {
+            "2025-10": "1004.40",
+            "2025-11": "1080.95",
+            "2025-12": "622.85",
+            "2026-01": "1453.73",
+            "2026-02": "207.47",
+            "2026-03": "371.15",
+            "2026-04": "695.56",
+            "2026-06": "918.88",
+            "2026-07": "213.27",
+            "2026-10": "307.83"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 104.0,
+          "still_held": [
+            {
+              "symbol": "FCEL",
+              "bought": "2026-07-02",
+              "open_gain": "-3164.58"
+            },
+            {
+              "symbol": "MXL",
+              "bought": "2026-10-09",
+              "open_gain": "-1694.36"
+            }
+          ]
+        },
+        "cloture": {
+          "method": "M6_baisse_la_veille",
+          "variant": "cloture",
+          "trades": 504,
+          "reasons": {
+            "positif_echeance": 128,
+            "cloture": 246,
+            "objectif": 130
+          },
+          "net": "-4360.93",
+          "by_month": {
+            "2025-10": "590.88",
+            "2025-11": "-324.67",
+            "2025-12": "-1544.51",
+            "2026-01": "1311.78",
+            "2026-02": "-1763.12",
+            "2026-03": "4.04",
+            "2026-04": "679.17",
+            "2026-05": "819.33",
+            "2026-06": "2837.71",
+            "2026-07": "-1809.40",
+            "2026-08": "-626.96",
+            "2026-09": "-4681.91",
+            "2026-10": "146.71"
+          },
+          "losing_months": 6,
+          "longest_hold_days": 3.0,
+          "still_held": []
+        }
+      }
+    },
+    {
+      "method": "M7_volatilite_20_seances",
+      "label": "plus forte volatilité sur 20 séances, achat 9 h 31",
+      "hit_rate_3h30": 0.375,
+      "positions": 504,
+      "months_better_than_baseline": 12,
+      "months": 13,
+      "mean_minutes_to_target": 51.01587301587301,
+      "passed": true,
+      "accounts": {
+        "objectif": {
+          "method": "M7_volatilite_20_seances",
+          "variant": "objectif",
+          "trades": 47,
+          "reasons": {
+            "objectif": 35,
+            "positif_echeance": 11
+          },
+          "net": "9502.02",
+          "by_month": {
+            "2025-10": "760.11",
+            "2025-11": "1604.36",
+            "2026-05": "742.98",
+            "2026-06": "1164.65",
+            "2026-08": "488.43",
+            "2026-09": "1307.03",
+            "2026-10": "3434.46"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 197.0,
+          "still_held": [
+            {
+              "symbol": "FCEL",
+              "bought": "2026-07-01",
+              "open_gain": "-3444.73"
+            }
+          ]
+        },
+        "retour_a_zero": {
+          "method": "M7_volatilite_20_seances",
+          "variant": "retour_a_zero",
+          "trades": 125,
+          "reasons": {
+            "retour_a_zero": 49,
+            "positif_echeance": 21,
+            "objectif": 54
+          },
+          "net": "15394.52",
+          "by_month": {
+            "2025-10": "393.97",
+            "2025-11": "2077.03",
+            "2025-12": "733.81",
+            "2026-01": "1343.85",
+            "2026-02": "662.67",
+            "2026-04": "486.73",
+            "2026-05": "3319.04",
+            "2026-06": "30.87",
+            "2026-07": "803.84",
+            "2026-08": "1529.66",
+            "2026-09": "810.88",
+            "2026-10": "3202.18"
+          },
+          "losing_months": 0,
+          "longest_hold_days": 140.2,
+          "still_held": [
+            {
+              "symbol": "FCEL",
+              "bought": "2026-07-31",
+              "open_gain": "-2618.41"
+            }
+          ]
+        },
+        "cloture": {
+          "method": "M7_volatilite_20_seances",
+          "variant": "cloture",
+          "trades": 504,
+          "reasons": {
+            "cloture": 214,
+            "objectif": 189,
+            "positif_echeance": 101
+          },
+          "net": "10810.06",
+          "by_month": {
+            "2025-10": "-603.88",
+            "2025-11": "1920.70",
+            "2025-12": "-1081.93",
+            "2026-01": "1551.53",
+            "2026-02": "-212.16",
+            "2026-03": "208.46",
+            "2026-04": "630.96",
+            "2026-05": "3360.62",
+            "2026-06": "1360.99",
+            "2026-07": "-1726.07",
+            "2026-08": "2195.82",
+            "2026-09": "1142.32",
+            "2026-10": "2062.71"
+          },
+          "losing_months": 4,
+          "longest_hold_days": 3.0,
+          "still_held": []
+        }
+      }
+    }
+  ]
+}

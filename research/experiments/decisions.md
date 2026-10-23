@@ -280,3 +280,14 @@ compte finit positif avec au moins une variante ; parmi les retenues, la meilleu
 Si aucune n'est retenue, c'est dit tel quel. Biais connu : la liste des 39 a été choisie avec des données d'octobre 2026
 (tendance sur 6 mois, volatilité récente) : le niveau des résultats sur le passé est flatté ; la comparaison entre
 méthodes l'est moins. Statut : diagnostic, papier, aucun ordre ; la décision d'investir reste au propriétaire.
+
+## T28 bis — 2026-10-23 — Résultat du test pré-enregistré T28 (run volatilite/tests/r001, code 75af99c)
+
+252 séances, 39 actions. Repère (les 39 à 9 h 31) : 19,4 % des positions à +200 $ en 3 h 30 (n = 9 706). Retenues par
+le critère : M1 ouverture en hausse (30,4 %, mieux 12 mois sur 13) et M7 volatilité sur 20 séances (37,5 %, 12/13,
+n = 504) ; gagnante M7. Compte de 2 places, M7 : A (garder jusqu'à +200 $) 47 ventes, +9 502 $ réalisés, −3 445 $
+latents, une position gardée 197 jours ; B (jusqu'à 0 $) 125 ventes, +15 395 $ réalisés, −2 618 $ latents, 140 jours au
+plus ; C (clôture du jour) 504 ventes, +10 810 $, 4 mois perdants sur 13, rien de bloqué. Règle 6 : +108 % à +128 % sur
+10 000 $ en un an, au-delà de 100 % : SUSPECT, aucune promotion sans explication. Explication probable : la liste des 39
+a été choisie avec la tendance et la volatilité connues en octobre 2026 (titres qui ont monté pendant la période testée).
+Statut : diagnostic ; jugement seulement sur les séances qui suivent.
