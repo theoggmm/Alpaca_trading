@@ -8,8 +8,10 @@ Depuis la racine du dépôt :
     .venv/bin/python -m dashboard.build reprise_apres_baisse
 """
 
+import fcntl
 import json
 import sys
+from contextlib import contextmanager
 from datetime import date, datetime
 from decimal import Decimal
 from pathlib import Path
@@ -500,8 +502,25 @@ def _volatility_pairs_summary():
                                     for p in d["positions"]]} for d in reversed(page["days"])]}
 
 
+@contextmanager
+def _build_lock():
+    """Une seule génération des pages à la fois (suivi en direct, son fil Volatilité, script du soir)."""
+    LIVE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(LIVE_FILE.parent / "build.lock", "w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            yield
+        finally:
+            fcntl.flock(lock, fcntl.LOCK_UN)
+
+
 def build(family):
     """Tous les tableaux de bord de la famille, puis l'accueil et la méthodologie autonome."""
+    with _build_lock():
+        return _build(family)
+
+
+def _build(family):
     every = strategies(family)
     # Accueil et menus « Stratégie » dans l'ordre des stratégies (la règle en vigueur, ordre 0, en tête).
     infos = [_strategy_info(s) for s in sorted(every, key=lambda s: s.order)]

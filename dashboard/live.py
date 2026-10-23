@@ -19,6 +19,7 @@ Depuis la racine du dépôt :
 import fcntl
 import json
 import sys
+import threading
 import time
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
@@ -499,14 +500,32 @@ def _missing_lists(every, key, market_open, now):
 
 def _volatility(alpaca, now):
     """Stratégie « Volatilité » (dashboard/volatility.py) : un échec n'arrête pas le suivi des autres stratégies."""
-    try:
-        volatility.update(alpaca, now)
-    except (FetchError, TraceError, ValueError, KeyError) as e:
-        print(f"{now.astimezone(NEW_YORK):%H:%M} — stratégie Volatilité non mise à jour : {e}")
+    # Les 2 actions d'abord (deux titres, quelques secondes), puis le panier des 39.
     try:
         volatility_pairs.update(alpaca, now)
-    except (FetchError, TraceError, ValueError, KeyError) as e:
+    except Exception as e:      # un échec n'arrête ni le fil ni le suivi : nouvel essai à la minute suivante
         print(f"{now.astimezone(NEW_YORK):%H:%M} — stratégie Volatilité 2 actions non mise à jour : {e}")
+    try:
+        volatility.update(alpaca, now)
+    except Exception as e:
+        print(f"{now.astimezone(NEW_YORK):%H:%M} — stratégie Volatilité non mise à jour : {e}")
+
+
+def _volatility_loop(family, stop_at):
+    """
+    Fil à part pour les deux stratégies Volatilité : une mise à jour par minute avec sa propre connexion, qui ne
+    dépend pas du passage principal (lent quand il lit tout le marché sur un réseau lent). Quelques dizaines de
+    titres seulement ; l'accueil est regénéré après chaque mise à jour.
+    """
+    alpaca = AlpacaReader()
+    while datetime.now(timezone.utc) < stop_at:
+        now = datetime.now(timezone.utc)
+        _volatility(alpaca, now)
+        try:
+            build(family)
+        except Exception as e:      # le fil ne doit jamais s'arrêter : la page se refait au passage suivant
+            print(f"{now.astimezone(NEW_YORK):%H:%M} — pages non regénérées (fil Volatilité) : {e}")
+        time.sleep(REFRESH_S)
 
 
 def _single_instance():
@@ -539,6 +558,7 @@ def run(family):
     first_hour_end = market_open + timedelta(minutes=criteria.first_hour_minutes)
     # Avec 15 min de retard, les derniers échanges de la séance arrivent jusqu'à clôture + 15 min.
     stop_at = market_close + FEED_DELAY
+    threading.Thread(target=_volatility_loop, args=(family, stop_at), daemon=True, name="volatilite").start()
 
     print("Préparation : univers liquide et domaines (quelques minutes la première fois)…")
     daily, symbols, domains, names = _prepare(alpaca, criteria, key, market_open)
@@ -643,7 +663,6 @@ def run(family):
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(json.dumps(state, ensure_ascii=False), encoding="utf-8")
         build(family)
-        _volatility(alpaca, now)
         day = state["measures"]["day"]["bubbles"]
         up = sum(1 for b in day if b["mean_return"] > 0)
         took = (datetime.now(timezone.utc) - now).total_seconds()
