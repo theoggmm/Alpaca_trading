@@ -253,3 +253,40 @@ def track_round(symbols, bars, entry_time, sessions, now, amount, target_gain, c
         result.update({"sold_at": (sold[0] + timedelta(minutes=1)).isoformat(), "sold_value": sold[1],
                        "sold_gain": sold[2]})
     return result
+
+
+# Règle de vente « 2 actions » (T28) : objectif, sinon vente à l'échéance si positif ; si négatif à l'échéance :
+IF_NEGATIVE = ("objectif", "retour_a_zero", "cloture")   # A garder jusqu'à l'objectif · B jusqu'à 0 $ net · C clôture du jour
+
+
+def exit_with_deadline(path, entry_price, amount, target_gain, cost_bps, deadline, day_close, if_negative):
+    """
+    Vente d'une action achetée amount au prix entry_price.
+    path       : [(fin de minute, cours de clôture)] des minutes de séance régulière après l'achat, dans l'ordre
+                 (plusieurs séances possibles ; rien la nuit : un saut d'ouverture compte à la première minute).
+    deadline   : échéance (ex. achat + 3 h 30) ; à la première minute qui la passe, vente si le gain net est > 0.
+    day_close  : clôture de la séance d'achat (variante « cloture »).
+    if_negative: ce qui se passe si le gain est ≤ 0 à l'échéance (IF_NEGATIVE).
+    Retourne {"exit_at", "price", "gain", "reason": objectif | positif_echeance | retour_a_zero | cloture}, ou None
+    si l'action est encore détenue à la fin du trajet. Montants en Decimal.
+    """
+    if if_negative not in IF_NEGATIVE:
+        raise ValueError(f"if_negative doit valoir l'un de {IF_NEGATIVE}")
+    shares = amount / entry_price
+    past_deadline = False
+    for at, price in path:
+        gain = net_gain(shares * price, amount, cost_bps)
+        sale = None
+        if gain >= target_gain:
+            sale = "objectif"
+        elif not past_deadline and at >= deadline:
+            past_deadline = True
+            if gain > 0:
+                sale = "positif_echeance"
+        elif past_deadline and if_negative == "retour_a_zero" and gain >= 0:
+            sale = "retour_a_zero"
+        if sale is None and past_deadline and if_negative == "cloture" and at >= day_close:
+            sale = "cloture"
+        if sale:
+            return {"exit_at": at, "price": price, "gain": gain, "reason": sale}
+    return None

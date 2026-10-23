@@ -137,3 +137,23 @@ def test_objectif_franchi_la_nuit_puis_reperdu_pas_de_vente():
     r = track_round(["AAA"], bars, DECISION, sessions, OPEN_2 + timedelta(hours=1),
                     Decimal("5000"), Decimal("200"), Decimal("5"))
     assert r["status"] == "live" and r["sold_at"] is None and r["last"]["AAA"] == Decimal("102")
+
+
+def test_vente_a_l_echeance_selon_le_signe():
+    from core.volatility import exit_with_deadline
+    t0 = DECISION
+    minute = lambda k: t0 + timedelta(minutes=k)
+    args = (Decimal("100"), Decimal("5000"), Decimal("200"), Decimal("5"), minute(210), minute(390))
+    # Objectif avant l'échéance : vendu à +5 %.
+    up = [(minute(1), Decimal("101")), (minute(2), Decimal("105"))]
+    assert exit_with_deadline(up, *args, "objectif")["reason"] == "objectif"
+    # À l'échéance, +1 % (positif) : vendu tout de suite.
+    pos = [(minute(k), Decimal("100.5")) for k in range(1, 210)] + [(minute(210), Decimal("101"))]
+    r = exit_with_deadline(pos, *args, "objectif")
+    assert r["reason"] == "positif_echeance" and r["exit_at"] == minute(210)
+    # À l'échéance, −2 % : A garde (None), B vend au retour à 0, C vend à la clôture.
+    neg = [(minute(k), Decimal("98")) for k in range(1, 300)] + [(minute(300), Decimal("100.2"))] + \
+          [(minute(k), Decimal("99")) for k in range(301, 391)]
+    assert exit_with_deadline(neg, *args, "objectif") is None
+    assert exit_with_deadline(neg, *args, "retour_a_zero")["exit_at"] == minute(300)
+    assert exit_with_deadline(neg, *args, "cloture")["exit_at"] == minute(390)
