@@ -255,3 +255,28 @@ une vague précédente la détient encore. Dans chaque vague, chaque action est 
 séance où son gain net atteint 200 $ ; rien ne se vend la nuit (objectif franchi pendant la fermeture : vente à la
 première minute de l'ouverture) ; pas de limite de durée ni de stop. Les vagues tournent côte à côte jusqu'à ce que
 toutes leurs actions aient atteint l'objectif. Statut : diagnostic, papier, aucun ordre.
+
+## T28 — 2026-10-23 — Volatilité, 2 actions par jour : pré-enregistrement du test (avant toute lecture)
+
+Demande du propriétaire : 10 000 $, 2 actions de la liste Volatilité (les 39 du run r001), 5 000 $ chacune, choisies
+chaque jour ; objectif +200 $ nets par action en quelques heures. Vente (règle du propriétaire) : dès que le gain net
+atteint 200 $ (minute de séance régulière) ; sinon, 3 h 30 après l'achat, vente si le gain net est positif ; s'il est
+négatif, trois variantes testées, au choix du propriétaire après lecture : A garder jusqu'à +200 $, B garder jusqu'au
+retour à 0 $ net, C vendre à la clôture du jour. Rien ne se vend la nuit.
+
+Méthode : 12 mois (séances du 2025-10-22 au 2026-10-22), barres minute SIP, frais 5 points de base par ordre. Compte
+de 2 places de 5 000 $ : chaque matin, les places libres prennent les actions les mieux classées par la méthode, hors
+actions déjà détenues ; une action gardée la nuit occupe sa place. Méthodes de choix (données connues avant l'achat) :
+M1 plus forte ouverture en hausse (cours d'ouverture / clôture de la veille), achat au cours d'ouverture de la minute
+9 h 31 ; M2 plus forte ouverture en baisse (même achat) ; M3 plus forte hausse de 9 h 30 à 9 h 45, achat à 9 h 45 ;
+M4 plus forte hausse de 9 h 30 à 10 h 00, achat à 10 h 00 ; M5 plus fort volume relatif de 9 h 30 à 9 h 45 (rapport à la
+moyenne des 20 séances précédentes à la même heure), achat à 9 h 45 ; M6 plus forte baisse la veille, achat à 9 h 31 ;
+M7 plus forte volatilité des 20 dernières séances, achat à 9 h 31. Repère : les 39 achetées à 9 h 31 (taux moyen).
+
+Mesures : taux d'objectif atteint en 3 h 30 ; part vendue positive à 3 h 30 ; part négative ; durée moyenne jusqu'à
+l'objectif ; résultat net du compte sur 12 mois et par mois, pour A, B, C. Critère : une méthode est retenue si son taux
+d'objectif en 3 h 30 est au moins 1,5 fois celui du repère ET supérieur au repère au moins 8 mois sur 12 ET que le
+compte finit positif avec au moins une variante ; parmi les retenues, la meilleure est celle au plus fort résultat net.
+Si aucune n'est retenue, c'est dit tel quel. Biais connu : la liste des 39 a été choisie avec des données d'octobre 2026
+(tendance sur 6 mois, volatilité récente) : le niveau des résultats sur le passé est flatté ; la comparaison entre
+méthodes l'est moins. Statut : diagnostic, papier, aucun ordre ; la décision d'investir reste au propriétaire.
